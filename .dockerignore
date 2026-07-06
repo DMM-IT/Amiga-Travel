@@ -1,0 +1,13 @@
+node_modules
+vendor
+npm-debug.log
+yarn-error.log
+.DS_Store
+.env
+.env.*
+storage/*.key
+/storage/debugbar
+/public/build
+vendor/*
+node_modules/*
+.phpunit.result.cache
