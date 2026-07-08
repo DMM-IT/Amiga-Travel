@@ -6,6 +6,7 @@ use App\Filament\Resources\DiscountResource\Pages;
 use App\Filament\Resources\DiscountResource\RelationManagers;
 use App\Models\Discount;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -23,7 +24,18 @@ class DiscountResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->label('Discount name')
+                    ->placeholder('e.g. Student, Senior Citizen, PWD, Infant')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('percentage')
+                    ->label('Discount percentage')
+                    ->numeric()
+                    ->suffix('%')
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->required(),
             ]);
     }
 
@@ -31,6 +43,12 @@ class DiscountResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('percentage')
+                    ->suffix('%')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

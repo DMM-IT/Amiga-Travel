@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Booking extends Model
@@ -30,9 +31,11 @@ class Booking extends Model
         return $this->hasMany(Passenger::class);
     }
 
-    public function accommodations(): HasMany
+    public function accommodations(): BelongsToMany
     {
-        return $this->hasMany(Accommodation::class);
+        return $this->belongsToMany(Accommodation::class)
+            ->withPivot('price')
+            ->withTimestamps();
     }
 
     public function transaction()

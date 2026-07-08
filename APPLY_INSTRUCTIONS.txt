@@ -1,0 +1,46 @@
+APPLY INSTRUCTIONS — Amiga Gracia Travel: accommodation catalog, per-passenger
+discounts, welcome/lookup pages, and payment service fee.
+
+1) COPY every file in this zip into your project at the SAME relative path,
+   overwriting anything that already exists there. The zip's folder structure
+   already matches your Laravel project root (app/, database/, resources/,
+   routes/, public/).
+
+2) DELETE these two files from your project — they were MOVED, not just
+   edited (fixes a bug where the payment page and staff dashboard crashed):
+     app/Http/Livewire/PaymentProof.php
+     app/Http/Livewire/UserDashboard.php
+   (Their replacements are already in this zip at app/Livewire/PaymentProof.php
+   and app/Livewire/UserDashboard.php.) If app/Http/Livewire/ is empty after
+   deleting those two, you can delete the empty folder too.
+
+3) Run these commands from your project root:
+     composer dump-autoload
+     php artisan migrate
+     php artisan db:seed --class=Database\\Seeders\\DiscountSeeder
+     php artisan config:clear
+     php artisan view:clear
+
+4) In the admin panel (Filament), do these one-time setup steps:
+     - Go to "Accommodations" and add at least one accommodation (name,
+       price, photos) so clients have something to pick from. It's empty
+       by default now — no more free-typing on the client side.
+     - Go to "Discounts" and check/adjust the percentages for Student,
+       Senior Citizen, PWD, and Infant (seeded with placeholder %).
+     - Go to "Payment Settings" and:
+         - set your real fee-per-traveler and fee-per-accommodation amounts
+         - upload your GCash/company QR code image
+       Without this, the payment page will show "QR code not uploaded yet."
+
+5) Storage symlink: if `php artisan storage:link` hasn't been run on your
+   server, run it now — accommodation photos and the QR code are stored
+   under storage/app/public and served via /storage/... URLs.
+
+6) New/changed routes to be aware of:
+     /book          -> welcome page (choose "Book a Trip" or "Check My Booking")
+     /book/new      -> the actual booking wizard (this used to be at /book)
+     /book/status   -> client looks up a booking by transaction number
+
+That's it — everything else (payment flow, receipts, emails) keeps working
+the same way it did before, just with the fee folded into the total and a
+real QR code instead of the placeholder one.

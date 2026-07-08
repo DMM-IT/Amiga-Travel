@@ -15,16 +15,23 @@
                 <p><strong>Departure:</strong> {{ $transaction->booking->departure_date }}</p>
                 <p><strong>Return:</strong> {{ $transaction->booking->return_date ?? 'One-way' }}</p>
                 <p><strong>Status:</strong> {{ ucfirst($transaction->payment_status) }}</p>
+                <p class="pt-2 text-lg"><strong>Amount to pay:</strong> <span class="font-semibold" style="color:#216417;">₱{{ number_format($transaction->booking->total_price, 2) }}</span></p>
             </div>
 
             <div class="flex justify-center">
-                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(250)->generate($transaction->booking->transaction_number) !!}
+                @if($qrCodePath)
+                    <img src="{{ asset('storage/' . $qrCodePath) }}" alt="Payment QR Code" class="h-64 w-64 rounded-2xl border border-slate-200 object-contain" />
+                @else
+                    <div class="h-64 w-64 rounded-2xl border border-dashed border-slate-300 flex items-center justify-center text-center text-sm text-slate-400 p-4">
+                        QR code not uploaded yet. Please contact Amiga Gracia Travel Services to arrange payment.
+                    </div>
+                @endif
             </div>
         </div>
 
         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <p class="text-sm text-slate-600">Scan this QR code with your phone to pay using GCash or any app that supports QR scanning.</p>
-            <p class="mt-3 text-sm text-slate-700">Reference: <span class="font-semibold">{{ $transaction->booking->transaction_number }}</span></p>
+            <p class="text-sm text-slate-600">Scan this QR code with your GCash app (or any app that supports QR payments) and pay the exact amount shown above.</p>
+            <p class="mt-3 text-sm text-slate-700">Please put this as your payment reference/note: <span class="font-semibold">{{ $transaction->booking->transaction_number }}</span></p>
         </div>
 
         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6">

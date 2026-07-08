@@ -7,6 +7,7 @@ use App\Models\Accommodation;
 use App\Models\Booking;
 use App\Models\Discount;
 use App\Models\Passenger;
+use App\Models\PaymentSetting;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -25,26 +26,55 @@ class BookingForm extends Component
     public int $adults = 1;
     public int $children = 0;
     public int $infants = 0;
-    public ?int $selected_discount_id = null;
-    public array $accommodations = [['name' => '', 'price' => '']];
+    public ?int $selected_schedule_id = null;
+
+    // Each entry: ['type' => 'adult'|'child'|'infant', 'name' => '', 'discount_id' => null]
+    public array $passengers = [];
+
+    // Selected catalog accommodation ids, e.g. [3 => true, 5 => true]
+    public array $selected_accommodation_ids = [];
+
     public string $client_name = '';
     public string $client_email = '';
     public string $recaptchaToken = '';
-    public $discounts = [];
+    public \Illuminate\Support\Collection $discounts;
+    public \Illuminate\Support\Collection $accommodationCatalog;
+    public array $availableSchedules = [];
+    public array $origins = ['Manila', 'Batangas', 'Lucena', 'Cebu'];
+    public array $destinations = ['Boracay', 'Bohol', 'Palawan', 'Cebu'];
 
     public function mount(): void
     {
         $this->discounts = Discount::orderBy('name')->get();
+        $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
+        $this->availableSchedules = [];
+        $this->syncPassengerEntries();
     }
 
     public function updated($propertyName): void
     {
+        if (str_starts_with($propertyName, 'passengers.') || str_starts_with($propertyName, 'selected_accommodation_ids')) {
+            return;
+        }
+
         $this->validateOnly($propertyName, $this->allRules());
     }
 
     public function nextStep(): void
     {
-        $this->validate($this->stepRules());
+        $rules = $this->stepRules();
+
+        if (! empty($rules)) {
+            $this->validate($rules);
+        }
+
+        if ($this->step === 1) {
+            $this->availableSchedules = $this->getAvailableSchedules();
+        }
+
+        if ($this->step === 3) {
+            $this->syncPassengerEntries();
+        }
 
         if ($this->step < 6) {
             $this->step++;
@@ -58,16 +88,58 @@ class BookingForm extends Component
         }
     }
 
-    public function addAccommodation(): void
+    public function selectSchedule(int $scheduleId): void
     {
-        $this->accommodations[] = ['name' => '', 'price' => ''];
+        $this->selected_schedule_id = $scheduleId;
     }
 
-    public function removeAccommodation(int $index): void
+    protected function getAvailableSchedules(): array
     {
-        if (count($this->accommodations) > 1) {
-            unset($this->accommodations[$index]);
-            $this->accommodations = array_values($this->accommodations);
+        $prices = [1800, 2200, 2700];
+
+        return collect([1, 2, 3])->map(fn ($id) => [
+            'id' => $id,
+            'departure' => sprintf('%02d:00', 6 + $id * 2),
+            'arrival' => sprintf('%02d:%02d', 9 + $id * 2, 30),
+            'duration' => '3h 30m',
+            'price' => $prices[$id - 1],
+            'service' => $id === 1 ? 'Fast Ferry' : 'Express Ferry',
+            'availability' => $id === 2 ? 'Limited seats' : 'Available',
+        ])->toArray();
+    }
+
+    /**
+     * Build (or resize) the per-passenger entries based on the adult/child/infant
+     * counts entered in step 3, preserving names/discounts already typed in for
+     * passengers that still exist after a count change.
+     */
+    protected function syncPassengerEntries(): void
+    {
+        $existingByType = collect($this->passengers)->groupBy('type');
+
+        $rebuilt = [];
+
+        foreach (['adult' => $this->adults, 'child' => $this->children, 'infant' => $this->infants] as $type => $count) {
+            $existing = $existingByType->get($type, collect())->values();
+
+            for ($i = 0; $i < $count; $i++) {
+                $rebuilt[] = $existing->get($i, [
+                    'type' => $type,
+                    'name' => '',
+                    'discount_id' => null,
+                ]);
+            }
+        }
+
+        $this->passengers = $rebuilt;
+    }
+
+    public function toggleAccommodation(int $accommodationId): void
+    {
+        if (isset($this->selected_accommodation_ids[$accommodationId])) {
+            unset($this->selected_accommodation_ids[$accommodationId]);
+        } else {
+            $this->selected_accommodation_ids[$accommodationId] = true;
         }
     }
 
@@ -75,11 +147,13 @@ class BookingForm extends Component
     {
         $this->validate($this->allRules());
 
-        Validator::make([
-            'recaptchaToken' => $this->recaptchaToken,
-        ], [
-            'recaptchaToken' => 'required|captcha',
-        ])->validate();
+        if (! app()->environment('local')) {
+            Validator::make([
+                'recaptchaToken' => $this->recaptchaToken,
+            ], [
+                'recaptchaToken' => 'required|captcha',
+            ])->validate();
+        }
 
         $transaction = null;
 
@@ -96,37 +170,21 @@ class BookingForm extends Component
                 'status' => 'pending',
             ]);
 
-            $discountId = $this->selected_discount_id ? intval($this->selected_discount_id) : null;
-
-            for ($i = 0; $i < $this->adults; $i++) {
+            foreach ($this->passengers as $passenger) {
                 Passenger::create([
                     'booking_id' => $booking->id,
-                    'type' => 'adult',
-                    'discount_id' => $discountId,
+                    'type' => $passenger['type'],
+                    'name' => $passenger['name'] ?: null,
+                    'discount_id' => $passenger['discount_id'] ?: null,
                 ]);
             }
 
-            for ($i = 0; $i < $this->children; $i++) {
-                Passenger::create([
-                    'booking_id' => $booking->id,
-                    'type' => 'child',
-                    'discount_id' => $discountId,
-                ]);
-            }
+            $selectedIds = array_keys(array_filter($this->selected_accommodation_ids));
+            $catalog = Accommodation::whereIn('id', $selectedIds)->get();
 
-            for ($i = 0; $i < $this->infants; $i++) {
-                Passenger::create([
-                    'booking_id' => $booking->id,
-                    'type' => 'infant',
-                    'discount_id' => $discountId,
-                ]);
-            }
-
-            foreach ($this->accommodations as $accommodation) {
-                Accommodation::create([
-                    'booking_id' => $booking->id,
-                    'name' => $accommodation['name'],
-                    'price' => $accommodation['price'],
+            foreach ($catalog as $accommodation) {
+                $booking->accommodations()->attach($accommodation->id, [
+                    'price' => $accommodation->price,
                 ]);
             }
 
@@ -135,7 +193,7 @@ class BookingForm extends Component
                 'payment_status' => 'unpaid',
             ]);
 
-            $booking->load('passengers', 'accommodations', 'transaction');
+            $booking->load('passengers.discount', 'accommodations', 'transaction');
 
             $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
             if (! file_exists(dirname($receiptPath))) {
@@ -169,10 +227,11 @@ class BookingForm extends Component
             1 => [
                 'origin' => 'required|string|max:255',
                 'destination' => 'required|string|max:255',
-            ],
-            2 => [
                 'departure_date' => 'required|date',
                 'return_date' => 'nullable|date|after_or_equal:departure_date',
+            ],
+            2 => [
+                'selected_schedule_id' => 'required|integer',
             ],
             3 => [
                 'adults' => 'required|integer|min:1',
@@ -180,12 +239,10 @@ class BookingForm extends Component
                 'infants' => 'required|integer|min:0',
             ],
             4 => [
-                'selected_discount_id' => 'nullable|exists:discounts,id',
+                'passengers.*.discount_id' => 'nullable|exists:discounts,id',
             ],
             5 => [
-                'accommodations' => 'required|array|min:1',
-                'accommodations.*.name' => 'required|string|max:255',
-                'accommodations.*.price' => 'required|numeric|min:0',
+                //
             ],
             6 => [
                 'client_name' => 'required|string|max:255',
@@ -203,16 +260,14 @@ class BookingForm extends Component
             'destination' => 'required|string|max:255',
             'departure_date' => 'required|date',
             'return_date' => 'nullable|date|after_or_equal:departure_date',
+            'selected_schedule_id' => 'required|integer',
             'adults' => 'required|integer|min:1',
             'children' => 'required|integer|min:0',
             'infants' => 'required|integer|min:0',
-            'selected_discount_id' => 'nullable|exists:discounts,id',
-            'accommodations' => 'required|array|min:1',
-            'accommodations.*.name' => 'required|string|max:255',
-            'accommodations.*.price' => 'required|numeric|min:0',
+            'passengers.*.discount_id' => 'nullable|exists:discounts,id',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
-            'recaptchaToken' => 'required|string',
+            'recaptchaToken' => $this->recaptchaRule(),
         ];
     }
 
@@ -223,7 +278,24 @@ class BookingForm extends Component
 
     protected function calculateTotalPrice(): float
     {
-        return collect($this->accommodations)
-            ->sum(fn ($item) => floatval($item['price'] ?? 0));
+        $selectedIds = array_keys(array_filter($this->selected_accommodation_ids));
+
+        $accommodationsTotal = $this->accommodationCatalog
+            ->whereIn('id', $selectedIds)
+            ->sum(fn ($item) => floatval($item->price));
+
+        $settings = PaymentSetting::current();
+
+        // Service fee: charged per traveler (infants excluded) and per selected accommodation.
+        $payingTravelers = collect($this->passengers)->where('type', '!=', 'infant')->count();
+        $serviceFee = ($payingTravelers * floatval($settings->fee_per_person))
+            + (count($selectedIds) * floatval($settings->fee_per_accommodation));
+
+        return $accommodationsTotal + $serviceFee;
+    }
+
+    protected function recaptchaRule(): string
+    {
+        return app()->environment('local') ? 'nullable|string' : 'required|string';
     }
 }
