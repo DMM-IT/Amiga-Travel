@@ -11,6 +11,16 @@ class BookingLookup extends Component
     public ?Booking $booking = null;
     public bool $searched = false;
 
+    public function mount(): void
+    {
+        $transactionNumber = request()->query('transaction_number');
+
+        if (filled($transactionNumber)) {
+            $this->transaction_number = trim($transactionNumber);
+            $this->search();
+        }
+    }
+
     public function search(): void
     {
         $this->validate([

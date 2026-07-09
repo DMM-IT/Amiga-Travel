@@ -11,13 +11,21 @@ class PaymentProof extends Component
     use WithFileUploads;
 
     public Transaction $transaction;
+
     public $proof;
+
+    public bool $showThankYou = false;
 
     protected $rules = [
         'proof' => 'required|image|max:2048',
     ];
 
-    public function submitProof()
+    public function mount(): void
+    {
+        $this->showThankYou = filled($this->transaction->proof_of_payment);
+    }
+
+    public function submitProof(): void
     {
         $this->validate();
 
@@ -28,7 +36,8 @@ class PaymentProof extends Component
             'payment_status' => 'pending',
         ]);
 
-        session()->flash('message', 'Proof of payment uploaded successfully.');
+        $this->transaction->refresh();
+        $this->showThankYou = true;
     }
 
     public function render()
