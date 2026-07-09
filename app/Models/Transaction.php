@@ -25,7 +25,13 @@ class Transaction extends Model
             return null;
         }
 
-        return '/storage/'.$this->proof_of_payment;
+        $path = '/storage/'.$this->proof_of_payment;
+
+        if (app()->runningInConsole() || ! request()->hasHeader('Host')) {
+            return $path;
+        }
+
+        return request()->getSchemeAndHttpHost().$path;
     }
 
     public function deleteProof(): void

@@ -4,9 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Models\Transaction;
-use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -48,9 +48,9 @@ class TransactionResource extends Resource
                         TextEntry::make('updated_at')
                             ->label('Last updated')
                             ->dateTime(),
-                        ImageEntry::make('proof_url')
+                        ViewEntry::make('proof_of_payment')
                             ->label('Proof of payment')
-                            ->height(320)
+                            ->view('filament.infolists.entries.proof-image')
                             ->visible(fn (?Transaction $record): bool => filled($record?->proof_of_payment))
                             ->columnSpanFull(),
                         TextEntry::make('proof_of_payment')
