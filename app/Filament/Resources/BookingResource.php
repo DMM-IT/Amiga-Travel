@@ -31,6 +31,26 @@ class BookingResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('transaction_number')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('client_name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('origin')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('destination')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('schedule_service')
+                    ->label('Schedule')
+                    ->placeholder('—'),
+                Tables\Columns\TextColumn::make('departure_date')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge(),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->money('PHP')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

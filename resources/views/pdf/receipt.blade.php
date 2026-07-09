@@ -33,7 +33,22 @@
         </div>
 
         <div class="section">
-            <div class="section-title">Passenger</div>
+            <div class="section-title">Ferry schedule</div>
+            @if($booking->schedule_summary)
+                <div class="info-box">
+                    <strong>{{ $booking->schedule_service }}</strong>
+                    <div>{{ $booking->schedule_departure_time }} → {{ $booking->schedule_arrival_time }}</div>
+                    <div>Per passenger: ₱{{ number_format($booking->schedule_price, 2) }}</div>
+                </div>
+            @else
+                <div class="info-box">
+                    <div>Schedule details not recorded for this booking.</div>
+                </div>
+            @endif
+        </div>
+
+        <div class="section">
+            <div class="section-title">Passengers</div>
             <div class="info-grid">
                 <div class="info-box">
                     <strong>Client</strong>

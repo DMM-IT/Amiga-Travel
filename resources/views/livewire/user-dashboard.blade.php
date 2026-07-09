@@ -22,6 +22,7 @@
                             <div class="grid gap-2 text-sm text-slate-600">
                                 <p><strong>Status:</strong> {{ ucfirst($booking->transaction->payment_status) }}</p>
                                 <p><strong>Route:</strong> {{ $booking->origin }} → {{ $booking->destination }}</p>
+                                <p><strong>Schedule:</strong> {{ $booking->schedule_summary ?? 'Not recorded' }}</p>
                                 <p><strong>Departure:</strong> {{ $booking->departure_date->format('F j, Y') }}</p>
                             </div>
                         </div>

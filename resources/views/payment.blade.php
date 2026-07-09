@@ -14,6 +14,9 @@
                 <p><strong>Destination:</strong> {{ $transaction->booking->destination }}</p>
                 <p><strong>Departure:</strong> {{ $transaction->booking->departure_date }}</p>
                 <p><strong>Return:</strong> {{ $transaction->booking->return_date ?? 'One-way' }}</p>
+                @if($transaction->booking->schedule_summary)
+                    <p><strong>Schedule:</strong> {{ $transaction->booking->schedule_summary }}</p>
+                @endif
                 <p><strong>Status:</strong> {{ ucfirst($transaction->payment_status) }}</p>
                 <p class="pt-2 text-lg"><strong>Amount to pay:</strong> <span class="font-semibold" style="color:#216417;">₱{{ number_format($transaction->booking->total_price, 2) }}</span></p>
             </div>

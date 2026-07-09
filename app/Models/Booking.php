@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -14,6 +15,11 @@ class Booking extends Model
         'destination',
         'departure_date',
         'return_date',
+        'schedule_id',
+        'schedule_service',
+        'schedule_departure_time',
+        'schedule_arrival_time',
+        'schedule_price',
         'status',
         'total_price',
         'client_email',
@@ -23,6 +29,7 @@ class Booking extends Model
     protected $casts = [
         'departure_date' => 'date',
         'return_date' => 'date',
+        'schedule_price' => 'decimal:2',
         'total_price' => 'decimal:2',
     ];
 
@@ -38,8 +45,26 @@ class Booking extends Model
             ->withTimestamps();
     }
 
+    public function schedule(): BelongsTo
+    {
+        return $this->belongsTo(Schedule::class);
+    }
+
     public function transaction()
     {
         return $this->hasOne(Transaction::class);
+    }
+
+    public function getScheduleSummaryAttribute(): ?string
+    {
+        if (! $this->schedule_service) {
+            return null;
+        }
+
+        $times = collect([$this->schedule_departure_time, $this->schedule_arrival_time])
+            ->filter()
+            ->implode(' → ');
+
+        return trim("{$this->schedule_service}" . ($times ? " ({$times})" : ''));
     }
 }

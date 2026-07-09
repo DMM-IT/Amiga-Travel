@@ -57,6 +57,13 @@
                                     <p class="font-medium text-slate-900">{{ $booking->departure_date->format('M d, Y') }}{{ $booking->return_date ? ' → ' . $booking->return_date->format('M d, Y') : ' (One-way)' }}</p>
                                 </div>
                                 <div class="rounded-2xl bg-white p-4 border border-slate-200">
+                                    <p class="text-sm text-slate-500">Ferry Schedule</p>
+                                    <p class="font-medium text-slate-900">{{ $booking->schedule_summary ?? 'Not recorded' }}</p>
+                                    @if($booking->schedule_price)
+                                        <p class="text-sm text-slate-600 mt-1">₱{{ number_format($booking->schedule_price, 2) }} per passenger{{ $booking->return_date ? ' (round trip)' : '' }}</p>
+                                    @endif
+                                </div>
+                                <div class="rounded-2xl bg-white p-4 border border-slate-200">
                                     <p class="text-sm text-slate-500">Booked by</p>
                                     <p class="font-medium text-slate-900">{{ $booking->client_name }}</p>
                                 </div>

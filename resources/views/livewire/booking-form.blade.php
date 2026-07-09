@@ -34,7 +34,7 @@
                                 <span class="text-slate-700 font-medium">Destination</span>
                                 <select wire:model.defer="destination" class="mt-2 block w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200">
                                     <option value="">Select destination</option>
-                                    @foreach($destinations as $destinationOption)
+                                    @foreach($this->destinations as $destinationOption)
                                         <option value="{{ $destinationOption }}">{{ $destinationOption }}</option>
                                     @endforeach
                                 </select>
@@ -61,7 +61,7 @@
                         <div class="space-y-4">
                             <p class="text-slate-600">Choose the ferry schedule that works best for your trip.</p>
                             <div class="grid gap-4 lg:grid-cols-3">
-                                @foreach($availableSchedules as $schedule)
+                                @forelse($availableSchedules as $schedule)
                                     <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-3xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-800 hover:border-slate-900' }}">
                                         <div class="flex items-center justify-between gap-4">
                                             <div>
@@ -75,7 +75,9 @@
                                             <p class="text-xl font-semibold">₱{{ number_format($schedule['price'], 2) }}</p>
                                         </div>
                                     </button>
-                                @endforeach
+                                @empty
+                                    <p class="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-slate-600 lg:col-span-3">No ferry schedules are available for this route on the selected date. Go back and try another date, or contact Amiga Gracia Travel Services.</p>
+                                @endforelse
                             </div>
                             @error('selected_schedule_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                         </div>

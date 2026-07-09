@@ -6,15 +6,19 @@ use App\Mail\BookingConfirmation;
 use App\Models\Accommodation;
 use App\Models\Booking;
 use App\Models\Discount;
+use App\Models\FerryRoute;
 use App\Models\Passenger;
 use App\Models\PaymentSetting;
+use App\Models\Schedule;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
-use Spatie\LaravelPdf\Facades\Pdf;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class BookingForm extends Component
 {
@@ -40,21 +44,40 @@ class BookingForm extends Component
     public \Illuminate\Support\Collection $discounts;
     public \Illuminate\Support\Collection $accommodationCatalog;
     public array $availableSchedules = [];
-    public array $origins = ['Manila', 'Batangas', 'Lucena', 'Cebu'];
-    public array $destinations = ['Boracay', 'Bohol', 'Palawan', 'Cebu'];
+    public array $origins = [];
 
     public function mount(): void
     {
         $this->discounts = Discount::orderBy('name')->get();
         $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
+        $this->origins = FerryRoute::activeOrigins();
         $this->availableSchedules = [];
         $this->syncPassengerEntries();
+    }
+
+    #[Computed]
+    public function destinations(): array
+    {
+        if (blank($this->origin)) {
+            return [];
+        }
+
+        return FerryRoute::activeDestinationsFor($this->origin);
     }
 
     public function updated($propertyName): void
     {
         if (str_starts_with($propertyName, 'passengers.') || str_starts_with($propertyName, 'selected_accommodation_ids')) {
             return;
+        }
+
+        if (in_array($propertyName, ['origin', 'destination', 'departure_date'], true)) {
+            $this->selected_schedule_id = null;
+            $this->availableSchedules = [];
+        }
+
+        if ($propertyName === 'origin') {
+            $this->destination = '';
         }
 
         $this->validateOnly($propertyName, $this->allRules());
@@ -70,6 +93,16 @@ class BookingForm extends Component
 
         if ($this->step === 1) {
             $this->availableSchedules = $this->getAvailableSchedules();
+
+            if (empty($this->availableSchedules)) {
+                throw ValidationException::withMessages([
+                    'departure_date' => 'No ferry schedules are available for this route on the selected date. Try another date or contact Amiga Gracia Travel Services.',
+                ]);
+            }
+        }
+
+        if ($this->step === 2) {
+            $this->assertSelectedScheduleIsValid();
         }
 
         if ($this->step === 3) {
@@ -95,17 +128,12 @@ class BookingForm extends Component
 
     protected function getAvailableSchedules(): array
     {
-        $prices = [1800, 2200, 2700];
-
-        return collect([1, 2, 3])->map(fn ($id) => [
-            'id' => $id,
-            'departure' => sprintf('%02d:00', 6 + $id * 2),
-            'arrival' => sprintf('%02d:%02d', 9 + $id * 2, 30),
-            'duration' => '3h 30m',
-            'price' => $prices[$id - 1],
-            'service' => $id === 1 ? 'Fast Ferry' : 'Express Ferry',
-            'availability' => $id === 2 ? 'Limited seats' : 'Available',
-        ])->toArray();
+        return Schedule::query()
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date)
+            ->get()
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray())
+            ->values()
+            ->all();
     }
 
     /**
@@ -146,6 +174,7 @@ class BookingForm extends Component
     public function submit()
     {
         $this->validate($this->allRules());
+        $this->assertSelectedScheduleIsValid();
 
         if (! app()->environment('local')) {
             Validator::make([
@@ -155,15 +184,24 @@ class BookingForm extends Component
             ])->validate();
         }
 
+        $schedule = Schedule::query()
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date)
+            ->findOrFail($this->selected_schedule_id);
+
         $transaction = null;
 
-        DB::transaction(function () use (&$transaction) {
+        DB::transaction(function () use (&$transaction, $schedule) {
             $booking = Booking::create([
                 'transaction_number' => $this->generateTransactionNumber(),
                 'origin' => $this->origin,
                 'destination' => $this->destination,
                 'departure_date' => $this->departure_date,
                 'return_date' => $this->return_date,
+                'schedule_id' => $schedule->id,
+                'schedule_service' => $schedule->service_name,
+                'schedule_departure_time' => $schedule->formatted_departure,
+                'schedule_arrival_time' => $schedule->formatted_arrival,
+                'schedule_price' => $schedule->price,
                 'client_name' => $this->client_name,
                 'client_email' => $this->client_email,
                 'total_price' => $this->calculateTotalPrice(),
@@ -193,7 +231,7 @@ class BookingForm extends Component
                 'payment_status' => 'unpaid',
             ]);
 
-            $booking->load('passengers.discount', 'accommodations', 'transaction');
+            $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule');
 
             $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
             if (! file_exists(dirname($receiptPath))) {
@@ -231,7 +269,7 @@ class BookingForm extends Component
                 'return_date' => 'nullable|date|after_or_equal:departure_date',
             ],
             2 => [
-                'selected_schedule_id' => 'required|integer',
+                'selected_schedule_id' => 'required|integer|exists:schedules,id',
             ],
             3 => [
                 'adults' => 'required|integer|min:1',
@@ -260,7 +298,7 @@ class BookingForm extends Component
             'destination' => 'required|string|max:255',
             'departure_date' => 'required|date',
             'return_date' => 'nullable|date|after_or_equal:departure_date',
-            'selected_schedule_id' => 'required|integer',
+            'selected_schedule_id' => 'required|integer|exists:schedules,id',
             'adults' => 'required|integer|min:1',
             'children' => 'required|integer|min:0',
             'infants' => 'required|integer|min:0',
@@ -271,13 +309,51 @@ class BookingForm extends Component
         ];
     }
 
+    protected function assertSelectedScheduleIsValid(): void
+    {
+        if (! $this->selected_schedule_id) {
+            throw ValidationException::withMessages([
+                'selected_schedule_id' => 'Please select a ferry schedule.',
+            ]);
+        }
+
+        $isValid = Schedule::query()
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date)
+            ->where('id', $this->selected_schedule_id)
+            ->exists();
+
+        if (! $isValid) {
+            throw ValidationException::withMessages([
+                'selected_schedule_id' => 'The selected schedule is no longer available for this route and date.',
+            ]);
+        }
+    }
+
     protected function generateTransactionNumber(): string
     {
         return 'AGT-' . now()->format('Ymd') . '-' . rand(1000, 9999);
     }
 
-    protected function calculateTotalPrice(): float
+    public function calculateTotalPrice(): float
     {
+        $schedulePrice = $this->getSelectedSchedulePrice();
+        $tripMultiplier = $this->return_date ? 2 : 1;
+        $discountsById = $this->discounts->keyBy('id');
+
+        $ferryTotal = collect($this->passengers)->sum(function (array $passenger) use ($schedulePrice, $tripMultiplier, $discountsById) {
+            $fare = $schedulePrice * $tripMultiplier;
+
+            if (! empty($passenger['discount_id'])) {
+                $discount = $discountsById->get($passenger['discount_id']);
+
+                if ($discount) {
+                    $fare -= $fare * (floatval($discount->percentage) / 100);
+                }
+            }
+
+            return $fare;
+        });
+
         $selectedIds = array_keys(array_filter($this->selected_accommodation_ids));
 
         $accommodationsTotal = $this->accommodationCatalog
@@ -291,7 +367,23 @@ class BookingForm extends Component
         $serviceFee = ($payingTravelers * floatval($settings->fee_per_person))
             + (count($selectedIds) * floatval($settings->fee_per_accommodation));
 
-        return $accommodationsTotal + $serviceFee;
+        return $ferryTotal + $accommodationsTotal + $serviceFee;
+    }
+
+    protected function getSelectedSchedulePrice(): float
+    {
+        if (! $this->selected_schedule_id) {
+            return 0;
+        }
+
+        $schedule = collect($this->availableSchedules)
+            ->firstWhere('id', $this->selected_schedule_id);
+
+        if ($schedule) {
+            return floatval($schedule['price']);
+        }
+
+        return floatval(Schedule::query()->whereKey($this->selected_schedule_id)->value('price') ?? 0);
     }
 
     protected function recaptchaRule(): string
