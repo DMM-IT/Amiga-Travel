@@ -44,15 +44,19 @@ class BookingForm extends Component
     public \Illuminate\Support\Collection $discounts;
     public \Illuminate\Support\Collection $accommodationCatalog;
     public array $availableSchedules = [];
-    public array $origins = [];
 
     public function mount(): void
     {
         $this->discounts = Discount::orderBy('name')->get();
         $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
-        $this->origins = FerryRoute::activeOrigins();
         $this->availableSchedules = [];
         $this->syncPassengerEntries();
+    }
+
+    #[Computed]
+    public function origins(): array
+    {
+        return FerryRoute::activeOrigins();
     }
 
     #[Computed]
@@ -78,6 +82,7 @@ class BookingForm extends Component
 
         if ($propertyName === 'origin') {
             $this->destination = '';
+            unset($this->destinations);
         }
 
         $this->validateOnly($propertyName, $this->allRules());

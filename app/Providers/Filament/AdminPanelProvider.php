@@ -27,6 +27,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Amiga Gracia Travel')
+            ->brandLogo(asset('images/amiga-logo.jpg'))
+            ->brandLogoHeight('2.5rem')
+            ->favicon(asset('images/amiga-logo.jpg'))
             ->colors([
                 'primary' => Color::Amber,
             ])

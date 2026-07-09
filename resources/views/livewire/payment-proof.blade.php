@@ -16,7 +16,7 @@
     @if ($transaction->proof_of_payment)
         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
             <p class="text-sm font-medium text-slate-700">Existing proof</p>
-            <img src="{{ asset('storage/' . $transaction->proof_of_payment) }}" alt="Proof of payment" class="mt-3 rounded-3xl max-h-72 object-contain" />
+            <img src="{{ $transaction->proof_url }}" alt="Proof of payment" class="mt-3 rounded-3xl max-h-72 object-contain" />
         </div>
     @endif
 </div>

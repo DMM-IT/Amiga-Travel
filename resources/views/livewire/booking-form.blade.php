@@ -21,9 +21,9 @@
                         <div class="grid gap-6 lg:grid-cols-2">
                             <label class="block">
                                 <span class="text-slate-700 font-medium">Origin</span>
-                                <select wire:model.defer="origin" class="mt-2 block w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                                <select wire:model.live="origin" class="mt-2 block w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200">
                                     <option value="">Select origin</option>
-                                    @foreach($origins as $originOption)
+                                    @foreach($this->origins as $originOption)
                                         <option value="{{ $originOption }}">{{ $originOption }}</option>
                                     @endforeach
                                 </select>
@@ -32,12 +32,19 @@
 
                             <label class="block">
                                 <span class="text-slate-700 font-medium">Destination</span>
-                                <select wire:model.defer="destination" class="mt-2 block w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200">
-                                    <option value="">Select destination</option>
+                                <select
+                                    wire:model.defer="destination"
+                                    @disabled(blank($origin))
+                                    class="mt-2 block w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-100"
+                                >
+                                    <option value="">{{ blank($origin) ? 'Select origin first' : 'Select destination' }}</option>
                                     @foreach($this->destinations as $destinationOption)
                                         <option value="{{ $destinationOption }}">{{ $destinationOption }}</option>
                                     @endforeach
                                 </select>
+                                @if(filled($origin) && empty($this->destinations))
+                                    <p class="mt-2 text-sm text-amber-600">No destinations available from {{ $origin }}. Please choose a different origin or contact Amiga Gracia Travel Services.</p>
+                                @endif
                                 @error('destination')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
                         </div>

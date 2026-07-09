@@ -8,6 +8,8 @@
 
         <title>{{ config('app.name', 'Amiga Gracia Travel Service') }}</title>
 
+        <link rel="icon" href="{{ asset('images/amiga-logo.jpg') }}" type="image/jpeg">
+
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>
