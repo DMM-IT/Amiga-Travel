@@ -23,16 +23,21 @@ use Spatie\LaravelPdf\Facades\Pdf;
 class BookingForm extends Component
 {
     public int $step = 1;
+    public string $trip_type = 'one_way';
+    public string $mode = '';
     public string $origin = '';
     public string $destination = '';
     public ?string $departure_date = null;
     public ?string $return_date = null;
     public int $adults = 1;
     public int $children = 0;
-    public int $infants = 0;
     public ?int $selected_schedule_id = null;
+    public bool $showPassengerInfoModal = false;
+    public bool $showPwdTypeModal = false;
+    public ?int $pwdTypeModalPassengerIndex = null;
+    public string $pwd_disability_other_tmp = '';
 
-    // Each entry: ['type' => 'adult'|'child'|'infant', 'name' => '', 'discount_id' => null]
+    // Each entry: ['type' => 'adult'|'child', 'name' => '', 'discount_id' => null]
     public array $passengers = [];
 
     // Selected catalog accommodation ids, e.g. [3 => true, 5 => true]
@@ -56,7 +61,11 @@ class BookingForm extends Component
     #[Computed]
     public function origins(): array
     {
-        return FerryRoute::activeOrigins();
+        if (blank($this->mode)) {
+            return [];
+        }
+
+        return FerryRoute::activeOrigins($this->mode);
     }
 
     #[Computed]
@@ -66,12 +75,70 @@ class BookingForm extends Component
             return [];
         }
 
-        return FerryRoute::activeDestinationsFor($this->origin);
+        return FerryRoute::activeDestinationsFor($this->origin, $this->mode);
+    }
+
+    public function updatedTripType(string $value): void
+    {
+        $this->trip_type = $value;
+        $this->return_date = null;
+    }
+
+    public function setTripType(string $type): void
+    {
+        if (! in_array($type, ['one_way', 'round_trip'], true)) {
+            return;
+        }
+
+        $this->trip_type = $type;
+        $this->return_date = null;
+    }
+
+    protected $listeners = ['datePickerUpdated'];
+
+    public function updatedMode(string $value): void
+    {
+        $this->mode = $value;
+        $this->origin = '';
+        $this->destination = '';
+        $this->selected_schedule_id = null;
+        $this->availableSchedules = [];
+    }
+
+    public function datePickerUpdated(string $field, ?string $value): void
+    {
+        if (! in_array($field, ['departure_date', 'return_date'], true)) {
+            return;
+        }
+
+        $this->$field = $value;
+
+        if ($field === 'departure_date') {
+            $this->selected_schedule_id = null;
+            $this->availableSchedules = [];
+        }
+
+        $this->validateOnly($field, $this->allRules());
     }
 
     public function updated($propertyName): void
     {
-        if (str_starts_with($propertyName, 'passengers.') || str_starts_with($propertyName, 'selected_accommodation_ids')) {
+        if (str_starts_with($propertyName, 'passengers.')) {
+            if (preg_match('/^passengers\.(\d+)\.(first_name|middle_name|last_name)$/', $propertyName, $matches)) {
+                $this->syncFullPassengerNames();
+            }
+
+            if (preg_match('/^passengers\.(\d+)\.pwd_disability_type$/', $propertyName, $matches)) {
+                $index = intval($matches[1]);
+                if (($this->passengers[$index]['pwd_disability_type'] ?? '') === 'other') {
+                    $this->openPwdTypeModal($index);
+                }
+            }
+
+            return;
+        }
+
+        if (str_starts_with($propertyName, 'selected_accommodation_ids')) {
             return;
         }
 
@@ -82,7 +149,6 @@ class BookingForm extends Component
 
         if ($propertyName === 'origin') {
             $this->destination = '';
-            unset($this->destinations);
         }
 
         $this->validateOnly($propertyName, $this->allRules());
@@ -114,6 +180,10 @@ class BookingForm extends Component
             $this->syncPassengerEntries();
         }
 
+        if ($this->step === 4) {
+            $this->validatePassengerExtras();
+        }
+
         if ($this->step < 6) {
             $this->step++;
         }
@@ -134,7 +204,7 @@ class BookingForm extends Component
     protected function getAvailableSchedules(): array
     {
         return Schedule::query()
-            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date)
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
             ->get()
             ->map(fn (Schedule $schedule) => $schedule->toBookingArray())
             ->values()
@@ -142,7 +212,7 @@ class BookingForm extends Component
     }
 
     /**
-     * Build (or resize) the per-passenger entries based on the adult/child/infant
+     * Build (or resize) the per-passenger entries based on the adult/child
      * counts entered in step 3, preserving names/discounts already typed in for
      * passengers that still exist after a count change.
      */
@@ -152,19 +222,72 @@ class BookingForm extends Component
 
         $rebuilt = [];
 
-        foreach (['adult' => $this->adults, 'child' => $this->children, 'infant' => $this->infants] as $type => $count) {
+        foreach (['adult' => $this->adults, 'child' => $this->children] as $type => $count) {
             $existing = $existingByType->get($type, collect())->values();
 
             for ($i = 0; $i < $count; $i++) {
-                $rebuilt[] = $existing->get($i, [
+                $passenger = $existing->get($i, [
                     'type' => $type,
                     'name' => '',
+                    'first_name' => '',
+                    'middle_name' => '',
+                    'last_name' => '',
                     'discount_id' => null,
                 ]);
+
+                $nameParts = $this->passengerNameParts($passenger);
+
+                $rebuilt[] = array_merge([
+                    'type' => $type,
+                    'name' => $passenger['name'] ?? '',
+                    'first_name' => $nameParts['first_name'],
+                    'middle_name' => $nameParts['middle_name'],
+                    'last_name' => $nameParts['last_name'],
+                    'discount_id' => $passenger['discount_id'] ?? null,
+                ], $passenger);
             }
         }
 
         $this->passengers = $rebuilt;
+    }
+
+    protected function passengerNameParts(array $passenger): array
+    {
+        $first = trim($passenger['first_name'] ?? '');
+        $middle = trim($passenger['middle_name'] ?? '');
+        $last = trim($passenger['last_name'] ?? '');
+
+        if ($first === '' && $middle === '' && $last === '' && ! empty($passenger['name'])) {
+            $words = preg_split('/\s+/', trim($passenger['name']));
+            $first = $words[0] ?? '';
+
+            if (count($words) === 1) {
+                $last = '';
+            } elseif (count($words) === 2) {
+                $last = $words[1];
+            } else {
+                $last = array_pop($words);
+                array_shift($words);
+                $middle = trim(implode(' ', $words));
+            }
+        }
+
+        return [
+            'first_name' => $first,
+            'middle_name' => $middle,
+            'last_name' => $last,
+        ];
+    }
+
+    protected function syncFullPassengerNames(): void
+    {
+        foreach ($this->passengers as $index => $passenger) {
+            $first = trim($passenger['first_name'] ?? '');
+            $middle = trim($passenger['middle_name'] ?? '');
+            $last = trim($passenger['last_name'] ?? '');
+
+            $this->passengers[$index]['name'] = trim(implode(' ', array_filter([$first, $middle, $last], fn ($value) => $value !== '')));
+        }
     }
 
     public function toggleAccommodation(int $accommodationId): void
@@ -176,9 +299,37 @@ class BookingForm extends Component
         }
     }
 
+    public function openPwdTypeModal(int $index): void
+    {
+        $this->pwdTypeModalPassengerIndex = $index;
+        $this->pwd_disability_other_tmp = $this->passengers[$index]['pwd_disability_other'] ?? '';
+        $this->showPwdTypeModal = true;
+    }
+
+    public function togglePwdTypeModal(): void
+    {
+        $this->showPwdTypeModal = ! $this->showPwdTypeModal;
+        if (! $this->showPwdTypeModal) {
+            $this->pwdTypeModalPassengerIndex = null;
+        }
+    }
+
+    public function savePwdDisabilityOther(): void
+    {
+        if ($this->pwdTypeModalPassengerIndex === null) {
+            return;
+        }
+
+        $index = $this->pwdTypeModalPassengerIndex;
+        $this->passengers[$index]['pwd_disability_other'] = $this->pwd_disability_other_tmp;
+        $this->showPwdTypeModal = false;
+        $this->pwdTypeModalPassengerIndex = null;
+    }
+
     public function submit()
     {
         $this->validate($this->allRules());
+        $this->validatePassengerExtras();
         $this->assertSelectedScheduleIsValid();
 
         if (! app()->environment('local')) {
@@ -190,7 +341,7 @@ class BookingForm extends Component
         }
 
         $schedule = Schedule::query()
-            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date)
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
             ->findOrFail($this->selected_schedule_id);
 
         $transaction = null;
@@ -268,21 +419,46 @@ class BookingForm extends Component
     {
         return match ($this->step) {
             1 => [
+                'trip_type' => 'required|string|in:one_way,round_trip',
+                'mode' => 'required|string|in:ferry,airline',
                 'origin' => 'required|string|max:255',
                 'destination' => 'required|string|max:255',
                 'departure_date' => 'required|date',
-                'return_date' => 'nullable|date|after_or_equal:departure_date',
+                'return_date' => $this->trip_type === 'round_trip' ? 'required|date|after_or_equal:departure_date' : 'nullable|date|after_or_equal:departure_date',
             ],
             2 => [
                 'selected_schedule_id' => 'required|integer|exists:schedules,id',
             ],
             3 => [
-                'adults' => 'required|integer|min:1',
-                'children' => 'required|integer|min:0',
-                'infants' => 'required|integer|min:0',
+                'adults' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    function ($attribute, $value, $fail) {
+                        if ($value + $this->children > 8) {
+                            $fail('Maximum of 8 passengers per booking.');
+                        }
+                    },
+                ],
+                'children' => [
+                    'required',
+                    'integer',
+                    'min:0',
+                    function ($attribute, $value, $fail) {
+                        if ($value + $this->adults > 8) {
+                            $fail('Maximum of 8 passengers per booking.');
+                        }
+                    },
+                ],
             ],
             4 => [
+                'passengers.*.first_name' => 'required|string|max:255',
+                'passengers.*.middle_name' => 'nullable|string|max:255',
+                'passengers.*.last_name' => 'required|string|max:255',
+                'passengers.*.name' => 'required|string|max:255',
                 'passengers.*.discount_id' => 'nullable|exists:discounts,id',
+                'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
+                'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
             ],
             5 => [
                 //
@@ -299,15 +475,40 @@ class BookingForm extends Component
     protected function allRules(): array
     {
         return [
+            'trip_type' => 'required|string|in:one_way,round_trip',
+            'mode' => 'required|string|in:ferry,airline',
             'origin' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
             'departure_date' => 'required|date',
-            'return_date' => 'nullable|date|after_or_equal:departure_date',
+            'return_date' => $this->trip_type === 'round_trip' ? 'required|date|after_or_equal:departure_date' : 'nullable|date|after_or_equal:departure_date',
             'selected_schedule_id' => 'required|integer|exists:schedules,id',
-            'adults' => 'required|integer|min:1',
-            'children' => 'required|integer|min:0',
-            'infants' => 'required|integer|min:0',
+            'adults' => [
+                'required',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) {
+                    if ($value + $this->children > 8) {
+                        $fail('Maximum of 8 passengers per booking.');
+                    }
+                },
+            ],
+            'children' => [
+                'required',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    if ($value + $this->adults > 8) {
+                        $fail('Maximum of 8 passengers per booking.');
+                    }
+                },
+            ],
+            'passengers.*.first_name' => 'required|string|max:255',
+            'passengers.*.middle_name' => 'nullable|string|max:255',
+            'passengers.*.last_name' => 'required|string|max:255',
+            'passengers.*.name' => 'required|string|max:255',
             'passengers.*.discount_id' => 'nullable|exists:discounts,id',
+            'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
+            'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
             'recaptchaToken' => $this->recaptchaRule(),
@@ -318,12 +519,12 @@ class BookingForm extends Component
     {
         if (! $this->selected_schedule_id) {
             throw ValidationException::withMessages([
-                'selected_schedule_id' => 'Please select a ferry schedule.',
+                'selected_schedule_id' => 'Please select a schedule.',
             ]);
         }
 
         $isValid = Schedule::query()
-            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date)
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
             ->where('id', $this->selected_schedule_id)
             ->exists();
 
@@ -342,7 +543,7 @@ class BookingForm extends Component
     public function calculateTotalPrice(): float
     {
         $schedulePrice = $this->getSelectedSchedulePrice();
-        $tripMultiplier = $this->return_date ? 2 : 1;
+        $tripMultiplier = $this->trip_type === 'round_trip' ? 2 : 1;
         $discountsById = $this->discounts->keyBy('id');
 
         $ferryTotal = collect($this->passengers)->sum(function (array $passenger) use ($schedulePrice, $tripMultiplier, $discountsById) {
@@ -367,12 +568,118 @@ class BookingForm extends Component
 
         $settings = PaymentSetting::current();
 
-        // Service fee: charged per traveler (infants excluded) and per selected accommodation.
-        $payingTravelers = collect($this->passengers)->where('type', '!=', 'infant')->count();
+        // Service fee: charged per traveler and per selected accommodation.
+        $payingTravelers = count($this->passengers);
         $serviceFee = ($payingTravelers * floatval($settings->fee_per_person))
             + (count($selectedIds) * floatval($settings->fee_per_accommodation));
 
         return $ferryTotal + $accommodationsTotal + $serviceFee;
+    }
+
+    public function incrementAdults(): void
+    {
+        if ($this->adults + $this->children >= 8) {
+            return;
+        }
+
+        $this->adults++;
+    }
+
+    public function decrementAdults(): void
+    {
+        if ($this->adults <= 1) {
+            return;
+        }
+
+        $this->adults--;
+    }
+
+    public function incrementChildren(): void
+    {
+        if ($this->adults + $this->children >= 8) {
+            return;
+        }
+
+        $this->children++;
+    }
+
+    public function decrementChildren(): void
+    {
+        if ($this->children <= 0) {
+            return;
+        }
+
+        $this->children--;
+    }
+
+    protected function validatePassengerExtras(): void
+    {
+        $validator = Validator::make([
+            'passengers' => $this->passengers,
+        ], [
+            'passengers.*.first_name' => 'required|string|max:255',
+            'passengers.*.middle_name' => 'nullable|string|max:255',
+            'passengers.*.last_name' => 'required|string|max:255',
+            'passengers.*.name' => 'required|string|max:255',
+            'passengers.*.discount_id' => 'nullable|exists:discounts,id',
+            'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
+            'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
+        ]);
+
+        $validator->after(function ($validator) {
+            foreach ($this->passengers as $index => $passenger) {
+                $discount = $this->discounts->firstWhere('id', $passenger['discount_id']);
+
+                if (! $discount) {
+                    continue;
+                }
+
+                $discountKey = strtolower($discount->name);
+
+                if (str_contains($discountKey, 'student')) {
+                    if (blank($passenger['student_school'] ?? null)) {
+                        $validator->errors()->add("passengers.{$index}.student_school", 'School name is required when Student discount is selected.');
+                    }
+
+                    if (blank($passenger['student_number'] ?? null)) {
+                        $validator->errors()->add("passengers.{$index}.student_number", 'Student number is required when Student discount is selected.');
+                    }
+                }
+
+                if (str_contains($discountKey, 'senior')) {
+                    if (blank($passenger['senior_dob'] ?? null)) {
+                        $validator->errors()->add("passengers.{$index}.senior_dob", 'Date of birth is required when Senior Citizen discount is selected.');
+                    }
+
+                    if (blank($passenger['senior_osca_number'] ?? null)) {
+                        $validator->errors()->add("passengers.{$index}.senior_osca_number", 'OSCA number is required when Senior Citizen discount is selected.');
+                    }
+                }
+
+                if (str_contains($discountKey, 'pwd')) {
+                    $type = $passenger['pwd_disability_type'] ?? null;
+
+                    if (blank($type)) {
+                        $validator->errors()->add("passengers.{$index}.pwd_disability_type", 'Type of disability is required when PWD Card discount is selected.');
+                    }
+
+                    if ($type === 'other' && blank($passenger['pwd_disability_other'] ?? null)) {
+                        $validator->errors()->add("passengers.{$index}.pwd_disability_other", 'Please specify the disability type when Others is selected.');
+                    }
+
+                    if (blank($passenger['pwd_id_number'] ?? null)) {
+                        $validator->errors()->add("passengers.{$index}.pwd_id_number", 'PWD ID number is required when PWD Card discount is selected.');
+                    }
+                }
+            }
+        });
+
+        $validator->validate();
+    }
+
+    public function togglePassengerInfoModal(): void
+    {
+        $this->showPassengerInfoModal = ! $this->showPassengerInfoModal;
     }
 
     protected function getSelectedSchedulePrice(): float

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\FerryRouteResource\Pages;
 use App\Models\FerryRoute;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,9 +20,9 @@ class FerryRouteResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
 
-    protected static ?string $navigationLabel = 'Ferry Routes';
+    protected static ?string $navigationLabel = 'Routes';
 
-    protected static ?string $modelLabel = 'ferry route';
+    protected static ?string $modelLabel = 'route';
 
     protected static ?int $navigationSort = 2;
 
@@ -37,6 +38,20 @@ class FerryRouteResource extends Resource
                 TextInput::make('destination')
                     ->placeholder('e.g. Boracay')
                     ->required()
+                    ->maxLength(255),
+
+                Select::make('mode')
+                    ->label('Mode')
+                    ->options([
+                        'ferry' => 'Ferry',
+                        'airline' => 'Airline',
+                    ])
+                    ->default('ferry')
+                    ->required(),
+
+                TextInput::make('operator')
+                    ->label('Operator')
+                    ->placeholder('e.g. 2GO, Starlight, Cebu Pacific')
                     ->maxLength(255),
 
                 Toggle::make('is_active')
@@ -55,6 +70,13 @@ class FerryRouteResource extends Resource
                     ->sortable(),
                 TextColumn::make('destination')
                     ->searchable()
+                    ->sortable(),
+                TextColumn::make('operator')
+                    ->label('Operator')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('mode')
+                    ->label('Mode')
                     ->sortable(),
                 TextColumn::make('schedules_count')
                     ->counts('schedules')

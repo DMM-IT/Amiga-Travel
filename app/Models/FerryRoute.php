@@ -11,6 +11,8 @@ class FerryRoute extends Model
         'origin',
         'destination',
         'is_active',
+        'mode',
+        'operator',
     ];
 
     protected $casts = [
@@ -24,13 +26,26 @@ class FerryRoute extends Model
 
     public function getLabelAttribute(): string
     {
-        return "{$this->origin} → {$this->destination}";
+        $parts = ["{$this->origin} → {$this->destination}"];
+
+        if (! empty($this->operator)) {
+            $parts[] = $this->operator;
+        }
+
+        if (! empty($this->mode)) {
+            $parts[] = ucfirst($this->mode);
+        }
+
+        return implode(' • ', $parts);
     }
 
-    public static function activeOrigins(): array
+    public static function activeOrigins(?string $mode = null): array
     {
         return static::query()
             ->where('is_active', true)
+            ->when($mode, function ($query, $mode) {
+                $query->where('mode', $mode);
+            })
             ->orderBy('origin')
             ->pluck('origin')
             ->unique()
@@ -38,11 +53,14 @@ class FerryRoute extends Model
             ->all();
     }
 
-    public static function activeDestinationsFor(string $origin): array
+    public static function activeDestinationsFor(string $origin, ?string $mode = null): array
     {
         return static::query()
             ->where('is_active', true)
             ->where('origin', $origin)
+            ->when($mode, function ($query, $mode) {
+                $query->where('mode', $mode);
+            })
             ->orderBy('destination')
             ->pluck('destination')
             ->values()
