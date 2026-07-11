@@ -4,11 +4,19 @@ use App\Http\Controllers\AuthController;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/book');
-
-Route::view('/book', 'book-welcome')->name('book');
+Route::get('/', function () {
+    $promotions = \App\Models\Promotion::where('is_active', true)->get();
+    return view('home', compact('promotions'));
+})->name('home');
 Route::view('/book/new', 'book')->name('book.new');
 Route::view('/book/status', 'book-status')->name('book.status');
+
+Route::view('/about', 'about')->name('about');
+Route::view('/gallery', 'gallery')->name('gallery');
+Route::view('/services', 'services')->name('services');
+Route::view('/tour-package', 'tour-package')->name('tour-package');
+Route::view('/contact-us', 'contact')->name('contact');
+Route::view('/download', 'download')->name('download');
 
 Route::get('/payment/{transaction}', function (Transaction $transaction) {
     $transaction->load('booking');

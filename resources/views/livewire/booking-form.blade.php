@@ -8,7 +8,7 @@
             <div class="p-6 sm:p-10">
                 <div class="mb-8">
                     <div class="flex items-center">
-                        @php $steps = ['Route','Schedule','Passengers','Discount','Stay','Submit']; @endphp
+                        @php $steps = ['Route & Passengers','Schedule','Discount','Stay','Submit']; @endphp
                         @foreach($steps as $index => $label)
                             @if($index > 0)
                                 <div class="h-px flex-1 {{ $step > $index ? 'bg-emerald-600' : 'bg-emerald-200' }}"></div>
@@ -60,6 +60,16 @@
                         form.booking-form select::-ms-expand {
                             display: none;
                         }
+
+                        .hide-scrollbar {
+                            -ms-overflow-style: none;
+                            scrollbar-width: none;
+                        }
+                        .hide-scrollbar::-webkit-scrollbar {
+                            display: none;
+                            width: 0;
+                            height: 0;
+                        }
                     </style>
                     @if ($step === 1)
                         <div class="space-y-4">
@@ -73,49 +83,98 @@
                             </div>
 
                             <div class="grid gap-6 lg:grid-cols-3">
-                                <label class="block">
+                                <label class="relative block">
                                     <span class="text-emerald-700 font-medium">Mode</span>
-                                    <select wire:model.live="mode" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
-                                        <option value="">Select mode</option>
-                                        <option value="ferry">Ferry</option>
-                                        <option value="airline">Airline</option>
-                                    </select>
+                                    <button type="button" wire:click.prevent="toggleModeDropdown" class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                                        <span>{{ $mode ? ucfirst($mode) : 'Select mode' }}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
                                     @error('mode')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+
+                                    @if ($showModeDropdown)
+                                        <div class="absolute left-0 right-0 top-full -mt-px z-20 rounded-b-3xl border border-slate-200 bg-white shadow-2xl">
+                                            <div class="max-h-64 overflow-y-auto border-t border-slate-200 px-4 py-3 space-y-2">
+                                                @php
+                                                    $modeOptions = collect($this->getModeOptions());
+                                                @endphp
+
+                                                @foreach($modeOptions as $key => $label)
+                                                    <button type="button" wire:click.prevent="selectMode('{{ $key }}')" class="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-emerald-900 hover:bg-emerald-50">
+                                                        <div class="flex items-center justify-between gap-3">
+                                                            <span>{{ $label }}</span>
+                                                            @if($mode === $key)
+                                                                <span class="rounded-full bg-emerald-900 px-3 py-1 text-xs font-semibold text-white">Selected</span>
+                                                            @endif
+                                                        </div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 </label>
 
                             <div class="lg:col-span-2">
                             <div class="grid gap-6 lg:grid-cols-2">
-                            <label class="block">
+                            <label class="relative block">
                                 <span class="text-emerald-700 font-medium">Origin</span>
-                                <select id="originSelect" name="origin" wire:model.live="origin" @if($mode === '') disabled @endif class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
-                                    @if($mode === '')
-                                        <option value="">Select mode first</option>
-                                    @else
-                                        <option value="">Select origin</option>
-                                    @endif
-                                    @foreach($this->origins as $originOption)
-                                        <option value="{{ $originOption }}">{{ $originOption }}</option>
-                                    @endforeach
-                                </select>
+                                <button type="button" wire:click.prevent="toggleOriginDropdown" @if($mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
+                                    <span>{{ $origin ?: ($mode === '' ? 'Select mode first' : 'Select origin') }}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
                                 @error('origin')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+
+                                @if ($showOriginDropdown && $mode !== '')
+                                    <div class="absolute left-0 right-0 top-full -mt-px z-20 max-h-96 overflow-hidden rounded-b-3xl border border-slate-200 bg-white shadow-2xl">
+                                        <div class="p-4">
+                                            <input type="text" wire:model.debounce.150ms="originSearch" placeholder="Search origins" class="w-full rounded-3xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                        </div>
+                                        <div class="max-h-[14rem] overflow-y-auto hide-scrollbar border-t border-slate-200 px-4 py-3 space-y-2">
+                                            @forelse($this->filteredOrigins as $originOption)
+                                                <button type="button" wire:click.prevent="selectOrigin('{{ $originOption }}')" class="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-emerald-900 hover:bg-emerald-50">
+                                                    {{ $originOption }}
+                                                </button>
+                                            @empty
+                                                <div class="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+                                                    No origins match your search.
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                @endif
                             </label>
 
-                            <label class="block">
+                            <label class="relative block">
                                 <span class="text-emerald-700 font-medium">Destination</span>
-                                <select
-                                    wire:model.live="destination"
-                                    @if($mode === '' || $origin === '') disabled @endif
-                                    class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100"
-                                >
-                                    <option value="">{{ blank($origin) ? 'Select origin first' : 'Select destination' }}</option>
-                                    @foreach($this->destinations as $destinationOption)
-                                        <option value="{{ $destinationOption }}">{{ $destinationOption }}</option>
-                                    @endforeach
-                                </select>
-                                @if(filled($origin) && empty($this->destinations))
-                                    <p class="mt-2 text-sm text-amber-600">No destinations available from {{ $origin }}. Please choose a different origin or contact Amiga Gracia Travel Services.</p>
-                                @endif
+                                <button type="button" wire:click.prevent="toggleDestinationDropdown" @if($mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
+                                    <span>{{ $destination ?: (blank($origin) ? 'Select origin first' : 'Select destination') }}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
                                 @error('destination')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+
+                                @if ($showDestinationDropdown && filled($origin))
+                                    <div class="absolute left-0 right-0 top-full -mt-px z-20 max-h-96 overflow-hidden rounded-b-3xl border border-slate-200 bg-white shadow-2xl">
+                                        <div class="p-4">
+                                            <input type="text" wire:model.debounce.150ms="destinationSearch" placeholder="Search destinations" class="w-full rounded-3xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                        </div>
+                                        <div class="max-h-[14rem] overflow-y-auto hide-scrollbar border-t border-slate-200 px-4 py-3 space-y-2">
+                                            @forelse($this->filteredDestinations as $destinationOption)
+                                                <button type="button" wire:click.prevent="selectDestination('{{ $destinationOption }}')" class="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-emerald-900 hover:bg-emerald-50">
+                                                    {{ $destinationOption }}
+                                                </button>
+                                            @empty
+                                                <div class="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+                                                    No destinations match your search.
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                @endif
                             </label>
                             </div>
                             </div>
@@ -134,35 +193,7 @@
                                 </div>
                             @endif
                         </div>
-                    @endif
 
-                    @if ($step === 2)
-                        <div class="space-y-4">
-                            <p class="text-emerald-700">Choose the schedule that works best for your trip.</p>
-                            <div class="grid gap-4 lg:grid-cols-3">
-                                @forelse($availableSchedules as $schedule)
-                                    <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-3xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-emerald-900 bg-emerald-900 text-white' : 'border-emerald-200 bg-white text-emerald-900 hover:border-emerald-900' }}">
-                                        <div class="flex items-center justify-between gap-4">
-                                            <div>
-                                                <h3 class="text-lg font-semibold">{{ $schedule['service'] }}</h3>
-                                                <p class="mt-1 text-sm text-emerald-500">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
-                                            </div>
-                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide {{ $selected_schedule_id === $schedule['id'] ? 'border-white bg-white/10 text-white' : 'border-emerald-200 text-emerald-600' }}">{{ $schedule['availability'] }}</span>
-                                        </div>
-                                        <div class="mt-4 flex items-center justify-between">
-                                            <p class="text-sm text-emerald-500">Duration: {{ $schedule['duration'] }}</p>
-                                            <p class="text-xl font-semibold">₱{{ number_format($schedule['price'], 2) }}</p>
-                                        </div>
-                                    </button>
-                                @empty
-                                    <p class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-700 lg:col-span-3">No schedules are available for this route on the selected date. Go back and try another date, or contact Amiga Gracia Travel Services.</p>
-                                @endforelse
-                            </div>
-                            @error('selected_schedule_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                        </div>
-                    @endif
-
-                    @if ($step === 3)
                         <div class="space-y-4">
                             <div class="grid gap-4 rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm lg:grid-cols-[1fr_auto] lg:items-center">
                                 <div>
@@ -209,62 +240,64 @@
                             <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-900">
                                 Total travelers: <span class="font-semibold">{{ $adults + $children }}</span> / 8
                             </div>
-                        </div>
 
-                        @if ($showPassengerInfoModal)
-                            <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24">
-                                <div class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white p-6 shadow-2xl">
-                                    <button type="button" wire:click.prevent="togglePassengerInfoModal" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
-                                        <span aria-hidden="true">×</span>
-                                        <span class="sr-only">Close</span>
-                                    </button>
+                            @if ($showPassengerInfoModal)
+                                <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24">
+                                    <div class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white p-6 shadow-2xl">
+                                        <button type="button" wire:click.prevent="togglePassengerInfoModal" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
+                                            <span aria-hidden="true">×</span>
+                                            <span class="sr-only">Close</span>
+                                        </button>
 
-                                    <h2 class="text-xl font-semibold text-slate-900">Passenger limits and guidance</h2>
-                                    <p class="mt-3 text-slate-600">You can book up to 8 travelers total. This includes both adults and children combined. Any discounts are applied per traveler on the next step.</p>
-                                    <ul class="mt-4 space-y-3 text-slate-700">
-                                        <li class="flex gap-3">
-                                            <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">1</span>
-                                            <span>Adults are counted separately from children, but both count toward the same 8-person total.</span>
-                                        </li>
-                                        <li class="flex gap-3">
-                                            <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">2</span>
-                                            <span>Children under 13 are still part of the booking capacity limit.</span>
-                                        </li>
-                                        <li class="flex gap-3">
-                                            <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">3</span>
-                                            <span>Use the buttons to update counts. The form prevents totals above 8.</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($showPwdTypeModal)
-                            <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24">
-                                <div class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white p-6 shadow-2xl">
-                                    <button type="button" wire:click.prevent="togglePwdTypeModal" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
-                                        <span aria-hidden="true">×</span>
-                                        <span class="sr-only">Close</span>
-                                    </button>
-
-                                    <h2 class="text-xl font-semibold text-slate-900">Specify Disability Type</h2>
-                                    <p class="mt-3 text-slate-600">Please enter the disability type for your PWD Card discount.</p>
-
-                                    <label class="mt-6 block">
-                                        <span class="text-slate-700 font-medium">Disability type</span>
-                                        <input type="text" wire:model.defer="pwd_disability_other_tmp" class="mt-2 block w-full rounded-3xl border border-slate-300 px-4 py-3 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200" placeholder="Type of disability" />
-                                    </label>
-
-                                    <div class="mt-6 flex justify-end gap-3">
-                                        <button type="button" wire:click.prevent="togglePwdTypeModal" class="rounded-3xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">Cancel</button>
-                                        <button type="button" wire:click.prevent="savePwdDisabilityOther" class="rounded-3xl bg-emerald-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">Save</button>
+                                        <h2 class="text-xl font-semibold text-slate-900">Passenger limits and guidance</h2>
+                                        <p class="mt-3 text-slate-600">You can book up to 8 travelers total. This includes both adults and children combined. Any discounts are applied per traveler on the next step.</p>
+                                        <ul class="mt-4 space-y-3 text-slate-700">
+                                            <li class="flex gap-3">
+                                                <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">1</span>
+                                                <span>Adults are counted separately from children, but both count toward the same 8-person total.</span>
+                                            </li>
+                                            <li class="flex gap-3">
+                                                <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">2</span>
+                                                <span>Children under 13 are still part of the booking capacity limit.</span>
+                                            </li>
+                                            <li class="flex gap-3">
+                                                <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">3</span>
+                                                <span>Use the buttons to update counts. The form prevents totals above 8.</span>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
                     @endif
 
-                    @if ($step === 4)
+                    @if ($step === 2)
+                        <div class="space-y-4">
+                            <p class="text-emerald-700">Choose the schedule that works best for your trip.</p>
+                            <div class="grid gap-4 lg:grid-cols-3">
+                                @forelse($availableSchedules as $schedule)
+                                    <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-3xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-emerald-900 bg-emerald-900 text-white' : 'border-emerald-200 bg-white text-emerald-900 hover:border-emerald-900' }}">
+                                        <div class="flex items-center justify-between gap-4">
+                                            <div>
+                                                <h3 class="text-lg font-semibold">{{ $schedule['service'] }}</h3>
+                                                <p class="mt-1 text-sm text-emerald-500">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
+                                            </div>
+                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide {{ $selected_schedule_id === $schedule['id'] ? 'border-white bg-white/10 text-white' : 'border-emerald-200 text-emerald-600' }}">{{ $schedule['availability'] }}</span>
+                                        </div>
+                                        <div class="mt-4 flex items-center justify-between">
+                                            <p class="text-sm text-emerald-500">Duration: {{ $schedule['duration'] }}</p>
+                                            <p class="text-xl font-semibold">₱{{ number_format($schedule['price'], 2) }}</p>
+                                        </div>
+                                    </button>
+                                @empty
+                                    <p class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-700 lg:col-span-3">No schedules are available for this route on the selected date. Go back and try another date, or contact Amiga Gracia Travel Services.</p>
+                                @endforelse
+                            </div>
+                            @error('selected_schedule_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                        </div>
+                    @endif
+
+                    @if ($step === 3)
                         <div class="space-y-4">
                             <p class="text-emerald-700">Each traveler can have their own discount, if eligible. Name is required, discount is optional.</p>
 
@@ -375,7 +408,7 @@
                         </div>
                     @endif
 
-                    @if ($step === 5)
+                    @if ($step === 4)
                         <div class="space-y-4">
                             <p class="text-emerald-700">Pick any accommodations you'd like to add to your trip (optional).</p>
 
@@ -415,7 +448,7 @@
                         </div>
                     @endif
 
-                    @if ($step === 6)
+                    @if ($step === 5)
                         <div class="grid gap-6 lg:grid-cols-2">
                             <label class="block">
                                 <span class="text-emerald-700 font-medium">Your name</span>
@@ -514,7 +547,7 @@
                                 <button type="button" wire:click.prevent="previousStep" class="inline-flex items-center justify-center rounded-3xl border border-emerald-300 bg-white px-5 py-3 text-sm font-semibold text-emerald-900 shadow-sm transition hover:bg-emerald-50">Back</button>
                             @endif
 
-                            @if ($step < 6)
+                            @if ($step < 5)
                                 <button type="button" wire:click.prevent="nextStep" class="inline-flex items-center justify-center rounded-3xl bg-emerald-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">Next</button>
                             @else
                                 <button type="submit" class="inline-flex items-center justify-center rounded-3xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500">Submit Booking</button>

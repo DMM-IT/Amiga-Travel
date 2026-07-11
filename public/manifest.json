@@ -1,20 +1,24 @@
 {
-  "name": "Amiga Gracia Travel Service",
-  "short_name": "AGT",
-  "start_url": "/book",
+  "name": "Amiga Gracia Travel Services",
+  "short_name": "Amiga Gracia",
+  "description": "Kay Amiga, Hassle Free Ka! Book ferry tickets, airline tickets, and tour packages with Amiga Gracia Travel Services.",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0d6efd",
+  "theme_color": "#216417",
+  "orientation": "portrait-primary",
+  "categories": ["travel", "booking"],
   "icons": [
     {
-      "src": "/images/amiga-logo.jpg",
+      "src": "/images/amiga-logo-transparent.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/icon-192.png",
+      "src": "/images/amiga-logo.jpg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
   ]
 }

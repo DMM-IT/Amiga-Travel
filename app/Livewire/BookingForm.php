@@ -34,6 +34,11 @@ class BookingForm extends Component
     public ?int $selected_schedule_id = null;
     public bool $showPassengerInfoModal = false;
     public bool $showPwdTypeModal = false;
+    public bool $showModeDropdown = false;
+    public bool $showOriginDropdown = false;
+    public bool $showDestinationDropdown = false;
+    public string $originSearch = '';
+    public string $destinationSearch = '';
     public ?int $pwdTypeModalPassengerIndex = null;
     public string $pwd_disability_other_tmp = '';
 
@@ -78,6 +83,32 @@ class BookingForm extends Component
         return FerryRoute::activeDestinationsFor($this->origin, $this->mode);
     }
 
+    #[Computed]
+    public function filteredOrigins(): array
+    {
+        if (blank($this->originSearch)) {
+            return $this->origins;
+        }
+
+        return collect($this->origins)
+            ->filter(fn ($item) => str_starts_with(strtolower($item), strtolower($this->originSearch)))
+            ->values()
+            ->all();
+    }
+
+    #[Computed]
+    public function filteredDestinations(): array
+    {
+        if (blank($this->destinationSearch)) {
+            return $this->destinations;
+        }
+
+        return collect($this->destinations)
+            ->filter(fn ($item) => str_starts_with(strtolower($item), strtolower($this->destinationSearch)))
+            ->values()
+            ->all();
+    }
+
     public function updatedTripType(string $value): void
     {
         $this->trip_type = $value;
@@ -103,6 +134,78 @@ class BookingForm extends Component
         $this->destination = '';
         $this->selected_schedule_id = null;
         $this->availableSchedules = [];
+    }
+
+    public function getModeOptions(): array
+    {
+        return [
+            'ferry' => 'Ferry',
+            'airline' => 'Airline',
+        ];
+    }
+
+    public function toggleModeDropdown(): void
+    {
+        $this->showModeDropdown = ! $this->showModeDropdown;
+    }
+
+    public function selectMode(string $mode): void
+    {
+        if (! array_key_exists($mode, $this->getModeOptions())) {
+            return;
+        }
+
+        $this->mode = $mode;
+        $this->origin = '';
+        $this->destination = '';
+        $this->selected_schedule_id = null;
+        $this->availableSchedules = [];
+        $this->showModeDropdown = false;
+    }
+
+    public function toggleOriginDropdown(): void
+    {
+        $this->showOriginDropdown = ! $this->showOriginDropdown;
+        if (! $this->showOriginDropdown) {
+            $this->originSearch = '';
+        }
+    }
+
+    public function toggleDestinationDropdown(): void
+    {
+        $this->showDestinationDropdown = ! $this->showDestinationDropdown;
+        if (! $this->showDestinationDropdown) {
+            $this->destinationSearch = '';
+        }
+    }
+
+    public function selectOrigin(string $origin): void
+    {
+        $this->origin = $origin;
+        $this->destination = '';
+        $this->selected_schedule_id = null;
+        $this->availableSchedules = [];
+        $this->showOriginDropdown = false;
+        $this->originSearch = '';
+    }
+
+    public function selectDestination(string $destination): void
+    {
+        $this->destination = $destination;
+        $this->selected_schedule_id = null;
+        $this->availableSchedules = [];
+        $this->showDestinationDropdown = false;
+        $this->destinationSearch = '';
+    }
+
+    public function updatedOriginSearch(): void
+    {
+        $this->showOriginDropdown = true;
+    }
+
+    public function updatedDestinationSearch(): void
+    {
+        $this->showDestinationDropdown = true;
     }
 
     public function datePickerUpdated(string $field, ?string $value): void
@@ -172,19 +275,19 @@ class BookingForm extends Component
             }
         }
 
+        if ($this->step === 1) {
+            $this->syncPassengerEntries();
+        }
+
         if ($this->step === 2) {
             $this->assertSelectedScheduleIsValid();
         }
 
         if ($this->step === 3) {
-            $this->syncPassengerEntries();
-        }
-
-        if ($this->step === 4) {
             $this->validatePassengerExtras();
         }
 
-        if ($this->step < 6) {
+        if ($this->step < 5) {
             $this->step++;
         }
     }
@@ -425,11 +528,6 @@ class BookingForm extends Component
                 'destination' => 'required|string|max:255',
                 'departure_date' => 'required|date',
                 'return_date' => $this->trip_type === 'round_trip' ? 'required|date|after_or_equal:departure_date' : 'nullable|date|after_or_equal:departure_date',
-            ],
-            2 => [
-                'selected_schedule_id' => 'required|integer|exists:schedules,id',
-            ],
-            3 => [
                 'adults' => [
                     'required',
                     'integer',
@@ -451,7 +549,10 @@ class BookingForm extends Component
                     },
                 ],
             ],
-            4 => [
+            2 => [
+                'selected_schedule_id' => 'required|integer|exists:schedules,id',
+            ],
+            3 => [
                 'passengers.*.first_name' => 'required|string|max:255',
                 'passengers.*.middle_name' => 'nullable|string|max:255',
                 'passengers.*.last_name' => 'required|string|max:255',
@@ -459,11 +560,10 @@ class BookingForm extends Component
                 'passengers.*.discount_id' => 'nullable|exists:discounts,id',
                 'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
                 'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
+                'passengers.*.pwd_id_number' => 'nullable|string|max:255',
             ],
+            4 => [],
             5 => [
-                //
-            ],
-            6 => [
                 'client_name' => 'required|string|max:255',
                 'client_email' => 'required|email',
                 'recaptchaToken' => 'required|string',
