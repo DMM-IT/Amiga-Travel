@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
+use App\Mail\BookingConfirmation;
 use App\Models\Transaction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +17,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
 class TransactionResource extends Resource
@@ -65,7 +67,7 @@ class TransactionResource extends Resource
                         TextEntry::make('confirmation_url')
                             ->label('Confirmation URL')
                             ->visible(fn (?Transaction $record): bool => filled($record?->confirmation_url))
-                            ->url()
+                            ->url(fn (?Transaction $record): ?string => $record?->confirmation_url)
                             ->default(fn (?Transaction $record) => $record?->confirmation_url)
                             ->columnSpanFull(),
                     ])
@@ -203,28 +205,34 @@ class TransactionResource extends Resource
                         }
 
                         if (! empty($data['confirmation_pdf'])) {
-                            $pdfPath = $data['confirmation_pdf']->storeAs('receipts', 'receipt-'.$record->booking->transaction_number.'.pdf');
-                            $ticketUrl = URL::temporarySignedRoute(
-                                'ticket.download',
-                                now()->addDays(7),
-                                ['booking' => $record->booking->id]
-                            );
-                            $record->update(['confirmation_url' => $ticketUrl]);
-                            $receiptPath = storage_path('app/'.$pdfPath);
+                            $pdfPath = is_string($data['confirmation_pdf'])
+                                ? $data['confirmation_pdf']
+                                : $data['confirmation_pdf']->storeAs('receipts', 'receipt-'.$record->booking->transaction_number.'.pdf', 'public');
+                            $ticketUrl = null;
+                            $record->update(['confirmation_url' => null]);
+
+                            if (Storage::disk('public')->exists($pdfPath)) {
+                                $receiptPath = Storage::disk('public')->path($pdfPath);
+                            } else {
+                                $receiptPath = storage_path('app/public/'.$pdfPath);
+                            }
+
+                            $receiptDisk = 'public';
                         } else {
                             $ticketUrl = $data['confirmation_url'];
                             $record->update(['confirmation_url' => $data['confirmation_url']]);
                             $receiptPath = null;
+                            $receiptDisk = null;
                         }
 
                         $record->update(['payment_status' => 'paid']);
                         $record->booking->update(['status' => 'confirmed']);
 
-                        Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath));
+                        Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath, $receiptDisk));
                     })
                     ->requiresConfirmation()
                     ->color('success')
-                    ->visible(fn (Transaction $record): bool => $record->payment_status !== 'paid'),
+                    ->visible(fn (Transaction $record): bool => $record->payment_status !== 'paid' && $record->booking->status !== 'cancelled'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

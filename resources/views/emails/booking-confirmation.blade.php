@@ -19,13 +19,12 @@
             <li><strong>Infants:</strong> {{ $booking->passengers->where('type', 'infant')->count() }}</li>
         </ul>
         <p>
-            Complete payment at the following page:
-            <a href="{{ route('payment.show', ['transaction' => $booking->transaction->id]) }}">{{ route('payment.show', ['transaction' => $booking->transaction->id]) }}</a>
+            Your booking has been confirmed. Please find the attached confirmation document or use the link provided by the system.
         </p>
         @if(! empty($ticketUrl))
             <p>
-                Download your ticket here:
-                <a href="{{ $ticketUrl }}">Download receipt/ticket</a>
+                Confirmation link:
+                <a href="{{ $ticketUrl }}">{{ $ticketUrl }}</a>
             </p>
         @endif
     </body>

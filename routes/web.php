@@ -27,6 +27,7 @@ Route::post('/booking/draft/cancel', function (Request $request) {
     return redirect()->route('home');
 })->name('booking.draft.cancel');
 
+Route::redirect('/book', '/book/new')->name('book');
 Route::view('/book/new', 'book')->name('book.new');
 Route::view('/book/status', 'book-status')->name('book.status');
 

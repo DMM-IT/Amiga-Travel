@@ -7,10 +7,20 @@
 
             <div class="p-6 sm:p-10">
                 <div class="mb-8">
-                    @php $steps = ['Route','Schedule','Discount','Stay','Submit']; @endphp
+                    @php
+                        $steps = ['Route','Schedule','Discount','Stay','Submit'];
+                        $progressClass = match ($step) {
+                            1 => 'w-0',
+                            2 => 'w-1/4',
+                            3 => 'w-1/2',
+                            4 => 'w-3/4',
+                            5 => 'w-full',
+                            default => 'w-0',
+                        };
+                    @endphp
                     <div class="relative px-2 py-6">
                         <div class="absolute inset-x-0 top-1/2 h-0.5 bg-emerald-200"></div>
-                        <div class="absolute left-0 top-1/2 h-0.5 bg-emerald-600 transition-all" style="width: {{ max(0, min(4, $step - 1)) * 25 }}%;"></div>
+                        <div class="absolute left-0 top-1/2 h-0.5 bg-emerald-600 transition-all {{ $progressClass }}"></div>
                         <div class="relative z-10 flex w-full items-center justify-between gap-0">
                             @foreach($steps as $index => $label)
                                 <div class="flex min-w-[4.5rem] flex-col items-center justify-center text-center">
