@@ -133,7 +133,10 @@
 
                 <!-- Bottom bar -->
                 <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400 relative z-10">
-                    <p>&copy; 2017 – {{ date('Y') }} {{ $headerData['company_name'] ?? 'Amiga Gracia Travel Services' }}. All rights reserved.</p>
+                    <div class="space-y-1 text-left">
+                        <p>&copy; 2017 – {{ date('Y') }} {{ $headerData['company_name'] ?? 'Amiga Gracia Travel Services' }}. All rights reserved.</p>
+                        <p class="text-[11px] text-slate-500">Developed by Aries King N. Nieto and Drew M. Macaraig</p>
+                    </div>
                     <div class="flex gap-6">
                         <a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Downloads</a>
                         <a href="{{ url('/contact-us') }}" class="hover:text-emerald-300 transition">Support</a>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Models\Transaction;
 use App\Models\WebsiteSetting;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 $renderWebsitePage = function (string $page, string $view) {
@@ -19,6 +20,13 @@ $renderWebsitePage = function (string $page, string $view) {
 Route::get('/', function () use ($renderWebsitePage) {
     return $renderWebsitePage('home', 'home');
 })->name('home');
+
+Route::post('/booking/draft/cancel', function (Request $request) {
+    $request->session()->forget('booking_draft');
+
+    return redirect()->route('home');
+})->name('booking.draft.cancel');
+
 Route::view('/book/new', 'book')->name('book.new');
 Route::view('/book/status', 'book-status')->name('book.status');
 

@@ -60,6 +60,21 @@ class BookingForm extends Component
         $this->discounts = Discount::orderBy('name')->get();
         $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
+
+        if (session()->has('booking_draft')) {
+            $draft = session('booking_draft', []);
+
+            foreach ($draft as $key => $value) {
+                if (property_exists($this, $key)) {
+                    $this->{$key} = $value;
+                }
+            }
+
+            if (! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
+                $this->availableSchedules = $this->getAvailableSchedules();
+            }
+        }
+
         $this->syncPassengerEntries();
     }
 
@@ -196,6 +211,8 @@ class BookingForm extends Component
         $this->availableSchedules = [];
         $this->showDestinationDropdown = false;
         $this->destinationSearch = '';
+
+        $this->saveDraft();
     }
 
     public function updatedOriginSearch(): void
@@ -238,10 +255,14 @@ class BookingForm extends Component
                 }
             }
 
+            $this->saveDraft();
+
             return;
         }
 
         if (str_starts_with($propertyName, 'selected_accommodation_ids')) {
+            $this->saveDraft();
+
             return;
         }
 
@@ -255,6 +276,7 @@ class BookingForm extends Component
         }
 
         $this->validateOnly($propertyName, $this->allRules());
+        $this->saveDraft();
     }
 
     public function nextStep(): void
@@ -290,6 +312,8 @@ class BookingForm extends Component
         if ($this->step < 5) {
             $this->step++;
         }
+
+        $this->saveDraft();
     }
 
     public function previousStep(): void
@@ -302,6 +326,7 @@ class BookingForm extends Component
     public function selectSchedule(int $scheduleId): void
     {
         $this->selected_schedule_id = $scheduleId;
+        $this->saveDraft();
     }
 
     protected function getAvailableSchedules(): array
@@ -434,6 +459,7 @@ class BookingForm extends Component
         $this->validate($this->allRules());
         $this->validatePassengerExtras();
         $this->assertSelectedScheduleIsValid();
+        session()->forget('booking_draft');
 
         if (! app()->environment('local')) {
             Validator::make([
@@ -516,6 +542,26 @@ class BookingForm extends Component
     public function render()
     {
         return view('livewire.booking-form');
+    }
+
+    protected function saveDraft(): void
+    {
+        session(['booking_draft' => [
+            'step' => $this->step,
+            'trip_type' => $this->trip_type,
+            'mode' => $this->mode,
+            'origin' => $this->origin,
+            'destination' => $this->destination,
+            'departure_date' => $this->departure_date,
+            'return_date' => $this->return_date,
+            'adults' => $this->adults,
+            'children' => $this->children,
+            'selected_schedule_id' => $this->selected_schedule_id,
+            'passengers' => $this->passengers,
+            'selected_accommodation_ids' => $this->selected_accommodation_ids,
+            'client_name' => $this->client_name,
+            'client_email' => $this->client_email,
+        ]]);
     }
 
     protected function stepRules(): array

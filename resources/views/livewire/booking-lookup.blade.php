@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-3xl">
         <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
-            <div class="px-6 py-8 sm:px-10" style="background: linear-gradient(135deg, #375f9a 0%, #24406b 100%);">
+            <div class="px-6 py-8 sm:px-10" style="background: linear-gradient(135deg, #ee018d 0%, #b1015d 100%);">
                 <a href="{{ url('/book') }}" class="text-white/80 text-sm hover:text-white">← Back</a>
                 <h1 class="mt-2 text-2xl sm:text-3xl font-semibold text-white">Check My Booking</h1>
                 <p class="mt-2 text-white/85">Enter your transaction number to view your booking details.</p>
@@ -16,11 +16,11 @@
                             wire:model.defer="transaction_number"
                             placeholder="e.g. AGT-20260701-1234"
                             class="block w-full rounded-3xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2"
-                            style="--tw-ring-color:#375f9a;"
+                            style="--tw-ring-color:#ee018d;"
                         />
                         @error('transaction_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                     </label>
-                    <button type="submit" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#375f9a;" onmouseover="this.style.background='#2c4c7d'" onmouseout="this.style.background='#375f9a'">
+                    <button type="submit" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
                         Search
                     </button>
                 </form>
@@ -35,6 +35,11 @@
                             ];
                             $statusStyle = $statusColors[$booking->status] ?? $statusColors['pending'];
                         @endphp
+                        @if($feedback)
+                            <div class="rounded-3xl border border-pink-200 bg-pink-50 p-4 text-sm text-pink-700">
+                                {{ $feedback }}
+                            </div>
+                        @endif
 
                         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 space-y-6">
                             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -104,11 +109,17 @@
                                 <span class="text-lg font-semibold" style="color:#216417;">₱{{ number_format($booking->total_price, 2) }}</span>
                             </div>
 
-                            @if($booking->transaction && $booking->transaction->payment_status === 'unpaid')
-                                <a href="{{ route('payment.show', $booking->transaction) }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;">
-                                    Complete Payment
-                                </a>
-                            @endif
+                            <div class="flex flex-wrap gap-3">
+                                @if($booking->transaction && in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true) && $booking->status === 'pending')
+                                    <a href="{{ route('payment.show', $booking->transaction) }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
+                                        Complete Payment
+                                    </a>
+
+                                    <button wire:click.prevent="cancelBooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
+                                        Cancel Booking
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                     @else
                         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center">
