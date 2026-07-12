@@ -7,10 +7,10 @@
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">About Us</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
-                Our Journey & Mission
+                {{ $pageContent['title'] ?? 'Our Journey & Mission' }}
             </h1>
             <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free and memorable.
+                {{ $pageContent['description'] ?? 'Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free and memorable.' }}
             </p>
         </div>
 

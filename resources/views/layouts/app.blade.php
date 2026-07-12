@@ -15,15 +15,15 @@
     </head>
     <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
         <header class="bg-[#216417] text-white sticky top-0 z-50 shadow-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-full mx-auto px-3 sm:px-4 lg:px-5">
                 <div class="flex items-center justify-between h-20">
-                    <div class="flex items-center gap-3">
-                        <a href="{{ url('/') }}" class="flex items-center gap-3">
-                            <img src="{{ asset('images/amiga-logo.jpg') }}" alt="Amiga Gracia" class="h-12 w-auto rounded bg-white p-1">
-                            <span class="font-bold text-xl uppercase tracking-wider hidden sm:block">Amiga Gracia</span>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ url('/') }}" class="flex items-center gap-2">
+                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo.jpg') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-12 w-auto rounded bg-white p-1">
+                            <span class="font-bold text-xl uppercase tracking-wider hidden sm:block">{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}</span>
                         </a>
                     </div>
-                    <nav class="hidden md:flex space-x-8 font-medium">
+                    <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
                         <a href="{{ url('/') }}" class="border-b-2 {{ request()->is('/') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Home</a>
                         <a href="{{ url('/about') }}" class="border-b-2 {{ request()->is('about') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">About</a>
                         <a href="{{ url('/gallery') }}" class="border-b-2 {{ request()->is('gallery') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Gallery</a>
@@ -32,6 +32,14 @@
                         <a href="{{ url('/contact-us') }}" class="border-b-2 {{ request()->is('contact-us') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Contact Us</a>
                         <a href="{{ url('/download') }}" class="border-b-2 {{ request()->is('download') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Download</a>
                     </nav>
+                    <div class="hidden xl:flex items-center gap-6 text-sm text-white/90">
+                        @if(!empty($headerData['phone']))
+                            <a href="tel:{{ $headerData['phone'] }}" class="hover:text-[#ee018d]">{{ $headerData['phone'] }}</a>
+                        @endif
+                        @if(!empty($headerData['email']))
+                            <a href="mailto:{{ $headerData['email'] }}" class="hover:text-[#ee018d]">{{ $headerData['email'] }}</a>
+                        @endif
+                    </div>
                 </div>
             </div>
         </header>
@@ -46,29 +54,33 @@
                     <!-- Column 1: Logo & Tagline -->
                     <div class="col-span-2 md:col-span-2 space-y-4">
                         <div class="flex items-center gap-3">
-                            <img src="{{ asset('images/amiga-logo-transparent.png') }}" alt="Amiga Gracia" class="h-14 w-auto">
+                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-14 w-auto">
                             <div>
-                                <h4 class="font-extrabold text-xl tracking-wider text-emerald-400">Amiga Gracia</h4>
-                                <p class="text-xs text-emerald-100/70">Travel Services</p>
+                                <h4 class="font-extrabold text-xl tracking-wider text-emerald-400">{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}</h4>
+                                <p class="text-xs text-emerald-100/70">{{ data_get($footerData, 'website', 'Travel Services') }}</p>
                             </div>
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed max-w-xs">
-                            Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours.
+                            {{ $footerData['about'] ?? 'Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours.' }}
                         </p>
                         <!-- Social Icons -->
                         <div class="flex gap-4 pt-2">
-                            <a href="https://www.facebook.com/profile.php?id=100072122019511" target="_blank" class="h-8 w-8 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
-                                <!-- Facebook Icon -->
-                                <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                                    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1V12h3v3h-3v6.8c4.56-.93 8-4.96 8-9.8z"/>
-                                </svg>
-                            </a>
-                            <a href="https://www.tiktok.com/@amigagracia?_r=1" target="_blank" class="h-8 w-8 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
-                                <!-- Tiktok Icon -->
-                                <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.74-3.94-1.74-.22-.2-.43-.42-.62-.65v7.17c.02 1.36-.26 2.74-.91 3.97-.8 1.48-2.2 2.63-3.82 3.1-1.61.47-3.36.33-4.9-.38-1.54-.7-2.79-2.02-3.38-3.63-.59-1.61-.53-3.44.18-5 1-2.2 3.32-3.75 5.75-3.64.09 0 .17.02.26.03V10.7c-1.43-.07-2.91.43-3.9 1.48-.99 1.05-1.41 2.58-1.15 4.02.26 1.44 1.22 2.68 2.53 3.3 1.31.62 2.87.58 4.14-.14 1.27-.72 2.05-2.09 2.08-3.56v-15.8z"/>
-                                </svg>
-                            </a>
+                            @forelse($footerData['social_links'] ?? [] as $social)
+                                <a href="{{ $social['url'] ?? '#' }}" target="_blank" class="h-8 w-8 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white" aria-label="{{ $social['platform'] ?? 'Social' }}">
+                                    <span class="text-xs font-bold">{{ strtoupper(substr($social['platform'] ?? 'SM', 0, 2)) }}</span>
+                                </a>
+                            @empty
+                                <a href="https://www.facebook.com/profile.php?id=100072122019511" target="_blank" class="h-8 w-8 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
+                                    <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                                        <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1V12h3v3h-3v6.8c4.56-.93 8-4.96 8-9.8z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://www.tiktok.com/@amigagracia?_r=1" target="_blank" class="h-8 w-8 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
+                                    <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                                        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.74-3.94-1.74-.22-.2-.43-.42-.62-.65v7.17c.02 1.36-.26 2.74-.91 3.97-.8 1.48-2.2 2.63-3.82 3.1-1.61.47-3.36.33-4.9-.38-1.54-.7-2.79-2.02-3.38-3.63-.59-1.61-.53-3.44.18-5 1-2.2 3.32-3.75 5.75-3.64.09 0 .17.02.26.03V10.7c-1.43-.07-2.91.43-3.9 1.48-.99 1.05-1.41 2.58-1.15 4.02.26 1.44 1.22 2.68 2.53 3.3 1.31.62 2.87.58 4.14-.14 1.27-.72 2.05-2.09 2.08-3.56v-15.8z"/>
+                                    </svg>
+                                </a>
+                            @endforelse
                         </div>
                     </div>
 
@@ -102,18 +114,18 @@
                         <ul class="space-y-2 text-xs text-slate-300 font-medium">
                             <li class="flex gap-2">
                                 <span class="font-semibold text-emerald-400">Mobile:</span>
-                                <span>0930-928-4278</span>
+                                <span>{{ data_get($footerData, 'phone', '0930-928-4278') }}</span>
                             </li>
                             <li class="flex gap-2">
                                 <span class="font-semibold text-emerald-400">Landline:</span>
-                                <span>(043) 738-2989</span>
+                                <span>{{ data_get($footerData, 'landline', '(043) 738-2989') }}</span>
                             </li>
                             <li class="flex flex-wrap gap-1">
                                 <span class="font-semibold text-emerald-400 block">Email:</span>
-                                <span class="hover:text-emerald-300 break-all"><a href="mailto:agt.salesmarketing1103@gmail.com">agt.salesmarketing1103@gmail.com</a></span>
+                                <span class="hover:text-emerald-300 break-all"><a href="mailto:{{ data_get($footerData, 'email', 'agt.salesmarketing1103@gmail.com') }}">{{ data_get($footerData, 'email', 'agt.salesmarketing1103@gmail.com') }}</a></span>
                             </li>
                             <li class="text-[11px] leading-relaxed pt-2 text-slate-400 font-medium">
-                                Roxas Drive, Libis, Calapan City, Oriental Mindoro, 5200
+                                {{ data_get($footerData, 'address', 'Roxas Drive, Libis, Calapan City, Oriental Mindoro, 5200') }}
                             </li>
                         </ul>
                     </div>
@@ -121,7 +133,7 @@
 
                 <!-- Bottom bar -->
                 <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400 relative z-10">
-                    <p>&copy; 2017 – {{ date('Y') }} Amiga Gracia Travel Services. All rights reserved.</p>
+                    <p>&copy; 2017 – {{ date('Y') }} {{ $headerData['company_name'] ?? 'Amiga Gracia Travel Services' }}. All rights reserved.</p>
                     <div class="flex gap-6">
                         <a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Downloads</a>
                         <a href="{{ url('/contact-us') }}" class="hover:text-emerald-300 transition">Support</a>

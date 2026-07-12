@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\ManageWebsiteSettings;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -27,10 +28,16 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Amiga Gracia Travel')
-            ->brandLogo(asset('images/amiga-logo.jpg'))
+            ->brandName('AMIGA GRACIA')
+            ->brandLogo(new \Illuminate\Support\HtmlString(
+                '<div class="flex items-center gap-2">
+                    <img src="' . asset('images/amiga-logo-transparent.png') . '" alt="Amiga Gracia" class="h-7 w-auto" />
+                    <span class="font-bold uppercase tracking-wider text-gray-950 dark:text-white">AMIGA GRACIA</span>
+                </div>'
+            ))
             ->brandLogoHeight('2.5rem')
-            ->favicon(asset('images/amiga-logo.jpg'))
+            ->sidebarCollapsibleOnDesktop()
+            ->favicon(asset('images/amiga-logo-transparent.png'))
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -38,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                ManageWebsiteSettings::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

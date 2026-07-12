@@ -25,9 +25,9 @@
         <!-- Header -->
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">Contact Us</span>
-            <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">Get in Touch</h1>
+            <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ $pageContent['title'] ?? 'Get in Touch' }}</h1>
             <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                Have questions about routes, ticketing, or custom tour packages? Drop us a message, and our travel specialists will get back to you shortly.
+                {{ $pageContent['description'] ?? 'Have questions about routes, ticketing, or custom tour packages? Drop us a message, and our travel specialists will get back to you shortly.' }}
             </p>
         </div>
 

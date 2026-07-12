@@ -2,21 +2,49 @@
 
 use App\Http\Controllers\AuthController;
 use App\Models\Transaction;
+use App\Models\WebsiteSetting;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    $promotions = \App\Models\Promotion::where('is_active', true)->get();
-    return view('home', compact('promotions'));
+$renderWebsitePage = function (string $page, string $view) {
+    $settings = WebsiteSetting::firstWhere('page', $page);
+
+    return view($view, [
+        'pageSettings' => $settings,
+        'pageContent' => $settings->content ?? [],
+        'heroImages' => collect($settings->hero_images ?? []),
+        'bookingCards' => $settings->booking_cards ?? [],
+    ]);
+};
+
+Route::get('/', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('home', 'home');
 })->name('home');
 Route::view('/book/new', 'book')->name('book.new');
 Route::view('/book/status', 'book-status')->name('book.status');
 
-Route::view('/about', 'about')->name('about');
-Route::view('/gallery', 'gallery')->name('gallery');
-Route::view('/services', 'services')->name('services');
-Route::view('/tour-package', 'tour-package')->name('tour-package');
-Route::view('/contact-us', 'contact')->name('contact');
-Route::view('/download', 'download')->name('download');
+Route::get('/about', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('about', 'about');
+})->name('about');
+
+Route::get('/gallery', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('gallery', 'gallery');
+})->name('gallery');
+
+Route::get('/services', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('services', 'services');
+})->name('services');
+
+Route::get('/tour-package', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('tour-package', 'tour-package');
+})->name('tour-package');
+
+Route::get('/contact-us', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('contact_us', 'contact');
+})->name('contact');
+
+Route::get('/download', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('download', 'download');
+})->name('download');
 
 Route::get('/payment/{transaction}', function (Transaction $transaction) {
     $transaction->load('booking');
