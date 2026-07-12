@@ -133,6 +133,10 @@ class ManageWebsiteSettings extends Page implements HasForms
                             TextInput::make('footer_data.website')
                                 ->label('Website')
                                 ->url(),
+                            TextInput::make('footer_data.app_version')
+                                ->label('App Version')
+                                ->placeholder('1.0.0')
+                                ->helperText('Optional application version shown in the site footer.'),
                             Repeater::make('footer_data.social_links')
                                 ->label('Social Media Links')
                                 ->schema([

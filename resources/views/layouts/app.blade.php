@@ -103,7 +103,6 @@
                         <ul class="space-y-2 text-xs text-slate-300 font-medium">
                             <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">2GO Travel</a></li>
                             <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Starlite Ferry</a></li>
-                            <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Supercat Fastcraft</a></li>
                             <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Airline Ticketing</a></li>
                         </ul>
                     </div>
@@ -137,9 +136,12 @@
                         <p>&copy; 2017 – {{ date('Y') }} {{ $headerData['company_name'] ?? 'Amiga Gracia Travel Services' }}. All rights reserved.</p>
                         <p class="text-[11px] text-slate-500">Developed by Aries King N. Nieto and Drew M. Macaraig</p>
                     </div>
-                    <div class="flex gap-6">
+                    <div class="flex gap-6 items-center">
                         <a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Downloads</a>
                         <a href="{{ url('/contact-us') }}" class="hover:text-emerald-300 transition">Support</a>
+                        @if(!empty($footerData['app_version']))
+                            <span class="text-[11px] text-slate-500">App version {{ $footerData['app_version'] }}</span>
+                        @endif
                     </div>
                 </div>
             </div>

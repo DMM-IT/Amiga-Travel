@@ -36,6 +36,9 @@ class PaymentProof extends Component
             'payment_status' => 'pending',
         ]);
 
+        \Illuminate\Support\Facades\Mail::to($this->transaction->booking->client_email)
+            ->send(new \App\Mail\PaymentProofReceived($this->transaction));
+
         $this->transaction->refresh();
         $this->showThankYou = true;
     }

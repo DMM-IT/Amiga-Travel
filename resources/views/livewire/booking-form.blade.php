@@ -7,17 +7,17 @@
 
             <div class="p-6 sm:p-10">
                 <div class="mb-8">
-                    <div class="flex items-center">
+                    <div class="flex flex-wrap items-center gap-2 py-2">
                         @php $steps = ['Route & Passengers','Schedule','Discount','Stay','Submit']; @endphp
                         @foreach($steps as $index => $label)
                             @if($index > 0)
-                                <div class="h-px flex-1 {{ $step > $index ? 'bg-emerald-600' : 'bg-emerald-200' }}"></div>
+                                <div class="hidden sm:block h-px flex-1 min-w-[2rem] {{ $step > $index ? 'bg-emerald-600' : 'bg-emerald-200' }}"></div>
                             @endif
-                            <div class="relative flex flex-col items-center text-center">
-                                <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition {{ $step === $index + 1 ? 'border-emerald-600 bg-emerald-600 text-white shadow-lg' : 'border-emerald-300 bg-white text-emerald-900' }}">
-                                    <span class="font-semibold">{{ $index + 1 }}</span>
+                            <div class="relative flex min-w-[4rem] sm:min-w-[5.5rem] flex-shrink-0 flex-col items-center text-center">
+                                <div class="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 transition {{ $step === $index + 1 ? 'border-emerald-600 bg-emerald-600 text-white shadow-lg' : 'border-emerald-300 bg-white text-emerald-900' }}">
+                                    <span class="font-semibold text-sm">{{ $index + 1 }}</span>
                                 </div>
-                                <div class="mt-3 text-xs font-semibold uppercase tracking-wide {{ $step === $index + 1 ? 'text-emerald-700' : 'text-emerald-500' }}">{{ $label }}</div>
+                                <div class="mt-2 text-[9px] leading-tight font-semibold uppercase tracking-wide {{ $step === $index + 1 ? 'text-emerald-700' : 'text-emerald-500' }}">{{ $label }}</div>
                             </div>
                         @endforeach
                     </div>

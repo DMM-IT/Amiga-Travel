@@ -526,14 +526,6 @@ class BookingForm extends Component
             Pdf::driver('dompdf')
                 ->view('pdf.receipt', ['booking' => $booking])
                 ->save($receiptPath);
-
-            $ticketUrl = URL::temporarySignedRoute(
-                'ticket.download',
-                now()->addDays(7),
-                ['booking' => $booking->id]
-            );
-
-            Mail::to($booking->client_email)->send(new BookingConfirmation($booking, $ticketUrl, $receiptPath));
         });
 
         return redirect()->route('payment.show', $transaction);

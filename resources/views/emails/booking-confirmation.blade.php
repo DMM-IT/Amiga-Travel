@@ -22,9 +22,11 @@
             Complete payment at the following page:
             <a href="{{ route('payment.show', ['transaction' => $booking->transaction->id]) }}">{{ route('payment.show', ['transaction' => $booking->transaction->id]) }}</a>
         </p>
-        <p>
-            Download your ticket here:
-            <a href="{{ $ticketUrl }}">Download receipt/ticket</a>
-        </p>
+        @if(! empty($ticketUrl))
+            <p>
+                Download your ticket here:
+                <a href="{{ $ticketUrl }}">Download receipt/ticket</a>
+            </p>
+        @endif
     </body>
 </html>

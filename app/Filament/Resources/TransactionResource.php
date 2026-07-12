@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Models\Transaction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
@@ -13,6 +15,8 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 class TransactionResource extends Resource
 {
@@ -57,6 +61,12 @@ class TransactionResource extends Resource
                             ->label('Proof of payment')
                             ->default('No proof uploaded yet.')
                             ->visible(fn (?Transaction $record): bool => blank($record?->proof_of_payment))
+                            ->columnSpanFull(),
+                        TextEntry::make('confirmation_url')
+                            ->label('Confirmation URL')
+                            ->visible(fn (?Transaction $record): bool => filled($record?->confirmation_url))
+                            ->url()
+                            ->default(fn (?Transaction $record) => $record?->confirmation_url)
                             ->columnSpanFull(),
                     ])
                     ->columns(3),
@@ -175,8 +185,43 @@ class TransactionResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('verify')
-                    ->label('Verify')
-                    ->action(fn (Transaction $record) => $record->update(['payment_status' => 'paid']))
+                    ->label('Verify booking')
+                    ->form([
+                        TextInput::make('confirmation_url')
+                            ->label('Confirmation URL')
+                            ->url()
+                            ->placeholder('https://example.com/ticket/ABC123'),
+                        FileUpload::make('confirmation_pdf')
+                            ->label('Confirmation PDF')
+                            ->directory('receipts')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(10240),
+                    ])
+                    ->action(function (Transaction $record, array $data): void {
+                        if (empty($data['confirmation_url']) && empty($data['confirmation_pdf'])) {
+                            throw new \Exception('Please provide either a confirmation URL or upload a PDF before verifying.');
+                        }
+
+                        if (! empty($data['confirmation_pdf'])) {
+                            $pdfPath = $data['confirmation_pdf']->storeAs('receipts', 'receipt-'.$record->booking->transaction_number.'.pdf');
+                            $ticketUrl = URL::temporarySignedRoute(
+                                'ticket.download',
+                                now()->addDays(7),
+                                ['booking' => $record->booking->id]
+                            );
+                            $record->update(['confirmation_url' => $ticketUrl]);
+                            $receiptPath = storage_path('app/'.$pdfPath);
+                        } else {
+                            $ticketUrl = $data['confirmation_url'];
+                            $record->update(['confirmation_url' => $data['confirmation_url']]);
+                            $receiptPath = null;
+                        }
+
+                        $record->update(['payment_status' => 'paid']);
+                        $record->booking->update(['status' => 'confirmed']);
+
+                        Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath));
+                    })
                     ->requiresConfirmation()
                     ->color('success')
                     ->visible(fn (Transaction $record): bool => $record->payment_status !== 'paid'),

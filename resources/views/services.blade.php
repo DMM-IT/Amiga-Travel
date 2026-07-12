@@ -30,8 +30,8 @@
                 ],
                 [
                     'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
-                    'title' => 'Starlite & Supercat',
-                    'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings, roll-on/roll-off (RoRo) cargo slots, and fastcraft ticketing.',
+                    'title' => 'Starlite Ferries',
+                    'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings and roll-on/roll-off (RoRo) cargo slots.',
                     'note' => 'Available Online',
                     'link' => url('/book/new'),
                     'color' => 'text-emerald-700',

@@ -12,6 +12,7 @@ class Transaction extends Model
         'booking_id',
         'payment_status',
         'proof_of_payment',
+        'confirmation_url',
     ];
 
     public function booking(): BelongsTo

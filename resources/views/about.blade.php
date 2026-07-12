@@ -55,7 +55,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-slate-900">Key Partnerships</h4>
-                                <p class="text-sm text-slate-500">2GO, Starlite Ferries, Supercat</p>
+                                <p class="text-sm text-slate-500">2GO and Starlite Ferries</p>
                             </div>
                         </div>
 
@@ -80,15 +80,12 @@
                 <p class="text-emerald-100/90 mb-8 max-w-xl mx-auto">
                     We maintain strong, direct partnerships with major transit and cargo networks to bring you reliable service at competitive rates.
                 </p>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 items-center justify-items-center">
+                <div class="grid grid-cols-2 gap-6 items-center justify-items-center">
                     <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
                         <span class="font-black tracking-widest text-lg text-white">2GO TRAVEL</span>
                     </div>
                     <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
                         <span class="font-black tracking-widest text-lg text-white">STARLITE</span>
-                    </div>
-                    <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
-                        <span class="font-black tracking-widest text-lg text-white">SUPERCAT</span>
                     </div>
                 </div>
             </div>
