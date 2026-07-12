@@ -7,19 +7,20 @@
 
             <div class="p-6 sm:p-10">
                 <div class="mb-8">
-                    <div class="flex flex-wrap items-center gap-2 py-2">
-                        @php $steps = ['Route & Passengers','Schedule','Discount','Stay','Submit']; @endphp
-                        @foreach($steps as $index => $label)
-                            @if($index > 0)
-                                <div class="hidden sm:block h-px flex-1 min-w-[2rem] {{ $step > $index ? 'bg-emerald-600' : 'bg-emerald-200' }}"></div>
-                            @endif
-                            <div class="relative flex min-w-[4rem] sm:min-w-[5.5rem] flex-shrink-0 flex-col items-center text-center">
-                                <div class="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 transition {{ $step === $index + 1 ? 'border-emerald-600 bg-emerald-600 text-white shadow-lg' : 'border-emerald-300 bg-white text-emerald-900' }}">
-                                    <span class="font-semibold text-sm">{{ $index + 1 }}</span>
+                    @php $steps = ['Route','Schedule','Discount','Stay','Submit']; @endphp
+                    <div class="relative px-2 py-6">
+                        <div class="absolute inset-x-0 top-1/2 h-0.5 bg-emerald-200"></div>
+                        <div class="absolute left-0 top-1/2 h-0.5 bg-emerald-600 transition-all" style="width: {{ max(0, min(4, $step - 1)) * 25 }}%;"></div>
+                        <div class="relative z-10 flex w-full items-center justify-between gap-0">
+                            @foreach($steps as $index => $label)
+                                <div class="flex min-w-[4.5rem] flex-col items-center justify-center text-center">
+                                    <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition {{ $step === $index + 1 ? 'border-emerald-600 bg-emerald-600 text-white shadow-lg' : 'border-emerald-300 bg-white text-emerald-900' }}">
+                                        <span class="font-semibold text-sm">{{ $index + 1 }}</span>
+                                    </div>
+                                    <div class="mt-3 text-[10px] font-semibold uppercase tracking-wide {{ $step === $index + 1 ? 'text-emerald-700' : 'text-emerald-500' }}">{{ $label }}</div>
                                 </div>
-                                <div class="mt-2 text-[9px] leading-tight font-semibold uppercase tracking-wide {{ $step === $index + 1 ? 'text-emerald-700' : 'text-emerald-500' }}">{{ $label }}</div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
