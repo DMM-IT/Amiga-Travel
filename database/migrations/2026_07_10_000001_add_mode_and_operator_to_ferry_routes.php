@@ -37,13 +37,9 @@ return new class extends Migration
     {
         Schema::table('ferry_routes', function (Blueprint $table) {
             try {
-                $table->dropUnique('ferry_routes_origin_destination_mode_unique');
+                $table->dropUnique('ferry_routes_origin_destination_mode_operator_unique');
             } catch (\Throwable $e) {
-            }
-
-            try {
-                $table->unique(['origin', 'destination']);
-            } catch (\Throwable $e) {
+                // ignore if index does not exist
             }
 
             if (Schema::hasColumn('ferry_routes', 'operator')) {

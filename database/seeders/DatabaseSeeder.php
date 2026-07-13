@@ -15,7 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Create a seeded admin account so it is restored after migrate:refresh --seed.
+        User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'password' => 'admin',
+            'is_admin' => true,
+        ]);
 
         User::factory()->create([
             'name' => 'Test User',
