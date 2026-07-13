@@ -17,7 +17,7 @@ return new class extends Migration
                 $table->string('operator')->nullable()->after('mode');
             }
 
-            // try to replace the old unique index with a mode-aware unique
+            // try to replace the old unique index with a mode/operator-aware unique
             try {
                 $table->dropUnique('ferry_routes_origin_destination_unique');
             } catch (\Throwable $e) {
@@ -26,7 +26,7 @@ return new class extends Migration
 
             // add the new unique if not present
             try {
-                $table->unique(['origin', 'destination', 'mode']);
+                $table->unique(['origin', 'destination', 'mode', 'operator']);
             } catch (\Throwable $e) {
                 // ignore duplicate index errors
             }
@@ -37,13 +37,9 @@ return new class extends Migration
     {
         Schema::table('ferry_routes', function (Blueprint $table) {
             try {
-                $table->dropUnique('ferry_routes_origin_destination_mode_unique');
+                $table->dropUnique('ferry_routes_origin_destination_mode_operator_unique');
             } catch (\Throwable $e) {
-            }
-
-            try {
-                $table->unique(['origin', 'destination']);
-            } catch (\Throwable $e) {
+                // ignore if index does not exist
             }
 
             if (Schema::hasColumn('ferry_routes', 'operator')) {

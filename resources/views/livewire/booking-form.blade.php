@@ -7,19 +7,30 @@
 
             <div class="p-6 sm:p-10">
                 <div class="mb-8">
-                    <div class="flex items-center">
-                        @php $steps = ['Route & Passengers','Schedule','Discount','Stay','Submit']; @endphp
-                        @foreach($steps as $index => $label)
-                            @if($index > 0)
-                                <div class="h-px flex-1 {{ $step > $index ? 'bg-emerald-600' : 'bg-emerald-200' }}"></div>
-                            @endif
-                            <div class="relative flex flex-col items-center text-center">
-                                <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition {{ $step === $index + 1 ? 'border-emerald-600 bg-emerald-600 text-white shadow-lg' : 'border-emerald-300 bg-white text-emerald-900' }}">
-                                    <span class="font-semibold">{{ $index + 1 }}</span>
+                    @php
+                        $steps = ['Route','Schedule','Discount','Stay','Submit'];
+                        $progressClass = match ($step) {
+                            1 => 'w-0',
+                            2 => 'w-1/4',
+                            3 => 'w-1/2',
+                            4 => 'w-3/4',
+                            5 => 'w-full',
+                            default => 'w-0',
+                        };
+                    @endphp
+                    <div class="relative px-2 py-6">
+                        <div class="absolute inset-x-0 top-1/2 h-0.5 bg-emerald-200"></div>
+                        <div class="absolute left-0 top-1/2 h-0.5 bg-emerald-600 transition-all {{ $progressClass }}"></div>
+                        <div class="relative z-10 flex w-full items-center justify-between gap-0">
+                            @foreach($steps as $index => $label)
+                                <div class="flex min-w-[4.5rem] flex-col items-center justify-center text-center">
+                                    <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition {{ $step === $index + 1 ? 'border-emerald-600 bg-emerald-600 text-white shadow-lg' : 'border-emerald-300 bg-white text-emerald-900' }}">
+                                        <span class="font-semibold text-sm">{{ $index + 1 }}</span>
+                                    </div>
+                                    <div class="mt-3 text-[10px] font-semibold uppercase tracking-wide {{ $step === $index + 1 ? 'text-emerald-700' : 'text-emerald-500' }}">{{ $label }}</div>
                                 </div>
-                                <div class="mt-3 text-xs font-semibold uppercase tracking-wide {{ $step === $index + 1 ? 'text-emerald-700' : 'text-emerald-500' }}">{{ $label }}</div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
@@ -321,12 +332,18 @@
                                     <label class="block min-w-0">
                                         <span class="text-emerald-700 font-medium">Name</span>
                                         <div class="mt-2 grid gap-2 sm:grid-cols-3">
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.first_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="First" />
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.middle_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Middle" />
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.last_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Last" />
+                                            <div>
+                                                <input type="text" wire:model.defer="passengers.{{ $index }}.first_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="First" />
+                                                @error('passengers.' . $index . '.first_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
+                                            </div>
+                                            <div>
+                                                <input type="text" wire:model.defer="passengers.{{ $index }}.middle_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Middle" />
+                                            </div>
+                                            <div>
+                                                <input type="text" wire:model.defer="passengers.{{ $index }}.last_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Last" />
+                                                @error('passengers.' . $index . '.last_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
+                                            </div>
                                         </div>
-                                        @error('passengers.' . $index . '.first_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        @error('passengers.' . $index . '.last_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                     </label>
 
                                     <label class="block min-w-0">
@@ -347,9 +364,9 @@
 
                                     @if($selectedDiscount && str_contains($discountKey, 'student'))
                                         <label class="block min-w-0">
-                                            <span class="text-emerald-700 font-medium">School name</span>
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.student_school" class="mt-2 block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="School name" />
-                                            @error('passengers.' . $index . '.student_school')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            <span class="text-emerald-700 font-medium">Upload school ID</span>
+                                            <input type="file" wire:model="studentIdProofs.{{ $index }}" accept="image/*" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                            @error('studentIdProofs.' . $index)<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
 
                                         <label class="block min-w-0">
@@ -559,3 +576,4 @@
         </div>
     </div>
 </div>
+

@@ -3,7 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
+use App\Mail\BookingConfirmation;
 use App\Models\Transaction;
+use App\Models\User;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
@@ -12,13 +16,24 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class TransactionResource extends Resource
 {
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
     protected static ?string $model = Transaction::class;
+
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasAdminPermission('manage_transactions');
+    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -57,6 +72,12 @@ class TransactionResource extends Resource
                             ->label('Proof of payment')
                             ->default('No proof uploaded yet.')
                             ->visible(fn (?Transaction $record): bool => blank($record?->proof_of_payment))
+                            ->columnSpanFull(),
+                        TextEntry::make('confirmation_url')
+                            ->label('Confirmation URL')
+                            ->visible(fn (?Transaction $record): bool => filled($record?->confirmation_url))
+                            ->url(fn (?Transaction $record): ?string => $record?->confirmation_url)
+                            ->default(fn (?Transaction $record) => $record?->confirmation_url)
                             ->columnSpanFull(),
                     ])
                     ->columns(3),
@@ -175,11 +196,52 @@ class TransactionResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('verify')
-                    ->label('Verify')
-                    ->action(fn (Transaction $record) => $record->update(['payment_status' => 'paid']))
+                    ->label('Verify booking')
+                    ->form([
+                        TextInput::make('confirmation_url')
+                            ->label('Confirmation URL')
+                            ->url()
+                            ->placeholder('https://example.com/ticket/ABC123'),
+                        FileUpload::make('confirmation_pdf')
+                            ->label('Confirmation PDF')
+                            ->directory('receipts')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(10240),
+                    ])
+                    ->action(function (Transaction $record, array $data): void {
+                        if (empty($data['confirmation_url']) && empty($data['confirmation_pdf'])) {
+                            throw new \Exception('Please provide either a confirmation URL or upload a PDF before verifying.');
+                        }
+
+                        if (! empty($data['confirmation_pdf'])) {
+                            $pdfPath = is_string($data['confirmation_pdf'])
+                                ? $data['confirmation_pdf']
+                                : $data['confirmation_pdf']->storeAs('receipts', 'receipt-'.$record->booking->transaction_number.'.pdf', 'public');
+                            $ticketUrl = null;
+                            $record->update(['confirmation_url' => null]);
+
+                            if (Storage::disk('public')->exists($pdfPath)) {
+                                $receiptPath = Storage::disk('public')->path($pdfPath);
+                            } else {
+                                $receiptPath = storage_path('app/public/'.$pdfPath);
+                            }
+
+                            $receiptDisk = 'public';
+                        } else {
+                            $ticketUrl = $data['confirmation_url'];
+                            $record->update(['confirmation_url' => $data['confirmation_url']]);
+                            $receiptPath = null;
+                            $receiptDisk = null;
+                        }
+
+                        $record->update(['payment_status' => 'paid']);
+                        $record->booking->update(['status' => 'confirmed']);
+
+                        Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath, $receiptDisk));
+                    })
                     ->requiresConfirmation()
                     ->color('success')
-                    ->visible(fn (Transaction $record): bool => $record->payment_status !== 'paid'),
+                    ->visible(fn (Transaction $record): bool => $record->payment_status !== 'paid' && $record->booking->status !== 'cancelled'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -1,15 +1,53 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $showCancelSuggestion = request()->query('show_cancel_suggestion');
+    $suggestTxn = request()->query('transaction_number');
+@endphp
+@if($showCancelSuggestion)
+    <div x-data="{ open: true }" x-init="open = true">
+        <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center">
+            <div class="fixed inset-0 bg-black/40" @click="open = false"></div>
+            <div class="relative max-w-lg w-full rounded-2xl bg-white p-6 z-10 shadow-lg">
+                <h3 class="text-lg font-semibold text-slate-900">Want to cancel your booking?</h3>
+                <p class="mt-3 text-sm text-slate-700">We received your proof of payment. If you change your mind, you can start a 5-minute cancellation window now to request a refund. After 5 minutes, cancellation will no longer be available.</p>
+                <div class="mt-4 flex gap-3 justify-end">
+                    <a href="{{ url('/') }}" class="inline-flex items-center justify-center rounded-3xl border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Maybe later</a>
+                    <a href="{{ url('/book/status?transaction_number=' . urlencode($suggestTxn) . '&start_cancellation=1') }}" class="inline-flex items-center justify-center rounded-3xl bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700">Start cancellation</a>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+@if(session()->has('booking_draft'))
+    <div class="max-w-7xl mx-auto px-4 py-4">
+        <div class="rounded-[1.5rem] border border-pink-200 bg-pink-50 p-4 text-slate-900 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-pink-700">You have a pending booking in progress.</p>
+                    <p class="mt-1 text-xs text-slate-600">Return to complete your booking or cancel the draft to start a new one.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ url('/book/new') }}" class="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-pink-700">Return to booking</a>
+                    <form method="POST" action="{{ route('booking.draft.cancel') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center justify-center rounded-full border border-pink-600 px-4 py-2 text-xs font-semibold text-pink-700 transition hover:bg-pink-100">Cancel draft</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 <div class="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row items-stretch gap-6">
     <!-- Left Column: Scrolling Image Carousel -->
-    <div class="w-full lg:w-1/2 rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-slate-200 relative bg-white flex items-center justify-center"
+    <div class="w-full lg:w-1/2 rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-slate-200 relative bg-white flex items-center justify-center min-h-[280px] sm:min-h-[360px] lg:min-h-[520px]"
          x-data="{
             activeSlide: 0,
             slides: [
-                @if($promotions->count() > 0)
-                    @foreach($promotions as $promo)
-                        '{{ asset('storage/' . $promo->image_path) }}',
+                @if($heroImages->count() > 0)
+                    @foreach($heroImages as $heroImage)
+                        '{{ asset('storage/' . $heroImage) }}',
                     @endforeach
                 @endif
             ],
@@ -29,7 +67,7 @@
          }">
         
         <template x-if="slides.length > 0">
-            <div class="w-full h-full min-h-[380px] relative group">
+            <div class="w-full h-full min-h-[240px] sm:min-h-[340px] relative group aspect-[16/9] sm:aspect-[3/2] lg:aspect-[4/3]">
                 <!-- Images -->
                 <template x-for="(slide, index) in slides" :key="index">
                     <img :src="slide" 
@@ -78,12 +116,12 @@
     <!-- Right Column: Form -->
     <div class="w-full lg:w-1/2">
         <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden h-full flex flex-col">
-            <div class="px-6 py-6 sm:px-10 sm:py-8 text-center flex-shrink-0" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
-                <h1 class="text-xl sm:text-2xl font-semibold text-white">Welcome to Amiga Gracia Travel Services</h1>
-                <p class="mt-2 text-xs sm:text-sm text-white/85 max-w-lg mx-auto">Ferry bookings, accommodations, and everything in between — made easy. What would you like to do today?</p>
+            <div class="px-6 py-8 sm:px-10 sm:py-10 text-center flex-shrink-0" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
+                <h1 class="text-xl sm:text-2xl font-semibold text-white">{{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia Travel Services' }}</h1>
+                <p class="mt-3 text-sm sm:text-base text-white/85 max-w-lg mx-auto">{{ $pageContent['welcome_subtitle'] ?? 'Ferry bookings, accommodations, and everything in between — made easy. What would you like to do today?' }}</p>
             </div>
 
-            <div class="p-4 sm:p-6 grid gap-4 sm:grid-cols-2 flex-grow">
+            <div class="p-5 sm:p-7 grid gap-5 sm:grid-cols-2 flex-grow">
                 <a href="{{ url('/book/new') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="--hover-border: #216417;" onmouseover="this.style.borderColor='#216417'" onmouseout="this.style.borderColor=''">
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#eaf5e8;">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color:#216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -108,7 +146,7 @@
             </div>
 
             <div class="px-6 pb-4 sm:px-10 text-center flex-shrink-0">
-                <p class="text-[10px] text-slate-400">Amiga Gracia Travel Services · travel-2go.com.ph</p>
+                <p class="text-[10px] text-slate-400">{{ data_get($pageContent, 'footer_note', 'Amiga Gracia Travel Services · travel-2go.com.ph') }}</p>
             </div>
         </div>
     </div>
@@ -117,141 +155,42 @@
 <!-- Booking Request Cards -->
 <div class="max-w-7xl mx-auto px-4 pb-12 mt-10">
     <div class="text-center mb-10">
-        <h2 class="text-2xl font-black text-[#216417]">Request Travel Bookings</h2>
-        <p class="text-xs text-slate-500 mt-2">Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.</p>
+        <h2 class="text-2xl font-black text-[#216417]">{{ data_get($pageContent, 'booking_section_title', 'Request Travel Bookings') }}</h2>
+        <p class="text-xs text-slate-500 mt-2">{{ data_get($pageContent, 'booking_section_description', 'Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.') }}</p>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Card 1: 2GO Ferry -->
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
-            <div class="aspect-video w-full overflow-hidden bg-slate-100">
-                <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80" alt="2GO Ferry" class="w-full h-full object-cover">
-            </div>
-            <div class="p-6 flex-grow flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">BOOK YOUR 2GO FERRY TICKET NOW</h3>
-                    <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
-                        Kasiyahan po namin ang paglingkuran kayo.
-                    </p>
-                    <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
+        @forelse($bookingCards as $card)
+            @php
+                $cardImage = data_get($card, 'image') ? asset('storage/' . data_get($card, 'image')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                $cardTitle = data_get($card, 'title', 'Travel Booking');
+                $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
+                $buttonText = data_get($pageContent, 'booking_button_text', 'Book Now');
+            @endphp
+            <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
+                <div class="aspect-video w-full overflow-hidden bg-slate-100">
+                    <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="w-full h-full object-cover">
                 </div>
-                <div class="mt-6">
-                    <a href="{{ url('/book/new') }}"
-                       class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
-                        Book Now
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 2: Starlite Ferry -->
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
-            <div class="aspect-video w-full overflow-hidden bg-slate-100">
-                <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80" alt="Starlite Ferry" class="w-full h-full object-cover">
-            </div>
-            <div class="p-6 flex-grow flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">BOOK YOUR STARLITE FERRY TICKET NOW</h3>
-                    <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
-                        Kasiyahan po namin ang paglingkuran kayo.
-                    </p>
-                    <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
-                </div>
-                <div class="mt-6">
-                    <a href="{{ url('/book/new') }}"
-                       class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
-                        Book Now
-                    </a>
+                <div class="p-6 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">{{ $cardTitle }}</h3>
+                        <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
+                            {{ $cardDescription }}
+                        </p>
+                        <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
+                    </div>
+                    <div class="mt-6">
+                        <a href="{{ url('/book/new') }}"
+                           class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
+                            {{ $buttonText }}
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Card 3: Air Asia -->
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
-            <div class="aspect-video w-full overflow-hidden bg-slate-100">
-                <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80" alt="Air Asia" class="w-full h-full object-cover">
+        @empty
+            <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center text-slate-500">
+                No booking cards are available yet.
             </div>
-            <div class="p-6 flex-grow flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">BOOK YOUR AIR ASIA TICKET NOW</h3>
-                    <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
-                        Kasiyahan po namin ang paglingkuran kayo.
-                    </p>
-                    <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
-                </div>
-                <div class="mt-6">
-                    <a href="{{ url('/book/new') }}"
-                       class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
-                        Book Now
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 4: Cebu Pacific -->
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
-            <div class="aspect-video w-full overflow-hidden bg-slate-100">
-                <img src="https://images.unsplash.com/photo-1517999144091-3d9dca6d1e43?auto=format&fit=crop&w=600&q=80" alt="Cebu Pacific" class="w-full h-full object-cover">
-            </div>
-            <div class="p-6 flex-grow flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">BOOK YOUR CEBU PACIFIC TICKET NOW</h3>
-                    <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
-                        Kasiyahan po namin ang paglingkuran kayo.
-                    </p>
-                    <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
-                </div>
-                <div class="mt-6">
-                    <a href="{{ url('/book/new') }}"
-                       class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
-                        Book Now
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 5: Philippine Airlines -->
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
-            <div class="aspect-video w-full overflow-hidden bg-slate-100">
-                <img src="https://images.unsplash.com/photo-1483450388369-9ed95738483c?auto=format&fit=crop&w=600&q=80" alt="Philippine Airlines" class="w-full h-full object-cover">
-            </div>
-            <div class="p-6 flex-grow flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">BOOK YOUR PHILIPPINE AIRLINE TICKET NOW</h3>
-                    <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
-                        Kasiyahan po namin ang paglingkuran kayo.
-                    </p>
-                    <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
-                </div>
-                <div class="mt-6">
-                    <a href="{{ url('/book/new') }}"
-                       class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
-                        Book Now
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 6: Travel With Us -->
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
-            <div class="aspect-video w-full overflow-hidden bg-slate-100">
-                <img src="https://images.unsplash.com/photo-1516690561799-46d8f74f90f6?auto=format&fit=crop&w=600&q=80" alt="Travel With Us" class="w-full h-full object-cover">
-            </div>
-            <div class="p-6 flex-grow flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">BOOK YOUR TRAVEL WITH US NOW</h3>
-                    <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
-                        Kasiyahan po namin ang paglingkuran kayo.
-                    </p>
-                    <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
-                </div>
-                <div class="mt-6">
-                    <a href="{{ url('/book/new') }}"
-                       class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
-                        Book Now
-                    </a>
-                </div>
-            </div>
-        </div>
+        @endforelse
     </div>
 </div>
 @endsection

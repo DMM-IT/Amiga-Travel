@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\FerryRouteResource\Pages;
 use App\Models\FerryRoute;
+use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -12,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Table;
 
 class FerryRouteResource extends Resource
@@ -19,6 +21,13 @@ class FerryRouteResource extends Resource
     protected static ?string $model = FerryRoute::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
+
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasAdminPermission('manage_routes');
+    }
 
     protected static ?string $navigationLabel = 'Routes';
 

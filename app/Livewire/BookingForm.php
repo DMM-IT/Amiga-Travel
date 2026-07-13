@@ -18,10 +18,12 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Spatie\LaravelPdf\Facades\Pdf;
 
 class BookingForm extends Component
 {
+    use WithFileUploads;
     public int $step = 1;
     public string $trip_type = 'one_way';
     public string $mode = '';
@@ -44,6 +46,21 @@ class BookingForm extends Component
 
     // Each entry: ['type' => 'adult'|'child', 'name' => '', 'discount_id' => null]
     public array $passengers = [];
+    public array $studentIdProofs = [];
+
+    protected $validationAttributes = [
+        'passengers.*.first_name' => 'first name',
+        'passengers.*.middle_name' => 'middle name',
+        'passengers.*.last_name' => 'last name',
+        'passengers.*.name' => 'full name',
+        'passengers.*.student_number' => 'student number',
+        'studentIdProofs.*' => 'school ID proof',
+        'passengers.*.senior_dob' => 'date of birth',
+        'passengers.*.senior_osca_number' => 'OSCA number',
+        'passengers.*.pwd_disability_type' => 'type of disability',
+        'passengers.*.pwd_disability_other' => 'disability details',
+        'passengers.*.pwd_id_number' => 'PWD ID number',
+    ];
 
     // Selected catalog accommodation ids, e.g. [3 => true, 5 => true]
     public array $selected_accommodation_ids = [];
@@ -60,6 +77,21 @@ class BookingForm extends Component
         $this->discounts = Discount::orderBy('name')->get();
         $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
+
+        if (session()->has('booking_draft')) {
+            $draft = session('booking_draft', []);
+
+            foreach ($draft as $key => $value) {
+                if (property_exists($this, $key)) {
+                    $this->{$key} = $value;
+                }
+            }
+
+            if (! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
+                $this->availableSchedules = $this->getAvailableSchedules();
+            }
+        }
+
         $this->syncPassengerEntries();
     }
 
@@ -125,7 +157,10 @@ class BookingForm extends Component
         $this->return_date = null;
     }
 
-    protected $listeners = ['datePickerUpdated'];
+    protected $listeners = [
+        'datePickerUpdated',
+        'dropdownOpened' => 'onDropdownOpened',
+    ];
 
     public function updatedMode(string $value): void
     {
@@ -147,6 +182,32 @@ class BookingForm extends Component
     public function toggleModeDropdown(): void
     {
         $this->showModeDropdown = ! $this->showModeDropdown;
+        if ($this->showModeDropdown) {
+            $this->showOriginDropdown = false;
+            $this->showDestinationDropdown = false;
+            $this->dispatch('dropdownOpened', 'mode');
+        }
+    }
+
+    public function onDropdownOpened($name = null): void
+    {
+        // If another dropdown opened and it's not one of BookingForm's, close ours.
+        if ($name === null) {
+            $this->showModeDropdown = false;
+            $this->showOriginDropdown = false;
+            $this->showDestinationDropdown = false;
+            return;
+        }
+
+        if ($name !== 'mode') {
+            $this->showModeDropdown = false;
+        }
+        if ($name !== 'origin') {
+            $this->showOriginDropdown = false;
+        }
+        if ($name !== 'destination') {
+            $this->showDestinationDropdown = false;
+        }
     }
 
     public function selectMode(string $mode): void
@@ -166,6 +227,13 @@ class BookingForm extends Component
     public function toggleOriginDropdown(): void
     {
         $this->showOriginDropdown = ! $this->showOriginDropdown;
+
+        if ($this->showOriginDropdown) {
+            $this->showModeDropdown = false;
+            $this->showDestinationDropdown = false;
+            $this->dispatch('dropdownOpened', 'origin');
+        }
+
         if (! $this->showOriginDropdown) {
             $this->originSearch = '';
         }
@@ -174,6 +242,13 @@ class BookingForm extends Component
     public function toggleDestinationDropdown(): void
     {
         $this->showDestinationDropdown = ! $this->showDestinationDropdown;
+
+        if ($this->showDestinationDropdown) {
+            $this->showModeDropdown = false;
+            $this->showOriginDropdown = false;
+            $this->dispatch('dropdownOpened', 'destination');
+        }
+
         if (! $this->showDestinationDropdown) {
             $this->destinationSearch = '';
         }
@@ -196,16 +271,24 @@ class BookingForm extends Component
         $this->availableSchedules = [];
         $this->showDestinationDropdown = false;
         $this->destinationSearch = '';
+
+        $this->saveDraft();
     }
 
     public function updatedOriginSearch(): void
     {
         $this->showOriginDropdown = true;
+        $this->showModeDropdown = false;
+        $this->showDestinationDropdown = false;
+        $this->dispatch('dropdownOpened', 'origin');
     }
 
     public function updatedDestinationSearch(): void
     {
         $this->showDestinationDropdown = true;
+        $this->showModeDropdown = false;
+        $this->showOriginDropdown = false;
+        $this->dispatch('dropdownOpened', 'destination');
     }
 
     public function datePickerUpdated(string $field, ?string $value): void
@@ -238,10 +321,14 @@ class BookingForm extends Component
                 }
             }
 
+            $this->saveDraft();
+
             return;
         }
 
         if (str_starts_with($propertyName, 'selected_accommodation_ids')) {
+            $this->saveDraft();
+
             return;
         }
 
@@ -255,6 +342,7 @@ class BookingForm extends Component
         }
 
         $this->validateOnly($propertyName, $this->allRules());
+        $this->saveDraft();
     }
 
     public function nextStep(): void
@@ -290,6 +378,8 @@ class BookingForm extends Component
         if ($this->step < 5) {
             $this->step++;
         }
+
+        $this->saveDraft();
     }
 
     public function previousStep(): void
@@ -302,6 +392,7 @@ class BookingForm extends Component
     public function selectSchedule(int $scheduleId): void
     {
         $this->selected_schedule_id = $scheduleId;
+        $this->saveDraft();
     }
 
     protected function getAvailableSchedules(): array
@@ -434,6 +525,7 @@ class BookingForm extends Component
         $this->validate($this->allRules());
         $this->validatePassengerExtras();
         $this->assertSelectedScheduleIsValid();
+        session()->forget('booking_draft');
 
         if (! app()->environment('local')) {
             Validator::make([
@@ -500,14 +592,6 @@ class BookingForm extends Component
             Pdf::driver('dompdf')
                 ->view('pdf.receipt', ['booking' => $booking])
                 ->save($receiptPath);
-
-            $ticketUrl = URL::temporarySignedRoute(
-                'ticket.download',
-                now()->addDays(7),
-                ['booking' => $booking->id]
-            );
-
-            Mail::to($booking->client_email)->send(new BookingConfirmation($booking, $ticketUrl, $receiptPath));
         });
 
         return redirect()->route('payment.show', $transaction);
@@ -516,6 +600,26 @@ class BookingForm extends Component
     public function render()
     {
         return view('livewire.booking-form');
+    }
+
+    protected function saveDraft(): void
+    {
+        session(['booking_draft' => [
+            'step' => $this->step,
+            'trip_type' => $this->trip_type,
+            'mode' => $this->mode,
+            'origin' => $this->origin,
+            'destination' => $this->destination,
+            'departure_date' => $this->departure_date,
+            'return_date' => $this->return_date,
+            'adults' => $this->adults,
+            'children' => $this->children,
+            'selected_schedule_id' => $this->selected_schedule_id,
+            'passengers' => $this->passengers,
+            'selected_accommodation_ids' => $this->selected_accommodation_ids,
+            'client_name' => $this->client_name,
+            'client_email' => $this->client_email,
+        ]]);
     }
 
     protected function stepRules(): array
@@ -561,6 +665,7 @@ class BookingForm extends Component
                 'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
                 'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
                 'passengers.*.pwd_id_number' => 'nullable|string|max:255',
+                'studentIdProofs.*' => 'nullable|image|max:2048',
             ],
             4 => [],
             5 => [
@@ -609,6 +714,7 @@ class BookingForm extends Component
             'passengers.*.discount_id' => 'nullable|exists:discounts,id',
             'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
             'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
+            'studentIdProofs.*' => 'nullable|image|max:2048',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
             'recaptchaToken' => $this->recaptchaRule(),
@@ -737,8 +843,8 @@ class BookingForm extends Component
                 $discountKey = strtolower($discount->name);
 
                 if (str_contains($discountKey, 'student')) {
-                    if (blank($passenger['student_school'] ?? null)) {
-                        $validator->errors()->add("passengers.{$index}.student_school", 'School name is required when Student discount is selected.');
+                    if (blank($this->studentIdProofs[$index] ?? null)) {
+                        $validator->errors()->add("studentIdProofs.{$index}", 'School ID proof is required when Student discount is selected.');
                     }
 
                     if (blank($passenger['student_number'] ?? null)) {

@@ -7,10 +7,10 @@
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">About Us</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
-                Our Journey & Mission
+                {{ $pageContent['title'] ?? 'Our Journey & Mission' }}
             </h1>
             <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free and memorable.
+                {{ $pageContent['description'] ?? 'Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free and memorable.' }}
             </p>
         </div>
 
@@ -55,7 +55,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-slate-900">Key Partnerships</h4>
-                                <p class="text-sm text-slate-500">2GO, Starlite Ferries, Supercat</p>
+                                <p class="text-sm text-slate-500">2GO and Starlite Ferries</p>
                             </div>
                         </div>
 
@@ -80,15 +80,12 @@
                 <p class="text-emerald-100/90 mb-8 max-w-xl mx-auto">
                     We maintain strong, direct partnerships with major transit and cargo networks to bring you reliable service at competitive rates.
                 </p>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 items-center justify-items-center">
+                <div class="grid grid-cols-2 gap-6 items-center justify-items-center">
                     <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
                         <span class="font-black tracking-widest text-lg text-white">2GO TRAVEL</span>
                     </div>
                     <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
                         <span class="font-black tracking-widest text-lg text-white">STARLITE</span>
-                    </div>
-                    <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
-                        <span class="font-black tracking-widest text-lg text-white">SUPERCAT</span>
                     </div>
                 </div>
             </div>

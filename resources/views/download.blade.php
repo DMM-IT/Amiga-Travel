@@ -3,6 +3,65 @@
 @section('content')
 <div class="bg-slate-50 min-h-screen">
 
+    @php
+        $downloadSteps = $pageContent['download_steps'] ?? [
+            [
+                'number' => '1',
+                'title' => 'Open in Browser',
+                'description' => 'Visit this website using Chrome, Edge, or Safari on your phone or computer.',
+                'icon' => 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9',
+                'icon_color' => '#216417',
+                'bg_color' => '#eaf5e8',
+            ],
+            [
+                'number' => '2',
+                'title' => 'Tap Install',
+                'description' => 'Click the "Install App" button above, or use your browser\'s "Add to Home Screen" option.',
+                'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
+                'icon_color' => '#ee018d',
+                'bg_color' => '#fce7f3',
+            ],
+            [
+                'number' => '3',
+                'title' => 'You\'re All Set!',
+                'description' => 'The app icon appears on your home screen. Open it anytime for instant access to bookings.',
+                'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                'icon_color' => '#216417',
+                'bg_color' => '#eaf5e8',
+            ],
+        ];
+        $downloadFeatures = $pageContent['download_features'] ?? [
+            [
+                'title' => 'Lightning Fast',
+                'description' => 'Loads instantly, even on slow connections.',
+                'icon' => 'M13 10V3L4 14h7v7l9-11h-7z',
+                'bg_color' => '#eaf5e8',
+                'icon_color' => '#216417',
+            ],
+            [
+                'title' => 'Home Screen Icon',
+                'description' => 'Quick access from your phone\'s home screen.',
+                'icon' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',
+                'bg_color' => '#fce7f3',
+                'icon_color' => '#ee018d',
+            ],
+            [
+                'title' => 'Secure & Private',
+                'description' => 'Your data stays safe with HTTPS encryption.',
+                'icon' => 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
+                'bg_color' => '#eaf5e8',
+                'icon_color' => '#216417',
+            ],
+            [
+                'title' => 'Always Updated',
+                'description' => 'Automatically gets the latest features.',
+                'icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+                'bg_color' => '#eff6ff',
+                'icon_color' => '#2563eb',
+            ],
+        ];
+    @endphp
+
     <!-- Hero Section -->
     <div class="relative overflow-hidden" style="background: linear-gradient(135deg, #216417 0%, #14400e 60%, #0a2d06 100%);">
         <div class="absolute inset-0 opacity-10">
@@ -15,15 +74,13 @@
                 <div class="flex-1 text-center lg:text-left">
                     <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#ee018d] bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 mb-6">
                         <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-3.598 1.543A3.002 3.002 0 007 13a3 3 0 00-2 5.236V18a1 1 0 001 1h8a1 1 0 001-1v-.764A3.001 3.001 0 0013 13a3.002 3.002 0 00-.244-1.18l2.85-1.22a1 1 0 000-1.84l-5.212-2.68zM7 14a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z"/></svg>
-                        Free App
+                        {{ $pageContent['badge'] ?? 'Free App' }}
                     </span>
                     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-                        Download the<br>
-                        <span class="text-[#ee018d]">Amiga Gracia</span><br>
-                        App
+                        {!! $pageContent['title'] ?? 'Download the<br><span class="text-[#ee018d]">Amiga Gracia</span><br>App' !!}
                     </h1>
                     <p class="mt-6 text-base sm:text-lg text-white/80 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                        Book ferry tickets, flights, and tour packages right from your phone. Install our app for a fast, native-like experience — no app store needed.
+                        {{ $pageContent['description'] ?? 'Book ferry tickets, flights, and tour packages right from your phone. Install our app for a fast, native-like experience — no app store needed.' }}
                     </p>
 
                     <!-- Install Button (PWA) & APK Download -->
@@ -128,159 +185,24 @@
     <!-- How to Install Section -->
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="text-center mb-12">
-            <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #216417; background: #eaf5e8;">How It Works</span>
-            <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Install in 3 Easy Steps</h2>
-            <p class="mt-3 text-slate-500 max-w-lg mx-auto">No app store required. Install directly from your browser for a fast, lightweight experience.</p>
+            <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #216417; background: #eaf5e8;">{{ data_get($pageContent, 'how_it_works_label', 'How It Works') }}</span>
+            <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'how_it_works_title', 'Install in 3 Easy Steps') }}</h2>
+            <p class="mt-3 text-slate-500 max-w-lg mx-auto">{{ data_get($pageContent, 'how_it_works_description', 'No app store required. Install directly from your browser for a fast, lightweight experience.') }}</p>
         </div>
 
         <div class="grid sm:grid-cols-3 gap-8">
-            <!-- Step 1 -->
-            <div class="relative bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: #216417;">1</div>
-                <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: #eaf5e8;">
-                    <svg class="h-8 w-8" style="color: #216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                </div>
-                <h3 class="font-bold text-slate-900 text-lg">Open in Browser</h3>
-                <p class="text-sm text-slate-500 mt-2 leading-relaxed">Visit this website using Chrome, Edge, or Safari on your phone or computer.</p>
-            </div>
-
-            <!-- Step 2 -->
-            <div class="relative bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: #216417;">2</div>
-                <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: #fce7f3;">
-                    <svg class="h-8 w-8 text-[#ee018d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                </div>
-                <h3 class="font-bold text-slate-900 text-lg">Tap Install</h3>
-                <p class="text-sm text-slate-500 mt-2 leading-relaxed">Click the "Install App" button above, or use your browser's <strong>"Add to Home Screen"</strong> option.</p>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="relative bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: #216417;">3</div>
-                <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: #eaf5e8;">
-                    <svg class="h-8 w-8" style="color: #216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h3 class="font-bold text-slate-900 text-lg">You're All Set!</h3>
-                <p class="text-sm text-slate-500 mt-2 leading-relaxed">The app icon appears on your home screen. Open it anytime for instant access to bookings.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="bg-white py-16">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Why Download Our App?</h2>
-            </div>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-slate-50 rounded-2xl p-6 text-center hover:shadow-md transition">
-                    <div class="h-12 w-12 mx-auto rounded-xl flex items-center justify-center mb-4" style="background: #eaf5e8;">
-                        <svg class="h-6 w-6" style="color: #216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            @foreach($downloadSteps as $step)
+                <div class="relative bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: {{ data_get($step, 'icon_color') }};">{{ data_get($step, 'number') }}</div>
+                    <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: {{ data_get($step, 'bg_color') }};">
+                        <svg class="h-8 w-8" style="color: {{ data_get($step, 'icon_color') }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ data_get($step, 'icon') }}" />
+                        </svg>
                     </div>
-                    <h4 class="font-bold text-slate-900">Lightning Fast</h4>
-                    <p class="text-xs text-slate-500 mt-2">Loads instantly, even on slow connections.</p>
+                    <h3 class="font-bold text-slate-900 text-lg">{{ data_get($step, 'title') }}</h3>
+                    <p class="text-sm text-slate-500 mt-2 leading-relaxed">{{ data_get($step, 'description') }}</p>
                 </div>
-                <div class="bg-slate-50 rounded-2xl p-6 text-center hover:shadow-md transition">
-                    <div class="h-12 w-12 mx-auto rounded-xl flex items-center justify-center mb-4 bg-pink-50">
-                        <svg class="h-6 w-6 text-[#ee018d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    </div>
-                    <h4 class="font-bold text-slate-900">Home Screen Icon</h4>
-                    <p class="text-xs text-slate-500 mt-2">Quick access from your phone's home screen.</p>
-                </div>
-                <div class="bg-slate-50 rounded-2xl p-6 text-center hover:shadow-md transition">
-                    <div class="h-12 w-12 mx-auto rounded-xl flex items-center justify-center mb-4" style="background: #eaf5e8;">
-                        <svg class="h-6 w-6" style="color: #216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    </div>
-                    <h4 class="font-bold text-slate-900">Secure & Private</h4>
-                    <p class="text-xs text-slate-500 mt-2">Your data stays safe with HTTPS encryption.</p>
-                </div>
-                <div class="bg-slate-50 rounded-2xl p-6 text-center hover:shadow-md transition">
-                    <div class="h-12 w-12 mx-auto rounded-xl flex items-center justify-center mb-4 bg-blue-50">
-                        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    </div>
-                    <h4 class="font-bold text-slate-900">Always Updated</h4>
-                    <p class="text-xs text-slate-500 mt-2">Automatically gets the latest features.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Manual Instructions Accordion -->
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16" x-data="{ open: null }">
-        <div class="text-center mb-10">
-            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Manual Install Instructions</h2>
-            <p class="mt-3 text-slate-500 text-sm">If the install button doesn't appear, follow these steps for your browser.</p>
-        </div>
-
-        <div class="space-y-4">
-            <!-- Chrome Android -->
-            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 overflow-hidden">
-                <button @click="open = open === 'chrome' ? null : 'chrome'" class="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                            <svg class="h-5 w-5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        </div>
-                        <span class="font-bold text-slate-900">Chrome (Android)</span>
-                    </div>
-                    <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open === 'chrome' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <div x-show="open === 'chrome'" x-collapse class="px-5 pb-5">
-                    <ol class="text-sm text-slate-600 space-y-2 list-decimal list-inside">
-                        <li>Open this website in Chrome</li>
-                        <li>Tap the <strong>three-dot menu (⋮)</strong> in the top right</li>
-                        <li>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></li>
-                        <li>Tap <strong>"Install"</strong> to confirm</li>
-                    </ol>
-                </div>
-            </div>
-
-            <!-- Safari iOS -->
-            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 overflow-hidden">
-                <button @click="open = open === 'safari' ? null : 'safari'" class="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                            <svg class="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        </div>
-                        <span class="font-bold text-slate-900">Safari (iPhone / iPad)</span>
-                    </div>
-                    <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open === 'safari' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <div x-show="open === 'safari'" x-collapse class="px-5 pb-5">
-                    <ol class="text-sm text-slate-600 space-y-2 list-decimal list-inside">
-                        <li>Open this website in <strong>Safari</strong></li>
-                        <li>Tap the <strong>Share button (↑)</strong> at the bottom</li>
-                        <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                        <li>Tap <strong>"Add"</strong> in the top right to confirm</li>
-                    </ol>
-                </div>
-            </div>
-
-            <!-- Desktop Chrome/Edge -->
-            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-slate-100 overflow-hidden">
-                <button @click="open = open === 'desktop' ? null : 'desktop'" class="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center">
-                            <svg class="h-5 w-5 text-purple-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        </div>
-                        <span class="font-bold text-slate-900">Desktop (Chrome / Edge)</span>
-                    </div>
-                    <svg class="h-5 w-5 text-slate-400 transition-transform" :class="open === 'desktop' ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <div x-show="open === 'desktop'" x-collapse class="px-5 pb-5">
-                    <ol class="text-sm text-slate-600 space-y-2 list-decimal list-inside">
-                        <li>Open this website in Chrome or Edge</li>
-                        <li>Look for the <strong>install icon (⊕)</strong> in the address bar</li>
-                        <li>Click it and select <strong>"Install"</strong></li>
-                        <li>The app will open in its own window and appear in your start menu</li>
-                    </ol>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 
