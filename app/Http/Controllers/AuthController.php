@@ -66,4 +66,54 @@ class AuthController extends Controller
 
         return redirect()->route('book');
     }
+
+    public function apiLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if (! Auth::attempt($credentials)) {
+            return response()->json([
+                'message' => 'These credentials do not match our records.'
+            ], 422);
+        }
+
+        $user = Auth::user();
+        $user->api_token = \Illuminate\Support\Str::random(80);
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'token' => $user->api_token,
+        ]);
+    }
+
+    public function apiRegister(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        $validated['api_token'] = \Illuminate\Support\Str::random(80);
+
+        $user = User::create($validated);
+
+        return response()->json([
+            'status' => 'success',
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'token' => $user->api_token,
+        ]);
+    }
 }

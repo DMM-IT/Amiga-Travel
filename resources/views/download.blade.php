@@ -26,7 +26,7 @@
                         Book ferry tickets, flights, and tour packages right from your phone. Install our app for a fast, native-like experience — no app store needed.
                     </p>
 
-                    <!-- Install Button (PWA) -->
+                    <!-- Install Button (PWA) & APK Download -->
                     <div class="mt-8 flex flex-col sm:flex-row items-center gap-4 lg:justify-start justify-center" x-data="pwaInstall()">
                         <button
                             x-show="canInstall"
@@ -51,6 +51,17 @@
                                 Open Web App
                             </a>
                         </div>
+
+                        <!-- Direct Flutter APK Download Link -->
+                        <a href="{{ asset('downloads/amiga-travel.apk') }}"
+                           class="group inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-900/30 hover:shadow-xl hover:shadow-emerald-900/40 transition-all duration-300 hover:-translate-y-0.5"
+                           download
+                        >
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current" viewBox="0 0 24 24">
+                                <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM11.1 5.6a.49.49 0 00-.23-.65l-1.3-.75a.51.51 0 00-.69.18.49.49 0 00.18.69l1.3.75c.08.05.17.08.26.08.17 0 .34-.09.43-.25zM12.9 5.6a.49.49 0 00.43.25c.09 0 .18-.03.26-.08l1.3-.75a.49.49 0 00.18-.69.51.51 0 00-.69-.18l-1.3.75a.49.49 0 00-.23.65zM12 5a3 3 0 013 3H9a3 3 0 013-3zM19.5 8c-.83 0-1.5.67-1.5 1.5v6c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-6c0-.83-.67-1.5-1.5-1.5zM4.5 8C3.67 8 3 8.67 3 9.5v6c0 .83.67 1.5 1.5 1.5S6 16.33 6 15.5v-6C6 8.67 5.33 8 4.5 8z"/>
+                            </svg>
+                            Download Android APK
+                        </a>
 
                         <!-- Already installed indicator -->
                         <div x-show="isInstalled" x-cloak class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-sm text-emerald-300 font-semibold text-sm rounded-full border border-emerald-400/30">
