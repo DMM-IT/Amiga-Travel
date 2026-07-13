@@ -162,6 +162,10 @@ class BookingForm extends Component
     public function toggleModeDropdown(): void
     {
         $this->showModeDropdown = ! $this->showModeDropdown;
+        if ($this->showModeDropdown) {
+            $this->showOriginDropdown = false;
+            $this->showDestinationDropdown = false;
+        }
     }
 
     public function selectMode(string $mode): void
@@ -181,6 +185,12 @@ class BookingForm extends Component
     public function toggleOriginDropdown(): void
     {
         $this->showOriginDropdown = ! $this->showOriginDropdown;
+
+        if ($this->showOriginDropdown) {
+            $this->showModeDropdown = false;
+            $this->showDestinationDropdown = false;
+        }
+
         if (! $this->showOriginDropdown) {
             $this->originSearch = '';
         }
@@ -189,6 +199,12 @@ class BookingForm extends Component
     public function toggleDestinationDropdown(): void
     {
         $this->showDestinationDropdown = ! $this->showDestinationDropdown;
+
+        if ($this->showDestinationDropdown) {
+            $this->showModeDropdown = false;
+            $this->showOriginDropdown = false;
+        }
+
         if (! $this->showDestinationDropdown) {
             $this->destinationSearch = '';
         }
@@ -218,11 +234,15 @@ class BookingForm extends Component
     public function updatedOriginSearch(): void
     {
         $this->showOriginDropdown = true;
+        $this->showModeDropdown = false;
+        $this->showDestinationDropdown = false;
     }
 
     public function updatedDestinationSearch(): void
     {
         $this->showDestinationDropdown = true;
+        $this->showModeDropdown = false;
+        $this->showOriginDropdown = false;
     }
 
     public function datePickerUpdated(string $field, ?string $value): void

@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\TransactionResource;
 use App\Models\PaymentSetting;
 use App\Models\Transaction;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -17,10 +18,17 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Enums\ActionSize;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 
 class ManageProofs extends Page implements HasActions, HasForms
 {
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasAdminPermission('manage_proofs');
+    }
     use InteractsWithActions;
     use InteractsWithForms;
 

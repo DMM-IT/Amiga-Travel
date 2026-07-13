@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ScheduleResource\Pages;
 use App\Models\FerryRoute;
 use App\Models\Schedule;
+use App\Models\User;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Table;
 
 class ScheduleResource extends Resource
@@ -22,6 +24,13 @@ class ScheduleResource extends Resource
     protected static ?string $model = Schedule::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
+
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasAdminPermission('manage_schedules');
+    }
 
     protected static ?string $navigationLabel = 'Schedules';
 

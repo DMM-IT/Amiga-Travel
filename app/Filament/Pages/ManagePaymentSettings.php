@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\PaymentSetting;
+use App\Models\User;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -11,9 +12,16 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
 
 class ManagePaymentSettings extends Page implements HasForms
 {
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasAdminPermission('manage_payment_settings');
+    }
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
