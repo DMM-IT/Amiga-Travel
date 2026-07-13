@@ -13,6 +13,9 @@ class DatePicker extends Component
     public bool $isOpen = false;
     public int $viewYear;
     public int $viewMonth;
+    public $listeners = [
+        'dropdownOpened' => 'onDropdownOpened',
+    ];
 
     public function mount(string $field, ?string $value = null, string $label = 'Date', ?string $min = null): void
     {
@@ -37,6 +40,17 @@ class DatePicker extends Component
     public function toggleCalendar(): void
     {
         $this->isOpen = ! $this->isOpen;
+        if ($this->isOpen) {
+            $this->dispatch('dropdownOpened', 'date-'.$this->field);
+        }
+    }
+
+    public function onDropdownOpened($name = null): void
+    {
+        // If another dropdown opened (not the datepicker for this field), close.
+        if ($this->isOpen && $name !== 'date-'.$this->field) {
+            $this->isOpen = false;
+        }
     }
 
     public function prevMonth(): void

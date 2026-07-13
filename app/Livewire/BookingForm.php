@@ -18,10 +18,12 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Spatie\LaravelPdf\Facades\Pdf;
 
 class BookingForm extends Component
 {
+    use WithFileUploads;
     public int $step = 1;
     public string $trip_type = 'one_way';
     public string $mode = '';
@@ -44,6 +46,21 @@ class BookingForm extends Component
 
     // Each entry: ['type' => 'adult'|'child', 'name' => '', 'discount_id' => null]
     public array $passengers = [];
+    public array $studentIdProofs = [];
+
+    protected $validationAttributes = [
+        'passengers.*.first_name' => 'first name',
+        'passengers.*.middle_name' => 'middle name',
+        'passengers.*.last_name' => 'last name',
+        'passengers.*.name' => 'full name',
+        'passengers.*.student_number' => 'student number',
+        'studentIdProofs.*' => 'school ID proof',
+        'passengers.*.senior_dob' => 'date of birth',
+        'passengers.*.senior_osca_number' => 'OSCA number',
+        'passengers.*.pwd_disability_type' => 'type of disability',
+        'passengers.*.pwd_disability_other' => 'disability details',
+        'passengers.*.pwd_id_number' => 'PWD ID number',
+    ];
 
     // Selected catalog accommodation ids, e.g. [3 => true, 5 => true]
     public array $selected_accommodation_ids = [];
@@ -140,7 +157,10 @@ class BookingForm extends Component
         $this->return_date = null;
     }
 
-    protected $listeners = ['datePickerUpdated'];
+    protected $listeners = [
+        'datePickerUpdated',
+        'dropdownOpened' => 'onDropdownOpened',
+    ];
 
     public function updatedMode(string $value): void
     {
@@ -164,6 +184,28 @@ class BookingForm extends Component
         $this->showModeDropdown = ! $this->showModeDropdown;
         if ($this->showModeDropdown) {
             $this->showOriginDropdown = false;
+            $this->showDestinationDropdown = false;
+            $this->dispatch('dropdownOpened', 'mode');
+        }
+    }
+
+    public function onDropdownOpened($name = null): void
+    {
+        // If another dropdown opened and it's not one of BookingForm's, close ours.
+        if ($name === null) {
+            $this->showModeDropdown = false;
+            $this->showOriginDropdown = false;
+            $this->showDestinationDropdown = false;
+            return;
+        }
+
+        if ($name !== 'mode') {
+            $this->showModeDropdown = false;
+        }
+        if ($name !== 'origin') {
+            $this->showOriginDropdown = false;
+        }
+        if ($name !== 'destination') {
             $this->showDestinationDropdown = false;
         }
     }
@@ -189,6 +231,7 @@ class BookingForm extends Component
         if ($this->showOriginDropdown) {
             $this->showModeDropdown = false;
             $this->showDestinationDropdown = false;
+            $this->dispatch('dropdownOpened', 'origin');
         }
 
         if (! $this->showOriginDropdown) {
@@ -203,6 +246,7 @@ class BookingForm extends Component
         if ($this->showDestinationDropdown) {
             $this->showModeDropdown = false;
             $this->showOriginDropdown = false;
+            $this->dispatch('dropdownOpened', 'destination');
         }
 
         if (! $this->showDestinationDropdown) {
@@ -236,6 +280,7 @@ class BookingForm extends Component
         $this->showOriginDropdown = true;
         $this->showModeDropdown = false;
         $this->showDestinationDropdown = false;
+        $this->dispatch('dropdownOpened', 'origin');
     }
 
     public function updatedDestinationSearch(): void
@@ -243,6 +288,7 @@ class BookingForm extends Component
         $this->showDestinationDropdown = true;
         $this->showModeDropdown = false;
         $this->showOriginDropdown = false;
+        $this->dispatch('dropdownOpened', 'destination');
     }
 
     public function datePickerUpdated(string $field, ?string $value): void
@@ -619,6 +665,7 @@ class BookingForm extends Component
                 'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
                 'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
                 'passengers.*.pwd_id_number' => 'nullable|string|max:255',
+                'studentIdProofs.*' => 'nullable|image|max:2048',
             ],
             4 => [],
             5 => [
@@ -667,6 +714,7 @@ class BookingForm extends Component
             'passengers.*.discount_id' => 'nullable|exists:discounts,id',
             'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
             'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
+            'studentIdProofs.*' => 'nullable|image|max:2048',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
             'recaptchaToken' => $this->recaptchaRule(),
@@ -795,8 +843,8 @@ class BookingForm extends Component
                 $discountKey = strtolower($discount->name);
 
                 if (str_contains($discountKey, 'student')) {
-                    if (blank($passenger['student_school'] ?? null)) {
-                        $validator->errors()->add("passengers.{$index}.student_school", 'School name is required when Student discount is selected.');
+                    if (blank($this->studentIdProofs[$index] ?? null)) {
+                        $validator->errors()->add("studentIdProofs.{$index}", 'School ID proof is required when Student discount is selected.');
                     }
 
                     if (blank($passenger['student_number'] ?? null)) {

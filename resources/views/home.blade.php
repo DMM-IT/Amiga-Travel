@@ -1,6 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $showCancelSuggestion = request()->query('show_cancel_suggestion');
+    $suggestTxn = request()->query('transaction_number');
+@endphp
+@if($showCancelSuggestion)
+    <div x-data="{ open: true }" x-init="open = true">
+        <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center">
+            <div class="fixed inset-0 bg-black/40" @click="open = false"></div>
+            <div class="relative max-w-lg w-full rounded-2xl bg-white p-6 z-10 shadow-lg">
+                <h3 class="text-lg font-semibold text-slate-900">Want to cancel your booking?</h3>
+                <p class="mt-3 text-sm text-slate-700">We received your proof of payment. If you change your mind, you can start a 5-minute cancellation window now to request a refund. After 5 minutes, cancellation will no longer be available.</p>
+                <div class="mt-4 flex gap-3 justify-end">
+                    <a href="{{ url('/') }}" class="inline-flex items-center justify-center rounded-3xl border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Maybe later</a>
+                    <a href="{{ url('/book/status?transaction_number=' . urlencode($suggestTxn) . '&start_cancellation=1') }}" class="inline-flex items-center justify-center rounded-3xl bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700">Start cancellation</a>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 @if(session()->has('booking_draft'))
     <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="rounded-[1.5rem] border border-pink-200 bg-pink-50 p-4 text-slate-900 shadow-sm">

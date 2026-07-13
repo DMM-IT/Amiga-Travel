@@ -40,6 +40,7 @@ class PaymentProof extends Component
             ->send(new \App\Mail\PaymentProofReceived($this->transaction));
 
         $this->transaction->refresh();
+        session(['cancellation_window_expires_for_' . $this->transaction->booking->transaction_number => now()->addMinutes(5)->timestamp]);
         $this->showThankYou = true;
     }
 

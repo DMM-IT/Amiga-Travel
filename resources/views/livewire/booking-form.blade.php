@@ -332,12 +332,18 @@
                                     <label class="block min-w-0">
                                         <span class="text-emerald-700 font-medium">Name</span>
                                         <div class="mt-2 grid gap-2 sm:grid-cols-3">
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.first_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="First" />
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.middle_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Middle" />
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.last_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Last" />
+                                            <div>
+                                                <input type="text" wire:model.defer="passengers.{{ $index }}.first_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="First" />
+                                                @error('passengers.' . $index . '.first_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
+                                            </div>
+                                            <div>
+                                                <input type="text" wire:model.defer="passengers.{{ $index }}.middle_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Middle" />
+                                            </div>
+                                            <div>
+                                                <input type="text" wire:model.defer="passengers.{{ $index }}.last_name" class="block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Last" />
+                                                @error('passengers.' . $index . '.last_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
+                                            </div>
                                         </div>
-                                        @error('passengers.' . $index . '.first_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        @error('passengers.' . $index . '.last_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                     </label>
 
                                     <label class="block min-w-0">
@@ -358,9 +364,9 @@
 
                                     @if($selectedDiscount && str_contains($discountKey, 'student'))
                                         <label class="block min-w-0">
-                                            <span class="text-emerald-700 font-medium">School name</span>
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.student_school" class="mt-2 block w-full rounded-3xl border border-emerald-300 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="School name" />
-                                            @error('passengers.' . $index . '.student_school')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            <span class="text-emerald-700 font-medium">Upload school ID</span>
+                                            <input type="file" wire:model="studentIdProofs.{{ $index }}" accept="image/*" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                            @error('studentIdProofs.' . $index)<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
 
                                         <label class="block min-w-0">
@@ -570,3 +576,4 @@
         </div>
     </div>
 </div>
+

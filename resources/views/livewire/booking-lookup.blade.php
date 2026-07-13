@@ -47,7 +47,7 @@
                                     <p class="text-sm text-slate-500">Transaction Number</p>
                                     <p class="text-lg font-semibold text-slate-900">{{ $booking->transaction_number }}</p>
                                 </div>
-                                <span class="rounded-full px-4 py-1.5 text-sm font-semibold" style="background:{{ $statusStyle['bg'] }}; color:{{ $statusStyle['text'] }};">
+                                <span class="rounded-full px-4 py-1.5 text-sm font-semibold" @style(['background' => $statusStyle['bg'], 'color' => $statusStyle['text']])>
                                     {{ ucfirst($booking->status) }}
                                 </span>
                             </div>
@@ -109,15 +109,87 @@
                                 <span class="text-lg font-semibold" style="color:#216417;">₱{{ number_format($booking->total_price, 2) }}</span>
                             </div>
 
-                            <div class="flex flex-wrap gap-3">
-                                @if($booking->transaction && in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true) && $booking->status === 'pending')
-                                    <a href="{{ route('payment.show', $booking->transaction) }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
-                                        Complete Payment
-                                    </a>
+                            <div class="space-y-4">
+                                <div class="flex flex-wrap gap-3">
+                                    @if($booking->transaction && in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true) && $booking->status === 'pending')
+                                        <a href="{{ route('payment.show', $booking->transaction) }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
+                                            Complete Payment
+                                        </a>
 
-                                    <button wire:click.prevent="cancelBooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
-                                        Cancel Booking
-                                    </button>
+                                        @if(! $cancellationRequested && ! $cancellationExpired)
+                                            <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
+                                                Cancel Booking
+                                            </button>
+                                        @elseif($cancellationExpired)
+                                            <div class="space-y-2">
+                                                <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-500 shadow-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M10 14l2-2 2 2"></path>
+                                                        <path d="M12 7v5"></path>
+                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                    </svg>
+                                                    Cancellation unavailable
+                                                </button>
+                                                <p class="text-xs text-slate-500">The 5-minute cancellation timer has expired, so this booking can no longer be cancelled here.</p>
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+
+                                @if($cancellationRequested)
+                                    @if(! $cancellationWindowActive)
+                                        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                                            <p class="text-sm font-semibold text-amber-800">Cancellation</p>
+                                            <p class="mt-2 text-sm text-amber-700">Enter where you'd like the refund sent. The 5-minute confirmation window begins when proof is uploaded.</p>
+                                            <label class="mt-3 block">
+                                                <span class="mb-2 block text-sm font-medium text-slate-700">Where should the agency send your refund?</span>
+                                                <input
+                                                    type="text"
+                                                    wire:model.defer="refund_destination"
+                                                    placeholder="e.g. GCash 0917xxxxxxx"
+                                                    class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2"
+                                                    style="--tw-ring-color:#ee018d;"
+                                                />
+                                                @error('refund_destination')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+                                            <div class="mt-4 flex flex-wrap gap-3">
+                                                <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                    Cancel Request
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4" wire:poll.1s="tickCancelCountdown">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-amber-800">Cancellation active</p>
+                                                    <p class="mt-1 text-sm text-amber-700">You started the cancellation timer after uploading proof. Confirm within the next 5 minutes to cancel your booking.</p>
+                                                </div>
+                                                <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700">
+                                                    {{ gmdate('i:s', max(0, $cancelCountdown)) }}
+                                                </span>
+                                            </div>
+                                            <label class="mt-3 block">
+                                                <span class="mb-2 block text-sm font-medium text-slate-700">Where should the agency send your refund?</span>
+                                                <input
+                                                    type="text"
+                                                    wire:model.defer="refund_destination"
+                                                    placeholder="e.g. GCash 0917xxxxxxx"
+                                                    class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2"
+                                                    style="--tw-ring-color:#ee018d;"
+                                                />
+                                                @error('refund_destination')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+                                            <div class="mt-4 flex flex-wrap gap-3">
+                                                <button wire:click.prevent="confirmCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
+                                                    Confirm Cancellation
+                                                </button>
+                                                <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                    Cancel Request
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endif
                                 @endif
                             </div>
                         </div>

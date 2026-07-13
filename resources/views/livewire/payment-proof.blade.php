@@ -13,7 +13,7 @@
 
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a
-                href="{{ route('book') }}"
+                href="{{ url('/?transaction_number=' . urlencode($transaction->booking->transaction_number) . '&show_cancel_suggestion=1') }}"
                 class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                 style="background:#216417;"
             >
