@@ -63,6 +63,7 @@ class FerryRoute extends Model
             })
             ->orderBy('destination')
             ->pluck('destination')
+            ->unique()
             ->values()
             ->all();
     }

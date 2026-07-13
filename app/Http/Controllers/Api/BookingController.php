@@ -33,6 +33,8 @@ class BookingController extends Controller
             'passengers.*.name' => 'required|string|max:255',
             'passengers.*.type' => 'required|string|in:adult,child',
             'passengers.*.discount_id' => 'nullable|integer|exists:discounts,id',
+            'passengers.*.school_name' => 'nullable|string|max:255',
+            'passengers.*.id_number' => 'nullable|string|max:255',
             'accommodation_ids' => 'nullable|array',
             'accommodation_ids.*' => 'integer|exists:accommodations,id',
         ]);
@@ -67,6 +69,8 @@ class BookingController extends Controller
                     'type' => $passengerData['type'],
                     'name' => $passengerData['name'],
                     'discount_id' => $passengerData['discount_id'] ?? null,
+                    'school_name' => $passengerData['school_name'] ?? null,
+                    'id_number' => $passengerData['id_number'] ?? null,
                 ]);
             }
 
@@ -157,5 +161,88 @@ class BookingController extends Controller
             + (count($accommodationIds) * floatval($settings->fee_per_accommodation ?? 0));
 
         return $ferryTotal + floatval($accommodationsTotal) + $serviceFee;
+    }
+
+    public function index(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $bookings = Booking::where('client_email', $request->input('email'))
+            ->with(['passengers.discount', 'accommodations', 'transaction', 'schedule'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'bookings' => $bookings
+        ]);
+    }
+
+    public function uploadProof(Request $request, $id)
+    {
+        $request->validate([
+            'proof' => 'required|file|image|max:10240', // max 10MB file
+        ]);
+
+        $booking = Booking::findOrFail($id);
+        $transaction = $booking->transaction;
+
+        if (!$transaction) {
+            $transaction = Transaction::create([
+                'booking_id' => $booking->id,
+                'payment_status' => 'unpaid',
+            ]);
+        }
+
+        $path = $request->file('proof')->store('proofs', 'public');
+
+        $transaction->update([
+            'proof_of_payment' => $path,
+            'payment_status' => 'pending',
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Proof of payment uploaded successfully!',
+            'proof_url' => asset('storage/' . $path),
+        ]);
+    }
+
+    public function paymentSettings()
+    {
+        $settings = PaymentSetting::current();
+
+        $qrCodeUrl = null;
+        if ($settings->qr_code_path) {
+            $qrCodeUrl = asset('storage/' . $settings->qr_code_path);
+        }
+
+        return response()->json([
+            'status'    => 'success',
+            'qr_code_url' => $qrCodeUrl,
+            'fee_per_person' => floatval($settings->fee_per_person),
+            'fee_per_accommodation' => floatval($settings->fee_per_accommodation),
+        ]);
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        if ($booking->status !== 'pending' && $booking->status !== 'unpaid') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Only pending or unpaid bookings can be cancelled.'
+            ], 400);
+        }
+
+        $booking->update(['status' => 'cancelled']);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Booking cancelled successfully.'
+        ]);
     }
 }

@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final isFirstLaunch = prefs.getBool('first_launch') ?? true;
+  runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
 
 // ==========================================
@@ -72,7 +78,8 @@ class BookingData {
 // APP ENTRY
 // ==========================================
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isFirstLaunch;
+  const MyApp({super.key, required this.isFirstLaunch});
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +100,184 @@ class MyApp extends StatelessWidget {
           elevation: 2,
         ),
       ),
-      home: const MainScreen(),
+      home: SplashLoaderScreen(isFirstLaunch: isFirstLaunch),
+    );
+  }
+}
+
+// ==========================================
+// SPLASH & ONBOARDING
+// ==========================================
+class SplashLoaderScreen extends StatefulWidget {
+  final bool isFirstLaunch;
+  const SplashLoaderScreen({super.key, required this.isFirstLaunch});
+
+  @override
+  State<SplashLoaderScreen> createState() => _SplashLoaderScreenState();
+}
+
+class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => widget.isFirstLaunch ? const OnboardingScreen() : const MainScreen(),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kGreen,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/icon/app_icon.png', width: 120, height: 120, fit: BoxFit.contain),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(color: Colors.white),
+            const SizedBox(height: 16),
+            const Text('Connecting to Amiga Travel...', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  final List<Map<String, String>> _slides = [
+    {
+      'title': 'Welcome to Amiga Gracia',
+      'desc': 'The fastest way to book your ferry, flight, and tour packages online.',
+      'icon': 'explore',
+    },
+    {
+      'title': 'Hassle-Free Travel',
+      'desc': 'Skip the lines at the terminal. Pay securely via GCash or Bank Transfer directly in the app.',
+      'icon': 'payments',
+    },
+    {
+      'title': 'Exclusive Promos & Discounts',
+      'desc': 'Get access to special rates for students, seniors, PWDs, and early bookings.',
+      'icon': 'local_offer',
+    },
+  ];
+
+  void _finishOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('first_launch', false);
+    if (mounted) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentPage = i),
+                itemCount: _slides.length,
+                itemBuilder: (context, i) {
+                  return Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          i == 0 ? Icons.explore : i == 1 ? Icons.payments : Icons.local_offer,
+                          size: 100,
+                          color: kGreen,
+                        ),
+                        const SizedBox(height: 40),
+                        Text(
+                          _slides[i]['title']!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: kSlate800),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _slides[i]['desc']!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 16, color: kSlate600, height: 1.5),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_slides.length, (i) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 8,
+                  width: _currentPage == i ? 24 : 8,
+                  decoration: BoxDecoration(color: _currentPage == i ? kGreen : kSlate200, borderRadius: BorderRadius.circular(4)),
+                );
+              }),
+            ),
+            const SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_currentPage < _slides.length - 1) {
+                      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    } else {
+                      _finishOnboarding();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPink,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: Text(
+                    _currentPage == _slides.length - 1 ? 'Get Started' : 'Next',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -124,13 +308,11 @@ class _MainScreenState extends State<MainScreen> {
         ),
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.directions_boat, color: kGreen, size: 22),
+            Image.asset(
+              'assets/icon/app_icon.png',
+              height: 32,
+              width: 32,
+              fit: BoxFit.contain,
             ),
             const SizedBox(width: 10),
             const Text(
@@ -167,14 +349,14 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_boat_outlined),
-            activeIcon: Icon(Icons.directions_boat),
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore),
             label: 'Travel',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            activeIcon: Icon(Icons.history),
-            label: 'Activity',
+            icon: Icon(Icons.receipt_long_outlined),
+            activeIcon: Icon(Icons.receipt_long),
+            label: 'Transaction',
           ),
         ],
       ),
@@ -202,6 +384,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   List<dynamic> _promotions = [];
   late TabController _tourTabController;
+  final PageController _promoPageController = PageController();
+  int _currentPromoPage = 0;
   bool _promoLoading = true;
 
   final List<Map<String, dynamic>> _domesticPackages = [
@@ -307,6 +491,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _tourTabController.dispose();
+    _promoPageController.dispose();
     super.dispose();
   }
 
@@ -332,91 +517,84 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Hero Banner
-          Container(
+          // Carousel Banner (Hero + Promotions)
+          const SizedBox(height: 16),
+          SizedBox(
             height: 190,
-            width: double.infinity,
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [kGreen, Color(0xFF0e2709)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(color: kGreen.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6))
-              ],
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -10,
-                  bottom: -10,
-                  child: Opacity(
-                    opacity: 0.08,
-                    child: const Icon(Icons.travel_explore, size: 180, color: Colors.white),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(22.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: kPink, borderRadius: BorderRadius.circular(20)),
-                        child: const Text(
-                          'Kay Amiga, Hassle Free Ka!',
-                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+            child: PageView.builder(
+              controller: _promoPageController,
+              onPageChanged: (i) => setState(() => _currentPromoPage = i),
+              itemCount: 1 + _promotions.length,
+              itemBuilder: (context, i) {
+                if (i == 0) {
+                  // Default Green Hero Banner
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [kGreen, Color(0xFF0e2709)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [BoxShadow(color: kGreen.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6))],
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          right: -10,
+                          bottom: -10,
+                          child: Opacity(opacity: 0.08, child: const Icon(Icons.travel_explore, size: 180, color: Colors.white)),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Book Ferry Tickets\n& Flights Online',
-                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Calapan • Batangas • Puerto Galera',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Promotions Banner (landscape, low height)
-          if (_promotions.isNotEmpty) ...[
-            SizedBox(
-              height: 110,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _promotions.length,
-                itemBuilder: (context, i) {
-                  final promo = _promotions[i];
+                        Padding(
+                          padding: const EdgeInsets.all(22.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(color: kPink, borderRadius: BorderRadius.circular(20)),
+                                child: const Text('Kay Amiga, Hassle Free Ka!', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text('Book Ferry Tickets\n& Flights Online', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                              const SizedBox(height: 6),
+                              const Text('Calapan • Batangas • Puerto Galera', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  // Promotional Image from backend
+                  final promo = _promotions[i - 1];
                   final imgUrl = promo['image_url'] as String?;
                   return Container(
-                    width: MediaQuery.of(context).size.width - 48,
-                    margin: const EdgeInsets.only(right: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: kSlate100,
-                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: kSlate100),
                     clipBehavior: Clip.antiAlias,
                     child: imgUrl != null
                         ? Image.network(imgUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.image, color: kSlate400, size: 40)))
                         : const Center(child: Icon(Icons.image, color: kSlate400, size: 40)),
                   );
-                },
-              ),
+                }
+              },
             ),
-            const SizedBox(height: 16),
-          ],
+          ),
+          const SizedBox(height: 12),
+          // Carousel Indicators
+          if (_promotions.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(1 + _promotions.length, (i) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  height: 6,
+                  width: _currentPromoPage == i ? 18 : 6,
+                  decoration: BoxDecoration(color: _currentPromoPage == i ? kGreen : kSlate200, borderRadius: BorderRadius.circular(3)),
+                );
+              }),
+            ),
+          const SizedBox(height: 8),
 
           // Track Booking
           Padding(
@@ -556,7 +734,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 1.5,
+                    childAspectRatio: 1.3,
                   ),
                   itemBuilder: (context, i) {
                     final s = _services[i];
@@ -923,9 +1101,9 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _label('Origin'),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            value: _origin,
+                            value: _origins.contains(_origin) ? _origin : null,
                             hint: const Text('Select Origin'),
-                            items: _origins.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                            items: _origins.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                             onChanged: (v) {
                               if (v != null) {
                                 setState(() { _origin = v; _destination = null; _destinations = []; });
@@ -942,9 +1120,9 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _loadingDestinations
                               ? const SizedBox(height: 52, child: Center(child: CircularProgressIndicator(color: kGreen)))
                               : DropdownButtonFormField<String>(
-                                  value: _destination,
+                                  value: _destinations.contains(_destination) ? _destination : null,
                                   hint: const Text('Select Destination'),
-                                  items: _destinations.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                                  items: _destinations.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                                   onChanged: (v) => setState(() => _destination = v),
                                   decoration: _dropDecor(Icons.navigation),
                                 ),
@@ -1034,15 +1212,37 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                   ),
                                   const SizedBox(height: 10),
                                   GestureDetector(
-                                    onTap: () async {
-                                      final url = Uri.parse('http://10.0.2.2:8000/services');
-                                      if (await canLaunchUrl(url)) await launchUrl(url, mode: LaunchMode.externalApplication);
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Row(
+                                            children: [
+                                              Icon(Icons.info_outline, color: kPink),
+                                              SizedBox(width: 8),
+                                              Text('Infant Passenger Info', style: TextStyle(fontSize: 16)),
+                                            ],
+                                          ),
+                                          content: const Text(
+                                            'Infants (below 2 years old) do not need to be added to the passenger list in the app.\n\n'
+                                            'Instead, a flat fare of ₱500 per infant must be paid directly at the terminal counter before boarding.',
+                                            style: TextStyle(fontSize: 14, color: kSlate600, height: 1.5),
+                                          ),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(ctx),
+                                              child: const Text('Got it', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
                                     },
                                     child: const Row(
                                       children: [
-                                        Text('Learn More', style: TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13)),
+                                        Text('Info', style: TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13)),
                                         SizedBox(width: 4),
-                                        Icon(Icons.arrow_forward, color: kPink, size: 14),
+                                        Icon(Icons.info_outline, color: kPink, size: 14),
                                       ],
                                     ),
                                   ),
@@ -1221,6 +1421,75 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool _obscure = true;
   bool _isSignUp = false;
 
+  List<dynamic> _bookings = [];
+  bool _loadingBookings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (UserSession.isLoggedIn) {
+      _fetchBookings();
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _nameCtrl.dispose();
+    super.dispose();
+  }
+
+  void _fetchBookings() async {
+    setState(() => _loadingBookings = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/bookings?email=${Uri.encodeComponent(UserSession.email)}'),
+        headers: {'Accept': 'application/json'},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _bookings = data['bookings'];
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching bookings: $e');
+    } finally {
+      setState(() => _loadingBookings = false);
+    }
+  }
+
+  void _cancelBooking(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel Booking'),
+        content: const Text('Are you sure you want to cancel this booking?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No', style: TextStyle(color: kSlate600))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Yes, Cancel', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.post(Uri.parse('$baseUrl/api/bookings/$id/cancel'), headers: {'Accept': 'application/json'});
+      if (res.statusCode == 200) {
+        _fetchBookings();
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking cancelled successfully.'), backgroundColor: Colors.green));
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to cancel booking.'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+    }
+  }
+
   void _submitAuth() async {
     final email = _emailCtrl.text.trim();
     final password = _passCtrl.text;
@@ -1258,6 +1527,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.token = data['token'];
         });
         widget.onLoginSuccess();
+        _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_isSignUp ? 'Registration successful!' : 'Welcome back, ${data['user']['name']}!'),
@@ -1373,25 +1643,132 @@ class _ActivityScreenState extends State<ActivityScreen> {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        const Text('My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
-        const SizedBox(height: 12),
-        const Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 48),
-            child: Column(
-              children: [
-                Icon(Icons.receipt_long, size: 64, color: kSlate200),
-                SizedBox(height: 16),
-                Text('No bookings yet', style: TextStyle(color: kSlate400, fontSize: 16)),
-                Text('Your bookings will appear here after you book.', style: TextStyle(color: kSlate400, fontSize: 12), textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        ),
-      ],
+    if (_loadingBookings) {
+      return const Center(child: CircularProgressIndicator(color: kGreen));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async => _fetchBookings(),
+      color: kGreen,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text('My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+          const SizedBox(height: 12),
+          if (_bookings.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
+                child: Column(
+                  children: [
+                    Icon(Icons.receipt_long, size: 64, color: kSlate200),
+                    SizedBox(height: 16),
+                    Text('No bookings yet', style: TextStyle(color: kSlate400, fontSize: 16)),
+                    Text('Your bookings will appear here after you book.', style: TextStyle(color: kSlate400, fontSize: 12), textAlign: TextAlign.center),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._bookings.map((b) {
+              final status = b['status']?.toString() ?? 'pending';
+              Color statusColor = Colors.orange;
+              if (status == 'confirmed' || status == 'paid') statusColor = kGreen;
+              if (status == 'cancelled') statusColor = Colors.red;
+
+              return Card(
+                color: Colors.white,
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            b['transaction_number'] ?? '',
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              status.toUpperCase(),
+                              style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 20),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, color: kPink, size: 16),
+                          const SizedBox(width: 6),
+                          Text('${b['origin']} → ${b['destination']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today, color: kSlate400, size: 14),
+                          const SizedBox(width: 6),
+                          Text(b['departure_date'] != null ? b['departure_date'].toString().split('T')[0] : '', style: const TextStyle(fontSize: 12, color: kSlate600)),
+                          if (b['return_date'] != null) ...[
+                            const Text('  |  Return: ', style: TextStyle(fontSize: 12, color: kSlate400)),
+                            Text(b['return_date'].toString().split('T')[0], style: const TextStyle(fontSize: 12, color: kSlate600)),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.directions_boat, color: kSlate400, size: 14),
+                          const SizedBox(width: 6),
+                          Text(b['schedule_summary'] ?? b['schedule_service'] ?? '', style: const TextStyle(fontSize: 12, color: kSlate600)),
+                        ],
+                      ),
+                      const Divider(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '₱${b['total_price']}',
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: kPink),
+                          ),
+                          Text(
+                            b['created_at'] != null ? 'Booked: ${b['created_at'].toString().split('T')[0]}' : '',
+                            style: const TextStyle(fontSize: 11, color: kSlate400),
+                          ),
+                        ],
+                      ),
+                      if (status == 'pending' || status == 'unpaid') ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () => _cancelBooking(b['id']),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text('Cancel Booking', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+        ],
+      ),
     );
   }
 }
@@ -1714,6 +2091,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
   final _formKey = GlobalKey<FormState>();
   List<Map<String, dynamic>> _discounts = [];
   List<TextEditingController> _nameControllers = [];
+  List<TextEditingController> _schoolControllers = [];
+  List<TextEditingController> _idControllers = [];
 
   static const _steps = ['Route', 'Schedule', 'Discount', 'Stay', 'Submit'];
 
@@ -1723,12 +2102,20 @@ class _DiscountScreenState extends State<DiscountScreen> {
     _nameControllers = List.generate(widget.booking.passengers.length, (i) {
       return TextEditingController(text: widget.booking.passengers[i]['name'] ?? '');
     });
+    _schoolControllers = List.generate(widget.booking.passengers.length, (i) {
+      return TextEditingController(text: widget.booking.passengers[i]['school_name'] ?? '');
+    });
+    _idControllers = List.generate(widget.booking.passengers.length, (i) {
+      return TextEditingController(text: widget.booking.passengers[i]['id_number'] ?? '');
+    });
     _fetchDiscounts();
   }
 
   @override
   void dispose() {
     for (var c in _nameControllers) c.dispose();
+    for (var c in _schoolControllers) c.dispose();
+    for (var c in _idControllers) c.dispose();
     super.dispose();
   }
 
@@ -1749,6 +2136,21 @@ class _DiscountScreenState extends State<DiscountScreen> {
     if (!_formKey.currentState!.validate()) return;
     for (int i = 0; i < widget.booking.passengers.length; i++) {
       widget.booking.passengers[i]['name'] = _nameControllers[i].text.trim();
+      
+      final discId = widget.booking.passengers[i]['discount_id'];
+      final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
+      final discName = disc['name']?.toString().toLowerCase() ?? '';
+      
+      if (discName == 'student') {
+        widget.booking.passengers[i]['school_name'] = _schoolControllers[i].text.trim();
+        widget.booking.passengers[i]['id_number'] = _idControllers[i].text.trim();
+      } else if (discName == 'senior citizen' || discName == 'pwd') {
+        widget.booking.passengers[i]['school_name'] = null;
+        widget.booking.passengers[i]['id_number'] = _idControllers[i].text.trim();
+      } else {
+        widget.booking.passengers[i]['school_name'] = null;
+        widget.booking.passengers[i]['id_number'] = null;
+      }
     }
     Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: widget.booking)));
   }
@@ -1819,17 +2221,84 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 hint: const Text('No Discount'),
                                 items: [
                                   const DropdownMenuItem<int?>(value: null, child: Text('No Discount')),
-                                  ..._discounts.map((d) => DropdownMenuItem<int?>(
+                                  ..._discounts
+                                      .where((d) => d['name'].toString().toLowerCase() != 'infant')
+                                      .map((d) => DropdownMenuItem<int?>(
                                     value: d['id'] as int,
                                     child: Text('${d['name']} (${d['percentage']}% off)'),
                                   )),
                                 ],
-                                onChanged: (v) => setState(() => pax[i]['discount_id'] = v),
+                                onChanged: (v) {
+                                  setState(() {
+                                    pax[i]['discount_id'] = v;
+                                  });
+                                },
                                 decoration: InputDecoration(
                                   labelText: 'Discount',
                                   prefixIcon: const Icon(Icons.local_offer, color: kGreen, size: 18),
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
+                              ),
+                              Builder(
+                                builder: (context) {
+                                  final discId = pax[i]['discount_id'];
+                                  final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
+                                  final discName = disc['name']?.toString().toLowerCase() ?? '';
+
+                                  if (discName == 'student') {
+                                    return Column(
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        TextFormField(
+                                          controller: _schoolControllers[i],
+                                          decoration: InputDecoration(
+                                            labelText: 'School Name *',
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'School name is required' : null,
+                                        ),
+                                        const SizedBox(height: 10),
+                                        TextFormField(
+                                          controller: _idControllers[i],
+                                          decoration: InputDecoration(
+                                            labelText: 'Student ID Number *',
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Student ID is required' : null,
+                                        ),
+                                      ],
+                                    );
+                                  } else if (discName == 'senior citizen') {
+                                    return Column(
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        TextFormField(
+                                          controller: _idControllers[i],
+                                          decoration: InputDecoration(
+                                            labelText: 'Senior Citizen ID Number *',
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Senior ID is required' : null,
+                                        ),
+                                      ],
+                                    );
+                                  } else if (discName == 'pwd') {
+                                    return Column(
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        TextFormField(
+                                          controller: _idControllers[i],
+                                          decoration: InputDecoration(
+                                            labelText: 'PWD ID Number *',
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                          ),
+                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'PWD ID is required' : null,
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
                               ),
                             ],
                           ],
@@ -2033,6 +2502,18 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   late TextEditingController _clientEmailCtrl;
   bool _isSubmitting = false;
 
+  // Payment / QR
+  String? _qrCodeUrl;
+  bool _loadingPaymentSettings = true;
+
+  // Proof upload state (shown after booking is created)
+  int? _bookingId;
+  String? _transactionNumber;
+  double? _totalPrice;
+  XFile? _proofImage;
+  bool _isUploadingProof = false;
+  bool _proofUploaded = false;
+
   static const _steps = ['Route', 'Schedule', 'Discount', 'Stay', 'Submit'];
 
   @override
@@ -2040,6 +2521,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     super.initState();
     _clientNameCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.username : widget.booking.clientName);
     _clientEmailCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.email : widget.booking.clientEmail);
+    _fetchPaymentSettings();
   }
 
   @override
@@ -2047,6 +2529,22 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     _clientNameCtrl.dispose();
     _clientEmailCtrl.dispose();
     super.dispose();
+  }
+
+  void _fetchPaymentSettings() async {
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.get(Uri.parse('$baseUrl/api/payment-settings'), headers: {'Accept': 'application/json'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['status'] == 'success') {
+          setState(() => _qrCodeUrl = data['qr_code_url']);
+        }
+      }
+    } catch (_) {}
+    finally {
+      setState(() => _loadingPaymentSettings = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -2073,16 +2571,12 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => BookingSuccessScreen(
-              transactionNumber: data['transaction_number'],
-              totalPrice: (data['total_price'] as num).toDouble(),
-            ),
-          ),
-          (route) => route.isFirst,
-        );
+        // Store booking details — show payment/QR screen instead of navigating away
+        setState(() {
+          _bookingId = data['booking_id'] as int?;
+          _transactionNumber = data['transaction_number'];
+          _totalPrice = (data['total_price'] as num).toDouble();
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'Booking failed.'), backgroundColor: Colors.red),
@@ -2097,8 +2591,252 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     }
   }
 
+  Future<void> _pickProofImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked != null) setState(() => _proofImage = picked);
+  }
+
+  Future<void> _uploadProof() async {
+    if (_proofImage == null || _bookingId == null) return;
+    setState(() => _isUploadingProof = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/$_bookingId/proof'));
+      request.headers['Accept'] = 'application/json';
+      request.files.add(await http.MultipartFile.fromPath('proof', _proofImage!.path));
+      final streamed = await request.send();
+      final res = await http.Response.fromStream(streamed);
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() => _proofUploaded = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Proof of payment uploaded! We will verify it shortly.'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'Upload failed.'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Upload error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      setState(() => _isUploadingProof = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ── STEP B: Booking created — show payment + proof upload ──
+    if (_bookingId != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Payment'), automaticallyImplyLeading: false),
+        body: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            // Success banner
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: kGreen.withOpacity(0.3))),
+              child: Column(
+                children: [
+                  const Icon(Icons.check_circle, color: kGreen, size: 48),
+                  const SizedBox(height: 8),
+                  const Text('Booking Confirmed!', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: kGreen)),
+                  const SizedBox(height: 4),
+                  Text('Transaction #: $_transactionNumber', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Text('Total: ₱${_totalPrice?.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kPink)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // QR Code section
+            Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Payment QR Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    const SizedBox(height: 4),
+                    const Text('Scan the QR code below to pay via GCash, Maya, or bank transfer.', style: TextStyle(fontSize: 12, color: kSlate500)),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: _loadingPaymentSettings
+                          ? const CircularProgressIndicator(color: kGreen)
+                          : _qrCodeUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    _qrCodeUrl!,
+                                    width: 220,
+                                    height: 220,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 220, height: 220,
+                                      decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                                      child: const Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.qr_code, size: 64, color: kSlate400),
+                                          SizedBox(height: 8),
+                                          Text('QR Code unavailable', style: TextStyle(color: kSlate400, fontSize: 12)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  width: 220, height: 220,
+                                  decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.qr_code, size: 64, color: kSlate400),
+                                      SizedBox(height: 8),
+                                      Text('No QR code set', style: TextStyle(color: kSlate400, fontSize: 12)),
+                                      SizedBox(height: 4),
+                                      Text('Please contact the admin.', style: TextStyle(color: kSlate400, fontSize: 11)),
+                                    ],
+                                  ),
+                                ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Proof of payment upload section
+            Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Attach Proof of Payment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    const SizedBox(height: 4),
+                    const Text('Upload a screenshot or photo of your payment receipt.', style: TextStyle(fontSize: 12, color: kSlate500)),
+                    const SizedBox(height: 16),
+
+                    if (_proofUploaded)
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.green),
+                            SizedBox(width: 10),
+                            Expanded(child: Text('Proof uploaded! Our team will verify your payment within 24 hours.', style: TextStyle(color: Colors.green, fontSize: 13))),
+                          ],
+                        ),
+                      )
+                    else ...[
+                      // Image preview
+                      if (_proofImage != null) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(File(_proofImage!.path), height: 180, width: double.infinity, fit: BoxFit.cover),
+                        ),
+                        const SizedBox(height: 12),
+                      ] else
+                        GestureDetector(
+                          onTap: _pickProofImage,
+                          child: Container(
+                            height: 120,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: kSlate50,
+                              border: Border.all(color: kSlate200, width: 2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_photo_alternate_outlined, size: 40, color: kSlate400),
+                                SizedBox(height: 8),
+                                Text('Tap to select image', style: TextStyle(color: kSlate400, fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          if (_proofImage != null) ...[
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _pickProofImage,
+                                icon: const Icon(Icons.image, size: 16),
+                                label: const Text('Change Image'),
+                                style: OutlinedButton.styleFrom(foregroundColor: kSlate600, side: const BorderSide(color: kSlate200)),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                          ],
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton.icon(
+                              onPressed: (_proofImage == null || _isUploadingProof) ? null : _uploadProof,
+                              icon: _isUploadingProof
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                  : const Icon(Icons.upload, size: 16),
+                              label: Text(_isUploadingProof ? 'Uploading...' : 'Upload Proof'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kGreen,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Done button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BookingSuccessScreen(
+                      transactionNumber: _transactionNumber!,
+                      totalPrice: _totalPrice!,
+                    ),
+                  ),
+                  (route) => route.isFirst,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPink,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 4,
+                ),
+                child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ── STEP A: Review form before submitting ──
     final s = widget.booking.selectedSchedule!;
     final pax = widget.booking.passengers;
 
@@ -2134,7 +2872,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   const SizedBox(height: 16),
 
                   // Add-ons
-                  if (widget.booking.selectedAccommodationIds.isNotEmpty)
+                  if (widget.booking.selectedAccommodationIds.isNotEmpty) ...[
                     _SummarySection(title: 'Add-on Stays', children: [
                       ...widget.booking.selectedAccommodationIds.map((id) {
                         final acc = widget.booking.availableAccommodations.firstWhere(
@@ -2143,7 +2881,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                         return _SummaryRow(acc['name'] as String, '₱${acc['price']}');
                       }),
                     ]),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                  ],
 
                   // Contact
                   Card(

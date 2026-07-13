@@ -15,6 +15,10 @@ Route::get('/origins', [ScheduleController::class, 'origins']);
 Route::get('/destinations', [ScheduleController::class, 'destinations']);
 Route::post('/schedules', [ScheduleController::class, 'search']);
 Route::post('/bookings', [BookingController::class, 'store']);
+Route::get('/bookings', [BookingController::class, 'index']);
+Route::post('/bookings/{id}/proof', [BookingController::class, 'uploadProof']);
+Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+Route::get('/payment-settings', [BookingController::class, 'paymentSettings']);
 
 Route::get('/promotions', [PromotionController::class, 'index']);
 Route::get('/discounts', [DiscountController::class, 'index']);
