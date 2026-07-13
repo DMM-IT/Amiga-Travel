@@ -28,6 +28,86 @@ class ManageWebsiteSettings extends Page implements HasForms
 
         return $user instanceof User && $user->hasAdminPermission('manage_website_settings');
     }
+
+    private function getPageContentSchema(): array
+    {
+        // Provide different form fields per page to allow page-specific content
+        switch ($this->currentPage) {
+            case 'about':
+                return [
+                    Section::make('About Page')
+                        ->description('Main content for the About page')
+                        ->schema([
+                            FileUpload::make('content.hero_image')
+                                ->label('Hero/Banner Image')
+                                ->image()
+                                ->directory('website-settings/pages'),
+                            Textarea::make('content.title')
+                                ->label('Page Title')
+                                ->rows(2)
+                                ->maxLength(255),
+                            Textarea::make('content.description')
+                                ->label('Page Description/Content')
+                                ->rows(5)
+                                ->columnSpanFull(),
+                            Repeater::make('content.team')
+                                ->label('Team Members')
+                                ->schema([
+                                    TextInput::make('name')->label('Name')->required(),
+                                    TextInput::make('role')->label('Role'),
+                                    Textarea::make('bio')->label('Bio')->rows(2),
+                                    FileUpload::make('photo')->label('Photo')->image()->directory('website-settings/pages/team'),
+                                ])
+                                ->columns(1),
+                        ]),
+                ];
+
+            case 'contact':
+                return [
+                    Section::make('Contact Information')
+                        ->description('Contact details shown on Contact Us page')
+                        ->schema([
+                            TextInput::make('content.contact_name')
+                                ->label('Contact Name')
+                                ->placeholder('Amiga Travel Support'),
+                            TextInput::make('content.phone')
+                                ->label('Phone Number')
+                                ->tel(),
+                            TextInput::make('content.email')
+                                ->label('Email Address')
+                                ->email(),
+                            Textarea::make('content.address')
+                                ->label('Address')
+                                ->rows(3)
+                                ->columnSpanFull(),
+                            Textarea::make('content.map_embed')
+                                ->label('Map Embed (iframe)')
+                                ->rows(4)
+                                ->helperText('Paste iframe embed code for map if available.'),
+                        ]),
+                ];
+
+            default:
+                return [
+                    Section::make('Page Information')
+                        ->description('Main content for this page')
+                        ->schema([
+                            FileUpload::make('content.hero_image')
+                                ->label('Hero/Banner Image')
+                                ->image()
+                                ->directory('website-settings/pages'),
+                            Textarea::make('content.title')
+                                ->label('Page Title')
+                                ->rows(2)
+                                ->maxLength(255),
+                            Textarea::make('content.description')
+                                ->label('Page Description/Content')
+                                ->rows(5)
+                                ->columnSpanFull(),
+                        ]),
+                ];
+        }
+    }
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
@@ -217,26 +297,9 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
-                            // Page Content Tab
+                            // Page Content Tab (per-page schemas)
                             Tabs\Tab::make('Page Content')
-                                ->schema([
-                                    Section::make('Page Information')
-                                        ->description('Main content for this page')
-                                        ->schema([
-                                            FileUpload::make('content.hero_image')
-                                                ->label('Hero/Banner Image')
-                                                ->image()
-                                                ->directory('website-settings/pages'),
-                                            Textarea::make('content.title')
-                                                ->label('Page Title')
-                                                ->rows(2)
-                                                ->maxLength(255),
-                                            Textarea::make('content.description')
-                                                ->label('Page Description/Content')
-                                                ->rows(5)
-                                                ->columnSpanFull(),
-                                        ]),
-                                ])
+                                ->schema($this->getPageContentSchema())
                                 ->visible(fn () => $this->currentPage !== 'home'),
 
                             // Welcome Section Tab (only for home)
