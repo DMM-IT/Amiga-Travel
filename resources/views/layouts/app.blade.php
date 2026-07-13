@@ -20,7 +20,7 @@
                     <div class="flex items-center gap-2">
                         <a href="{{ url('/') }}" class="flex items-center gap-2">
                             <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo.jpg') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-12 w-auto rounded bg-white p-1">
-                            <span class="font-bold text-xl uppercase tracking-wider hidden sm:block">{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}</span>
+                            <span class="font-bold text-xl uppercase tracking-wider">{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}</span>
                         </a>
                     </div>
                     <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
@@ -32,12 +32,43 @@
                         <a href="{{ url('/contact-us') }}" class="border-b-2 {{ request()->is('contact-us') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Contact Us</a>
                         <a href="{{ url('/download') }}" class="border-b-2 {{ request()->is('download') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Download</a>
                     </nav>
-                    <div class="hidden xl:flex items-center gap-6 text-sm text-white/90">
+
+                    <div class="flex items-center gap-4">
+                        <div class="hidden xl:flex items-center gap-6 text-sm text-white/90">
+                            @if(!empty($headerData['phone']))
+                                <a href="tel:{{ $headerData['phone'] }}" class="hover:text-[#ee018d]">{{ $headerData['phone'] }}</a>
+                            @endif
+                            @if(!empty($headerData['email']))
+                                <a href="mailto:{{ $headerData['email'] }}" class="hover:text-[#ee018d]">{{ $headerData['email'] }}</a>
+                            @endif
+                        </div>
+                        <button id="mobile-menu-button" aria-expanded="false" aria-label="Toggle navigation" class="inline-flex items-center justify-center rounded-lg border border-white/20 p-2 text-white hover:bg-white/10 md:hidden focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <svg id="menu-open-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <svg id="menu-close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mobile-menu" class="md:hidden hidden bg-[#1e4c21] border-t border-white/10">
+                <div class="max-w-full mx-auto px-4 py-4 space-y-3">
+                    <a href="{{ url('/') }}" class="block rounded-xl px-4 py-3 {{ request()->is('/') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Home</a>
+                    <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">About</a>
+                    <a href="{{ url('/gallery') }}" class="block rounded-xl px-4 py-3 {{ request()->is('gallery') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Gallery</a>
+                    <a href="{{ url('/services') }}" class="block rounded-xl px-4 py-3 {{ request()->is('services') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Services</a>
+                    <a href="{{ url('/tour-package') }}" class="block rounded-xl px-4 py-3 {{ request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Tour Package</a>
+                    <a href="{{ url('/contact-us') }}" class="block rounded-xl px-4 py-3 {{ request()->is('contact-us') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Contact Us</a>
+                    <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Download</a>
+                    <div class="border-t border-white/10 pt-3">
                         @if(!empty($headerData['phone']))
-                            <a href="tel:{{ $headerData['phone'] }}" class="hover:text-[#ee018d]">{{ $headerData['phone'] }}</a>
+                            <a href="tel:{{ $headerData['phone'] }}" class="block text-sm text-white/90 hover:text-white">Call us: {{ $headerData['phone'] }}</a>
                         @endif
                         @if(!empty($headerData['email']))
-                            <a href="mailto:{{ $headerData['email'] }}" class="hover:text-[#ee018d]">{{ $headerData['email'] }}</a>
+                            <a href="mailto:{{ $headerData['email'] }}" class="block text-sm text-white/90 hover:text-white">Email: {{ $headerData['email'] }}</a>
                         @endif
                     </div>
                 </div>
