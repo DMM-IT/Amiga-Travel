@@ -41,7 +41,7 @@
 @endif
 <div class="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row items-stretch gap-6">
     <!-- Left Column: Scrolling Image Carousel -->
-    <div class="w-full lg:w-1/2 rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-slate-200 relative bg-white flex items-center justify-center min-h-[520px]"
+    <div class="w-full lg:w-1/2 rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-slate-200 relative bg-white flex items-center justify-center min-h-[280px] sm:min-h-[360px] lg:min-h-[520px]"
          x-data="{
             activeSlide: 0,
             slides: [
@@ -67,7 +67,7 @@
          }">
         
         <template x-if="slides.length > 0">
-            <div class="w-full h-full min-h-[380px] relative group">
+            <div class="w-full h-full min-h-[240px] sm:min-h-[340px] relative group aspect-[16/9] sm:aspect-[3/2] lg:aspect-[4/3]">
                 <!-- Images -->
                 <template x-for="(slide, index) in slides" :key="index">
                     <img :src="slide" 
