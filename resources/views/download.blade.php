@@ -72,15 +72,20 @@
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <!-- Left: Text Content -->
                 <div class="flex-1 text-center lg:text-left">
-                    <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#ee018d] bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 mb-6">
-                        <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-3.598 1.543A3.002 3.002 0 007 13a3 3 0 00-2 5.236V18a1 1 0 001 1h8a1 1 0 001-1v-.764A3.001 3.001 0 0013 13a3.002 3.002 0 00-.244-1.18l2.85-1.22a1 1 0 000-1.84l-5.212-2.68zM7 14a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z"/></svg>
-                        {{ $pageContent['badge'] ?? 'Free App' }}
-                    </span>
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-                        {!! $pageContent['title'] ?? 'Download the<br><span class="text-[#ee018d]">Amiga Gracia</span><br>App' !!}
-                    </h1>
+                    <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6 mb-6">
+                        <img src="{{ asset('images/app-icon-original.png') }}" alt="Amiga Gracia" class="h-20 w-20 rounded-2xl shadow-xl border border-white/20 bg-white object-contain">
+                        <div class="flex flex-col items-center lg:items-start">
+                            <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 mb-3">
+                                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-3.598 1.543A3.002 3.002 0 007 13a3 3 0 00-2 5.236V18a1 1 0 001 1h8a1 1 0 001-1v-.764A3.001 3.001 0 0013 13a3.002 3.002 0 00-.244-1.18l2.85-1.22a1 1 0 000-1.84l-5.212-2.68zM7 14a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z"/></svg>
+                                Android APK & Web App
+                            </span>
+                            <h1 class="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                                {!! $pageContent['title'] ?? 'Get the <span class="text-emerald-400">Amiga Gracia</span> App' !!}
+                            </h1>
+                        </div>
+                    </div>
                     <p class="mt-6 text-base sm:text-lg text-white/80 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                        {{ $pageContent['description'] ?? 'Book ferry tickets, flights, and tour packages right from your phone. Install our app for a fast, native-like experience — no app store needed.' }}
+                        {{ $pageContent['description'] ?? 'Book ferry tickets, flights, and tour packages right from your phone. Download our compiled Android APK or run the web app for a fast, hassle-free booking experience.' }}
                     </p>
 
                     <!-- Install Button (PWA) & APK Download -->
@@ -89,18 +94,18 @@
                             x-show="canInstall"
                             x-cloak
                             @click="install()"
-                            class="group inline-flex items-center gap-3 px-8 py-4 bg-[#ee018d] hover:bg-pink-600 text-white font-bold text-base rounded-2xl shadow-lg shadow-pink-900/30 hover:shadow-xl hover:shadow-pink-900/40 transition-all duration-300 hover:-translate-y-0.5"
+                            class="group inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-900/30 hover:shadow-xl hover:shadow-emerald-900/40 transition-all duration-300 hover:-translate-y-0.5"
                         >
                             <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
-                            Install App
+                            Install Web App
                         </button>
 
                         <!-- Fallback: Manual Instructions -->
                         <div x-show="!canInstall" x-cloak class="flex flex-col sm:flex-row items-center gap-4">
                             <a href="/"
-                               class="group inline-flex items-center gap-3 px-8 py-4 bg-[#ee018d] hover:bg-pink-600 text-white font-bold text-base rounded-2xl shadow-lg shadow-pink-900/30 hover:shadow-xl hover:shadow-pink-900/40 transition-all duration-300 hover:-translate-y-0.5"
+                               class="group inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-900/30 hover:shadow-xl hover:shadow-emerald-900/40 transition-all duration-300 hover:-translate-y-0.5"
                             >
                                 <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -111,10 +116,10 @@
 
                         <!-- Direct Flutter APK Download Link -->
                         <a href="{{ asset('downloads/amiga-travel.apk') }}"
-                           class="group inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-900/30 hover:shadow-xl hover:shadow-emerald-900/40 transition-all duration-300 hover:-translate-y-0.5"
+                           class="group inline-flex items-center gap-3 px-8 py-4 bg-white text-emerald-950 hover:bg-slate-100 font-bold text-base rounded-2xl shadow-lg shadow-black/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 border border-white/20"
                            download
                         >
-                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current" viewBox="0 0 24 24">
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current text-emerald-600" viewBox="0 0 24 24">
                                 <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM11.1 5.6a.49.49 0 00-.23-.65l-1.3-.75a.51.51 0 00-.69.18.49.49 0 00.18.69l1.3.75c.08.05.17.08.26.08.17 0 .34-.09.43-.25zM12.9 5.6a.49.49 0 00.43.25c.09 0 .18-.03.26-.08l1.3-.75a.49.49 0 00.18-.69.51.51 0 00-.69-.18l-1.3.75a.49.49 0 00-.23.65zM12 5a3 3 0 013 3H9a3 3 0 013-3zM19.5 8c-.83 0-1.5.67-1.5 1.5v6c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-6c0-.83-.67-1.5-1.5-1.5zM4.5 8C3.67 8 3 8.67 3 9.5v6c0 .83.67 1.5 1.5 1.5S6 16.33 6 15.5v-6C6 8.67 5.33 8 4.5 8z"/>
                             </svg>
                             Download Android APK
@@ -124,6 +129,29 @@
                         <div x-show="isInstalled" x-cloak class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-sm text-emerald-300 font-semibold text-sm rounded-full border border-emerald-400/30">
                             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                             App Installed
+                        </div>
+                    </div>
+
+                    <!-- App Info Grid -->
+                    <div class="mt-8 pt-8 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-white/70 max-w-lg mx-auto lg:mx-0 text-left">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Version</p>
+                            <p class="text-sm font-semibold text-white mt-0.5">1.0.0 (Release)</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">File Size</p>
+                            <p class="text-sm font-semibold text-white mt-0.5">17.6 MB</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Requires</p>
+                            <p class="text-sm font-semibold text-white mt-0.5">Android 8.0+</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Verified</p>
+                            <p class="text-sm font-semibold text-white mt-0.5 flex items-center gap-1">
+                                <svg class="h-3.5 w-3.5 text-emerald-400 fill-current" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                Safe
+                            </p>
                         </div>
                     </div>
 
@@ -150,25 +178,25 @@
                         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-black/40 rounded-b-2xl z-20"></div>
                         <!-- Phone Screen Content -->
                         <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                            <img src="{{ asset('images/amiga-logo-transparent.png') }}" alt="Amiga Gracia App" class="h-20 w-auto mb-4 drop-shadow-lg">
+                            <img src="{{ asset('images/app-icon-original.png') }}" alt="Amiga Gracia App" class="h-24 w-24 rounded-3xl mb-4 drop-shadow-xl border-2 border-white/25 bg-white object-contain">
                             <h3 class="text-white font-extrabold text-xl tracking-wide">Amiga Gracia</h3>
                             <p class="text-white/60 text-xs mt-1">Travel Services</p>
                             <div class="mt-6 w-full space-y-3">
                                 <div class="bg-white/10 rounded-xl p-3 flex items-center gap-3">
-                                    <div class="h-8 w-8 rounded-lg bg-[#ee018d]/30 flex items-center justify-center">
-                                        <svg class="h-4 w-4 text-[#ee018d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <div class="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                                        <svg class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                     </div>
                                     <span class="text-white/80 text-xs font-medium">Book Ferry Tickets</span>
                                 </div>
                                 <div class="bg-white/10 rounded-xl p-3 flex items-center gap-3">
-                                    <div class="h-8 w-8 rounded-lg bg-emerald-500/30 flex items-center justify-center">
+                                    <div class="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                                         <svg class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                                     </div>
                                     <span class="text-white/80 text-xs font-medium">Flight Bookings</span>
                                 </div>
                                 <div class="bg-white/10 rounded-xl p-3 flex items-center gap-3">
-                                    <div class="h-8 w-8 rounded-lg bg-blue-500/30 flex items-center justify-center">
-                                        <svg class="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <div class="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                                        <svg class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     </div>
                                     <span class="text-white/80 text-xs font-medium">Tour Packages</span>
                                 </div>
@@ -176,7 +204,7 @@
                         </div>
                     </div>
                     <!-- Glow behind phone -->
-                    <div class="absolute -inset-8 bg-[#ee018d]/10 rounded-full blur-3xl -z-10"></div>
+                    <div class="absolute -inset-8 bg-emerald-500/10 rounded-full blur-3xl -z-10"></div>
                 </div>
             </div>
         </div>

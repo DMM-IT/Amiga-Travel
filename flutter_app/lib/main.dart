@@ -135,16 +135,16 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kGreen,
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/icon/app_icon.png', width: 120, height: 120, fit: BoxFit.contain),
+            Image.asset('assets/icon/app_icon.png', width: 180, height: 180, fit: BoxFit.contain),
             const SizedBox(height: 24),
-            const CircularProgressIndicator(color: Colors.white),
+            const CircularProgressIndicator(color: kGreen),
             const SizedBox(height: 16),
-            const Text('Connecting to Amiga Travel...', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Connecting to Amiga Travel...', style: TextStyle(color: kGreen, fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -308,11 +308,14 @@ class _MainScreenState extends State<MainScreen> {
         ),
         title: Row(
           children: [
-            Image.asset(
-              'assets/icon/app_icon.png',
-              height: 32,
-              width: 32,
-              fit: BoxFit.contain,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                'assets/icon/app_icon.png',
+                height: 32,
+                width: 32,
+                fit: BoxFit.contain,
+              ),
             ),
             const SizedBox(width: 10),
             const Text(
