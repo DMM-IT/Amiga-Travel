@@ -26,6 +26,8 @@ class ManagePaymentSettings extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
+    protected static ?string $navigationGroup = 'Settings';
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationLabel = 'Payment Settings';
 
     protected static ?string $title = 'Payment Settings';

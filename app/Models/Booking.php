@@ -31,6 +31,9 @@ class Booking extends Model
         'vehicle_type',
         'vehicle_plate_number',
         'vehicle_price',
+        'tour_id',
+        'tour_date_id',
+        'tour_inclusions',
     ];
 
     protected $casts = [
@@ -41,6 +44,7 @@ class Booking extends Model
         'total_price' => 'decimal:2',
         'has_vehicle' => 'boolean',
         'vehicle_price' => 'decimal:2',
+        'tour_inclusions' => 'array',
     ];
 
     public function passengers(): HasMany

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use App\Models\Passenger;
 
 class Schedule extends Model
 {
@@ -73,7 +74,10 @@ class Schedule extends Model
 
     public function getOccupiedSeatsForDate(string $date): array
     {
-        return Passenger::query()
+        /** @var \Illuminate\Database\Eloquent\Builder $passengerQuery */
+        $passengerQuery = Passenger::query();
+
+        return $passengerQuery
             ->whereNotNull('seat_number')
             ->whereHas('booking', function (Builder $query) use ($date) {
                 $query->where('schedule_id', $this->id)
@@ -153,11 +157,126 @@ class Schedule extends Model
         $operator = $this->ferryRoute?->operator;
         $aircraftType = $this->vehicle_name;
 
-        if (blank($operator) || blank($aircraftType)) {
+        if (blank($operator)) {
             return null;
         }
 
-        return config("airline_seating.operators.{$operator}.aircraft.{$aircraftType}");
+        $resolvedOperator = $this->resolveOperatorConfigKey($operator);
+        if (blank($resolvedOperator)) {
+            return null;
+        }
+
+        $resolvedAircraftType = $this->resolveAircraftConfigKey($aircraftType);
+        if (! blank($resolvedAircraftType)) {
+            $profile = config("airline_seating.operators.{$resolvedOperator}.aircraft.{$resolvedAircraftType}");
+            if (! blank($profile)) {
+                return $profile;
+            }
+        }
+
+        return $this->getFallbackAirlineSeatingProfile($resolvedOperator);
+    }
+
+    protected function getFallbackAirlineSeatingProfile(string $resolvedOperator): ?array
+    {
+        $operatorAircraft = config("airline_seating.operators.{$resolvedOperator}.aircraft", []);
+        if (empty($operatorAircraft)) {
+            return null;
+        }
+
+        $requiredClassCodes = $this->getTransportClassCodes();
+
+        if (empty($requiredClassCodes)) {
+            return reset($operatorAircraft);
+        }
+
+        $matchingAircraft = collect($operatorAircraft)
+            ->filter(fn (array $aircraftConfig) => $this->aircraftSupportsClassCodes($aircraftConfig, $requiredClassCodes))
+            ->sortByDesc(fn (array $aircraftConfig) => count(array_intersect($requiredClassCodes, $aircraftConfig['class_order'] ?? [])))
+            ->values();
+
+        return $matchingAircraft->first() ?: reset($operatorAircraft);
+    }
+
+    protected function getTransportClassCodes(): array
+    {
+        $transportClasses = $this->relationLoaded('transportClasses')
+            ? $this->transportClasses
+            : $this->transportClasses()->get();
+
+        return $transportClasses
+            ->map(function (TransportClass $class) {
+                return filled($class->code)
+                    ? $class->code
+                    : $this->inferTransportClassCode($class);
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    protected function aircraftSupportsClassCodes(array $aircraftConfig, array $classCodes): bool
+    {
+        if (empty($classCodes)) {
+            return true;
+        }
+
+        $classOrder = $aircraftConfig['class_order'] ?? [];
+
+        return empty(array_diff($classCodes, $classOrder));
+    }
+
+    protected function resolveOperatorConfigKey(?string $operator): ?string
+    {
+        if (blank($operator)) {
+            return null;
+        }
+
+        $normalizedOperator = strtolower(trim($operator));
+        $operatorAliases = [
+            'pal' => 'Philippine Airlines',
+            'philippine airlines' => 'Philippine Airlines',
+            'philippine airasia' => 'Philippine AirAsia',
+            'airasia' => 'Philippine AirAsia',
+            'cebu pacific' => 'Cebu Pacific',
+            'cebpac' => 'Cebu Pacific',
+            'cebgo' => 'Cebu Pacific',
+        ];
+
+        return $operatorAliases[$normalizedOperator] ?? null;
+    }
+
+    protected function resolveAircraftConfigKey(?string $aircraftType): ?string
+    {
+        if (blank($aircraftType)) {
+            return null;
+        }
+
+        $normalizedAircraft = strtolower(trim($aircraftType));
+        $aircraftAliases = [
+            'a320' => 'Airbus A320',
+            'airbus a320' => 'Airbus A320',
+            'a321' => 'Airbus A321',
+            'airbus a321' => 'Airbus A321',
+            'a321neo' => 'Airbus A321neo',
+            'airbus a321neo' => 'Airbus A321neo',
+            'a330' => 'Airbus A330',
+            'airbus a330' => 'Airbus A330',
+            'a330-300' => 'Airbus A330-300',
+            'airbus a330-300' => 'Airbus A330-300',
+            'a330neo' => 'Airbus A330neo',
+            'airbus a330neo' => 'Airbus A330neo',
+            'a350' => 'Airbus A350',
+            'airbus a350' => 'Airbus A350',
+            'b777' => 'Boeing 777-300ER',
+            'b777-300er' => 'Boeing 777-300ER',
+            'boeing 777-300er' => 'Boeing 777-300ER',
+            'atr72-600' => 'ATR 72-600',
+            'atr 72-600' => 'ATR 72-600',
+            'atr 72 600' => 'ATR 72-600',
+        ];
+
+        return $aircraftAliases[$normalizedAircraft] ?? null;
     }
 
     protected function inferTransportClassCode(TransportClass $class): string
@@ -181,7 +300,8 @@ class Schedule extends Model
 
     protected function buildCabinLayouts(array $aircraftConfig): array
     {
-        $operatorConfig = config('airline_seating.operators.' . $this->ferryRoute?->operator . '.classes', []);
+        $resolvedOperator = $this->resolveOperatorConfigKey($this->ferryRoute?->operator);
+        $operatorConfig = config('airline_seating.operators.' . $resolvedOperator . '.classes', []);
         $currentRow = 1;
         $layouts = [];
 

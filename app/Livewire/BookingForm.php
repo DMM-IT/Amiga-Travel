@@ -7,6 +7,8 @@ use App\Models\Accommodation;
 use App\Models\Booking;
 use App\Models\Discount;
 use App\Models\FerryRoute;
+use App\Models\Tour;
+use App\Models\TourDate;
 use App\Models\Passenger;
 use App\Models\PaymentSetting;
 use App\Models\Schedule;
@@ -22,6 +24,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Carbon\Carbon;
 use Spatie\LaravelPdf\Facades\Pdf;
 
 class BookingForm extends Component
@@ -73,6 +76,11 @@ class BookingForm extends Component
     public ?int $selected_transport_class_id = null;
     public ?int $selectingSeatForPassengerIndex = null;
 
+    public ?int $tour_id = null;
+    public ?int $tour_date_id = null;
+    public ?Tour $tour = null;
+    public ?TourDate $selectedTourDate = null;
+
     // Car booking fields
     public bool $has_vehicle = false;
     public ?int $selected_vehicle_rate_id = null;
@@ -92,11 +100,44 @@ class BookingForm extends Component
 
     public function mount(): void
     {
-        $this->discounts = Discount::orderBy('name')->get();
-        $this->transportClassCatalog = TransportClass::where('is_active', true)->orderBy('name')->get();
-        $this->vehicleRateCatalog = VehicleRate::where('is_active', true)->orderBy('sort_order')->get();
-        $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
+        $this->discounts = Discount::all()->sortBy('name')->values();
+        $this->transportClassCatalog = TransportClass::query()->where('is_active', true)->orderBy('name')->get();
+        $this->vehicleRateCatalog = VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $this->accommodationCatalog = Accommodation::query()->where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
+
+        // Pre-fill tour if present in query params
+        $reqTour = request()->query('tour_id');
+        $reqTourDate = request()->query('tour_date_id');
+        if ($reqTour) {
+            $this->tour_id = intval($reqTour);
+            $this->tour = Tour::with('dates')->find($this->tour_id);
+
+            if ($this->tour) {
+                // Prefill route/mode from tour if provided
+                if ($this->tour->mode) {
+                    $this->mode = $this->tour->mode;
+                }
+
+                if ($this->tour->origin) {
+                    $this->origin = $this->tour->origin;
+                }
+
+                if ($this->tour->destination) {
+                    $this->destination = $this->tour->destination;
+                }
+                // If a tour date was passed, preselect it; otherwise allow the user to pick from tour dates
+                if ($reqTourDate) {
+                    $this->tour_date_id = intval($reqTourDate);
+                    $this->selectedTourDate = $this->tour->dates->firstWhere('id', $this->tour_date_id) ?: TourDate::find($this->tour_date_id);
+
+                    if ($this->selectedTourDate) {
+                        $this->departure_date = Carbon::parse($this->selectedTourDate->date)->format('Y-m-d');
+                        $this->return_date = Carbon::parse($this->selectedTourDate->date)->addDays($this->tour->duration_days)->format('Y-m-d');
+                    }
+                }
+            }
+        }
 
         if (session()->has('booking_draft')) {
             $draft = session('booking_draft', []);
@@ -342,6 +383,15 @@ class BookingForm extends Component
 
     public function updated($propertyName): void
     {
+        if ($propertyName === 'tour_date_id') {
+            $this->selectedTourDate = $this->tour?->dates->firstWhere('id', $this->tour_date_id) ?: TourDate::find($this->tour_date_id);
+            if ($this->selectedTourDate && $this->tour) {
+                $this->departure_date = Carbon::parse($this->selectedTourDate->date)->format('Y-m-d');
+                $this->return_date = Carbon::parse($this->selectedTourDate->date)->addDays($this->tour->duration_days)->format('Y-m-d');
+            }
+            $this->saveDraft();
+            return;
+        }
         if (str_starts_with($propertyName, 'passengers.')) {
             if (preg_match('/^passengers\.(\d+)\.(first_name|middle_name|last_name)$/', $propertyName, $matches)) {
                 $this->syncFullPassengerNames();
@@ -682,13 +732,18 @@ class BookingForm extends Component
             ])->validate();
         }
 
-        $schedule = Schedule::query()
-            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
-            ->findOrFail($this->selected_schedule_id);
+        if ($this->tour_id && $this->tour) {
+            $schedule = null;
+            $scheduleAccommodation = null;
+        } else {
+            $schedule = Schedule::query()
+                ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
+                ->findOrFail($this->selected_schedule_id);
 
-        $scheduleAccommodation = $this->selected_schedule_accommodation_id
-            ? ScheduleAccommodation::find($this->selected_schedule_accommodation_id)
-            : null;
+            $scheduleAccommodation = $this->selected_schedule_accommodation_id
+                ? ScheduleAccommodation::find($this->selected_schedule_accommodation_id)
+                : null;
+        }
 
         $transaction = null;
 
@@ -699,14 +754,17 @@ class BookingForm extends Component
                 'destination' => $this->destination,
                 'departure_date' => $this->departure_date,
                 'return_date' => $this->return_date,
-                'schedule_id' => $schedule->id,
-                'schedule_service' => $schedule->service_name,
-                'schedule_departure_time' => $schedule->formatted_departure,
-                'schedule_arrival_time' => $schedule->formatted_arrival,
-                'schedule_price' => $schedule->price,
+                'schedule_id' => $schedule?->id,
+                'schedule_service' => $schedule?->service_name,
+                'schedule_departure_time' => $schedule?->formatted_departure,
+                'schedule_arrival_time' => $schedule?->formatted_arrival,
+                'schedule_price' => $schedule?->price,
                 'schedule_accommodation_id' => $scheduleAccommodation?->id,
                 'schedule_accommodation_name' => $scheduleAccommodation?->name,
                 'schedule_accommodation_price' => $scheduleAccommodation?->price,
+                'tour_id' => $this->tour_id,
+                'tour_date_id' => $this->tour_date_id,
+                'tour_inclusions' => $this->tour?->inclusions,
                 'client_name' => $this->client_name,
                 'client_email' => $this->client_email,
                 'total_price' => $this->calculateTotalPrice(),
@@ -730,7 +788,7 @@ class BookingForm extends Component
             }
 
             if ($this->selected_transport_class_id) {
-                $transportClass = TransportClass::find($this->selected_transport_class_id);
+                $transportClass = TransportClass::query()->find($this->selected_transport_class_id);
                 if ($transportClass) {
                     $booking->transportClasses()->attach($transportClass->id, [
                         'price' => $transportClass->price,
@@ -739,7 +797,7 @@ class BookingForm extends Component
             }
 
             if ($this->selected_hotel_id) {
-                $hotel = Accommodation::find($this->selected_hotel_id);
+                $hotel = Accommodation::query()->find($this->selected_hotel_id);
                 if ($hotel) {
                     $booking->accommodations()->attach($hotel->id, [
                         'price' => $hotel->price,
@@ -796,6 +854,8 @@ class BookingForm extends Component
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
             'selected_hotel_id' => $this->selected_hotel_id,
+            'tour_id' => $this->tour_id,
+            'tour_date_id' => $this->tour_date_id,
         ]]);
     }
 
@@ -804,10 +864,11 @@ class BookingForm extends Component
         return match ($this->step) {
             1 => [
                 'trip_type' => 'required|string|in:one_way,round_trip',
-                'mode' => 'required|string|in:ferry,airline',
-                'origin' => 'required|string|max:255',
-                'destination' => 'required|string|max:255',
+                'mode' => $this->tour_id ? 'nullable' : 'required|string|in:ferry,airline',
+                'origin' => $this->tour_id ? 'nullable' : 'required|string|max:255',
+                'destination' => $this->tour_id ? 'nullable' : 'required|string|max:255',
                 'departure_date' => 'required|date',
+                'tour_date_id' => $this->tour_id ? 'required|integer|exists:tour_dates,id' : 'nullable',
                 'return_date' => $this->trip_type === 'round_trip' ? 'required|date|after_or_equal:departure_date' : 'nullable|date|after_or_equal:departure_date',
                 'adults' => [
                     'required',
@@ -835,7 +896,7 @@ class BookingForm extends Component
                 'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
             ],
             2 => [
-                'selected_schedule_id' => 'required|integer|exists:schedules,id',
+                'selected_schedule_id' => $this->tour_id ? 'nullable' : 'required|integer|exists:schedules,id',
             ],
             3 => [
                 'passengers.*.first_name' => 'required|string|max:255',
@@ -862,12 +923,13 @@ class BookingForm extends Component
     {
         return [
             'trip_type' => 'required|string|in:one_way,round_trip',
-            'mode' => 'required|string|in:ferry,airline',
-            'origin' => 'required|string|max:255',
-            'destination' => 'required|string|max:255',
+            'mode' => $this->tour_id ? 'nullable' : 'required|string|in:ferry,airline',
+            'origin' => $this->tour_id ? 'nullable' : 'required|string|max:255',
+            'destination' => $this->tour_id ? 'nullable' : 'required|string|max:255',
             'departure_date' => 'required|date',
+            'tour_date_id' => $this->tour_id ? 'required|integer|exists:tour_dates,id' : 'nullable',
             'return_date' => $this->trip_type === 'round_trip' ? 'required|date|after_or_equal:departure_date' : 'nullable|date|after_or_equal:departure_date',
-            'selected_schedule_id' => 'required|integer|exists:schedules,id',
+            'selected_schedule_id' => $this->tour_id ? 'nullable' : 'required|integer|exists:schedules,id',
             'adults' => [
                 'required',
                 'integer',
@@ -933,6 +995,29 @@ class BookingForm extends Component
 
     public function calculateTotalPrice(): float
     {
+        // If booking a tour, use tour pricing per person
+        if ($this->tour_id && $this->tour) {
+            $base = $this->tour->price_from;
+
+            if ($this->tour_date_id) {
+                $date = $this->selectedTourDate ?? TourDate::find($this->tour_date_id);
+                if ($date && $date->price) {
+                    $base = $date->price;
+                }
+            }
+
+            $transportTotal = floatval($base) * count($this->passengers);
+            $vehicleTotal = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
+            $hotelTotal = $this->selected_hotel_id
+                ? floatval($this->accommodationCatalog->firstWhere('id', $this->selected_hotel_id)->price ?? 0)
+                : 0;
+
+            $settings = PaymentSetting::current();
+            $serviceFee = (count($this->passengers) * floatval($settings->fee_per_person));
+
+            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee;
+        }
+
         $baseSchedulePrice = $this->getSelectedSchedulePrice();
         $scheduleAccommodationPrice = $this->getSelectedScheduleAccommodationPrice();
         $tripMultiplier = $this->trip_type === 'round_trip' ? 2 : 1;

@@ -22,6 +22,9 @@ class FerryRouteResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
 
+    protected static ?string $navigationGroup = 'Travel';
+    protected static ?int $navigationSort = 1;
+
     public static function canAccess(): bool
     {
         $user = Auth::user();
@@ -29,11 +32,9 @@ class FerryRouteResource extends Resource
         return $user instanceof User && $user->hasAdminPermission('manage_routes');
     }
 
-    protected static ?string $navigationLabel = 'Routes';
+    protected static ?string $navigationLabel = 'Travel Routes';
 
     protected static ?string $modelLabel = 'route';
-
-    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {

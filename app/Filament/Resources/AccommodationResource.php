@@ -24,6 +24,9 @@ class AccommodationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-home-modern';
 
+    protected static ?string $navigationGroup = 'Travel';
+    protected static ?int $navigationSort = 1;
+
     public static function canAccess(): bool
     {
         $user = Auth::user();

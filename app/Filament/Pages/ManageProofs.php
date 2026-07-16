@@ -34,11 +34,11 @@ class ManageProofs extends Page implements HasActions, HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
 
+    protected static ?string $navigationGroup = 'Settings';
+    protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Proofs';
 
     protected static ?string $title = 'Payment Proofs';
-
-    protected static ?int $navigationSort = 5;
 
     protected static string $view = 'filament.pages.manage-proofs';
 
@@ -128,7 +128,7 @@ class ManageProofs extends Page implements HasActions, HasForms
         }
 
         $transactions = Transaction::query()
-            ->whereIn('id', $this->selectedTransactions)
+            ->whereKey($this->selectedTransactions)
             ->whereNotNull('proof_of_payment')
             ->get();
 

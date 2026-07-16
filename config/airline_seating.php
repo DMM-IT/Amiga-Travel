@@ -122,9 +122,9 @@ return [
                     'seat_counts' => ['premium-economy' => 12, 'economy' => 168],
                 ],
                 'Airbus A321' => [
-                    'capacity' => 199,
+                    'capacity' => 236,
                     'class_order' => ['premium-economy', 'economy'],
-                    'seat_counts' => ['premium-economy' => 12, 'economy' => 187],
+                    'seat_counts' => ['premium-economy' => 12, 'economy' => 224],
                 ],
                 'Airbus A330-300' => [
                     'capacity' => 363,

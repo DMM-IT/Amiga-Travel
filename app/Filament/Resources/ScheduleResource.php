@@ -19,6 +19,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Table;
 
@@ -28,6 +30,9 @@ class ScheduleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
+    protected static ?string $navigationGroup = 'Travel';
+    protected static ?int $navigationSort = 3;
+
     public static function canAccess(): bool
     {
         $user = Auth::user();
@@ -36,8 +41,6 @@ class ScheduleResource extends Resource
     }
 
     protected static ?string $navigationLabel = 'Schedules';
-
-    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -140,6 +143,10 @@ class ScheduleResource extends Resource
                     ->label('Destination')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('ferryRoute.mode')
+                    ->label('Mode')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('service_name')
                     ->searchable()
                     ->sortable(),
@@ -167,7 +174,23 @@ class ScheduleResource extends Resource
             ])
             ->defaultSort('departure_time')
             ->filters([
-                //
+                SelectFilter::make('mode')
+                    ->label('Travel mode')
+                    ->options([
+                        'ferry' => 'Ferry',
+                        'airline' => 'Airline',
+                    ])
+                    ->query(function (Builder $query, array $data): void {
+                        if (filled($data['value'] ?? null)) {
+                            $query->whereHas('ferryRoute', function (Builder $query) use ($data): void {
+                                $query->where('mode', $data['value']);
+                            });
+                        }
+                    }),
+                SelectFilter::make('ferry_route_id')
+                    ->label('Operator')
+                    ->relationship('ferryRoute', 'operator')
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -112,11 +112,11 @@ class ManageWebsiteSettings extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
+    protected static ?string $navigationGroup = 'Settings';
+    protected static ?int $navigationSort = 1;
     protected static ?string $navigationLabel = 'Website Settings';
 
     protected static ?string $title = 'Website Settings';
-
-    protected static ?int $navigationSort = 10;
 
     protected static string $view = 'filament.pages.manage-website-settings';
 
@@ -321,6 +321,44 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
+                            Tabs\Tab::make('SEO & Sharing')
+                                ->schema([
+                                    Section::make('Search Engine Metadata')
+                                        ->description('Update the page metadata used for search engines and social sharing.')
+                                        ->schema([
+                                            TextInput::make('content.meta_title')
+                                                ->label('Meta title')
+                                                ->maxLength(70),
+                                            Textarea::make('content.meta_description')
+                                                ->label('Meta description')
+                                                ->rows(3)
+                                                ->maxLength(170),
+                                            TextInput::make('content.meta_keywords')
+                                                ->label('Meta keywords')
+                                                ->helperText('Comma-separated keywords for SEO. Optional.'),
+                                            FileUpload::make('content.meta_image')
+                                                ->label('Meta image')
+                                                ->image()
+                                                ->directory('website-settings/meta'),
+                                        ]),
+                                    Section::make('Social Sharing')
+                                        ->description('Optional social media preview content.')
+                                        ->schema([
+                                            TextInput::make('content.og_title')
+                                                ->label('Open Graph title')
+                                                ->maxLength(100),
+                                            Textarea::make('content.og_description')
+                                                ->label('Open Graph description')
+                                                ->rows(3)
+                                                ->maxLength(170),
+                                            FileUpload::make('content.og_image')
+                                                ->label('Open Graph image')
+                                                ->image()
+                                                ->directory('website-settings/meta'),
+                                        ]),
+                                ])
+                                ->visible(fn () => $this->currentPage !== 'home'),
+
                             // Settings Tab
                             Tabs\Tab::make('Settings')
                                 ->schema([
@@ -329,6 +367,13 @@ class ManageWebsiteSettings extends Page implements HasForms
                                             Toggle::make('is_active')
                                                 ->label('Active')
                                                 ->default(true),
+                                            TextInput::make('content.page_subtitle')
+                                                ->label('Page subtitle')
+                                                ->maxLength(120),
+                                            TextInput::make('content.banner_cta')
+                                                ->label('Banner CTA text')
+                                                ->maxLength(50)
+                                                ->helperText('Optional button text for hero/banner calls to action.'),
                                         ]),
                                 ]),
                         ])

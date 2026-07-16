@@ -21,6 +21,8 @@ class VehicleRateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
 
+    protected static ?string $navigationGroup = 'Ferry';
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationLabel = 'Vehicle Rates';
 
     public static function canAccess(): bool

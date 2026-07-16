@@ -125,15 +125,17 @@ class FerryRouteSeeder extends Seeder
                             'service_name' => $operator . ' ' . $template['service_name'],
                             'departure_time' => $template['departure_time'],
                         ],
-                        [
-                            ...$template,
-                            'service_name' => $operator . ' ' . $template['service_name'],
-                            'vehicle_name' => $aircraftType,
-                            'operating_days' => $daily,
-                            'seat_rows' => null,
-                            'seat_columns' => null,
-                            'is_active' => true,
-                        ],
+                        array_merge(
+                            $template,
+                            [
+                                'service_name' => $operator . ' ' . $template['service_name'],
+                                'vehicle_name' => $aircraftType,
+                                'operating_days' => $daily,
+                                'seat_rows' => null,
+                                'seat_columns' => null,
+                                'is_active' => true,
+                            ]
+                        ),
                     );
                 }
             }

@@ -5,6 +5,7 @@ use App\Models\Transaction;
 use App\Models\WebsiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TourController;
 
 $renderWebsitePage = function (string $page, string $view) {
     $settings = WebsiteSetting::firstWhere('page', $page);
@@ -20,6 +21,9 @@ $renderWebsitePage = function (string $page, string $view) {
 Route::get('/', function () use ($renderWebsitePage) {
     return $renderWebsitePage('home', 'home');
 })->name('home');
+
+Route::get('/tours', [TourController::class, 'index'])->name('tours.index');
+Route::get('/tours/{tour}', [TourController::class, 'show'])->name('tours.show');
 
 Route::post('/booking/draft/cancel', function (Request $request) {
     $request->session()->forget('booking_draft');

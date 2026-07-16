@@ -24,14 +24,16 @@ class TransportClassResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
+    protected static ?string $navigationGroup = 'Airline';
+    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationLabel = 'Airline Seats';
+
     public static function canAccess(): bool
     {
         $user = Auth::user();
 
         return $user instanceof User && $user->hasAdminPermission('manage_transport_classes');
     }
-
-    protected static ?string $navigationLabel = 'Transport Classes';
 
     public static function form(Form $form): Form
     {
