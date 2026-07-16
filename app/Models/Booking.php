@@ -20,6 +20,9 @@ class Booking extends Model
         'schedule_departure_time',
         'schedule_arrival_time',
         'schedule_price',
+        'schedule_accommodation_id',
+        'schedule_accommodation_name',
+        'schedule_accommodation_price',
         'status',
         'total_price',
         'client_email',
@@ -34,6 +37,7 @@ class Booking extends Model
         'departure_date' => 'date',
         'return_date' => 'date',
         'schedule_price' => 'decimal:2',
+        'schedule_accommodation_price' => 'decimal:2',
         'total_price' => 'decimal:2',
         'has_vehicle' => 'boolean',
         'vehicle_price' => 'decimal:2',
@@ -61,6 +65,11 @@ class Booking extends Model
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class);
+    }
+
+    public function scheduleAccommodation(): BelongsTo
+    {
+        return $this->belongsTo(ScheduleAccommodation::class);
     }
 
     public function transaction()

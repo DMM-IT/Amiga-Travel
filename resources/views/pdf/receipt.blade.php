@@ -77,15 +77,30 @@
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-title">Accommodations</div>
-            @foreach($booking->accommodations as $accommodation)
-                <div class="info-box" style="margin-bottom: 10px;">
-                    <strong>{{ $accommodation->name }}</strong>
-                    <div>Price: ₱{{ number_format($accommodation->price, 2) }}</div>
+        @if($booking->scheduleAccommodation)
+            <div class="section">
+                <div class="section-title">Accommodation</div>
+                <div class="info-box">
+                    <strong>{{ $booking->scheduleAccommodation->name }}</strong>
+                    @if($booking->scheduleAccommodation->description)
+                        <div>{{ $booking->scheduleAccommodation->description }}</div>
+                    @endif
+                    <div>Price: ₱{{ number_format($booking->scheduleAccommodation->price, 2) }}</div>
                 </div>
-            @endforeach
-        </div>
+            </div>
+        @endif
+
+        @if($booking->accommodations->count() > 0)
+            <div class="section">
+                <div class="section-title">Additional Accommodations</div>
+                @foreach($booking->accommodations as $accommodation)
+                    <div class="info-box" style="margin-bottom: 10px;">
+                        <strong>{{ $accommodation->name }}</strong>
+                        <div>Price: ₱{{ number_format($accommodation->price, 2) }}</div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
 
         <div class="section">
             <div class="section-title">Summary</div>

@@ -9,6 +9,7 @@ class VehicleRate extends Model
     protected $fillable = [
         'name',
         'price',
+        'sort_order',
         'is_active',
     ];
 

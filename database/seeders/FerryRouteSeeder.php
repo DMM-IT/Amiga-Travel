@@ -80,6 +80,7 @@ class FerryRouteSeeder extends Seeder
 
         // Airline operators and routes
         $airlineOperators = ['Cebu Pacific', 'Philippine AirAsia', 'Philippine Airlines'];
+        $airlineSeatingConfig = config('airline_seating.operators');
 
         $airlineRoutes = [
             ['Manila', 'Cebu'],
@@ -89,7 +90,7 @@ class FerryRouteSeeder extends Seeder
 
         $airlineTemplates = [
             [
-                'service_name' => 'Economy',
+                'service_name' => 'Morning Flight',
                 'departure_time' => '06:00',
                 'arrival_time' => '07:30',
                 'duration_minutes' => 90,
@@ -97,7 +98,7 @@ class FerryRouteSeeder extends Seeder
                 'availability_label' => 'Available',
             ],
             [
-                'service_name' => 'Midday',
+                'service_name' => 'Midday Flight',
                 'departure_time' => '12:00',
                 'arrival_time' => '13:30',
                 'duration_minutes' => 90,
@@ -106,14 +107,18 @@ class FerryRouteSeeder extends Seeder
             ],
         ];
 
-        foreach ($airlineRoutes as [$origin, $destination]) {
+        foreach ($airlineRoutes as $routeIndex => [$origin, $destination]) {
             foreach ($airlineOperators as $operator) {
                 $route = FerryRoute::updateOrCreate(
                     ['origin' => $origin, 'destination' => $destination, 'mode' => 'airline', 'operator' => $operator],
                     ['is_active' => true, 'mode' => 'airline', 'operator' => $operator],
                 );
 
-                foreach ($airlineTemplates as $template) {
+                $operatorAircraft = array_keys($airlineSeatingConfig[$operator]['aircraft'] ?? []);
+
+                foreach ($airlineTemplates as $templateIndex => $template) {
+                    $aircraftType = $operatorAircraft[($routeIndex * count($airlineTemplates) + $templateIndex) % count($operatorAircraft)] ?? null;
+
                     Schedule::updateOrCreate(
                         [
                             'ferry_route_id' => $route->id,
@@ -123,7 +128,10 @@ class FerryRouteSeeder extends Seeder
                         [
                             ...$template,
                             'service_name' => $operator . ' ' . $template['service_name'],
+                            'vehicle_name' => $aircraftType,
                             'operating_days' => $daily,
+                            'seat_rows' => null,
+                            'seat_columns' => null,
                             'is_active' => true,
                         ],
                     );

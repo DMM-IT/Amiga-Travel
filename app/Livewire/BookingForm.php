@@ -10,6 +10,7 @@ use App\Models\FerryRoute;
 use App\Models\Passenger;
 use App\Models\PaymentSetting;
 use App\Models\Schedule;
+use App\Models\ScheduleAccommodation;
 use App\Models\TransportClass;
 use App\Models\VehicleRate;
 use App\Models\Transaction;
@@ -67,9 +68,10 @@ class BookingForm extends Component
         'vehicle_price' => 'vehicle price',
     ];
 
-    // Selected catalog accommodation ids, e.g. [3 => true, 5 => true]
-    public array $selected_accommodation_ids = [];
+    // Selected schedule accommodation id
+    public ?int $selected_schedule_accommodation_id = null;
     public ?int $selected_transport_class_id = null;
+    public ?int $selectingSeatForPassengerIndex = null;
 
     // Car booking fields
     public bool $has_vehicle = false;
@@ -82,17 +84,18 @@ class BookingForm extends Component
     public string $client_email = '';
     public string $recaptchaToken = '';
     public \Illuminate\Support\Collection $discounts;
-    public \Illuminate\Support\Collection $accommodationCatalog;
     public \Illuminate\Support\Collection $transportClassCatalog;
     public \Illuminate\Support\Collection $vehicleRateCatalog;
+    public \Illuminate\Support\Collection $accommodationCatalog;
+    public ?int $selected_hotel_id = null;
     public array $availableSchedules = [];
 
     public function mount(): void
     {
         $this->discounts = Discount::orderBy('name')->get();
-        $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
         $this->transportClassCatalog = TransportClass::where('is_active', true)->orderBy('name')->get();
-        $this->vehicleRateCatalog = VehicleRate::where('is_active', true)->orderBy('name')->get();
+        $this->vehicleRateCatalog = VehicleRate::where('is_active', true)->orderBy('sort_order')->get();
+        $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
 
         if (session()->has('booking_draft')) {
@@ -186,6 +189,7 @@ class BookingForm extends Component
         $this->destination = '';
         $this->selected_schedule_id = null;
         $this->availableSchedules = [];
+        $this->resetVehicleData();
     }
 
     public function getModeOptions(): array
@@ -238,7 +242,19 @@ class BookingForm extends Component
         $this->destination = '';
         $this->selected_schedule_id = null;
         $this->availableSchedules = [];
+        $this->resetVehicleData();
         $this->showModeDropdown = false;
+    }
+
+    protected function resetVehicleData(): void
+    {
+        if ($this->mode === 'airline') {
+            $this->has_vehicle = false;
+            $this->selected_vehicle_rate_id = null;
+            $this->vehicle_type = '';
+            $this->vehicle_plate_number = '';
+            $this->vehicle_price = null;
+        }
     }
 
     public function toggleOriginDropdown(): void
@@ -415,6 +431,15 @@ class BookingForm extends Component
     public function selectSchedule(int $scheduleId): void
     {
         $this->selected_schedule_id = $scheduleId;
+        $this->selected_transport_class_id = null;
+        $this->selectingSeatForPassengerIndex = null;
+
+        foreach ($this->passengers as $index => $passenger) {
+            $this->passengers[$index]['seat_number'] = null;
+            $this->passengers[$index]['seat_row'] = null;
+            $this->passengers[$index]['seat_section'] = null;
+        }
+
         $this->saveDraft();
     }
 
@@ -450,6 +475,9 @@ class BookingForm extends Component
                     'middle_name' => '',
                     'last_name' => '',
                     'discount_id' => null,
+                    'seat_number' => null,
+                    'seat_row' => null,
+                    'seat_section' => null,
                 ]);
 
                 $nameParts = $this->passengerNameParts($passenger);
@@ -461,6 +489,9 @@ class BookingForm extends Component
                     'middle_name' => $nameParts['middle_name'],
                     'last_name' => $nameParts['last_name'],
                     'discount_id' => $passenger['discount_id'] ?? null,
+                    'seat_number' => $passenger['seat_number'] ?? null,
+                    'seat_row' => $passenger['seat_row'] ?? null,
+                    'seat_section' => $passenger['seat_section'] ?? null,
                 ], $passenger);
             }
         }
@@ -538,13 +569,75 @@ class BookingForm extends Component
         $this->saveDraft();
     }
 
-    public function toggleAccommodation(int $accommodationId): void
+    public function selectScheduleAccommodation(int $accommodationId): void
     {
-        if (isset($this->selected_accommodation_ids[$accommodationId])) {
-            unset($this->selected_accommodation_ids[$accommodationId]);
+        if ($this->selected_schedule_accommodation_id === $accommodationId) {
+            $this->selected_schedule_accommodation_id = null;
         } else {
-            $this->selected_accommodation_ids[$accommodationId] = true;
+            $this->selected_schedule_accommodation_id = $accommodationId;
         }
+        $this->saveDraft();
+    }
+
+    public function selectSeatForPassenger(string $seat): void
+    {
+        // Find the passenger to assign the seat to
+        $indexToAssign = $this->selectingSeatForPassengerIndex;
+        if ($indexToAssign === null) {
+            // Find first passenger without a seat
+            foreach ($this->passengers as $idx => $passenger) {
+                if (empty($passenger['seat_number'])) {
+                    $indexToAssign = $idx;
+                    break;
+                }
+            }
+        }
+
+        if ($indexToAssign !== null) {
+            // Get selected transport class name for seat section
+            $seatSection = 'Economy';
+            if ($this->selected_transport_class_id) {
+                $selectedClass = $this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id);
+                if ($selectedClass) {
+                    $seatSection = $selectedClass->name;
+                }
+            }
+
+            $this->passengers[$indexToAssign]['seat_number'] = $seat;
+            $this->passengers[$indexToAssign]['seat_row'] = preg_replace('/[^0-9]/', '', $seat);
+            $this->passengers[$indexToAssign]['seat_section'] = $seatSection;
+            $this->selectingSeatForPassengerIndex = null;
+            $this->saveDraft();
+        }
+    }
+
+    public function selectTransportClass(?int $classId): void
+    {
+        $this->selected_transport_class_id = $this->selected_transport_class_id === $classId ? null : $classId;
+        $this->selectingSeatForPassengerIndex = null;
+
+        foreach ($this->passengers as $index => $passenger) {
+            $this->passengers[$index]['seat_number'] = null;
+            $this->passengers[$index]['seat_row'] = null;
+            $this->passengers[$index]['seat_section'] = null;
+        }
+
+        $this->saveDraft();
+    }
+
+    public function chooseSeatForPassenger(int $index): void
+    {
+        $this->selectingSeatForPassengerIndex = $index;
+        $this->saveDraft();
+    }
+
+    public function clearSeatForPassenger(int $index): void
+    {
+        $this->passengers[$index]['seat_number'] = null;
+        $this->passengers[$index]['seat_row'] = null;
+        $this->passengers[$index]['seat_section'] = null;
+        $this->selectingSeatForPassengerIndex = $index;
+        $this->saveDraft();
     }
 
     public function openPwdTypeModal(int $index): void
@@ -593,9 +686,13 @@ class BookingForm extends Component
             ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
             ->findOrFail($this->selected_schedule_id);
 
+        $scheduleAccommodation = $this->selected_schedule_accommodation_id
+            ? ScheduleAccommodation::find($this->selected_schedule_accommodation_id)
+            : null;
+
         $transaction = null;
 
-        DB::transaction(function () use (&$transaction, $schedule) {
+        DB::transaction(function () use (&$transaction, $schedule, $scheduleAccommodation) {
             $booking = Booking::create([
                 'transaction_number' => $this->generateTransactionNumber(),
                 'origin' => $this->origin,
@@ -607,6 +704,9 @@ class BookingForm extends Component
                 'schedule_departure_time' => $schedule->formatted_departure,
                 'schedule_arrival_time' => $schedule->formatted_arrival,
                 'schedule_price' => $schedule->price,
+                'schedule_accommodation_id' => $scheduleAccommodation?->id,
+                'schedule_accommodation_name' => $scheduleAccommodation?->name,
+                'schedule_accommodation_price' => $scheduleAccommodation?->price,
                 'client_name' => $this->client_name,
                 'client_email' => $this->client_email,
                 'total_price' => $this->calculateTotalPrice(),
@@ -629,15 +729,6 @@ class BookingForm extends Component
                 ]);
             }
 
-            $selectedIds = array_keys(array_filter($this->selected_accommodation_ids));
-            $catalog = Accommodation::whereIn('id', $selectedIds)->get();
-
-            foreach ($catalog as $accommodation) {
-                $booking->accommodations()->attach($accommodation->id, [
-                    'price' => $accommodation->price,
-                ]);
-            }
-
             if ($this->selected_transport_class_id) {
                 $transportClass = TransportClass::find($this->selected_transport_class_id);
                 if ($transportClass) {
@@ -647,12 +738,21 @@ class BookingForm extends Component
                 }
             }
 
+            if ($this->selected_hotel_id) {
+                $hotel = Accommodation::find($this->selected_hotel_id);
+                if ($hotel) {
+                    $booking->accommodations()->attach($hotel->id, [
+                        'price' => $hotel->price,
+                    ]);
+                }
+            }
+
             $transaction = Transaction::create([
                 'booking_id' => $booking->id,
                 'payment_status' => 'unpaid',
             ]);
 
-            $booking->load('passengers.discount', 'accommodations', 'transportClasses', 'transaction', 'schedule');
+            $booking->load('passengers.discount', 'scheduleAccommodation', 'transportClasses', 'transaction', 'schedule');
 
             $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
             if (! file_exists(dirname($receiptPath))) {
@@ -686,7 +786,7 @@ class BookingForm extends Component
             'children' => $this->children,
             'selected_schedule_id' => $this->selected_schedule_id,
             'passengers' => $this->passengers,
-            'selected_accommodation_ids' => $this->selected_accommodation_ids,
+            'selected_schedule_accommodation_id' => $this->selected_schedule_accommodation_id,
             'selected_transport_class_id' => $this->selected_transport_class_id,
             'has_vehicle' => $this->has_vehicle,
             'selected_vehicle_rate_id' => $this->selected_vehicle_rate_id,
@@ -695,6 +795,7 @@ class BookingForm extends Component
             'vehicle_price' => $this->vehicle_price,
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
+            'selected_hotel_id' => $this->selected_hotel_id,
         ]]);
     }
 
@@ -832,12 +933,13 @@ class BookingForm extends Component
 
     public function calculateTotalPrice(): float
     {
-        $schedulePrice = $this->getSelectedSchedulePrice();
+        $baseSchedulePrice = $this->getSelectedSchedulePrice();
+        $scheduleAccommodationPrice = $this->getSelectedScheduleAccommodationPrice();
         $tripMultiplier = $this->trip_type === 'round_trip' ? 2 : 1;
         $discountsById = $this->discounts->keyBy('id');
 
-        $transportTotal = collect($this->passengers)->sum(function (array $passenger) use ($schedulePrice, $tripMultiplier, $discountsById) {
-            $fare = $schedulePrice * $tripMultiplier;
+        $transportTotal = collect($this->passengers)->sum(function (array $passenger) use ($baseSchedulePrice, $scheduleAccommodationPrice, $tripMultiplier, $discountsById) {
+            $fare = ($baseSchedulePrice + $scheduleAccommodationPrice) * $tripMultiplier;
 
             if (! empty($passenger['discount_id'])) {
                 $discount = $discountsById->get($passenger['discount_id']);
@@ -850,26 +952,43 @@ class BookingForm extends Component
             return $fare;
         });
 
-        $selectedIds = array_keys(array_filter($this->selected_accommodation_ids));
-
-        $accommodationsTotal = $this->accommodationCatalog
-            ->whereIn('id', $selectedIds)
-            ->sum(fn ($item) => floatval($item->price));
-
         $transportClassTotal = $this->selected_transport_class_id
             ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id)->price ?? 0)
             : 0;
 
         $vehicleTotal = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
 
+        $hotelTotal = $this->selected_hotel_id
+            ? floatval($this->accommodationCatalog->firstWhere('id', $this->selected_hotel_id)->price ?? 0)
+            : 0;
+
         $settings = PaymentSetting::current();
 
-        // Service fee: charged per traveler and per selected accommodation.
+        // Service fee: charged per traveler
         $payingTravelers = count($this->passengers);
-        $serviceFee = ($payingTravelers * floatval($settings->fee_per_person))
-            + (count($selectedIds) * floatval($settings->fee_per_accommodation));
+        $serviceFee = ($payingTravelers * floatval($settings->fee_per_person));
 
-        return $transportTotal + $accommodationsTotal + $transportClassTotal + $vehicleTotal + $serviceFee;
+        return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee;
+    }
+
+    protected function getSelectedScheduleAccommodationPrice(): float
+    {
+        if (! $this->selected_schedule_accommodation_id || ! $this->selected_schedule_id) {
+            return 0;
+        }
+
+        $schedule = collect($this->availableSchedules)
+            ->firstWhere('id', $this->selected_schedule_id);
+
+        if ($schedule && isset($schedule['accommodations'])) {
+            $accommodation = collect($schedule['accommodations'])
+                ->firstWhere('id', $this->selected_schedule_accommodation_id);
+            if ($accommodation) {
+                return floatval($accommodation['price']);
+            }
+        }
+
+        return 0;
     }
 
     public function incrementAdults(): void

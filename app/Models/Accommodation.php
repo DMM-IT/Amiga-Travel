@@ -9,6 +9,7 @@ class Accommodation extends Model
 {
     protected $fillable = [
         'name',
+        'destination',
         'description',
         'price',
         'images',

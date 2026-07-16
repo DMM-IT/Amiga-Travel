@@ -44,6 +44,10 @@ class AccommodationResource extends Resource
                     ->maxLength(255)
                     ->columnSpanFull(),
 
+                TextInput::make('destination')
+                    ->placeholder('e.g. Boracay, Manila')
+                    ->maxLength(255),
+
                 Textarea::make('description')
                     ->placeholder('Room details, amenities, capacity, etc.')
                     ->rows(3)
@@ -83,6 +87,9 @@ class AccommodationResource extends Resource
                     ->getStateUsing(fn (Accommodation $record) => $record->cover_image)
                     ->square(),
                 TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('destination')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('price')

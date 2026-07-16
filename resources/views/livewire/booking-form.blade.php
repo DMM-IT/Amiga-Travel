@@ -252,56 +252,58 @@
                                 Total travelers: <span class="font-semibold">{{ $adults + $children }}</span> / 8
                             </div>
 
-                            <div class="rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm">
-                                <div class="flex flex-wrap items-center justify-between gap-4">
-                                    <div>
-                                        <p class="text-emerald-900 font-semibold">Vehicle booking</p>
-                                        <p class="mt-1 text-sm text-slate-600">Add a vehicle to your ferry trip (optional).</p>
+                            @if($mode === 'ferry')
+                                <div class="rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm">
+                                    <div class="flex flex-wrap items-center justify-between gap-4">
+                                        <div>
+                                            <p class="text-emerald-900 font-semibold">Vehicle booking</p>
+                                            <p class="mt-1 text-sm text-slate-600">Add a vehicle to your ferry trip (optional).</p>
+                                        </div>
+                                        <label class="relative inline-flex cursor-pointer items-center gap-3">
+                                            <input type="checkbox" wire:model.live="has_vehicle" class="peer sr-only" />
+                                            <span class="relative h-7 w-12 shrink-0 rounded-full bg-emerald-200 transition peer-checked:bg-emerald-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform after:content-[''] peer-checked:after:translate-x-5"></span>
+                                            <span class="text-sm font-medium text-emerald-700">{{ $has_vehicle ? 'Yes' : 'No' }}</span>
+                                        </label>
                                     </div>
-                                    <label class="relative inline-flex cursor-pointer items-center gap-3">
-                                        <input type="checkbox" wire:model.live="has_vehicle" class="peer sr-only" />
-                                        <span class="relative h-7 w-12 shrink-0 rounded-full bg-emerald-200 transition peer-checked:bg-emerald-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform after:content-[''] peer-checked:after:translate-x-5"></span>
-                                        <span class="text-sm font-medium text-emerald-700">{{ $has_vehicle ? 'Yes' : 'No' }}</span>
-                                    </label>
+
+                                    @if ($has_vehicle)
+                                        <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                                            <label class="block">
+                                                <span class="text-emerald-700 font-medium">Vehicle type</span>
+                                                @if($vehicleRateCatalog->isNotEmpty())
+                                                    <select wire:model.live="selected_vehicle_rate_id" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                                                        <option value="">Select vehicle type</option>
+                                                        @foreach($vehicleRateCatalog as $rate)
+                                                            <option value="{{ $rate->id }}">{{ $rate->name }} — ₱{{ number_format($rate->price, 2) }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                @else
+                                                    <input type="text" wire:model.defer="vehicle_type" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., Car, Motorcycle" />
+                                                @endif
+                                                @error('vehicle_type')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+
+                                            <label class="block">
+                                                <span class="text-emerald-700 font-medium">Plate number</span>
+                                                <input type="text" wire:model.defer="vehicle_plate_number" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., ABC 1234" />
+                                                @error('vehicle_plate_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+
+                                            <label class="block">
+                                                <span class="text-emerald-700 font-medium">Vehicle price</span>
+                                                @if($vehicleRateCatalog->isNotEmpty())
+                                                    <div class="mt-2 flex h-12 items-center rounded-3xl border border-emerald-200 bg-emerald-50 px-4 text-lg font-semibold text-emerald-900">
+                                                        ₱{{ number_format($vehicle_price ?? 0, 2) }}
+                                                    </div>
+                                                @else
+                                                    <input type="number" wire:model.defer="vehicle_price" min="0" step="0.01" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="0.00" />
+                                                @endif
+                                                @error('vehicle_price')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+                                        </div>
+                                    @endif
                                 </div>
-
-                                @if ($has_vehicle)
-                                    <div class="mt-6 grid gap-4 sm:grid-cols-3">
-                                        <label class="block">
-                                            <span class="text-emerald-700 font-medium">Vehicle type</span>
-                                            @if($vehicleRateCatalog->isNotEmpty())
-                                                <select wire:model.live="selected_vehicle_rate_id" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
-                                                    <option value="">Select vehicle type</option>
-                                                    @foreach($vehicleRateCatalog as $rate)
-                                                        <option value="{{ $rate->id }}">{{ $rate->name }} — ₱{{ number_format($rate->price, 2) }}</option>
-                                                    @endforeach
-                                                </select>
-                                            @else
-                                                <input type="text" wire:model.defer="vehicle_type" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., Car, Motorcycle" />
-                                            @endif
-                                            @error('vehicle_type')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        </label>
-
-                                        <label class="block">
-                                            <span class="text-emerald-700 font-medium">Plate number</span>
-                                            <input type="text" wire:model.defer="vehicle_plate_number" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., ABC 1234" />
-                                            @error('vehicle_plate_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        </label>
-
-                                        <label class="block">
-                                            <span class="text-emerald-700 font-medium">Vehicle price</span>
-                                            @if($vehicleRateCatalog->isNotEmpty())
-                                                <div class="mt-2 flex h-12 items-center rounded-3xl border border-emerald-200 bg-emerald-50 px-4 text-lg font-semibold text-emerald-900">
-                                                    ₱{{ number_format($vehicle_price ?? 0, 2) }}
-                                                </div>
-                                            @else
-                                                <input type="number" wire:model.defer="vehicle_price" min="0" step="0.01" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="0.00" />
-                                            @endif
-                                            @error('vehicle_price')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        </label>
-                                    </div>
-                                @endif
-                            </div>
+                            @endif
 
                             @if ($showPassengerInfoModal)
                                 <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24">
@@ -335,30 +337,278 @@
 
                     @if ($step === 2)
                         <div class="space-y-4">
-                            <p class="text-emerald-700">Choose the schedule that works best for your trip.</p>
-                            <div class="grid gap-4 lg:grid-cols-3">
-                                @forelse($availableSchedules as $schedule)
-                                    <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-3xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-emerald-900 bg-emerald-900 text-white' : 'border-emerald-200 bg-white text-emerald-900 hover:border-emerald-900' }}">
-                                        <div class="flex items-center justify-between gap-4">
-                                            <div>
-                                                <h3 class="text-lg font-semibold">{{ $schedule['service'] }}</h3>
-                                                @if ($schedule['vehicle_name'])
-                                                    <p class="mt-1 text-sm text-emerald-400">{{ $schedule['vehicle_name'] }}</p>
-                                                @endif
-                                                <p class="mt-1 text-sm text-emerald-500">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
+                            <div class="grid gap-6 lg:grid-cols-2">
+                                {{-- Left Column: Schedules and transport classes/accommodations --}}
+                                <div class="space-y-6">
+                                    <p class="text-emerald-700">Choose the schedule that works best for your trip.</p>
+                                    <div class="grid gap-4 lg:grid-cols-2">
+                                        @forelse($availableSchedules as $schedule)
+                                            <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-3xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-emerald-900 bg-emerald-900 text-white' : 'border-emerald-200 bg-white text-emerald-900 hover:border-emerald-900' }}">
+                                                <div class="flex items-center justify-between gap-4">
+                                                    <div>
+                                                        <h3 class="text-lg font-semibold">{{ $schedule['service'] }}</h3>
+                                                        @if ($schedule['operator'])
+                                                            <p class="mt-1 text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-emerald-300' : 'text-emerald-600' }}">
+                                                                {{ $schedule['operator'] }}
+                                                            </p>
+                                                        @endif
+                                                        @if ($schedule['vehicle_name'])
+                                                            <p class="mt-1 text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-emerald-300' : 'text-emerald-600' }}">{{ $schedule['vehicle_name'] }}</p>
+                                                        @endif
+                                                        <p class="mt-1 text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-emerald-400' : 'text-emerald-500' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
+                                                    </div>
+                                                    <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide {{ $selected_schedule_id === $schedule['id'] ? 'border-white bg-white/10 text-white' : 'border-emerald-200 text-emerald-600' }}">{{ $schedule['availability'] }}</span>
+                                                </div>
+                                                <div class="mt-4">
+                                                    <p class="text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-emerald-400' : 'text-emerald-500' }}">Duration: {{ $schedule['duration'] }}</p>
+                                                </div>
+                                            </button>
+                                        @empty
+                                            <p class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-700 lg:col-span-2">No schedules are available for this route on the selected date. Go back and try another date, or contact Amiga Gracia Travel Services.</p>
+                                        @endforelse
+                                    </div>
+                                    @error('selected_schedule_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+
+                                    @if($selected_schedule_id)
+                                        @php
+                                            $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
+                                        @endphp
+
+                                        {{-- Ferry: Show accommodations --}}
+                                        @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']))
+                                            <div class="mt-4">
+                                                <p class="text-emerald-700 font-semibold mb-4">Select your accommodation:</p>
+                                                <div class="grid gap-4 sm:grid-cols-2">
+                                                    @foreach($selectedSchedule['accommodations'] as $accommodation)
+                                                        @php $isAccommodationSelected = $selected_schedule_accommodation_id === $accommodation['id']; @endphp
+                                                        <button type="button" wire:click.prevent="selectScheduleAccommodation({{ $accommodation['id'] }})" class="rounded-3xl border-2 p-6 text-left transition duration-200 {{ $isAccommodationSelected ? 'border-emerald-900 bg-emerald-50 shadow-md' : 'border-emerald-200 bg-white hover:border-emerald-400' }}">
+                                                            <div class="flex items-center justify-between">
+                                                                <h4 class="font-semibold text-emerald-900">{{ $accommodation['name'] }}</h4>
+                                                                @if($accommodation['has_bed'])
+                                                                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">With Bed</span>
+                                                                @endif
+                                                            </div>
+                                                            @if($accommodation['description'])
+                                                                <p class="mt-2 text-sm text-emerald-600">{{ $accommodation['description'] }}</p>
+                                                            @endif
+                                                            <p class="mt-3 text-lg font-semibold text-emerald-900">₱{{ number_format($accommodation['price'], 2) }}</p>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
                                             </div>
-                                            <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide {{ $selected_schedule_id === $schedule['id'] ? 'border-white bg-white/10 text-white' : 'border-emerald-200 text-emerald-600' }}">{{ $schedule['availability'] }}</span>
+                                        @endif
+
+                                        {{-- Airline: Show transport classes --}}
+                                        @if($mode === 'airline' && $selectedSchedule && !empty($selectedSchedule['transport_classes']))
+                                            <div class="mt-4">
+                                                <p class="text-emerald-700 font-semibold mb-4">Select your travel class:</p>
+                                                <div class="grid gap-4 sm:grid-cols-2">
+                                                    @foreach($selectedSchedule['transport_classes'] as $class)
+                                                        @php $isClassSelected = $selected_transport_class_id === $class['id']; @endphp
+                                                        <button type="button" wire:click.prevent="selectTransportClass({{ $class['id'] }})" class="rounded-3xl border-2 p-6 text-left transition duration-200 {{ $isClassSelected ? 'border-emerald-900 bg-emerald-50 shadow-md' : 'border-emerald-200 bg-white hover:border-emerald-400' }}">
+                                                            <div class="relative h-32 w-full bg-emerald-200 mb-3">
+                                                                @if($class['cover_image'])
+                                                                    <img src="{{ $class['cover_image'] }}" alt="{{ $class['name'] }}" class="h-full w-full object-cover rounded-2xl" />
+                                                                @else
+                                                                    <div class="flex h-full w-full items-center justify-center text-emerald-600 text-sm">No photo</div>
+                                                                @endif
+                                                            </div>
+                                                            <h4 class="font-semibold text-emerald-900">{{ $class['name'] }}</h4>
+                                                            @if($class['description'])
+                                                                <p class="mt-2 text-sm text-emerald-600">{{ $class['description'] }}</p>
+                                                            @endif
+                                                            @if(!empty($class['row_start']) && !empty($class['row_end']))
+                                                                <p class="mt-2 text-sm text-emerald-500">Rows {{ $class['row_start'] }}-{{ $class['row_end'] }}</p>
+                                                            @endif
+                                                            @if(!empty($class['seat_capacity']))
+                                                                <p class="mt-1 text-sm text-emerald-500">{{ number_format($class['seat_capacity']) }} seats in this cabin</p>
+                                                            @endif
+                                                            <p class="mt-3 text-lg font-semibold text-emerald-900">₱{{ number_format($class['price'], 2) }}</p>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+
+                                {{-- Right Column: Seat Map for Airline --}}
+                                @php
+                                    $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
+                                    $selectedClass = $selectedSchedule && $selected_transport_class_id 
+                                        ? collect($selectedSchedule['transport_classes'])->firstWhere('id', $selected_transport_class_id)
+                                        : null;
+                                @endphp
+                                @if($mode === 'airline' && $selectedSchedule && $selectedClass)
+                                    <div class="space-y-6">
+                                        <div class="rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm">
+                                            <div class="flex flex-wrap items-start justify-between gap-4">
+                                                <div>
+                                                    <h3 class="text-lg font-semibold text-emerald-900">Passenger Seat Assignment</h3>
+                                                    <p class="mt-1 text-sm text-emerald-600">Choose a passenger first, then pick a seat from the selected cabin.</p>
+                                                </div>
+                                                @if(!empty($selectedSchedule['aircraft_capacity']))
+                                                    <span class="rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                                                        Aircraft capacity: {{ number_format($selectedSchedule['aircraft_capacity']) }} seats
+                                                    </span>
+                                                @endif
+                                            </div>
+
+                                            <div class="mt-5 grid gap-3">
+                                                @foreach($passengers as $index => $passenger)
+                                                    @php
+                                                        $isChoosingPassenger = $selectingSeatForPassengerIndex === $index;
+                                                        $passengerSeat = $passenger['seat_number'] ?? null;
+                                                    @endphp
+                                                    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 {{ $isChoosingPassenger ? 'border-emerald-600 bg-emerald-50' : 'border-emerald-200 bg-white' }}">
+                                                        <div>
+                                                            <p class="font-semibold text-emerald-900">{{ ucfirst($passenger['type']) }} {{ $index + 1 }}</p>
+                                                            <p class="text-sm text-emerald-600">
+                                                                {{ $passengerSeat ? 'Seat ' . $passengerSeat . ' • ' . ($passenger['seat_section'] ?? $selectedClass['name']) : 'No seat selected yet' }}
+                                                            </p>
+                                                        </div>
+                                                        <div class="flex items-center gap-2">
+                                                            <button type="button" wire:click.prevent="chooseSeatForPassenger({{ $index }})" class="rounded-full border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:border-emerald-500 hover:bg-emerald-50">
+                                                                {{ $passengerSeat ? 'Change Seat' : 'Choose Seat' }}
+                                                            </button>
+                                                            @if($passengerSeat)
+                                                                <button type="button" wire:click.prevent="clearSeatForPassenger({{ $index }})" class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                                                    Clear
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                        <div class="mt-4 flex items-center justify-between">
-                                            <p class="text-sm text-emerald-500">Duration: {{ $schedule['duration'] }}</p>
-                                            <p class="text-xl font-semibold">₱{{ number_format($schedule['price'], 2) }}</p>
+
+                                        @if($selectingSeatForPassengerIndex !== null)
+                                            <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-4">
+                                                <p class="text-emerald-800 font-medium">
+                                                    Selecting seat for {{ ucfirst($passengers[$selectingSeatForPassengerIndex]['type']) }} {{ $selectingSeatForPassengerIndex + 1 }}
+                                                </p>
+                                            </div>
+                                        @endif
+                                        
+                                        <div class="bg-white rounded-3xl border border-emerald-200 p-6 shadow-lg">
+                                            <div class="mb-6">
+                                                <h3 class="text-lg font-bold text-emerald-900 mb-1">{{ $selectedClass['name'] }} Seats</h3>
+                                                <p class="text-sm text-emerald-600">{{ $selectedClass['description'] ?? '' }}</p>
+                                                @if(!empty($selectedClass['row_start']) && !empty($selectedClass['row_end']))
+                                                    <p class="mt-2 text-sm text-emerald-500">Cabin rows {{ $selectedClass['row_start'] }}-{{ $selectedClass['row_end'] }}</p>
+                                                @endif
+                                            </div>
+                                            
+                                            <div class="flex justify-center mb-4">
+                                                <div class="flex items-center gap-2 bg-emerald-100 rounded-full px-4 py-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                                    </svg>
+                                                    <span class="text-emerald-700 font-medium text-sm">Front of Aircraft</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="overflow-x-auto pb-2">
+                                                <div class="min-w-max mx-auto">
+                                                    @foreach($selectedClass['seat_rows'] as $row)
+                                                        <div class="flex justify-center items-center gap-3 mb-3">
+                                                            <span class="text-sm font-semibold text-emerald-700 w-8 text-right">{{ $row['label'] }}</span>
+                                                            
+                                                            {{-- Left seats --}}
+                                                            <div class="flex items-center gap-2">
+                                                                @foreach($row['left'] as $seatMeta)
+                                                                    @php
+                                                                        $seat = $seatMeta['id'];
+                                                                        $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
+                                                                        $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
+                                                                    @endphp
+                                                                    <button type="button"
+                                                                        @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
+                                                                            wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
+                                                                        @endif
+                                                                        class="w-12 h-12 rounded-lg border-2 flex items-center justify-center text-base font-bold transition-all duration-200
+                                                                            @if($isOccupied)
+                                                                                bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed
+                                                                            @elseif($isSelectedForPassenger)
+                                                                                bg-emerald-600 text-white border-emerald-600 shadow-md
+                                                                            @elseif($selectingSeatForPassengerIndex === null)
+                                                                                bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed
+                                                                            @else
+                                                                                bg-white text-emerald-700 border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm
+                                                                            @endif
+                                                                        "
+                                                                    >
+                                                                        {{ $seatMeta['label'] }}
+                                                                    </button>
+                                                                @endforeach
+                                                            </div>
+                                                            
+                                                            {{-- Aisle --}}
+                                                            <div class="w-6"></div>
+                                                            
+                                                            {{-- Right seats --}}
+                                                            <div class="flex items-center gap-2">
+                                                                @foreach($row['right'] as $seatMeta)
+                                                                    @php
+                                                                        $seat = $seatMeta['id'];
+                                                                        $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
+                                                                        $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
+                                                                    @endphp
+                                                                    <button type="button"
+                                                                        @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
+                                                                            wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
+                                                                        @endif
+                                                                        class="w-12 h-12 rounded-lg border-2 flex items-center justify-center text-base font-bold transition-all duration-200
+                                                                            @if($isOccupied)
+                                                                                bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed
+                                                                            @elseif($isSelectedForPassenger)
+                                                                                bg-emerald-600 text-white border-emerald-600 shadow-md
+                                                                            @elseif($selectingSeatForPassengerIndex === null)
+                                                                                bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed
+                                                                            @else
+                                                                                bg-white text-emerald-700 border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm
+                                                                            @endif
+                                                                        "
+                                                                    >
+                                                                        {{ $seatMeta['label'] }}
+                                                                    </button>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-8 pt-6 border-t border-emerald-100">
+                                                <div class="flex flex-wrap justify-center gap-8 text-sm">
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="w-8 h-8 rounded-lg bg-white border-2 border-emerald-300"></span>
+                                                        <span class="text-emerald-700">Available</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="w-8 h-8 rounded-lg bg-emerald-600 border-2 border-emerald-600"></span>
+                                                        <span class="text-emerald-700">Selected</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="w-8 h-8 rounded-lg bg-gray-100 border-2 border-gray-200"></span>
+                                                        <span class="text-gray-600">Occupied</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </button>
-                                @empty
-                                    <p class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-700 lg:col-span-3">No schedules are available for this route on the selected date. Go back and try another date, or contact Amiga Gracia Travel Services.</p>
-                                @endforelse
+                                    </div>
+                                @elseif($mode === 'airline' && $selectedSchedule && !$selectedClass)
+                                    <div class="space-y-6">
+                                        <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-emerald-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                                            </svg>
+                                            <h3 class="text-lg font-semibold text-emerald-900 mb-2">Select a Travel Class</h3>
+                                            <p class="text-emerald-600">Choose your travel class from the options on the left to see available seats</p>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
-                            @error('selected_schedule_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                         </div>
                     @endif
 
@@ -475,20 +725,27 @@
                                         </label>
                                     @endif
 
-                                    <label class="block min-w-0">
-                                        <span class="text-emerald-700 font-medium">Seat Number</span>
-                                        <input type="text" wire:model.defer="passengers.{{ $index }}.seat_number" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., 12A" />
-                                    </label>
+                                    @if ($mode === 'airline')
+                                        <div class="space-y-3">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-emerald-700 font-medium">Seat Number</span>
+                                                @if(!empty($passenger['seat_number']))
+                                                    <button type="button" wire:click.prevent="clearSeatForPassenger({{ $index }})" class="text-sm text-emerald-600 hover:text-emerald-800 underline">Change Seat</button>
+                                                @endif
+                                            </div>
+                                            <input type="text" wire:model="passengers.{{ $index }}.seat_number" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-emerald-50 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Select seat from the seat map" readonly />
 
-                                    <label class="block min-w-0">
-                                        <span class="text-emerald-700 font-medium">Seat Row</span>
-                                        <input type="text" wire:model.defer="passengers.{{ $index }}.seat_row" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., 12" />
-                                    </label>
+                                            <label class="block min-w-0">
+                                                <span class="text-emerald-700 font-medium">Seat Row</span>
+                                                <input type="text" wire:model="passengers.{{ $index }}.seat_row" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-emerald-50 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Auto-populated" readonly />
+                                            </label>
 
-                                    <label class="block min-w-0">
-                                        <span class="text-emerald-700 font-medium">Seat Section</span>
-                                        <input type="text" wire:model.defer="passengers.{{ $index }}.seat_section" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., Economy, Business" />
-                                    </label>
+                                            <label class="block min-w-0">
+                                                <span class="text-emerald-700 font-medium">Seat Section</span>
+                                                <input type="text" wire:model="passengers.{{ $index }}.seat_section" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-emerald-50 px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Auto-populated" readonly />
+                                            </label>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -497,23 +754,29 @@
                     @if ($step === 4)
                         <div class="space-y-6">
                             <div class="space-y-4">
-                                <p class="text-emerald-700">Choose your transport class (optional).</p>
+                                <p class="text-emerald-700">Choose a place to stay in {{ $destination }} (optional).</p>
+                                @php
+                                    $currentDestination = $destination;
+                                    $filteredHotels = $accommodationCatalog->filter(function ($acc) use ($currentDestination) {
+                                        return $acc->destination === $currentDestination;
+                                    });
+                                @endphp
 
-                                @if($transportClassCatalog->isEmpty())
-                                    <p class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-700">No transport classes are available right now. You can continue without one.</p>
+                                @if($filteredHotels->isEmpty())
+                                    <p class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-700">No accommodations are available in {{ $destination }} right now. You can continue without one.</p>
                                 @else
                                     <div class="grid gap-5 sm:grid-cols-2">
-                                        @foreach($transportClassCatalog as $class)
-                                            @php $isSelected = $selected_transport_class_id === $class->id; @endphp
+                                        @foreach($filteredHotels as $hotel)
+                                            @php $isSelected = $selected_hotel_id === $hotel->id; @endphp
                                             <button
                                                 type="button"
-                                                wire:key="transport-class-{{ $class->id }}"
-                                                wire:click.prevent="$set('selected_transport_class_id', {{ $isSelected ? 'null' : $class->id }})"
+                                                wire:key="hotel-{{ $hotel->id }}"
+                                                wire:click.prevent="$set('selected_hotel_id', {{ $isSelected ? 'null' : $hotel->id }})"
                                                 class="text-left rounded-3xl border-2 overflow-hidden transition duration-200 {{ $isSelected ? 'border-emerald-900 shadow-md' : 'border-emerald-200 hover:border-emerald-400' }}"
                                             >
                                                 <div class="relative h-40 w-full bg-emerald-200">
-                                                    @if($class->cover_image)
-                                                        <img src="{{ asset('storage/' . $class->cover_image) }}" alt="{{ $class->name }}" class="h-full w-full object-cover" />
+                                                    @if($hotel->cover_image)
+                                                        <img src="{{ asset('storage/' . $hotel->cover_image) }}" alt="{{ $hotel->name }}" class="h-full w-full object-cover" />
                                                     @else
                                                         <div class="flex h-full w-full items-center justify-center text-emerald-600 text-sm">No photo</div>
                                                     @endif
@@ -522,54 +785,16 @@
                                                     @endif
                                                 </div>
                                                 <div class="p-4">
-                                                    <h3 class="font-semibold text-emerald-900">{{ $class->name }}</h3>
-                                                    @if($class->description)
-                                                        <p class="mt-1 text-sm text-emerald-500 line-clamp-2">{{ $class->description }}</p>
+                                                    <h3 class="font-semibold text-emerald-900">{{ $hotel->name }}</h3>
+                                                    @if($hotel->description)
+                                                        <p class="mt-1 text-sm text-emerald-500 line-clamp-2">{{ $hotel->description }}</p>
                                                     @endif
-                                                    <p class="mt-2 text-lg font-semibold text-emerald-900">₱{{ number_format($class->price, 2) }}</p>
+                                                    <p class="mt-2 text-lg font-semibold text-emerald-900">₱{{ number_format($hotel->price, 2) }}</p>
                                                 </div>
                                             </button>
                                         @endforeach
                                     </div>
                                 @endif
-                            </div>
-
-                            <div class="space-y-4">
-                                <p class="text-emerald-700">Pick any accommodations you'd like to add to your trip (optional).</p>
-
-                                @if($accommodationCatalog->isEmpty())
-                                <p class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-700">No accommodations are available right now. You can continue without one.</p>
-                            @else
-                                <div class="grid gap-5 sm:grid-cols-2">
-                                    @foreach($accommodationCatalog as $accommodation)
-                                        @php $isSelected = isset($selected_accommodation_ids[$accommodation->id]); @endphp
-                                        <button
-                                            type="button"
-                                            wire:key="accommodation-{{ $accommodation->id }}"
-                                            wire:click.prevent="toggleAccommodation({{ $accommodation->id }})"
-                                            class="text-left rounded-3xl border-2 overflow-hidden transition duration-200 {{ $isSelected ? 'border-emerald-900 shadow-md' : 'border-emerald-200 hover:border-emerald-400' }}"
-                                        >
-                                            <div class="relative h-40 w-full bg-emerald-200">
-                                                @if($accommodation->cover_image)
-                                                    <img src="{{ asset('storage/' . $accommodation->cover_image) }}" alt="{{ $accommodation->name }}" class="h-full w-full object-cover" />
-                                                @else
-                                                    <div class="flex h-full w-full items-center justify-center text-emerald-600 text-sm">No photo</div>
-                                                @endif
-                                                @if($isSelected)
-                                                    <span class="absolute top-3 right-3 rounded-full bg-emerald-900 text-white text-xs font-semibold px-3 py-1">Selected</span>
-                                                @endif
-                                            </div>
-                                            <div class="p-4">
-                                                <h3 class="font-semibold text-emerald-900">{{ $accommodation->name }}</h3>
-                                                @if($accommodation->description)
-                                                    <p class="mt-1 text-sm text-emerald-500 line-clamp-2">{{ $accommodation->description }}</p>
-                                                @endif
-                                                <p class="mt-2 text-lg font-semibold text-emerald-900">₱{{ number_format($accommodation->price, 2) }}</p>
-                                            </div>
-                                        </button>
-                                    @endforeach
-                                </div>
-                            @endif
                             </div>
                         </div>
                     @endif
@@ -607,11 +832,14 @@
 
                                 <div class="space-y-2">
                                     @php
-                                        $selectedAccommodations = $accommodationCatalog->filter(fn ($a) => isset($selected_accommodation_ids[$a->id]));
+                                        $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
+                                        $selectedAccommodation = $selectedSchedule && $selected_schedule_accommodation_id
+                                            ? collect($selectedSchedule['accommodations'])->firstWhere('id', $selected_schedule_accommodation_id)
+                                            : null;
                                         $discountedCount = collect($passengers)->filter(fn ($p) => !empty($p['discount_id']))->count();
                                     @endphp
                                     <p class="text-emerald-700"><span class="font-medium">Discounted travelers:</span> {{ $discountedCount }} of {{ count($passengers) }}</p>
-                                    <p class="text-emerald-700"><span class="font-medium">Accommodations selected:</span> {{ $selectedAccommodations->count() }}</p>
+                                    <p class="text-emerald-700"><span class="font-medium">Accommodation selected:</span> {{ $selectedAccommodation ? $selectedAccommodation['name'] : 'None' }}</p>
                                     <p class="text-emerald-700"><span class="font-medium">Estimated total:</span> ₱{{ number_format($this->calculateTotalPrice(), 2) }}</p>
                                 </div>
                             </div>
@@ -623,10 +851,10 @@
                                             <span class="text-emerald-900">{{ ucfirst($passenger['type']) }}{{ $passenger['name'] ? ' — ' . $passenger['name'] : '' }}</span>
                                             <span class="text-emerald-600 text-sm">{{ optional($discounts->firstWhere('id', $passenger['discount_id']))->name ?? 'No discount' }}</span>
                                         </div>
-                                        @if ($passenger['seat_number'] || $passenger['seat_section'])
+                                        @if (isset($passenger['seat_number']) || isset($passenger['seat_section']))
                                             <div class="mt-2 text-sm text-emerald-600">
-                                                Seat: {{ $passenger['seat_number'] ? $passenger['seat_number'] . ($passenger['seat_row'] ? ' (Row ' . $passenger['seat_row'] . ')' : '') : 'Not selected' }}
-                                                @if ($passenger['seat_section'])
+                                                Seat: {{ isset($passenger['seat_number']) ? $passenger['seat_number'] . (isset($passenger['seat_row']) ? ' (Row ' . $passenger['seat_row'] . ')' : '') : 'Not selected' }}
+                                                @if (isset($passenger['seat_section']))
                                                     • {{ $passenger['seat_section'] }}
                                                 @endif
                                             </div>
@@ -638,7 +866,7 @@
                             </div>
 
                             <div class="mt-6 space-y-3">
-                                @if ($has_vehicle)
+                                @if ($mode === 'ferry' && $has_vehicle)
                                     <div class="rounded-2xl bg-white p-4 border border-emerald-200">
                                         <p class="text-emerald-900 font-medium">Vehicle: {{ $vehicle_type }}</p>
                                         <p class="text-emerald-700">Plate: {{ $vehicle_plate_number }}</p>
@@ -651,14 +879,19 @@
                                         <p class="text-emerald-700">Price: ₱{{ number_format($selectedClass->price, 2) }}</p>
                                     </div>
                                 @endif
-                                @forelse($selectedAccommodations as $accommodation)
+                                @if ($selectedAccommodation)
                                     <div class="rounded-2xl bg-white p-4 border border-emerald-200">
-                                        <p class="text-emerald-900 font-medium">{{ $accommodation->name }}</p>
-                                        <p class="text-emerald-700">Price: ₱{{ number_format($accommodation->price, 2) }}</p>
+                                        <p class="text-emerald-900 font-medium">{{ $selectedAccommodation['name'] }}</p>
+                                        <p class="text-emerald-700">Price: ₱{{ number_format($selectedAccommodation['price'], 2) }}</p>
                                     </div>
-                                @empty
-                                    <p class="text-emerald-500">No accommodations selected.</p>
-                                @endforelse
+                                @endif
+                                @if ($selected_hotel_id)
+                                    @php $selectedHotel = $accommodationCatalog->firstWhere('id', $selected_hotel_id); @endphp
+                                    <div class="rounded-2xl bg-white p-4 border border-emerald-200">
+                                        <p class="text-emerald-900 font-medium">Hotel: {{ $selectedHotel->name }}</p>
+                                        <p class="text-emerald-700">Price: ₱{{ number_format($selectedHotel->price, 2) }}</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 
@@ -718,4 +951,3 @@
         </div>
     </div>
 </div>
-

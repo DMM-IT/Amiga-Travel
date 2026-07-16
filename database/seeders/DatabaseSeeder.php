@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DiscountSeeder::class,
             FerryRouteSeeder::class,
+            TransportClassSeeder::class,
         ]);
     }
 }

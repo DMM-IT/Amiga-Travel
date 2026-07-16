@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class TransportClass extends Model
 {
     protected $fillable = [
+        'operator',
+        'code',
         'name',
         'description',
         'price',
+        'sort_order',
         'images',
         'is_active',
     ];
@@ -19,6 +22,7 @@ class TransportClass extends Model
         'images' => 'array',
         'is_active' => 'boolean',
         'price' => 'decimal:2',
+        'sort_order' => 'integer',
     ];
 
     public function bookings(): BelongsToMany

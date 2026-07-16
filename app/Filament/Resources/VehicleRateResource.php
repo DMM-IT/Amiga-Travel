@@ -48,6 +48,12 @@ class VehicleRateResource extends Resource
                     ->minValue(0)
                     ->required(),
 
+                TextInput::make('sort_order')
+                    ->label('Sort order')
+                    ->numeric()
+                    ->default(0)
+                    ->helperText('Lower numbers appear first'),
+
                 Toggle::make('is_active')
                     ->label('Visible to clients when booking')
                     ->default(true),
@@ -59,6 +65,9 @@ class VehicleRateResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('sort_order')
+                    ->label('Order')
+                    ->sortable(),
                 TextColumn::make('name')
                     ->label('Vehicle type')
                     ->searchable()
@@ -73,11 +82,13 @@ class VehicleRateResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('sort_order', 'asc')
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
