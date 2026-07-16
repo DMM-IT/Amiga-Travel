@@ -24,6 +24,10 @@ class Booking extends Model
         'total_price',
         'client_email',
         'client_name',
+        'has_vehicle',
+        'vehicle_type',
+        'vehicle_plate_number',
+        'vehicle_price',
     ];
 
     protected $casts = [
@@ -31,6 +35,8 @@ class Booking extends Model
         'return_date' => 'date',
         'schedule_price' => 'decimal:2',
         'total_price' => 'decimal:2',
+        'has_vehicle' => 'boolean',
+        'vehicle_price' => 'decimal:2',
     ];
 
     public function passengers(): HasMany
@@ -41,6 +47,13 @@ class Booking extends Model
     public function accommodations(): BelongsToMany
     {
         return $this->belongsToMany(Accommodation::class)
+            ->withPivot('price')
+            ->withTimestamps();
+    }
+
+    public function transportClasses(): BelongsToMany
+    {
+        return $this->belongsToMany(TransportClass::class, 'booking_transport_class')
             ->withPivot('price')
             ->withTimestamps();
     }

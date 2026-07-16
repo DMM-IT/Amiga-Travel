@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ScheduleResource\Pages;
+use App\Filament\Resources\ScheduleResource\RelationManagers\TransportClassesRelationManager;
 use App\Models\FerryRoute;
 use App\Models\Schedule;
 use App\Models\User;
@@ -53,6 +54,12 @@ class ScheduleResource extends Resource
                     ->label('Service name')
                     ->placeholder('e.g. Fast Ferry')
                     ->required()
+                    ->maxLength(255),
+
+                TextInput::make('vehicle_name')
+                    ->label('Vehicle Name')
+                    ->placeholder('e.g. MV Amiga, Flight 123')
+                    ->nullable()
                     ->maxLength(255),
 
                 TimePicker::make('departure_time')
@@ -120,6 +127,11 @@ class ScheduleResource extends Resource
                 TextColumn::make('service_name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('vehicle_name')
+                    ->label('Vehicle')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('departure_time')
                     ->label('Departs')
                     ->time('H:i')
@@ -154,7 +166,7 @@ class ScheduleResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TransportClassesRelationManager::class,
         ];
     }
 

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Schedule extends Model
@@ -13,6 +14,7 @@ class Schedule extends Model
     protected $fillable = [
         'ferry_route_id',
         'service_name',
+        'vehicle_name',
         'departure_time',
         'arrival_time',
         'duration_minutes',
@@ -36,6 +38,13 @@ class Schedule extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function transportClasses(): BelongsToMany
+    {
+        return $this->belongsToMany(TransportClass::class, 'schedule_transport_class')
+            ->withPivot('additional_price')
+            ->withTimestamps();
     }
 
     public function scopeActive(Builder $query): Builder
@@ -111,6 +120,7 @@ class Schedule extends Model
             'duration' => $this->duration_label,
             'price' => floatval($this->price),
             'service' => $this->service_name,
+            'vehicle_name' => $this->vehicle_name,
             'availability' => $this->availability_label ?? 'Available',
         ];
     }

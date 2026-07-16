@@ -14,6 +14,9 @@ class Passenger extends Model
         'discount_id',
         'school_name',
         'id_number',
+        'seat_number',
+        'seat_row',
+        'seat_section',
     ];
 
     public function booking(): BelongsTo

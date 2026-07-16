@@ -10,6 +10,8 @@ use App\Models\FerryRoute;
 use App\Models\Passenger;
 use App\Models\PaymentSetting;
 use App\Models\Schedule;
+use App\Models\TransportClass;
+use App\Models\VehicleRate;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -60,22 +62,37 @@ class BookingForm extends Component
         'passengers.*.pwd_disability_type' => 'type of disability',
         'passengers.*.pwd_disability_other' => 'disability details',
         'passengers.*.pwd_id_number' => 'PWD ID number',
+        'vehicle_type' => 'vehicle type',
+        'vehicle_plate_number' => 'plate number',
+        'vehicle_price' => 'vehicle price',
     ];
 
     // Selected catalog accommodation ids, e.g. [3 => true, 5 => true]
     public array $selected_accommodation_ids = [];
+    public ?int $selected_transport_class_id = null;
+
+    // Car booking fields
+    public bool $has_vehicle = false;
+    public ?int $selected_vehicle_rate_id = null;
+    public string $vehicle_type = '';
+    public string $vehicle_plate_number = '';
+    public ?float $vehicle_price = null;
 
     public string $client_name = '';
     public string $client_email = '';
     public string $recaptchaToken = '';
     public \Illuminate\Support\Collection $discounts;
     public \Illuminate\Support\Collection $accommodationCatalog;
+    public \Illuminate\Support\Collection $transportClassCatalog;
+    public \Illuminate\Support\Collection $vehicleRateCatalog;
     public array $availableSchedules = [];
 
     public function mount(): void
     {
         $this->discounts = Discount::orderBy('name')->get();
         $this->accommodationCatalog = Accommodation::where('is_active', true)->orderBy('name')->get();
+        $this->transportClassCatalog = TransportClass::where('is_active', true)->orderBy('name')->get();
+        $this->vehicleRateCatalog = VehicleRate::where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
 
         if (session()->has('booking_draft')) {
@@ -332,6 +349,12 @@ class BookingForm extends Component
             return;
         }
 
+        if (in_array($propertyName, ['has_vehicle', 'selected_vehicle_rate_id', 'vehicle_type', 'vehicle_plate_number', 'vehicle_price'], true)) {
+            $this->saveDraft();
+
+            return;
+        }
+
         if (in_array($propertyName, ['origin', 'destination', 'departure_date'], true)) {
             $this->selected_schedule_id = null;
             $this->availableSchedules = [];
@@ -484,6 +507,37 @@ class BookingForm extends Component
         }
     }
 
+    public function updatedHasVehicle(bool $value): void
+    {
+        if (! $value) {
+            $this->selected_vehicle_rate_id = null;
+            $this->vehicle_type = '';
+            $this->vehicle_plate_number = '';
+            $this->vehicle_price = null;
+        }
+
+        $this->saveDraft();
+    }
+
+    public function updatedSelectedVehicleRateId($value): void
+    {
+        if (blank($value)) {
+            $this->vehicle_type = '';
+            $this->vehicle_price = null;
+
+            return;
+        }
+
+        $rate = $this->vehicleRateCatalog->firstWhere('id', (int) $value);
+
+        if ($rate) {
+            $this->vehicle_type = $rate->name;
+            $this->vehicle_price = floatval($rate->price);
+        }
+
+        $this->saveDraft();
+    }
+
     public function toggleAccommodation(int $accommodationId): void
     {
         if (isset($this->selected_accommodation_ids[$accommodationId])) {
@@ -557,6 +611,10 @@ class BookingForm extends Component
                 'client_email' => $this->client_email,
                 'total_price' => $this->calculateTotalPrice(),
                 'status' => 'pending',
+                'has_vehicle' => $this->has_vehicle,
+                'vehicle_type' => $this->vehicle_type,
+                'vehicle_plate_number' => $this->vehicle_plate_number,
+                'vehicle_price' => $this->vehicle_price,
             ]);
 
             foreach ($this->passengers as $passenger) {
@@ -565,6 +623,9 @@ class BookingForm extends Component
                     'type' => $passenger['type'],
                     'name' => $passenger['name'] ?: null,
                     'discount_id' => $passenger['discount_id'] ?: null,
+                    'seat_number' => $passenger['seat_number'] ?? null,
+                    'seat_row' => $passenger['seat_row'] ?? null,
+                    'seat_section' => $passenger['seat_section'] ?? null,
                 ]);
             }
 
@@ -577,12 +638,21 @@ class BookingForm extends Component
                 ]);
             }
 
+            if ($this->selected_transport_class_id) {
+                $transportClass = TransportClass::find($this->selected_transport_class_id);
+                if ($transportClass) {
+                    $booking->transportClasses()->attach($transportClass->id, [
+                        'price' => $transportClass->price,
+                    ]);
+                }
+            }
+
             $transaction = Transaction::create([
                 'booking_id' => $booking->id,
                 'payment_status' => 'unpaid',
             ]);
 
-            $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule');
+            $booking->load('passengers.discount', 'accommodations', 'transportClasses', 'transaction', 'schedule');
 
             $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
             if (! file_exists(dirname($receiptPath))) {
@@ -617,6 +687,12 @@ class BookingForm extends Component
             'selected_schedule_id' => $this->selected_schedule_id,
             'passengers' => $this->passengers,
             'selected_accommodation_ids' => $this->selected_accommodation_ids,
+            'selected_transport_class_id' => $this->selected_transport_class_id,
+            'has_vehicle' => $this->has_vehicle,
+            'selected_vehicle_rate_id' => $this->selected_vehicle_rate_id,
+            'vehicle_type' => $this->vehicle_type,
+            'vehicle_plate_number' => $this->vehicle_plate_number,
+            'vehicle_price' => $this->vehicle_price,
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
         ]]);
@@ -652,6 +728,10 @@ class BookingForm extends Component
                         }
                     },
                 ],
+                'has_vehicle' => 'boolean',
+                'vehicle_type' => 'required_if:has_vehicle,true|nullable|string|max:255',
+                'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
+                'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
             ],
             2 => [
                 'selected_schedule_id' => 'required|integer|exists:schedules,id',
@@ -718,6 +798,10 @@ class BookingForm extends Component
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
             'recaptchaToken' => $this->recaptchaRule(),
+            'has_vehicle' => 'boolean',
+            'vehicle_type' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
         ];
     }
 
@@ -752,7 +836,7 @@ class BookingForm extends Component
         $tripMultiplier = $this->trip_type === 'round_trip' ? 2 : 1;
         $discountsById = $this->discounts->keyBy('id');
 
-        $ferryTotal = collect($this->passengers)->sum(function (array $passenger) use ($schedulePrice, $tripMultiplier, $discountsById) {
+        $transportTotal = collect($this->passengers)->sum(function (array $passenger) use ($schedulePrice, $tripMultiplier, $discountsById) {
             $fare = $schedulePrice * $tripMultiplier;
 
             if (! empty($passenger['discount_id'])) {
@@ -772,6 +856,12 @@ class BookingForm extends Component
             ->whereIn('id', $selectedIds)
             ->sum(fn ($item) => floatval($item->price));
 
+        $transportClassTotal = $this->selected_transport_class_id
+            ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id)->price ?? 0)
+            : 0;
+
+        $vehicleTotal = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
+
         $settings = PaymentSetting::current();
 
         // Service fee: charged per traveler and per selected accommodation.
@@ -779,7 +869,7 @@ class BookingForm extends Component
         $serviceFee = ($payingTravelers * floatval($settings->fee_per_person))
             + (count($selectedIds) * floatval($settings->fee_per_accommodation));
 
-        return $ferryTotal + $accommodationsTotal + $serviceFee;
+        return $transportTotal + $accommodationsTotal + $transportClassTotal + $vehicleTotal + $serviceFee;
     }
 
     public function incrementAdults(): void

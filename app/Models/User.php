@@ -18,6 +18,8 @@ class User extends Authenticatable implements FilamentUser
 {
     public const ADMIN_PERMISSIONS = [
         'manage_accommodations' => 'Accommodations',
+        'manage_transport_classes' => 'Transport Classes',
+        'manage_vehicle_rates' => 'Vehicle Rates',
         'manage_bookings' => 'Bookings',
         'manage_discounts' => 'Discounts',
         'manage_routes' => 'Routes',
