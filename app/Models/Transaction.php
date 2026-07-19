@@ -13,6 +13,11 @@ class Transaction extends Model
         'payment_status',
         'proof_of_payment',
         'confirmation_url',
+        'rebooking_fee',
+    ];
+
+    protected $casts = [
+        'rebooking_fee' => 'decimal:2',
     ];
 
     public function booking(): BelongsTo

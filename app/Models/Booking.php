@@ -34,6 +34,10 @@ class Booking extends Model
         'tour_id',
         'tour_date_id',
         'tour_inclusions',
+        'cancellation_fee',
+        'refund_amount',
+        'refund_destination',
+        'is_rebooked',
     ];
 
     protected $casts = [
@@ -45,6 +49,9 @@ class Booking extends Model
         'has_vehicle' => 'boolean',
         'vehicle_price' => 'decimal:2',
         'tour_inclusions' => 'array',
+        'cancellation_fee' => 'decimal:2',
+        'refund_amount' => 'decimal:2',
+        'is_rebooked' => 'boolean',
     ];
 
     public function passengers(): HasMany
@@ -92,5 +99,25 @@ class Booking extends Model
             ->implode(' → ');
 
         return trim("{$this->schedule_service}" . ($times ? " ({$times})" : ''));
+    }
+
+    public function canCancelOrRebook(): bool
+    {
+        return $this->departure_date->isFuture() || $this->departure_date->isToday();
+    }
+
+    public function getCancellationFeeAmount(): float
+    {
+        return $this->total_price * 0.5;
+    }
+
+    public function getRefundAmount(): float
+    {
+        return $this->total_price * 0.5;
+    }
+
+    public function getRebookingFeeAmount(): float
+    {
+        return $this->total_price * 0.3;
     }
 }

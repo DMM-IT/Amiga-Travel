@@ -8,8 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TourDate extends Model
 {
     protected $fillable = [
-        'tour_id',
-        'date',
+        'tour_id', 'date', 'price', 'is_active',
+    ];
+
+    protected $casts = [
+        'date' => 'date',
+        'price' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
     public function tour(): BelongsTo

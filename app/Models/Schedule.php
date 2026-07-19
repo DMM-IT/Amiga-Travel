@@ -360,7 +360,7 @@ class Schedule extends Model
                     ->filter(fn (string $column) => in_array($column, $rowColumns, true))
                     ->map(fn (string $column) => [
                         'id' => $rowNumber . $column,
-                        'label' => $column,
+                        'label' => $rowNumber . $column,
                     ])
                     ->values()
                     ->all(),
@@ -368,7 +368,7 @@ class Schedule extends Model
                     ->filter(fn (string $column) => in_array($column, $rowColumns, true))
                     ->map(fn (string $column) => [
                         'id' => $rowNumber . $column,
-                        'label' => $column,
+                        'label' => $rowNumber . $column,
                     ])
                     ->values()
                     ->all(),

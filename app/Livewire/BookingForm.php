@@ -113,6 +113,28 @@ class BookingForm extends Component
         $this->accommodationCatalog = Accommodation::query()->where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
 
+        // Check if we have tour/package query params first
+        $allowed = [
+            'trip_type','mode','origin','destination','departure_date','return_date','duration_days','adults','children',
+            'client_name','client_email','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id'
+        ];
+        $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $allowed));
+
+        // If we have package/tour query params, ignore session draft entirely; otherwise load draft first
+        $hasSessionDraft = session()->has('booking_draft');
+        if (!$hasPackageQueryParams && $hasSessionDraft) {
+            $draft = session('booking_draft', []);
+            foreach ($draft as $key => $value) {
+                if (property_exists($this, $key)) {
+                    $this->{$key} = $value;
+                }
+            }
+        } else {
+            // If we have package params, clear the draft to avoid conflicts
+            session()->forget('booking_draft');
+        }
+
+        // Now apply tour/package query params
         // Pre-fill tour if present in query params
         $reqTour = request()->query('tour_id');
         $reqTourDate = request()->query('tour_date_id');
@@ -133,6 +155,10 @@ class BookingForm extends Component
                 if ($this->tour->destination) {
                     $this->destination = $this->tour->destination;
                 }
+                
+                // Set duration days from the tour!
+                $this->duration_days = $this->tour->duration_days;
+                
                 // If a tour date was passed, preselect it; otherwise allow the user to pick from tour dates
                 if ($reqTourDate) {
                     $this->tour_date_id = intval($reqTourDate);
@@ -140,18 +166,13 @@ class BookingForm extends Component
 
                     if ($this->selectedTourDate) {
                         $this->departure_date = Carbon::parse($this->selectedTourDate->date)->format('Y-m-d');
-                        $this->return_date = Carbon::parse($this->selectedTourDate->date)->addDays($this->tour->duration_days)->format('Y-m-d');
+                        $this->return_date = Carbon::parse($this->selectedTourDate->date)->addDays($this->tour->duration_days - 1)->format('Y-m-d');
                     }
                 }
             }
         }
 
-        // Prefill other booking fields from query params (used when Book Now is clicked from tour listing)
-        $allowed = [
-            'trip_type','mode','origin','destination','departure_date','return_date','duration_days','adults','children',
-            'client_name','client_email','selected_hotel','selected_hotel_id','hotel','package_name','price'
-        ];
-
+        // Prefill other booking fields from query params
         foreach (request()->query() as $key => $value) {
             if (in_array($key, $allowed, true) && property_exists($this, $key)) {
                 // cast ints where appropriate
@@ -207,8 +228,12 @@ class BookingForm extends Component
             $this->duration_days = intval($durationDays);
         }
 
+        // For tour packages: force round trip and lock it
+        if ($this->prefilled_from_package || $this->tour_id) {
+            $this->trip_type = 'round_trip';
+        }
         // If the package has duration days and no explicit trip type, assume round trip
-        if ($this->duration_days > 1 && $this->trip_type === 'one_way') {
+        elseif ($this->duration_days > 1 && $this->trip_type === 'one_way') {
             $this->trip_type = 'round_trip';
         }
 
@@ -243,23 +268,8 @@ class BookingForm extends Component
             }
         }
 
-        // If there's a booking draft in session, restore it; otherwise, if origin/destination/departure_date were provided
-        if (session()->has('booking_draft')) {
-            $draft = session('booking_draft', []);
-
-            foreach ($draft as $key => $value) {
-                if (property_exists($this, $key)) {
-                    $this->{$key} = $value;
-                }
-            }
-
-            if (! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
-                $this->availableSchedules = $this->getAvailableSchedules();
-            }
-        }
-
-        // If no session draft but query params provided route+date, fetch available schedules immediately
-        if (! session()->has('booking_draft') && ! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
+        // Fetch available schedules if needed
+        if (! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
             $this->availableSchedules = $this->getAvailableSchedules();
         }
 
@@ -314,12 +324,29 @@ class BookingForm extends Component
 
     public function updatedTripType(string $value): void
     {
-        $this->trip_type = $value;
+        // If it's a tour package, lock to round trip
+        if ($this->prefilled_from_package || $this->tour_id) {
+            $this->trip_type = 'round_trip';
+        } else {
+            $this->trip_type = $value;
+        }
+        
         if ($this->trip_type === 'one_way') {
             $this->return_date = null;
+            $this->saveDraft();
             return;
         }
-        $this->updateReturnDateFromDuration();
+        
+        // Try to set from duration first (packages), otherwise set default return date
+        if (!$this->updateReturnDateFromDuration() && !empty($this->departure_date) && empty($this->return_date)) {
+            try {
+                $dt = Carbon::parse($this->departure_date);
+                $this->return_date = $dt->addDay()->format('Y-m-d');
+            } catch (\Throwable $e) {
+                // ignore parse errors
+            }
+        }
+        $this->saveDraft();
     }
 
     public function setTripType(string $type): void
@@ -328,12 +355,29 @@ class BookingForm extends Component
             return;
         }
 
-        $this->trip_type = $type;
+        // If it's a tour package, lock to round trip
+        if ($this->prefilled_from_package || $this->tour_id) {
+            $this->trip_type = 'round_trip';
+        } else {
+            $this->trip_type = $type;
+        }
+        
         if ($this->trip_type === 'one_way') {
             $this->return_date = null;
+            $this->saveDraft();
             return;
         }
-        $this->updateReturnDateFromDuration();
+        
+        // Try to set from duration first (packages), otherwise set default return date
+        if (!$this->updateReturnDateFromDuration() && !empty($this->departure_date) && empty($this->return_date)) {
+            try {
+                $dt = Carbon::parse($this->departure_date);
+                $this->return_date = $dt->addDay()->format('Y-m-d');
+            } catch (\Throwable $e) {
+                // ignore parse errors
+            }
+        }
+        $this->saveDraft();
     }
 
     public function updatedDepartureDate(?string $value): void
@@ -341,7 +385,13 @@ class BookingForm extends Component
         $this->departure_date = $value;
         $this->selected_schedule_id = null;
         $this->availableSchedules = [];
-        $this->updateReturnDateFromDuration();
+        
+        // If it's a tour package with duration, recalculate return date
+        if (($this->prefilled_from_package || $this->tour_id) && !empty($this->duration_days) && $this->duration_days > 1) {
+            $this->updateReturnDateFromDuration();
+        }
+        
+        $this->saveDraft();
     }
 
     public function updatedDurationDays(): void
@@ -349,10 +399,10 @@ class BookingForm extends Component
         $this->updateReturnDateFromDuration();
     }
 
-    protected function updateReturnDateFromDuration(): void
+    protected function updateReturnDateFromDuration(): bool
     {
         if (empty($this->departure_date) || empty($this->duration_days) || $this->duration_days < 2) {
-            return;
+            return false;
         }
 
         try {
@@ -361,8 +411,10 @@ class BookingForm extends Component
             if ($this->trip_type !== 'round_trip') {
                 $this->trip_type = 'round_trip';
             }
+            return true;
         } catch (\Throwable $e) {
             // ignore parse errors
+            return false;
         }
     }
 
@@ -537,6 +589,10 @@ class BookingForm extends Component
 
     public function updated($propertyName): void
     {
+        if ($propertyName === 'trip_type') {
+            $this->saveDraft();
+            return;
+        }
         if ($propertyName === 'tour_date_id') {
             $this->selectedTourDate = $this->tour?->dates->firstWhere('id', $this->tour_date_id) ?: TourDate::find($this->tour_date_id);
             if ($this->selectedTourDate && $this->tour) {
@@ -601,20 +657,19 @@ class BookingForm extends Component
         }
 
         if ($this->step === 1) {
-            $this->availableSchedules = $this->getAvailableSchedules();
+            if (! $this->tour_id) {
+                $this->availableSchedules = $this->getAvailableSchedules();
 
-            if (empty($this->availableSchedules)) {
-                throw ValidationException::withMessages([
-                    'departure_date' => 'No ferry schedules are available for this route on the selected date. Try another date or contact Amiga Gracia Travel Services.',
-                ]);
+                if (empty($this->availableSchedules)) {
+                    throw ValidationException::withMessages([
+                        'departure_date' => 'No ferry schedules are available for this route on the selected date. Try another date or contact Amiga Gracia Travel Services.',
+                    ]);
+                }
             }
-        }
-
-        if ($this->step === 1) {
             $this->syncPassengerEntries();
         }
 
-        if ($this->step === 2) {
+        if ($this->step === 2 && ! $this->tour_id) {
             $this->assertSelectedScheduleIsValid();
         }
 
@@ -624,6 +679,9 @@ class BookingForm extends Component
 
         if ($this->step < 5) {
             $this->step++;
+            if (($this->tour_id || $this->prefilled_from_package) && $this->step === 2) {
+                $this->step = 3;
+            }
         }
 
         $this->saveDraft();
@@ -633,6 +691,9 @@ class BookingForm extends Component
     {
         if ($this->step > 1) {
             $this->step--;
+            if (($this->tour_id || $this->prefilled_from_package) && $this->step === 2) {
+                $this->step = 1;
+            }
         }
     }
 
@@ -1153,13 +1214,30 @@ class BookingForm extends Component
 
     public function calculateTotalPrice(): float
     {
-        // If booking a tour, use tour pricing per person
+        // If booking a prefilled package from CSV API or a tour with package_price
+        if (($this->prefilled_from_package || $this->tour_id) && !empty($this->package_price)) {
+            // Parse package_price: remove currency symbols and commas
+            $cleanPrice = preg_replace('/[^0-9.]/', '', $this->package_price);
+            $base = floatval($cleanPrice);
+            $transportTotal = $base * count($this->passengers);
+            $vehicleTotal = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
+            $hotelTotal = $this->selected_hotel_id
+                ? floatval($this->accommodationCatalog->firstWhere('id', $this->selected_hotel_id)->price ?? 0)
+                : 0;
+
+            $settings = PaymentSetting::current();
+            $serviceFee = (count($this->passengers) * floatval($settings->fee_per_person));
+
+            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee;
+        }
+        
+        // If booking an Eloquent tour with tour pricing (future use when price_from is added)
         if ($this->tour_id && $this->tour) {
-            $base = $this->tour->price_from;
+            $base = property_exists($this->tour, 'price_from') ? $this->tour->price_from : 0;
 
             if ($this->tour_date_id) {
                 $date = $this->selectedTourDate ?? TourDate::find($this->tour_date_id);
-                if ($date && $date->price) {
+                if ($date && property_exists($date, 'price') && $date->price) {
                     $base = $date->price;
                 }
             }

@@ -6,6 +6,7 @@ use App\Mail\BookingCancellation;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class BookingLookup extends Component
 {
@@ -18,6 +19,14 @@ class BookingLookup extends Component
     public bool $cancellationExpired = false;
     public int $cancelCountdown = 300;
     public ?string $refund_destination = null;
+    public bool $rebookingRequested = false;
+    public bool $rebookingPaid = false;
+    public $rebookingProof;
+    public bool $isUploadingRebooking = false;
+
+    protected $rules = [
+        'rebookingProof' => 'nullable|image|max:2048',
+    ];
 
     public function mount(): void
     {
@@ -43,6 +52,7 @@ class BookingLookup extends Component
         $this->searched = true;
         $this->feedback = null;
         $this->resetCancellationState();
+        $this->resetRebookingState();
 
         $this->booking = Booking::with(['passengers.discount', 'accommodations', 'transaction'])
             ->where('transaction_number', trim($this->transaction_number))
@@ -59,22 +69,28 @@ class BookingLookup extends Component
             return;
         }
 
+        if (! $this->booking->canCancelOrRebook()) {
+            $this->feedback = 'You cannot cancel this booking as the departure date has passed.';
+            return;
+        }
+
         if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
 
             return;
         }
 
+        $this->resetRebookingState();
         $this->cancellationRequested = true;
         $this->cancellationWindowActive = false;
         $this->cancelCountdown = 300;
         $this->refund_destination = null;
-        $this->feedback = 'Enter where you would like the refund sent. The 5-minute cancellation window begins when proof is uploaded.';
+        $this->feedback = 'Enter where you would like the refund sent. Cancellation fee is 50% of total price, you will receive a 50% refund.';
 
         $this->loadCancellationWindowFromSession();
 
         if ($this->cancellationWindowActive) {
-            $this->feedback = 'Your 5-minute cancellation window is active. Confirm cancellation before it expires.';
+            $this->feedback = 'Your 5-minute cancellation window is active. Confirm cancellation before it expires. Refund is 50% of total price.';
         }
     }
 
@@ -128,6 +144,11 @@ class BookingLookup extends Component
             return;
         }
 
+        if (! $this->booking->canCancelOrRebook()) {
+            $this->feedback = 'You cannot cancel this booking as the departure date has passed.';
+            return;
+        }
+
         if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
 
@@ -140,13 +161,21 @@ class BookingLookup extends Component
             return;
         }
 
-        $this->booking->update(['status' => 'cancelled']);
+        $cancellationFee = $this->booking->getCancellationFeeAmount();
+        $refundAmount = $this->booking->getRefundAmount();
+
+        $this->booking->update([
+            'status' => 'cancelled',
+            'cancellation_fee' => $cancellationFee,
+            'refund_amount' => $refundAmount,
+            'refund_destination' => $this->refund_destination,
+        ]);
         $this->booking->transaction->update(['payment_status' => 'cancelled']);
         $this->booking = $this->booking->fresh(['passengers.discount', 'accommodations', 'transaction']);
 
         Mail::to($this->booking->client_email)->send(new BookingCancellation($this->booking, $this->refund_destination));
 
-        $this->feedback = 'Your booking has been cancelled successfully. A confirmation email has been sent.';
+        $this->feedback = "Your booking has been cancelled successfully. Cancellation fee: ₱" . number_format($cancellationFee, 2) . ", Refund amount: ₱" . number_format($refundAmount, 2) . ". A confirmation email has been sent.";
         $this->resetCancellationState();
     }
 
@@ -154,6 +183,56 @@ class BookingLookup extends Component
     {
         $this->resetCancellationState();
         $this->feedback = 'Cancellation request cancelled. Your proof-upload timer will remain active if it has not yet expired.';
+    }
+
+    public function requestRebooking(): void
+    {
+        if (! $this->booking) {
+            $this->feedback = 'Booking not found.';
+
+            return;
+        }
+
+        if (! $this->booking->canCancelOrRebook()) {
+            $this->feedback = 'You cannot rebook this booking as the departure date has passed.';
+            return;
+        }
+
+        if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
+            $this->feedback = 'This booking cannot be rebooked because it has already been verified or completed.';
+
+            return;
+        }
+
+        $this->resetCancellationState();
+        $this->rebookingRequested = true;
+        $this->feedback = "To rebook, you need to pay a 30% rebooking fee. Please upload proof of payment for the rebooking fee. Rebooking fee: ₱" . number_format($this->booking->getRebookingFeeAmount(), 2) . ".";
+    }
+
+    public function submitRebookingProof(): void
+    {
+        $this->validate([
+            'rebookingProof' => 'required|image|max:2048',
+        ]);
+
+        $this->isUploadingRebooking = true;
+
+        $path = $this->rebookingProof->store('rebooking_proofs', 'public');
+
+        $rebookingFee = $this->booking->getRebookingFeeAmount();
+
+        $this->booking->transaction->update([
+            'rebooking_fee' => $rebookingFee,
+        ]);
+
+        $this->booking->update([
+            'is_rebooked' => true,
+        ]);
+
+        $this->isUploadingRebooking = false;
+        $this->rebookingPaid = true;
+
+        $this->feedback = "Rebooking fee payment received! Rebooking fee: ₱" . number_format($rebookingFee, 2) . ". Please contact us to complete your rebooking.";
     }
 
     private function getCancellationSessionKey(): string
@@ -187,8 +266,17 @@ class BookingLookup extends Component
     {
         $this->cancellationRequested = false;
         $this->cancellationWindowActive = false;
+        $this->cancellationExpired = false;
         $this->cancelCountdown = 300;
         $this->refund_destination = null;
+    }
+
+    private function resetRebookingState(): void
+    {
+        $this->rebookingRequested = false;
+        $this->rebookingPaid = false;
+        $this->rebookingProof = null;
+        $this->isUploadingRebooking = false;
     }
 
     public function render()

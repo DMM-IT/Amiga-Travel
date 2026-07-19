@@ -164,7 +164,11 @@
                                 <span class="text-xs text-slate-400 block">Starting from</span>
                                 <span class="font-black text-[#216417] text-lg">{{ data_get($package, 'price') }}<span class="text-xs font-normal text-slate-400">/pax</span></span>
                             </div>
-                            <a href="{{ data_get($package, 'button_link') }}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">{{ data_get($package, 'button_text') }}</a>
+                            @if(data_get($package, 'id'))
+                                <a href="{{ route('tours.show', data_get($package, 'id')) }}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">View Details</a>
+                            @else
+                                <a href="{{ data_get($package, 'button_link') }}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">{{ data_get($package, 'button_text') }}</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -195,7 +199,11 @@
                                 <span class="text-xs text-slate-400 block">Starting from</span>
                                 <span class="font-black text-[#216417] text-lg">{{ data_get($package, 'price') }}<span class="text-xs font-normal text-slate-400">/pax</span></span>
                             </div>
-                            <a href="{{ data_get($package, 'button_link') }}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">{{ data_get($package, 'button_text') }}</a>
+                            @if(data_get($package, 'id'))
+                                <a href="{{ route('tours.show', data_get($package, 'id')) }}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">View Details</a>
+                            @else
+                                <a href="{{ data_get($package, 'button_link') }}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">{{ data_get($package, 'button_text') }}</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -235,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const price = pkg.price_per_pax || pkg.price || '';
             // Build a book link that pre-fills the booking form via query params
             const params = new URLSearchParams();
+            if (pkg.id) params.set('tour_id', pkg.id);
             if (pkg.destinations) params.set('destination', pkg.destinations);
             if (pkg.departure) params.set('origin', pkg.departure);
 
@@ -331,11 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            if (pkg.hotel) params.set('hotel', pkg.hotel);
-            if (pkg.price_per_pax) params.set('price', pkg.price_per_pax);
-            if (pkg.tour_name) params.set('package_name', pkg.tour_name);
-            params.set('adults', '1');
-            const link = '/book/new?' + params.toString();
+            const link = pkg.id ? `/tours/${pkg.id}` : '/book/new';
 
         return `
             <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition">
@@ -352,9 +357,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
                         <div>
                             <span class="text-xs text-slate-400 block">Starting from</span>
-                            <span class="font-black text-[#216417] text-lg">${price}<span class="text-xs font-normal text-slate-400">/pax</span></span>
+                            <span class="font-black text-[#216417] text-lg">₱${price}<span class="text-xs font-normal text-slate-400">/pax</span></span>
                         </div>
-                        <a href="${link}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">Book Now</a>
+                        <a href="${link}" class="px-4 py-2 bg-[#ee018d] text-white text-xs font-bold rounded-full hover:bg-pink-700 transition">View Details</a>
                     </div>
                 </div>
             </div>

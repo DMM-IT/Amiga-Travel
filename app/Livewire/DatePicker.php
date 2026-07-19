@@ -2,11 +2,13 @@
 
 namespace App\Livewire;
 
+use Livewire\Attributes\Modelable;
 use Livewire\Component;
 
 class DatePicker extends Component
 {
     public string $field;
+    #[Modelable]
     public ?string $value = null;
     public string $label = 'Date';
     public ?string $min = null;

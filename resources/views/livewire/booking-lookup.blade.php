@@ -116,21 +116,33 @@
                                             Complete Payment
                                         </a>
 
-                                        @if(! $cancellationRequested && ! $cancellationExpired)
-                                            <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
-                                                Cancel Booking
-                                            </button>
-                                        @elseif($cancellationExpired)
+                                        @if($booking->canCancelOrRebook())
+                                            @if(! $cancellationRequested && ! $cancellationExpired && ! $rebookingRequested)
+                                                <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
+                                                    Cancel Booking
+                                                </button>
+                                                <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                    Rebook
+                                                </button>
+                                            @elseif($cancellationExpired)
+                                                <div class="space-y-2">
+                                                    <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-500 shadow-sm">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M10 14l2-2 2 2"></path>
+                                                            <path d="M12 7v5"></path>
+                                                            <circle cx="12" cy="12" r="10"></circle>
+                                                        </svg>
+                                                        Cancellation unavailable
+                                                    </button>
+                                                    <p class="text-xs text-slate-500">The 5-minute cancellation timer has expired, so this booking can no longer be cancelled here.</p>
+                                                </div>
+                                            @endif
+                                        @else
                                             <div class="space-y-2">
                                                 <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-500 shadow-sm">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M10 14l2-2 2 2"></path>
-                                                        <path d="M12 7v5"></path>
-                                                        <circle cx="12" cy="12" r="10"></circle>
-                                                    </svg>
-                                                    Cancellation unavailable
+                                                    Actions Unavailable
                                                 </button>
-                                                <p class="text-xs text-slate-500">The 5-minute cancellation timer has expired, so this booking can no longer be cancelled here.</p>
+                                                <p class="text-xs text-slate-500">You cannot cancel or rebook this booking as the departure date has passed.</p>
                                             </div>
                                         @endif
                                     @endif
@@ -140,7 +152,7 @@
                                     @if(! $cancellationWindowActive)
                                         <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                                             <p class="text-sm font-semibold text-amber-800">Cancellation</p>
-                                            <p class="mt-2 text-sm text-amber-700">Enter where you'd like the refund sent. The 5-minute confirmation window begins when proof is uploaded.</p>
+                                            <p class="mt-2 text-sm text-amber-700">Enter where you'd like the refund sent. Cancellation fee: 50% of total price (₱{{ number_format($booking->getCancellationFeeAmount(), 2) }}), Refund amount: 50% (₱{{ number_format($booking->getRefundAmount(), 2) }}).</p>
                                             <label class="mt-3 block">
                                                 <span class="mb-2 block text-sm font-medium text-slate-700">Where should the agency send your refund?</span>
                                                 <input
@@ -156,6 +168,9 @@
                                                 <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                                     Cancel Request
                                                 </button>
+                                                <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                    Switch to Rebook
+                                                </button>
                                             </div>
                                         </div>
                                     @else
@@ -163,7 +178,7 @@
                                             <div class="flex items-center justify-between gap-2">
                                                 <div>
                                                     <p class="text-sm font-semibold text-amber-800">Cancellation active</p>
-                                                    <p class="mt-1 text-sm text-amber-700">You started the cancellation timer after uploading proof. Confirm within the next 5 minutes to cancel your booking.</p>
+                                                    <p class="mt-1 text-sm text-amber-700">You started the cancellation timer after uploading proof. Confirm within the next 5 minutes to cancel your booking. Refund is 50% of total price.</p>
                                                 </div>
                                                 <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700">
                                                     {{ gmdate('i:s', max(0, $cancelCountdown)) }}
@@ -187,9 +202,55 @@
                                                 <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                                     Cancel Request
                                                 </button>
+                                                <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                    Switch to Rebook
+                                                </button>
                                             </div>
                                         </div>
                                     @endif
+                                @endif
+
+                                @if($rebookingRequested && ! $rebookingPaid)
+                                    <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                                        <p class="text-sm font-semibold text-blue-800">Rebooking</p>
+                                        <p class="mt-2 text-sm text-blue-700">To rebook, please upload proof of payment for the 30% rebooking fee: ₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}.</p>
+                                        <label class="mt-3 block">
+                                            <span class="mb-2 block text-sm font-medium text-slate-700">Proof of Rebooking Fee Payment</span>
+                                            <input type="file" wire:model="rebookingProof" class="mt-2 block w-full text-sm text-slate-600" />
+                                            @error('rebookingProof')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                        </label>
+                                        <div class="mt-4 flex flex-wrap gap-3">
+                                            <button 
+                                                type="button" 
+                                                wire:click.prevent="submitRebookingProof" 
+                                                class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition"
+                                                style="background:#3b82f6;"
+                                                onmouseover="this.style.background='#2563eb'"
+                                                onmouseout="this.style.background='#3b82f6'"
+                                                @disabled($isUploadingRebooking || !$rebookingProof)
+                                            >
+                                                @if($isUploadingRebooking)
+                                                    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Uploading...
+                                                @else
+                                                    Upload & Confirm Rebooking
+                                                @endif
+                                            </button>
+                                            <button wire:click.prevent="$set('rebookingRequested', false); $set('feedback', null)" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($rebookingPaid)
+                                    <div class="rounded-2xl border border-green-200 bg-green-50 p-4">
+                                        <p class="text-sm font-semibold text-green-800">Rebooking Fee Paid!</p>
+                                        <p class="mt-2 text-sm text-green-700">Your rebooking fee payment has been received. Please contact us to complete your rebooking.</p>
+                                    </div>
                                 @endif
                             </div>
                         </div>

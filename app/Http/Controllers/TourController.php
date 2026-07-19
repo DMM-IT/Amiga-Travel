@@ -9,13 +9,11 @@ class TourController extends Controller
 {
     public function index()
     {
-        // Placeholder: redirect to home if no tours UI is available yet
-        return redirect('/');
+        return redirect()->route('tour-package');
     }
 
     public function show(Tour $tour)
     {
-        // Placeholder: redirect to home; actual implementation may render a tour page
-        return redirect('/');
+        return view('tour-details', ['tour' => $tour]);
     }
 }

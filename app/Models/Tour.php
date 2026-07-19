@@ -4,23 +4,57 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Tour extends Model
 {
     protected $fillable = [
-        'name',
-        'origin',
-        'destination',
-        'mode',
-        'duration_days',
+        'tour_name', 'promo', 'country', 'destinations', 'duration',
+        'duration_days', 'price_per_pax', 'airline', 'origin',
+        'destination', 'mode', 'hotel', 'inclusions', 'exclusions',
+        'highlights', 'day1', 'day2', 'day3', 'day4', 'day5', 'day6',
+        'meals', 'hand_carry', 'check_in_baggage', 'tour_guide',
+        'travel_insurance', 'remarks', 'image', 'is_active', 'sort_order',
     ];
 
     protected $casts = [
         'duration_days' => 'integer',
+        'price_per_pax' => 'decimal:2',
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
     ];
 
     public function dates(): HasMany
     {
-        return $this->hasMany(TourDate::class);
+        return $this->hasMany(TourDate::class)->orderBy('date');
+    }
+
+    public function activeDates(): HasMany
+    {
+        return $this->dates()->where('is_active', true)->orderBy('date');
+    }
+
+    // Helper to get available dates as array of ISO strings
+    public function getAvailableDatesAttribute(): array
+    {
+        return $this->activeDates->pluck('date')->map(fn($d) => $d->format('Y-m-d'))->toArray();
+    }
+
+    // Accessor for image to get the full URL
+    protected function image(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if (!$value) {
+                    return null;
+                }
+                // Check if it's already a full URL
+                if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                    return $value;
+                }
+                // Otherwise, it's a stored file path
+                return asset('storage/' . $value);
+            },
+        );
     }
 }

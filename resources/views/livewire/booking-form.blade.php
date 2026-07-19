@@ -1,17 +1,31 @@
 <div class="min-h-screen bg-emerald-50">
     <div class="min-h-screen w-full bg-emerald-50 overflow-visible">
-            <div class="bg-emerald-900 px-6 py-8 sm:px-10">
-                <h1 class="text-3xl font-semibold text-white">Amiga Gracia Travel Booking</h1>
-                <p class="mt-2 text-emerald-200 max-w-2xl">Complete your travel booking in a few easy steps. Your confirmation email and payment QR code are created automatically when you submit.</p>
+            <div class="bg-emerald-900 px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
+                <div class="max-w-6xl mx-auto">
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-white">Amiga Gracia Travel Booking</h1>
+                    <p class="mt-2 text-emerald-200">Complete your travel booking in a few easy steps. Your confirmation email and payment QR code are created automatically when you submit.</p>
+                </div>
             </div>
-
             
 
-            <div class="p-6 sm:p-10">
+            <div class="px-4 sm:px-6 lg:px-10 py-6 sm:py-10">
+                <div class="max-w-6xl mx-auto">
                 <div class="mb-8">
                     @php
-                        $steps = ['Route','Schedule','Discount','Stay','Submit'];
-                        $progressClass = match ($step) {
+                        $isTourPackage = $tour_id || $prefilled_from_package;
+                        $steps = $isTourPackage ? ['Route','Discount','Stay','Submit'] : ['Route','Schedule','Discount','Stay','Submit'];
+                        if ($isTourPackage && $step >=2) {
+                            $adjustedStep = $step - 1;
+                        } else {
+                            $adjustedStep = $step;
+                        }
+                        $progressClass = $isTourPackage ? match ($adjustedStep) {
+                            1 => 'w-0',
+                            2 => 'w-1/3',
+                            3 => 'w-2/3',
+                            4 => 'w-full',
+                            default => 'w-0',
+                        } : match ($step) {
                             1 => 'w-0',
                             2 => 'w-1/4',
                             3 => 'w-1/2',
@@ -103,15 +117,12 @@
                     @if ($step === 1)
                         <div class="space-y-4">
                             <div class="flex flex-wrap items-center gap-3">
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="radio" wire:model="trip_type" value="one_way" class="sr-only" />
-                                    <span class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'one_way' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }}">One-way Trip</span>
-                                </label>
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="radio" wire:model="trip_type" value="round_trip" class="sr-only" />
-                                    <span class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'round_trip' ? 'bg-emerald-900 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }}">Round Trip</span>
-                                </label>
-                            </div>
+                <button type="button" wire:click="setTripType('one_way')" @disabled($prefilled_from_package || $tour_id) class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'one_way' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }} {{ ($prefilled_from_package || $tour_id) ? 'opacity-50 cursor-not-allowed' : '' }}">One-way Trip</button>
+                <button type="button" wire:click="setTripType('round_trip')" @disabled($prefilled_from_package || $tour_id) class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'round_trip' ? 'bg-emerald-900 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }} {{ ($prefilled_from_package || $tour_id) ? 'opacity-50 cursor-not-allowed' : '' }}">Round Trip</button>
+                @if($prefilled_from_package || $tour_id)
+                    <span class="text-xs text-slate-500 ml-2">(Locked for tour packages)</span>
+                @endif
+            </div>
 
                             <div class="grid gap-6 lg:grid-cols-3">
                                 <label class="relative block">
@@ -365,7 +376,7 @@
                         </div>
                     @endif
 
-                    @if ($step === 2)
+                    @if ($step === 2 && !$tour_id && !$prefilled_from_package)
                         <div class="space-y-4">
                             <div class="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
@@ -539,72 +550,70 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="overflow-x-auto pb-2">
-                                                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                            <div class="overflow-x-auto pb-2" style="max-height: 500px; overflow-y: auto;">
+                                                <div class="space-y-3">
                                                     @foreach($selectedClass['seat_rows'] as $row)
-                                                        <div class="rounded-3xl border border-slate-200 bg-slate-50 p-3">
-                                                            <div class="flex justify-center items-center gap-3 mb-3">
-                                                                <span class="text-sm font-semibold text-emerald-700 w-8 text-right">{{ $row['label'] }}</span>
+                                                        <div class="flex justify-center items-center gap-3">
+                                                            <span class="text-sm font-semibold text-emerald-700 w-8 text-right">{{ $row['label'] }}</span>
 
-                                                                <div class="flex items-center gap-2">
-                                                                    @foreach($row['left'] as $seatMeta)
-                                                                        @php
-                                                                            $seat = $seatMeta['id'];
-                                                                            $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
-                                                                            $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
-                                                                        @endphp
-                                                                        <button type="button"
-                                                                            @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
-                                                                                wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
+                                                            <div class="flex items-center gap-2">
+                                                                @foreach($row['left'] as $seatMeta)
+                                                                    @php
+                                                                        $seat = $seatMeta['id'];
+                                                                        $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
+                                                                        $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
+                                                                    @endphp
+                                                                    <button type="button"
+                                                                        @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
+                                                                            wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
+                                                                        @endif
+                                                                        @disabled($isOccupied || $selectingSeatForPassengerIndex === null)
+                                                                        class="w-14 h-14 rounded-lg border-2 flex items-center justify-center text-sm font-semibold transition-all duration-200
+                                                                            @if($isOccupied)
+                                                                                bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed
+                                                                            @elseif($isSelectedForPassenger)
+                                                                                bg-emerald-700 text-white border-emerald-700 shadow-md
+                                                                            @elseif($selectingSeatForPassengerIndex === null)
+                                                                                bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed
+                                                                            @else
+                                                                                bg-white text-slate-900 border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-900
                                                                             @endif
-                                                                            @disabled($isOccupied || $selectingSeatForPassengerIndex === null)
-                                                                            class="w-12 h-12 rounded-lg border-2 flex items-center justify-center text-base font-semibold transition-all duration-200
-                                                                                @if($isOccupied)
-                                                                                    bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed
-                                                                                @elseif($isSelectedForPassenger)
-                                                                                    bg-emerald-700 text-white border-emerald-700 shadow-md
-                                                                                @elseif($selectingSeatForPassengerIndex === null)
-                                                                                    bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed
-                                                                                @else
-                                                                                    bg-white text-slate-900 border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-900
-                                                                                @endif
-                                                                            "
-                                                                        >
-                                                                            {{ $seatMeta['label'] }}
-                                                                        </button>
-                                                                    @endforeach
-                                                                </div>
+                                                                        "
+                                                                    >
+                                                                        {{ $seatMeta['label'] }}
+                                                                    </button>
+                                                                @endforeach
+                                                            </div>
 
-                                                                <div class="w-6"></div>
+                                                            <div class="w-6"></div>
 
-                                                                <div class="flex items-center gap-2">
-                                                                    @foreach($row['right'] as $seatMeta)
-                                                                        @php
-                                                                            $seat = $seatMeta['id'];
-                                                                            $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
-                                                                            $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
-                                                                        @endphp
-                                                                        <button type="button"
-                                                                            @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
-                                                                                wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
+                                                            <div class="flex items-center gap-2">
+                                                                @foreach($row['right'] as $seatMeta)
+                                                                    @php
+                                                                        $seat = $seatMeta['id'];
+                                                                        $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
+                                                                        $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
+                                                                    @endphp
+                                                                    <button type="button"
+                                                                        @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
+                                                                            wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
+                                                                        @endif
+                                                                        @disabled($isOccupied || $selectingSeatForPassengerIndex === null)
+                                                                        class="w-14 h-14 rounded-lg border-2 flex items-center justify-center text-sm font-semibold transition-all duration-200
+                                                                            @if($isOccupied)
+                                                                                bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed
+                                                                            @elseif($isSelectedForPassenger)
+                                                                                bg-emerald-700 text-white border-emerald-700 shadow-md
+                                                                            @elseif($selectingSeatForPassengerIndex === null)
+                                                                                bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed
+                                                                            @else
+                                                                                bg-white text-slate-900 border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-900
                                                                             @endif
-                                                                            @disabled($isOccupied || $selectingSeatForPassengerIndex === null)
-                                                                            class="w-12 h-12 rounded-lg border-2 flex items-center justify-center text-base font-semibold transition-all duration-200
-                                                                                @if($isOccupied)
-                                                                                    bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed
-                                                                                @elseif($isSelectedForPassenger)
-                                                                                    bg-emerald-700 text-white border-emerald-700 shadow-md
-                                                                                @elseif($selectingSeatForPassengerIndex === null)
-                                                                                    bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed
-                                                                                @else
-                                                                                    bg-white text-slate-900 border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-900
-                                                                                @endif
-                                                                            "
-                                                                        >
-                                                                            {{ $seatMeta['label'] }}
-                                                                        </button>
-                                                                    @endforeach
-                                                                </div>
+                                                                        "
+                                                                    >
+                                                                        {{ $seatMeta['label'] }}
+                                                                    </button>
+                                                                @endforeach
                                                             </div>
                                                         </div>
                                                     @endforeach
@@ -699,7 +708,7 @@
                                 @php
                                     $countByType[$passenger['type']] = ($countByType[$passenger['type']] ?? 0) + 1;
                                 @endphp
-                                <div wire:key="passenger-{{ $index }}" class="grid gap-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
+                                <div wire:key="passenger-{{ $index }}" class="grid gap-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
                                     <div class="rounded-full bg-emerald-900 px-3 py-1.5 text-center text-sm font-semibold text-white lg:self-center lg:min-w-[72px] lg:max-w-[96px]">
                                         {{ $typeLabels[$passenger['type']] }} {{ $countByType[$passenger['type']] }}
                                     </div>
