@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Passenger;
 use App\Models\Schedule;
+use App\Models\ScheduleAccommodation;
+use App\Models\TransportClass;
+use App\Models\VehicleRate;
+use App\Models\Accommodation;
 use App\Models\Transaction;
 use App\Models\PaymentSetting;
 use App\Models\Discount;
@@ -14,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmation;
+use App\Mail\BookingCreated;
 use Spatie\LaravelPdf\Facades\Pdf;
 
 class BookingController extends Controller
@@ -106,7 +111,7 @@ class BookingController extends Controller
             }
 
             if ($request->input('selected_transport_class_id')) {
-                $transportClass = TransportClass::find($request->input('selected_transport_class_id'));
+                $transportClass = \App\Models\TransportClass::find($request->input('selected_transport_class_id'));
                 if ($transportClass) {
                     $booking->transportClasses()->attach($transportClass->id, [
                         'price' => $transportClass->effective_price,
@@ -116,7 +121,7 @@ class BookingController extends Controller
 
             $accommodationIds = $request->input('accommodation_ids', []);
             if (!empty($accommodationIds)) {
-                $catalog = \App\Models\Accommodation::whereIn('id', $accommodationIds)->get();
+                $catalog = \App\Models\Accommodation::whereIn('id', $accommodationIds, 'and', false)->get();
                 foreach ($catalog as $accommodation) {
                     $booking->accommodations()->attach($accommodation->id, [
                         'price' => $accommodation->price,
@@ -149,7 +154,7 @@ class BookingController extends Controller
                     ['booking' => $booking->id]
                 );
 
-                Mail::to($booking->client_email)->send(new BookingConfirmation($booking, $ticketUrl, $receiptPath));
+                Mail::to($booking->client_email)->send(new BookingCreated($booking, $receiptPath));
             } catch (\Exception $e) {
                 // Ignore mailing/PDF errors so it doesn't crash the api response
             }
@@ -201,7 +206,7 @@ class BookingController extends Controller
 
         $transportClassTotal = 0;
         if ($selectedTransportClassId) {
-            $transportClass = TransportClass::find($selectedTransportClassId);
+            $transportClass = \App\Models\TransportClass::find($selectedTransportClassId);
             if ($transportClass) {
                 $transportClassTotal = floatval($transportClass->effective_price);
             }
@@ -209,7 +214,7 @@ class BookingController extends Controller
 
         $accommodationsTotal = 0;
         if (!empty($accommodationIds)) {
-            $accommodationsTotal = \App\Models\Accommodation::whereIn('id', $accommodationIds)->sum('price');
+            $accommodationsTotal = \App\Models\Accommodation::whereIn('id', $accommodationIds, 'and', false)->sum('price');
         }
 
         $vehicleTotal = $hasVehicle ? floatval($vehiclePrice ?? 0) : 0;
@@ -223,7 +228,7 @@ class BookingController extends Controller
 
     public function vehicleRates()
     {
-        $rates = VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $rates = \App\Models\VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
         return response()->json([
             'status' => 'success',
             'vehicle_rates' => $rates
@@ -236,7 +241,7 @@ class BookingController extends Controller
             'email' => 'required|email',
         ]);
 
-        $bookings = Booking::where('client_email', $request->input('email'))
+        $bookings = \App\Models\Booking::where('client_email', '=', $request->input('email'), 'and')
             ->with(['passengers.discount', 'accommodations', 'transaction', 'schedule'])
             ->orderBy('created_at', 'desc')
             ->get();

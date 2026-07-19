@@ -6,6 +6,7 @@ use App\Filament\Resources\BookingResource\Pages;
 use App\Filament\Resources\BookingResource\RelationManagers\TransportClassesRelationManager;
 use App\Filament\Resources\BookingResource\RelationManagers\AccommodationsRelationManager;
 use App\Filament\Resources\BookingResource\RelationManagers\PassengersRelationManager;
+use App\Mail\RebookingVerification;
 use App\Models\Booking;
 use App\Models\User;
 use Filament\Forms;
@@ -14,6 +15,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -92,6 +96,15 @@ class BookingResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('status')
                     ->badge(),
+                Tables\Columns\TextColumn::make('rebooking_status')
+                    ->label('Rebooking')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'verified' => 'success',
+                        default => 'gray',
+                    })
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('total_price')
                     ->money('PHP')
                     ->sortable(),
@@ -109,6 +122,42 @@ class BookingResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('verifyRebooking')
+                    ->label('Verify rebooking')
+                    ->form([
+                        Forms\Components\TextInput::make('confirmation_url')
+                            ->label('Confirmation URL')
+                            ->url()
+                            ->placeholder('https://example.com/ticket/ABC123'),
+                        Forms\Components\FileUpload::make('confirmation_pdf')
+                            ->label('Confirmation PDF')
+                            ->directory('receipts')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(10240),
+                    ])
+                    ->visible(fn (Booking $record): bool => $record->rebooking_status === 'pending')
+                    ->requiresConfirmation()
+                    ->action(function (Booking $record, array $data): void {
+                        if (empty($data['confirmation_url']) && empty($data['confirmation_pdf'])) {
+                            throw new \Exception('Please provide either a confirmation URL or upload a PDF before verifying.');
+                        }
+
+                        $ticketUrl = $data['confirmation_url'] ?? null;
+                        $receiptPath = null;
+                        $receiptDisk = null;
+
+                        if (! empty($data['confirmation_pdf'])) {
+                            $pdfPath = is_string($data['confirmation_pdf'])
+                                ? $data['confirmation_pdf']
+                                : $data['confirmation_pdf']->storeAs('receipts', 'rebooking-' . $record->transaction_number . '.pdf', 'public');
+
+                            $receiptDisk = 'public';
+                            $receiptPath = Storage::disk('public')->path($pdfPath);
+                        }
+
+                        $record->verifyRebooking($ticketUrl, $receiptPath, $receiptDisk);
+                    })
+                    ->color('success'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

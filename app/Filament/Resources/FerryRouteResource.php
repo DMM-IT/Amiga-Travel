@@ -59,10 +59,19 @@ class FerryRouteResource extends Resource
                     ->default('ferry')
                     ->required(),
 
+                Select::make('vehicle_id')
+                    ->label('Vehicle')
+                    ->relationship('vehicle', 'name')
+                    ->getOptionLabelFromRecordUsing(fn (\App\Models\Vehicle $record) => "{$record->name} ({$record->vehicle_id}) - {$record->operator}")
+                    ->preload()
+                    ->searchable()
+                    ->hint('Select a vehicle or leave empty to add operator manually'),
+
                 TextInput::make('operator')
-                    ->label('Operator')
+                    ->label('Operator (Fallback)')
                     ->placeholder('e.g. 2GO, Starlight, Cebu Pacific')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->helperText('Used if no vehicle is selected'),
 
                 Toggle::make('is_active')
                     ->label('Available for booking')
@@ -79,6 +88,10 @@ class FerryRouteResource extends Resource
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('destination')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('vehicle.full_name')
+                    ->label('Vehicle')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('operator')

@@ -34,7 +34,7 @@ class AccommodationResource extends Resource
         return $user instanceof User && $user->hasAdminPermission('manage_accommodations');
     }
 
-    protected static ?string $navigationLabel = 'Accommodations';
+    protected static ?string $navigationLabel = 'Hotels';
 
     public static function form(Form $form): Form
     {

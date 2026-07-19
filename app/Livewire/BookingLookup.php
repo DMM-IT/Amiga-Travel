@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Mail\BookingCancellation;
+use App\Mail\RebookingRequested;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
@@ -10,6 +11,7 @@ use Livewire\WithFileUploads;
 
 class BookingLookup extends Component
 {
+    use WithFileUploads;
     public string $transaction_number = '';
     public ?Booking $booking = null;
     public bool $searched = false;
@@ -21,11 +23,17 @@ class BookingLookup extends Component
     public ?string $refund_destination = null;
     public bool $rebookingRequested = false;
     public bool $rebookingPaid = false;
+    public bool $rebooking_is_round_trip = false;
     public $rebookingProof;
     public bool $isUploadingRebooking = false;
+    public ?string $rebooking_departure_date = null;
+    public ?string $rebooking_return_date = null;
 
     protected $rules = [
         'rebookingProof' => 'nullable|image|max:2048',
+        'rebooking_departure_date' => 'required|date',
+        'rebooking_is_round_trip' => 'boolean',
+        'rebooking_return_date' => 'nullable|date|after_or_equal:rebooking_departure_date|required_if:rebooking_is_round_trip,1',
     ];
 
     public function mount(): void
@@ -206,14 +214,15 @@ class BookingLookup extends Component
 
         $this->resetCancellationState();
         $this->rebookingRequested = true;
-        $this->feedback = "To rebook, you need to pay a 30% rebooking fee. Please upload proof of payment for the rebooking fee. Rebooking fee: ₱" . number_format($this->booking->getRebookingFeeAmount(), 2) . ".";
+        $this->rebooking_is_round_trip = filled($this->booking->return_date);
+        $this->rebooking_departure_date = $this->booking->departure_date?->format('Y-m-d');
+        $this->rebooking_return_date = $this->booking->return_date?->format('Y-m-d');
+        $this->feedback = "To rebook, please select your new travel dates and upload proof of payment for the 30% rebooking fee. Rebooking fee: ₱" . number_format($this->booking->getRebookingFeeAmount(), 2) . ".";
     }
 
     public function submitRebookingProof(): void
     {
-        $this->validate([
-            'rebookingProof' => 'required|image|max:2048',
-        ]);
+        $this->validate();
 
         $this->isUploadingRebooking = true;
 
@@ -223,16 +232,21 @@ class BookingLookup extends Component
 
         $this->booking->transaction->update([
             'rebooking_fee' => $rebookingFee,
+            'rebooking_proof_of_payment' => $path,
         ]);
 
         $this->booking->update([
-            'is_rebooked' => true,
+            'rebooking_status' => 'pending',
+            'rebooking_departure_date' => $this->rebooking_departure_date,
+            'rebooking_return_date' => $this->rebooking_is_round_trip ? $this->rebooking_return_date : null,
         ]);
+
+        Mail::to($this->booking->client_email)->send(new RebookingRequested($this->booking));
 
         $this->isUploadingRebooking = false;
         $this->rebookingPaid = true;
 
-        $this->feedback = "Rebooking fee payment received! Rebooking fee: ₱" . number_format($rebookingFee, 2) . ". Please contact us to complete your rebooking.";
+        $this->feedback = "Rebooking fee payment received and is now pending verification. Rebooking fee: ₱" . number_format($rebookingFee, 2) . ".";
     }
 
     private function getCancellationSessionKey(): string
@@ -275,8 +289,11 @@ class BookingLookup extends Component
     {
         $this->rebookingRequested = false;
         $this->rebookingPaid = false;
+        $this->rebooking_is_round_trip = false;
         $this->rebookingProof = null;
         $this->isUploadingRebooking = false;
+        $this->rebooking_departure_date = null;
+        $this->rebooking_return_date = null;
     }
 
     public function render()

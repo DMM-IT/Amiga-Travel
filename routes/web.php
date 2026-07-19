@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingExportController;
 use App\Models\Transaction;
 use App\Models\WebsiteSetting;
 use Illuminate\Http\Request;
@@ -55,6 +56,19 @@ Route::get('/contact-us', function () use ($renderWebsitePage) {
     return $renderWebsitePage('contact_us', 'contact');
 })->name('contact');
 
+Route::post('/contact-us', function (Illuminate\Http\Request $request) {
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'subject' => 'nullable|string|max:255',
+        'message' => 'required|string',
+    ]);
+
+    App\Models\Inquiry::create($data);
+
+    return response()->json(['message' => 'Inquiry received']);
+})->name('contact.submit');
+
 Route::get('/download', function () use ($renderWebsitePage) {
     return $renderWebsitePage('download', 'download');
 })->name('download');
@@ -101,4 +115,11 @@ Route::get('/dashboard', function () {
 Route::get('/flutter-app', function () {
     return view('flutter');
 })->name('flutter.app');
+
+// Booking Export Routes (Admin only)
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/bookings/export/pdf', [BookingExportController::class, 'exportPdf'])->name('bookings.export.pdf');
+    Route::get('/admin/bookings/export/csv', [BookingExportController::class, 'exportCsv'])->name('bookings.export.csv');
+    Route::get('/admin/bookings/export/print', [BookingExportController::class, 'exportPrint'])->name('bookings.export.print');
+});
 

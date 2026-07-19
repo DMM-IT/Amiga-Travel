@@ -8,17 +8,39 @@
     subject: '',
     message: '',
     loading: false,
-    submitForm() {
+    async submitForm() {
         if (!this.name || !this.email || !this.message) return;
         this.loading = true;
-        setTimeout(() => {
+
+        try {
+            const response = await fetch('{{ route('contact.submit') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    name: this.name,
+                    email: this.email,
+                    subject: this.subject,
+                    message: this.message,
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to send inquiry');
+            }
+
             this.loading = false;
             this.submitted = true;
             this.name = '';
             this.email = '';
             this.subject = '';
             this.message = '';
-        }, 1500);
+        } catch (error) {
+            this.loading = false;
+            alert('Unable to send your inquiry right now. Please try again later.');
+        }
     }
 }">
     <div class="max-w-6xl mx-auto">

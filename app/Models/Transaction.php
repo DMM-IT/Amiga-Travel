@@ -14,6 +14,7 @@ class Transaction extends Model
         'proof_of_payment',
         'confirmation_url',
         'rebooking_fee',
+        'rebooking_proof_of_payment',
     ];
 
     protected $casts = [

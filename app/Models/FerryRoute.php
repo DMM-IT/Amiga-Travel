@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FerryRoute extends Model
@@ -13,11 +14,17 @@ class FerryRoute extends Model
         'is_active',
         'mode',
         'operator',
+        'vehicle_id',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
 
     public function schedules(): HasMany
     {
@@ -28,7 +35,10 @@ class FerryRoute extends Model
     {
         $parts = ["{$this->origin} → {$this->destination}"];
 
-        if (! empty($this->operator)) {
+        // Show vehicle name if available
+        if ($this->vehicle) {
+            $parts[] = $this->vehicle->full_name;
+        } elseif (! empty($this->operator)) {
             $parts[] = $this->operator;
         }
 

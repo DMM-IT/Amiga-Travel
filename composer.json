@@ -17,6 +17,7 @@
         "livewire/livewire": "^3.8",
         "predis/predis": "^3.5",
         "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/browsershot": "^5.4",
         "spatie/laravel-pdf": "^2.12"
     },
     "require-dev": {

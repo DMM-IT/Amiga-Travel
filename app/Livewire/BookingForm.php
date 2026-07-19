@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Mail\BookingConfirmation;
+use App\Mail\BookingCreated;
 use App\Models\Accommodation;
 use App\Models\Booking;
 use App\Models\Discount;
@@ -1039,6 +1040,8 @@ class BookingForm extends Component
             Pdf::driver('dompdf')
                 ->view('pdf.receipt', ['booking' => $booking])
                 ->save($receiptPath);
+
+            Mail::to($booking->client_email)->send(new BookingCreated($booking, $receiptPath));
         });
 
         return redirect()->route('payment.show', $transaction);

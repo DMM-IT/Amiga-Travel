@@ -113,7 +113,7 @@
                                 <div class="flex flex-wrap gap-3">
                                     @if($booking->transaction && in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true) && $booking->status === 'pending')
                                         <a href="{{ route('payment.show', $booking->transaction) }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
-                                            Complete Payment
+                                            Done
                                         </a>
 
                                         @if($booking->canCancelOrRebook())
@@ -213,12 +213,34 @@
                                 @if($rebookingRequested && ! $rebookingPaid)
                                     <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4">
                                         <p class="text-sm font-semibold text-blue-800">Rebooking</p>
-                                        <p class="mt-2 text-sm text-blue-700">To rebook, please upload proof of payment for the 30% rebooking fee: ₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}.</p>
-                                        <label class="mt-3 block">
+                                        <p class="mt-2 text-sm text-blue-700">To rebook, please select your new travel dates and upload proof of payment for the 30% rebooking fee: ₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}.</p>
+
+                                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                                            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                                <p class="text-sm font-medium text-slate-700">Trip Type</p>
+                                                <p class="mt-2 text-base font-semibold text-slate-900">{{ $booking->return_date ? 'Round trip' : 'One-way' }}</p>
+                                            </div>
+                                            <label class="block">
+                                                <span class="mb-2 block text-sm font-medium text-slate-700">Departure Date</span>
+                                                <input type="date" wire:model="rebooking_departure_date" class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#3b82f6;" />
+                                                @error('rebooking_departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+                                        </div>
+
+                                        @if($booking->return_date)
+                                            <label class="mt-4 block">
+                                                <span class="mb-2 block text-sm font-medium text-slate-700">Return Date</span>
+                                                <input type="date" wire:model="rebooking_return_date" class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#3b82f6;" />
+                                                @error('rebooking_return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+                                        @endif
+
+                                        <label class="mt-4 block">
                                             <span class="mb-2 block text-sm font-medium text-slate-700">Proof of Rebooking Fee Payment</span>
                                             <input type="file" wire:model="rebookingProof" class="mt-2 block w-full text-sm text-slate-600" />
                                             @error('rebookingProof')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
+
                                         <div class="mt-4 flex flex-wrap gap-3">
                                             <button 
                                                 type="button" 

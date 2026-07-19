@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Mail\RebookingVerification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Mail;
 
 class Booking extends Model
 {
@@ -38,11 +40,16 @@ class Booking extends Model
         'refund_amount',
         'refund_destination',
         'is_rebooked',
+        'rebooking_status',
+        'rebooking_departure_date',
+        'rebooking_return_date',
     ];
 
     protected $casts = [
         'departure_date' => 'date',
         'return_date' => 'date',
+        'rebooking_departure_date' => 'date',
+        'rebooking_return_date' => 'date',
         'schedule_price' => 'decimal:2',
         'schedule_accommodation_price' => 'decimal:2',
         'total_price' => 'decimal:2',
@@ -88,6 +95,11 @@ class Booking extends Model
         return $this->hasOne(Transaction::class);
     }
 
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
     public function getScheduleSummaryAttribute(): ?string
     {
         if (! $this->schedule_service) {
@@ -119,5 +131,28 @@ class Booking extends Model
     public function getRebookingFeeAmount(): float
     {
         return $this->total_price * 0.3;
+    }
+
+    public function verifyRebooking(?string $ticketUrl = null, ?string $receiptPath = null, ?string $receiptDisk = null): void
+    {
+        if (! $this->rebooking_departure_date || ! $this->rebooking_status) {
+            return;
+        }
+
+        $this->update([
+            'departure_date' => $this->rebooking_departure_date,
+            'return_date' => $this->rebooking_return_date,
+            'status' => 'confirmed',
+            'is_rebooked' => true,
+            'rebooking_status' => 'verified',
+        ]);
+
+        if ($this->transaction) {
+            $this->transaction->update([
+                'payment_status' => 'paid',
+            ]);
+        }
+
+        Mail::to($this->client_email)->send(new RebookingVerification($this, $ticketUrl, $receiptPath, $receiptDisk));
     }
 }
