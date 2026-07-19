@@ -183,6 +183,7 @@
             </div>
         </footer>
         @livewireScripts
+        @stack('scripts')
         <script>
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function () {

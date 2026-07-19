@@ -37,6 +37,8 @@ class BookingForm extends Component
     public string $destination = '';
     public ?string $departure_date = null;
     public ?string $return_date = null;
+    public ?int $duration_days = null;
+    public array $available_package_dates = [];
     public int $adults = 1;
     public int $children = 0;
     public ?int $selected_schedule_id = null;
@@ -80,6 +82,11 @@ class BookingForm extends Component
     public ?int $tour_date_id = null;
     public ?Tour $tour = null;
     public ?TourDate $selectedTourDate = null;
+
+    // Prefilled package info (from CSV)
+    public string $package_name = '';
+    public string $package_price = '';
+    public bool $prefilled_from_package = false;
 
     // Car booking fields
     public bool $has_vehicle = false;
@@ -139,6 +146,104 @@ class BookingForm extends Component
             }
         }
 
+        // Prefill other booking fields from query params (used when Book Now is clicked from tour listing)
+        $allowed = [
+            'trip_type','mode','origin','destination','departure_date','return_date','duration_days','adults','children',
+            'client_name','client_email','selected_hotel','selected_hotel_id','hotel','package_name','price'
+        ];
+
+        foreach (request()->query() as $key => $value) {
+            if (in_array($key, $allowed, true) && property_exists($this, $key)) {
+                // cast ints where appropriate
+                if (in_array($key, ['adults','children','duration_days'], true)) {
+                    $this->{$key} = intval($value);
+                } else {
+                    $this->{$key} = $value;
+                }
+            }
+        }
+
+        // Mark that the form has been prefilled from a package if any relevant query params exist
+        $prefillKeys = array_intersect(array_keys(request()->query()), $allowed);
+        if (! empty($prefillKeys)) {
+            $this->prefilled_from_package = true;
+            // also populate package_name and package_price if present
+            $this->package_name = request()->query('package_name', $this->package_name);
+            $this->package_price = request()->query('price', $this->package_price);
+        }
+
+        // If API passed an available_dates list (comma-separated) or multiple params, parse them into array
+        $rawAvailable = request()->query('available_dates');
+        if ($rawAvailable) {
+            if (is_array($rawAvailable)) {
+                $candidates = $rawAvailable;
+            } else {
+                $candidates = preg_split('/[;,|]+/', $rawAvailable);
+            }
+
+            foreach ($candidates as $cand) {
+                $cand = trim((string) $cand);
+                if ($cand === '') continue;
+                try {
+                    $dt = Carbon::parse($cand);
+                    $iso = $dt->format('Y-m-d');
+                    if (! in_array($iso, $this->available_package_dates, true)) {
+                        $this->available_package_dates[] = $iso;
+                    }
+                } catch (\Throwable $e) {
+                    // ignore unparseable entries
+                }
+            }
+
+            // if we parsed dates and no departure_date yet, set the first one
+            if (! empty($this->available_package_dates) && empty($this->departure_date)) {
+                $this->departure_date = $this->available_package_dates[0];
+            }
+        }
+
+        // If a duration_days param was provided, store duration_days
+        $durationDays = request()->query('duration_days');
+        if ($durationDays !== null) {
+            $this->duration_days = intval($durationDays);
+        }
+
+        // If the package has duration days and no explicit trip type, assume round trip
+        if ($this->duration_days > 1 && $this->trip_type === 'one_way') {
+            $this->trip_type = 'round_trip';
+        }
+
+        // Fallback: if no parsed package dates and no departure_date set, default to next upcoming weekend (Sat or Sun)
+        if (empty($this->available_package_dates) && empty($this->departure_date)) {
+            $d = Carbon::today();
+            $found = null;
+            for ($i = 0; $i < 14; $i++) {
+                if (in_array($d->dayOfWeekIso, [6, 7], true)) {
+                    $found = $d;
+                    break;
+                }
+                $d = $d->addDay();
+            }
+            if ($found) {
+                $this->departure_date = $found->format('Y-m-d');
+            }
+        }
+
+        // If return_date is missing, compute it from departure_date and duration_days.
+        if (empty($this->return_date) && ! empty($this->departure_date) && ! empty($this->duration_days) && $this->duration_days > 1) {
+            $this->trip_type = 'round_trip';
+            $this->updateReturnDateFromDuration();
+        }
+
+        // If hotel name was provided (hotel) but selected_hotel_id not, try to resolve by name
+        $hotelName = request()->query('hotel') ?? request()->query('selected_hotel');
+        if (! empty($hotelName) && empty($this->selected_hotel_id)) {
+            $hotel = Accommodation::query()->where('name', 'like', '%' . trim($hotelName) . '%')->first();
+            if ($hotel) {
+                $this->selected_hotel_id = $hotel->id;
+            }
+        }
+
+        // If there's a booking draft in session, restore it; otherwise, if origin/destination/departure_date were provided
         if (session()->has('booking_draft')) {
             $draft = session('booking_draft', []);
 
@@ -151,6 +256,11 @@ class BookingForm extends Component
             if (! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
                 $this->availableSchedules = $this->getAvailableSchedules();
             }
+        }
+
+        // If no session draft but query params provided route+date, fetch available schedules immediately
+        if (! session()->has('booking_draft') && ! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
+            $this->availableSchedules = $this->getAvailableSchedules();
         }
 
         $this->syncPassengerEntries();
@@ -205,7 +315,11 @@ class BookingForm extends Component
     public function updatedTripType(string $value): void
     {
         $this->trip_type = $value;
-        $this->return_date = null;
+        if ($this->trip_type === 'one_way') {
+            $this->return_date = null;
+            return;
+        }
+        $this->updateReturnDateFromDuration();
     }
 
     public function setTripType(string $type): void
@@ -215,7 +329,41 @@ class BookingForm extends Component
         }
 
         $this->trip_type = $type;
-        $this->return_date = null;
+        if ($this->trip_type === 'one_way') {
+            $this->return_date = null;
+            return;
+        }
+        $this->updateReturnDateFromDuration();
+    }
+
+    public function updatedDepartureDate(?string $value): void
+    {
+        $this->departure_date = $value;
+        $this->selected_schedule_id = null;
+        $this->availableSchedules = [];
+        $this->updateReturnDateFromDuration();
+    }
+
+    public function updatedDurationDays(): void
+    {
+        $this->updateReturnDateFromDuration();
+    }
+
+    protected function updateReturnDateFromDuration(): void
+    {
+        if (empty($this->departure_date) || empty($this->duration_days) || $this->duration_days < 2) {
+            return;
+        }
+
+        try {
+            $dt = Carbon::parse($this->departure_date);
+            $this->return_date = $dt->addDays($this->duration_days - 1)->format('Y-m-d');
+            if ($this->trip_type !== 'round_trip') {
+                $this->trip_type = 'round_trip';
+            }
+        } catch (\Throwable $e) {
+            // ignore parse errors
+        }
     }
 
     protected $listeners = [
@@ -376,9 +524,15 @@ class BookingForm extends Component
         if ($field === 'departure_date') {
             $this->selected_schedule_id = null;
             $this->availableSchedules = [];
+            $this->updateReturnDateFromDuration();
         }
 
         $this->validateOnly($field, $this->allRules());
+    }
+
+    public function hydrate(): void
+    {
+        $this->updateReturnDateFromDuration();
     }
 
     public function updated($propertyName): void
@@ -428,6 +582,10 @@ class BookingForm extends Component
 
         if ($propertyName === 'origin') {
             $this->destination = '';
+        }
+
+        if ($propertyName === 'departure_date') {
+            $this->updateReturnDateFromDuration();
         }
 
         $this->validateOnly($propertyName, $this->allRules());

@@ -23,3 +23,5 @@ Route::get('/payment-settings', [BookingController::class, 'paymentSettings']);
 Route::get('/promotions', [PromotionController::class, 'index']);
 Route::get('/discounts', [DiscountController::class, 'index']);
 Route::get('/accommodations', [AccommodationController::class, 'index']);
+Route::get('/tours', [\App\Http\Controllers\Api\TourController::class, 'index']);
+Route::get('/vehicle-rates', [BookingController::class, 'vehicleRates']);

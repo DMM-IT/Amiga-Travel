@@ -95,7 +95,12 @@ class Schedule extends Model
 
     public function scopeForRouteAndDate(Builder $query, string $origin, string $destination, string $date, ?string $mode = null): Builder
     {
-        $dayOfWeek = Carbon::parse($date)->dayOfWeekIso;
+        try {
+            $dayOfWeek = Carbon::parse($date)->dayOfWeekIso;
+        } catch (\Throwable $e) {
+            // If the provided date is not parseable (e.g. 'Multiple dates'), return an empty query
+            return $query->whereRaw('0 = 1');
+        }
 
         return $query->active()
             ->whereHas('ferryRoute', function (Builder $routeQuery) use ($origin, $destination, $mode) {
@@ -422,6 +427,8 @@ class Schedule extends Model
                         'name' => $class->name,
                         'description' => $class->description,
                         'price' => floatval($class->price),
+                        'is_on_sale' => (bool)$class->is_on_sale,
+                        'sale_price' => $class->sale_price ? floatval($class->sale_price) : null,
                         'cover_image' => $class->cover_image ? asset('storage/' . $class->cover_image) : null,
                         'seat_capacity' => $cabinLayout['seat_capacity'] ?? null,
                         'row_start' => $cabinLayout['row_start'] ?? null,

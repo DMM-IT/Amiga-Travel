@@ -13,6 +13,8 @@ class TransportClass extends Model
         'name',
         'description',
         'price',
+        'is_on_sale',
+        'sale_price',
         'sort_order',
         'images',
         'is_active',
@@ -21,7 +23,9 @@ class TransportClass extends Model
     protected $casts = [
         'images' => 'array',
         'is_active' => 'boolean',
+        'is_on_sale' => 'boolean',
         'price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
         'sort_order' => 'integer',
     ];
 
@@ -37,6 +41,11 @@ class TransportClass extends Model
         return $this->belongsToMany(Schedule::class, 'schedule_transport_class')
             ->withPivot('additional_price')
             ->withTimestamps();
+    }
+
+    public function getEffectivePriceAttribute(): float
+    {
+        return $this->is_on_sale ? floatval($this->sale_price ?? 0) : floatval($this->price);
     }
 
     /**

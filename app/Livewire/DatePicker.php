@@ -11,18 +11,21 @@ class DatePicker extends Component
     public string $label = 'Date';
     public ?string $min = null;
     public bool $isOpen = false;
+    public bool $disabled = false;
     public int $viewYear;
     public int $viewMonth;
-    public $listeners = [
-        'dropdownOpened' => 'onDropdownOpened',
-    ];
+    public array $enabledDates = [];
+    // Note: Avoid using Livewire helper methods that may not exist in this
+    // project's Livewire version (emit/dispatchBrowserEvent). This component
+    // relies on `wire:model` binding to update parent properties.
 
-    public function mount(string $field, ?string $value = null, string $label = 'Date', ?string $min = null): void
+    public function mount(string $field, ?string $value = null, string $label = 'Date', ?string $min = null, $disabled = false, $enabledDates = null): void
     {
         $this->field = $field;
         $this->value = $value;
         $this->label = $label;
         $this->min = $min;
+        $this->disabled = filter_var($disabled, FILTER_VALIDATE_BOOLEAN);
 
         $today = new \DateTimeImmutable('today');
         $this->viewYear = (int) $today->format('Y');
@@ -35,14 +38,23 @@ class DatePicker extends Component
                 $this->viewMonth = (int) $selected->format('m');
             }
         }
+
+        // Normalize enabledDates if provided (can be string or array)
+        if ($enabledDates !== null) {
+            if (is_string($enabledDates)) {
+                $parts = preg_split('/[;,|]+/', $enabledDates);
+                $this->enabledDates = array_values(array_filter(array_map('trim', $parts)));
+            } elseif (is_array($enabledDates)) {
+                $this->enabledDates = array_values(array_filter(array_map('trim', $enabledDates)));
+            }
+        }
     }
 
     public function toggleCalendar(): void
     {
         $this->isOpen = ! $this->isOpen;
-        if ($this->isOpen) {
-            $this->dispatch('dropdownOpened', 'date-'.$this->field);
-        }
+        // Intentionally do not call browser event helpers here to maintain
+        // compatibility with the project's Livewire version.
     }
 
     public function onDropdownOpened($name = null): void
@@ -82,7 +94,9 @@ class DatePicker extends Component
         $this->value = $date;
         $this->isOpen = false;
 
-        $this->dispatch('datePickerUpdated', $this->field, $this->value);
+        \Illuminate\Support\Facades\Log::info('[DatePicker] selectDate', ['field' => $this->field, 'value' => $this->value]);
+        // The parent component should be bound with `wire:model` to receive
+        // the updated `$value`. Avoid emitting events from PHP here.
     }
 
     public function getCalendarDaysProperty(): array
@@ -97,9 +111,16 @@ class DatePicker extends Component
 
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $date = sprintf('%04d-%02d-%02d', $this->viewYear, $this->viewMonth, $day);
+            $disabled = $minDate !== null && $date < $this->min;
+
+            // If enabledDates is provided, only those dates are selectable
+            if (! empty($this->enabledDates)) {
+                $disabled = $disabled || ! in_array($date, $this->enabledDates, true);
+            }
+
             $days[] = [
                 'day' => $day,
-                'disabled' => $minDate !== null && $date < $this->min,
+                'disabled' => $disabled,
             ];
         }
 

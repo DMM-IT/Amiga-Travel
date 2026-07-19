@@ -5,6 +5,8 @@
                 <p class="mt-2 text-emerald-200 max-w-2xl">Complete your travel booking in a few easy steps. Your confirmation email and payment QR code are created automatically when you submit.</p>
             </div>
 
+            
+
             <div class="p-6 sm:p-10">
                 <div class="mb-8">
                     @php
@@ -33,6 +35,22 @@
                         </div>
                     </div>
                 </div>
+                @if(!empty($package_name) || !empty($package_price))
+                    <div class="mt-4 mb-8 rounded-2xl border border-emerald-200 bg-white p-4 max-w-3xl mx-6 sm:mx-10">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-slate-600">Selected Package</div>
+                                <div class="font-bold text-lg text-emerald-900">{{ $package_name }}</div>
+                                @if(!empty($package_price))
+                                    <div class="text-sm text-slate-500">Starting from ₱{{ $package_price }}</div>
+                                @endif
+                            </div>
+                            <div>
+                                <a href="{{ url('/tour-package') }}" class="text-sm text-emerald-700 font-semibold">Change package</a>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 <form wire:submit.prevent="submit" class="space-y-8 booking-form">
                     <style>
@@ -85,18 +103,20 @@
                     @if ($step === 1)
                         <div class="space-y-4">
                             <div class="flex flex-wrap items-center gap-3">
-                                <button type="button" wire:click="setTripType('one_way')" class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'one_way' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }}">
-                                    One-way Trip
-                                </button>
-                                <button type="button" wire:click="setTripType('round_trip')" class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'round_trip' ? 'bg-emerald-900 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }}">
-                                    Round Trip
-                                </button>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" wire:model="trip_type" value="one_way" class="sr-only" />
+                                    <span class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'one_way' ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }}">One-way Trip</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" wire:model="trip_type" value="round_trip" class="sr-only" />
+                                    <span class="rounded-full px-5 py-2 text-sm font-semibold transition {{ $trip_type === 'round_trip' ? 'bg-emerald-900 text-white' : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200' }}">Round Trip</span>
+                                </label>
                             </div>
 
                             <div class="grid gap-6 lg:grid-cols-3">
                                 <label class="relative block">
                                     <span class="text-emerald-700 font-medium">Mode</span>
-                                    <button type="button" wire:click.prevent="toggleModeDropdown" class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                                    <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
                                         <span>{{ $mode ? ucfirst($mode) : 'Select mode' }}</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -130,7 +150,7 @@
                             <div class="grid gap-6 lg:grid-cols-2">
                             <label class="relative block">
                                 <span class="text-emerald-700 font-medium">Origin</span>
-                                <button type="button" wire:click.prevent="toggleOriginDropdown" @if($mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
+                                <button type="button" wire:click.prevent="toggleOriginDropdown" @if($prefilled_from_package || $mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
                                     <span>{{ $origin ?: ($mode === '' ? 'Select mode first' : 'Select origin') }}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -160,7 +180,7 @@
 
                             <label class="relative block">
                                 <span class="text-emerald-700 font-medium">Destination</span>
-                                <button type="button" wire:click.prevent="toggleDestinationDropdown" @if($mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
+                                <button type="button" wire:click.prevent="toggleDestinationDropdown" @if($prefilled_from_package || $mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-3xl border border-emerald-300 bg-white px-4 py-3 text-left text-emerald-900 shadow-sm transition hover:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-100">
                                     <span>{{ $destination ?: (blank($origin) ? 'Select origin first' : 'Select destination') }}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -193,16 +213,26 @@
 
                         <div class="grid gap-6 lg:grid-cols-2">
                             <div class="block">
-                                <livewire:date-picker field="departure_date" :value="$departure_date" label="Departure Date" :min="date('Y-m-d')" />
-                                @error('departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                            </div>
-
-                            @if($trip_type === 'round_trip')
-                                <div class="block">
-                                    <livewire:date-picker field="return_date" :value="$return_date" label="Return Date" :min="$departure_date" />
-                                    @error('return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                    <label class="block text-emerald-700 font-medium">Departure Date</label>
+                                        <div class="mt-2">
+                                            @if(!empty($available_package_dates))
+                                                <livewire:date-picker wire:model="departure_date" field="departure_date" :enabled-dates="$available_package_dates" label="" min="{{ date('Y-m-d') }}" />
+                                            @else
+                                                <livewire:date-picker wire:model="departure_date" field="departure_date" label="" min="{{ date('Y-m-d') }}" />
+                                            @endif
+                                        </div>
+                                    @error('departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                 </div>
-                            @endif
+
+                                @if($trip_type === 'round_trip')
+                                    <div class="block">
+                                        <label class="block text-emerald-700 font-medium">Return Date</label>
+                                        <div class="mt-2">
+                                            <livewire:date-picker wire:model="return_date" field="return_date" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
+                                        </div>
+                                        @error('return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                    </div>
+                                @endif
                         </div>
 
                         <div class="space-y-4">

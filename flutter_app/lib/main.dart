@@ -21,9 +21,11 @@ const kGreen = Color(0xFF216417);
 const kPink = Color(0xFFEE018D);
 const kBgLight = Color(0xFFF8FAFC);
 const kSlate800 = Color(0xFF1E293B);
+const kSlate700 = Color(0xFF334155);
 const kSlate600 = Color(0xFF475569);
 const kSlate500 = Color(0xFF64748B);
 const kSlate400 = Color(0xFF94A3B8);
+const kSlate300 = Color(0xFFCBD5E1);
 const kSlate200 = Color(0xFFE2E8F0);
 const kSlate100 = Color(0xFFF1F5F9);
 const kSlate50 = Color(0xFFF8FAFC);
@@ -38,8 +40,10 @@ class UserSession {
   static String token = '';
 
   static String getBaseUrl() {
+    // For development use localhost so the Flutter app can reach the local Laravel server.
+    // If running on an Android emulator, replace with 10.0.2.2:8000 as needed.
     if (kIsWeb) return '';
-    return 'http://192.168.137.1:8000';
+    return 'http://127.0.0.1:8000';
   }
 }
 
@@ -58,8 +62,20 @@ class BookingData {
 
   // Step 2 — Schedule
   Map<String, dynamic>? selectedSchedule;
+  int? selectedTransportClassId;
+  Map<String, dynamic>? selectedTransportClass;
+  int? selectedScheduleAccommodationId;
+  Map<String, dynamic>? selectedScheduleAccommodation;
 
-  // Step 3 — Passengers with discounts
+  // Vehicle (Ferry only)
+  bool hasVehicle = false;
+  int? selectedVehicleRateId;
+  String vehicleType = '';
+  String vehiclePlateNumber = '';
+  double vehiclePrice = 0.0;
+
+  // Step 3 — Passengers with discounts and seat selections
+  // Each passenger: {'type': 'adult'|'child', 'name': '', 'discount_id': int?, 'seat_number': String?, 'seat_row': int?, 'seat_section': String?}
   List<Map<String, dynamic>> passengers = [];
 
   // Step 4 — Stay (accommodations)
@@ -393,55 +409,63 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   final List<Map<String, dynamic>> _domesticPackages = [
     {
-      'name': 'El Nido Adventure',
-      'desc': '3D/2N · Flight + Hotel + Island Tour',
-      'price': '₱8,999',
-      'tag': 'Best Seller',
+      'name': 'Puerto Galera Rainy Promo',
+      'desc': '3D/2N · Ferry + Hotel + Island Tour',
+      'price': '₱4,994',
+      'tag': 'Rainy Promo',
       'tagColor': Color(0xFF216417),
       'gradient': [Color(0xFF1565C0), Color(0xFF42A5F5)],
     },
     {
-      'name': 'Boracay Island Escape',
-      'desc': '3D/2N · Flight + Hotel + Transfers',
-      'price': '₱7,499',
-      'tag': 'Popular',
+      'name': 'Tagaytay City Tour',
+      'desc': '2D/1N · Hotel + City Tour',
+      'price': '₱5,900',
+      'tag': 'City Escape',
       'tagColor': Color(0xFF1565C0),
       'gradient': [Color(0xFF00BCD4), Color(0xFF006064)],
-    },
-    {
-      'name': 'Siargao Surf & Island Tour',
-      'desc': '4D/3N · Hotel + Island Hopping + Surf',
-      'price': '₱9,299',
-      'tag': 'Trending',
-      'tagColor': Color(0xFF7B1FA2),
-      'gradient': [Color(0xFF00897B), Color(0xFF004D40)],
     },
   ];
 
   final List<Map<String, dynamic>> _internationalPackages = [
     {
-      'name': 'Bangkok & Pattaya',
-      'desc': '4D/3N · Flight + 4★ Hotel + City Tour',
-      'price': '₱18,499',
-      'tag': 'Fly to Bangkok',
+      'name': 'Love to Love Singapore & KL',
+      'desc': '6D/5N · Airfare + Hotel + Tours',
+      'price': '₱39,888',
+      'tag': 'Love to Love',
       'tagColor': Color(0xFFEE018D),
       'gradient': [Color(0xFFE91E63), Color(0xFF880E4F)],
     },
     {
-      'name': 'Seoul & Nami Island',
-      'desc': '5D/4N · Flight + Hotel + Visa Assist',
-      'price': '₱24,999',
-      'tag': 'K-Culture Tour',
+      'name': 'Great Singapore',
+      'desc': '5D/4N · Airfare + Hotel + Transfers',
+      'price': '₱32,888',
+      'tag': 'Singapore',
       'tagColor': Color(0xFF7B1FA2),
       'gradient': [Color(0xFF7B1FA2), Color(0xFF4A148C)],
     },
     {
-      'name': 'Tokyo, Kyoto & Osaka',
-      'desc': '6D/5N · Flight + Bullet Train + Hotel',
-      'price': '₱38,999',
-      'tag': 'Cherry Blossom',
+      'name': 'Golden Thailand Choose Premium',
+      'desc': '5D/3N · Pattaya + Bangkok + Tours',
+      'price': '₱32,888',
+      'tag': 'Thailand',
       'tagColor': Color(0xFFC62828),
       'gradient': [Color(0xFFC62828), Color(0xFF7F0000)],
+    },
+    {
+      'name': 'Memorable Japan - Hokkaido',
+      'desc': '8D/5N · Airfare + Hotel + Private Coach',
+      'price': '₱2,288',
+      'tag': 'Japan',
+      'tagColor': Color(0xFF216417),
+      'gradient': [Color(0xFF00897B), Color(0xFF004D40)],
+    },
+    {
+      'name': 'Heartfelt Korea',
+      'desc': '6D/4N · Airfare + Hotel + Guided Tours',
+      'price': '₱37,888',
+      'tag': 'Korea',
+      'tagColor': Color(0xFF1565C0),
+      'gradient': [Color(0xFF1565C0), Color(0xFF42A5F5)],
     },
   ];
 
@@ -1929,7 +1953,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
   bool _isLoading = true;
   String? _error;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Stay', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
 
   @override
   void initState() {
@@ -1964,6 +1988,186 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     }
   }
 
+  void _selectTransportOption(BuildContext context, Map<String, dynamic> s) {
+    widget.booking.selectedSchedule = Map<String, dynamic>.from(s);
+    widget.booking.passengers = [
+      for (int i = 0; i < widget.booking.adults; i++)
+        {'type': 'adult', 'name': '', 'discount_id': null, 'seat_number': null, 'seat_row': null, 'seat_section': null},
+      for (int i = 0; i < widget.booking.children; i++)
+        {'type': 'child', 'name': '', 'discount_id': null, 'seat_number': null, 'seat_row': null, 'seat_section': null},
+    ];
+
+    final isAirline = widget.booking.mode == 'airline';
+    final classes = s['transport_classes'] as List<dynamic>? ?? [];
+    final accommodations = s['accommodations'] as List<dynamic>? ?? [];
+
+    if (isAirline && classes.isNotEmpty) {
+      _showAirlineClassPicker(context, classes);
+    } else if (!isAirline && accommodations.isNotEmpty) {
+      _showFerryAccommodationPicker(context, accommodations);
+    } else {
+      widget.booking.selectedTransportClassId = null;
+      widget.booking.selectedTransportClass = null;
+      widget.booking.selectedScheduleAccommodationId = null;
+      widget.booking.selectedScheduleAccommodation = null;
+      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+    }
+  }
+
+  void _showAirlineClassPicker(BuildContext context, List<dynamic> classes) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Select Cabin Class', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+              const SizedBox(height: 12),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: classes.length,
+                  itemBuilder: (context, idx) {
+                    final c = classes[idx];
+                    final isOnSale = c['is_on_sale'] == true;
+                    final price = isOnSale ? c['sale_price'] : c['price'];
+                    return Card(
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: kSlate200)),
+                      child: InkWell(
+                        onTap: () {
+                          widget.booking.selectedTransportClassId = c['id'];
+                          widget.booking.selectedTransportClass = Map<String, dynamic>.from(c);
+                          widget.booking.selectedScheduleAccommodationId = null;
+                          widget.booking.selectedScheduleAccommodation = null;
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => SeatSelectionScreen(booking: widget.booking)));
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(c['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                                        if (isOnSale) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
+                                            child: const Text('SALE', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    if (c['description'] != null) ...[
+                                      const SizedBox(height: 4),
+                                      Text(c['description'], style: const TextStyle(color: kSlate500, fontSize: 12)),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (isOnSale)
+                                    Text('₱${c['price']}', style: const TextStyle(color: kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough)),
+                                  Text('₱$price', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 16)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFerryAccommodationPicker(BuildContext context, List<dynamic> accommodations) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Select Accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+              const SizedBox(height: 12),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: accommodations.length,
+                  itemBuilder: (context, idx) {
+                    final acc = accommodations[idx];
+                    return Card(
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: kSlate200)),
+                      child: InkWell(
+                        onTap: () {
+                          widget.booking.selectedScheduleAccommodationId = acc['id'];
+                          widget.booking.selectedScheduleAccommodation = Map<String, dynamic>.from(acc);
+                          widget.booking.selectedTransportClassId = null;
+                          widget.booking.selectedTransportClass = null;
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(acc['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                                    if (acc['description'] != null) ...[
+                                      const SizedBox(height: 4),
+                                      Text(acc['description'], style: const TextStyle(color: kSlate500, fontSize: 12)),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text('+₱${acc['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 15)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1971,7 +2175,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       body: Column(
         children: [
           _StepProgress(currentStep: 2, steps: _steps),
-          // Trip summary
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -2020,15 +2223,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 elevation: 2,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                 child: InkWell(
-                                  onTap: () {
-                                    widget.booking.selectedSchedule = Map<String, dynamic>.from(s);
-                                    // sync passengers from adults+children
-                                    widget.booking.passengers = [
-                                      for (int i = 0; i < widget.booking.adults; i++) {'type': 'adult', 'name': '', 'discount_id': null},
-                                      for (int i = 0; i < widget.booking.children; i++) {'type': 'child', 'name': '', 'discount_id': null},
-                                    ];
-                                    Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
-                                  },
+                                  onTap: () => _selectTransportOption(context, s),
                                   borderRadius: BorderRadius.circular(16),
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
@@ -2038,15 +2233,46 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
+                                            // Operator Badge
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                              decoration: BoxDecoration(color: kGreen.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                                              child: Text(s['service'] ?? 'Standard', style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12)),
+                                              decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight_takeoff,
+                                                    color: kGreen,
+                                                    size: 13,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    s['operator'] ?? 'Operator',
+                                                    style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                             Text('₱${s['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.w900, fontSize: 18)),
                                           ],
                                         ),
-                                        const SizedBox(height: 14),
+                                        const SizedBox(height: 12),
+                                        // Vehicle name and service name
+                                        Row(
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(s['service'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                                                if (s['vehicle_name'] != null && s['vehicle_name'].toString().trim().isNotEmpty) ...[
+                                                  const SizedBox(height: 2),
+                                                  Text(s['vehicle_name'], style: const TextStyle(color: kSlate500, fontSize: 11)),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
                                         Row(
                                           children: [
                                             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2080,6 +2306,273 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
 }
 
 // ==========================================
+// SEAT SELECTION (Airlines Only)
+// ==========================================
+class SeatSelectionScreen extends StatefulWidget {
+  final BookingData booking;
+  const SeatSelectionScreen({super.key, required this.booking});
+
+  @override
+  State<SeatSelectionScreen> createState() => _SeatSelectionScreenState();
+}
+
+class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
+  int _activePassengerIndex = 0;
+  late List<dynamic> _seatRows;
+  late List<dynamic> _occupiedSeats;
+
+  @override
+  void initState() {
+    super.initState();
+    final tc = widget.booking.selectedTransportClass;
+    _seatRows = tc?['seat_rows'] as List<dynamic>? ?? [];
+    _occupiedSeats = widget.booking.selectedSchedule?['occupied_seats'] as List<dynamic>? ?? [];
+  }
+
+  bool _isSeatSelectedByOther(String seatId) {
+    for (int i = 0; i < widget.booking.passengers.length; i++) {
+      if (i != _activePassengerIndex && widget.booking.passengers[i]['seat_number'] == seatId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final passengers = widget.booking.passengers;
+    final activePassenger = passengers[_activePassengerIndex];
+    final allAssigned = passengers.every((p) => p['seat_number'] != null);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Select Seats')),
+      body: Column(
+        children: [
+          // Passenger selector row
+          Container(
+            height: 80,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            color: Colors.white,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: passengers.length,
+              itemBuilder: (context, idx) {
+                final p = passengers[idx];
+                final isSelected = _activePassengerIndex == idx;
+                final seatStr = p['seat_number'] ?? 'None';
+                return Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: ChoiceChip(
+                    label: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Pax ${idx + 1} (${p['type']})', style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.white : kSlate700)),
+                        Text('Seat: $seatStr', style: TextStyle(fontSize: 11, color: isSelected ? Colors.white.withOpacity(0.8) : kSlate500)),
+                      ],
+                    ),
+                    selected: isSelected,
+                    selectedColor: kGreen,
+                    backgroundColor: kBgLight,
+                    onSelected: (val) {
+                      if (val) setState(() => _activePassengerIndex = idx);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          // Guide / Front of Aircraft
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            color: kGreen.withOpacity(0.05),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.arrow_upward, size: 16, color: kGreen),
+                SizedBox(width: 6),
+                Text('FRONT OF AIRCRAFT', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12)),
+              ],
+            ),
+          ),
+
+          // Seat Grid
+          Expanded(
+            child: _seatRows.isEmpty
+                ? const Center(child: Text('No seating layout available for this cabin.'))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _seatRows.length,
+                    itemBuilder: (context, rIdx) {
+                      final row = _seatRows[rIdx];
+                      final rowLabel = row['label'].toString();
+                      final leftSeats = row['left'] as List<dynamic>? ?? [];
+                      final rightSeats = row['right'] as List<dynamic>? ?? [];
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Left Column seats
+                            Row(
+                              children: leftSeats.map((s) {
+                                final seatId = s['id'].toString();
+                                final label = s['label'].toString();
+                                final isOccupied = _occupiedSeats.contains(seatId) || _isSeatSelectedByOther(seatId);
+                                final isSelected = activePassenger['seat_number'] == seatId;
+
+                                return _buildSeatButton(seatId, label, isOccupied, isSelected);
+                              }).toList(),
+                            ),
+                            
+                            // Aisle spacer
+                            Container(
+                              width: 32,
+                              alignment: Alignment.center,
+                              child: Text(rowLabel, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate400, fontSize: 13)),
+                            ),
+
+                            // Right Column seats
+                            Row(
+                              children: rightSeats.map((s) {
+                                final seatId = s['id'].toString();
+                                final label = s['label'].toString();
+                                final isOccupied = _occupiedSeats.contains(seatId) || _isSeatSelectedByOther(seatId);
+                                final isSelected = activePassenger['seat_number'] == seatId;
+
+                                return _buildSeatButton(seatId, label, isOccupied, isSelected);
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          // Legend
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _LegendItem(color: Colors.white, borderColor: kSlate300, label: 'Available'),
+                _LegendItem(color: kGreen, borderColor: kGreen, label: 'Selected'),
+                _LegendItem(color: kSlate200, borderColor: kSlate200, label: 'Occupied'),
+              ],
+            ),
+          ),
+
+          // Bottom Bar
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: allAssigned
+                    ? () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kPink,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Next: Passenger Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeatButton(String seatId, String label, bool isOccupied, bool isSelected) {
+    Color bg = Colors.white;
+    Color border = kSlate300;
+    Color text = kSlate800;
+
+    if (isOccupied) {
+      bg = kSlate200;
+      border = kSlate200;
+      text = kSlate400;
+    } else if (isSelected) {
+      bg = kGreen;
+      border = kGreen;
+      text = Colors.white;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: SizedBox(
+        width: 42,
+        height: 42,
+        child: OutlinedButton(
+          onPressed: isOccupied
+              ? null
+              : () {
+                  setState(() {
+                    widget.booking.passengers[_activePassengerIndex]['seat_number'] = seatId;
+                    widget.booking.passengers[_activePassengerIndex]['seat_row'] = int.tryParse(seatId.replaceAll(RegExp(r'[^0-9]'), ''));
+                    widget.booking.passengers[_activePassengerIndex]['seat_section'] = widget.booking.selectedTransportClass?['name'] ?? 'Economy';
+                    
+                    // Auto advance to next passenger without seat
+                    for (int i = 0; i < widget.booking.passengers.length; i++) {
+                      if (widget.booking.passengers[i]['seat_number'] == null) {
+                        _activePassengerIndex = i;
+                        break;
+                      }
+                    }
+                  });
+                },
+          style: OutlinedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            backgroundColor: bg,
+            side: BorderSide(color: border, width: 1.5),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          child: Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: text)),
+        ),
+      ),
+    );
+  }
+}
+
+class _LegendItem extends StatelessWidget {
+  final Color color;
+  final Color borderColor;
+  final String label;
+
+  const _LegendItem({required this.color, required this.borderColor, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 18,
+          height: 18,
+          decoration: BoxDecoration(
+            color: color,
+            border: Border.all(color: borderColor, width: 1.5),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 12, color: kSlate600)),
+      ],
+    );
+  }
+}
+
+// ==========================================
 // STEP 3: DISCOUNT (Passenger Details + Discount)
 // ==========================================
 class DiscountScreen extends StatefulWidget {
@@ -2097,7 +2590,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
   List<TextEditingController> _schoolControllers = [];
   List<TextEditingController> _idControllers = [];
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Stay', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
 
   @override
   void initState() {
@@ -2348,25 +2841,42 @@ class StayScreen extends StatefulWidget {
 
 class _StayScreenState extends State<StayScreen> {
   List<Map<String, dynamic>> _accommodations = [];
+  List<Map<String, dynamic>> _vehicleRates = [];
   bool _isLoading = true;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Stay', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+
+  final _plateCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _fetchAccommodations();
+    _plateCtrl.text = widget.booking.vehiclePlateNumber;
+    _fetchData();
   }
 
-  void _fetchAccommodations() async {
+  @override
+  void dispose() {
+    _plateCtrl.dispose();
+    super.dispose();
+  }
+
+  void _fetchData() async {
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/accommodations'));
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        if (data['status'] == 'success') {
-          setState(() => _accommodations = List<Map<String, dynamic>>.from(data['accommodations']));
-        }
+      final results = await Future.wait([
+        http.get(Uri.parse('$baseUrl/api/accommodations')),
+        http.get(Uri.parse('$baseUrl/api/vehicle-rates')),
+      ]);
+
+      final accData = jsonDecode(results[0].body);
+      if (results[0].statusCode == 200 && accData['status'] == 'success') {
+        _accommodations = List<Map<String, dynamic>>.from(accData['accommodations']);
+      }
+
+      final vData = jsonDecode(results[1].body);
+      if (results[1].statusCode == 200 && vData['status'] == 'success') {
+        _vehicleRates = List<Map<String, dynamic>>.from(vData['vehicle_rates']);
       }
     } catch (_) {}
     finally {
@@ -2376,8 +2886,10 @@ class _StayScreenState extends State<StayScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isFerry = widget.booking.mode == 'ferry';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Add-on Stay')),
+      appBar: AppBar(title: const Text('Add-ons')),
       body: Column(
         children: [
           _StepProgress(currentStep: 4, steps: _steps),
@@ -2387,8 +2899,148 @@ class _StayScreenState extends State<StayScreen> {
                 : ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
+                      // ── Vehicle / Car Booking (Ferry only) ──
+                      if (isFerry) ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: kSlate200),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Vehicle / Car Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                                      Text('Bring your vehicle on the ferry', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                    ],
+                                  ),
+                                  Switch(
+                                    value: widget.booking.hasVehicle,
+                                    activeColor: kGreen,
+                                    onChanged: (val) => setState(() {
+                                      widget.booking.hasVehicle = val;
+                                      if (!val) {
+                                        widget.booking.vehicleType = '';
+                                        widget.booking.vehiclePlateNumber = '';
+                                        widget.booking.vehiclePrice = 0;
+                                        widget.booking.selectedVehicleRateId = null;
+                                        _plateCtrl.clear();
+                                      }
+                                    }),
+                                  ),
+                                ],
+                              ),
+
+                              if (widget.booking.hasVehicle) ...[
+                                const SizedBox(height: 16),
+                                // Warning
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.shade50,
+                                    border: Border.all(color: Colors.amber.shade200),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.info_outline, color: Colors.amber, size: 18),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Vehicle bookings are subject to availability. Ensure your vehicle dimensions comply with ferry requirements.',
+                                          style: TextStyle(color: Colors.amber, fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+
+                                // Vehicle type selector
+                                const Text('Vehicle Type', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                const SizedBox(height: 8),
+                                if (_vehicleRates.isEmpty)
+                                  TextField(
+                                    decoration: InputDecoration(
+                                      hintText: 'e.g., Sedan, SUV, Motorcycle',
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    onChanged: (v) => widget.booking.vehicleType = v,
+                                  )
+                                else
+                                  Column(
+                                    children: _vehicleRates.map((rate) {
+                                      final selected = widget.booking.selectedVehicleRateId == rate['id'];
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            widget.booking.selectedVehicleRateId = rate['id'];
+                                            widget.booking.vehicleType = rate['name'];
+                                            widget.booking.vehiclePrice = double.tryParse(rate['price'].toString()) ?? 0;
+                                          });
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.only(bottom: 8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                          decoration: BoxDecoration(
+                                            color: selected ? kGreen.withOpacity(0.05) : kSlate50,
+                                            border: Border.all(color: selected ? kGreen : kSlate200, width: selected ? 2 : 1),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.directions_car, color: selected ? kGreen : kSlate400, size: 20),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Text(rate['name'], style: TextStyle(fontWeight: FontWeight.w600, color: selected ? kGreen : kSlate800)),
+                                              ),
+                                              Text('₱${rate['price']}', style: TextStyle(color: selected ? kGreen : kPink, fontWeight: FontWeight.bold)),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+
+                                const SizedBox(height: 14),
+                                const Text('Plate Number', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: _plateCtrl,
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g., ABC 1234',
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  onChanged: (v) => widget.booking.vehiclePlateNumber = v,
+                                ),
+
+                                if (widget.booking.vehiclePrice > 0) ...[
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('Vehicle Fee', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700)),
+                                      Text('₱${widget.booking.vehiclePrice.toStringAsFixed(2)}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 16)),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // ── Hotel / Accommodation Add-ons ──
                       const Text(
-                        'Optional Add-On Accommodations',
+                        'Hotel & Accommodation Add-ons',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
                       ),
                       const SizedBox(height: 4),
@@ -2398,7 +3050,7 @@ class _StayScreenState extends State<StayScreen> {
                       if (_accommodations.isEmpty)
                         const Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32),
+                            padding: EdgeInsets.symmetric(vertical: 24),
                             child: Text('No accommodations available at this time.', style: TextStyle(color: kSlate400)),
                           ),
                         )
@@ -2517,7 +3169,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   bool _isUploadingProof = false;
   bool _proofUploaded = false;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Stay', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
 
   @override
   void initState() {
@@ -2570,6 +3222,14 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
           'client_email': _clientEmailCtrl.text.trim(),
           'passengers': widget.booking.passengers,
           'accommodation_ids': widget.booking.selectedAccommodationIds,
+          // Vehicle
+          'has_vehicle': widget.booking.hasVehicle,
+          if (widget.booking.hasVehicle) ...{
+            'vehicle_rate_id': widget.booking.selectedVehicleRateId,
+            'vehicle_type': widget.booking.vehicleType,
+            'vehicle_plate_number': widget.booking.vehiclePlateNumber,
+            'vehicle_price': widget.booking.vehiclePrice,
+          },
         }),
       );
       final data = jsonDecode(res.body);
@@ -2883,6 +3543,16 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                         );
                         return _SummaryRow(acc['name'] as String, '₱${acc['price']}');
                       }),
+                    ]),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Vehicle (ferry only)
+                  if (widget.booking.hasVehicle) ...[
+                    _SummarySection(title: 'Vehicle / Car Booking', children: [
+                      _SummaryRow('Vehicle Type', widget.booking.vehicleType.isEmpty ? '—' : widget.booking.vehicleType),
+                      _SummaryRow('Plate Number', widget.booking.vehiclePlateNumber.isEmpty ? '—' : widget.booking.vehiclePlateNumber),
+                      _SummaryRow('Vehicle Fee', '₱${widget.booking.vehiclePrice.toStringAsFixed(2)}'),
                     ]),
                     const SizedBox(height: 16),
                   ],
@@ -3458,22 +4128,59 @@ class TourPackagesScreen extends StatefulWidget {
 class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  static const _domestic = [
-    {'name': 'El Nido Adventure', 'detail': '3 Days & 2 Nights · Flight + Hotel + Island Tour', 'desc': 'Discover limestone cliffs, crystal clear lagoons, and pristine beaches of Bacuit Bay. Includes a guided Island Tour A.', 'price': '₱8,999/pax', 'tag': 'Best Seller', 'gradient': [Color(0xFF1565C0), Color(0xFF42A5F5)]},
-    {'name': 'Boracay Island Escape', 'detail': '3 Days & 2 Nights · Flight + Hotel + Transfers', 'desc': 'Relax on the world-famous white sand beach. Enjoy sunset paraw sailing, vibrant island nightlife, and local water sports.', 'price': '₱7,499/pax', 'tag': 'Popular', 'gradient': [Color(0xFF00BCD4), Color(0xFF006064)]},
-    {'name': 'Siargao Surf & Island Tour', 'detail': '4 Days & 3 Nights · Hotel + Island Hopping + Surf Lesson', 'desc': 'Discover the surfing capital. Tour Guyam, Daku, and Naked island, followed by a professional beginner surf lesson at Cloud 9.', 'price': '₱9,299/pax', 'tag': 'Trending', 'gradient': [Color(0xFF00897B), Color(0xFF004D40)]},
-  ];
+  List<Map<String, dynamic>> _domestic = [];
+  List<Map<String, dynamic>> _international = [];
+  bool _loadingTours = true;
 
-  static const _international = [
-    {'name': 'Bangkok & Pattaya Highlights', 'detail': '4 Days & 3 Nights · Flight + 4★ Hotel + City Tour', 'desc': 'Experience majestic Buddhist temples, vibrant street food markets, and the beach resorts of Pattaya. Includes Grand Palace tour.', 'price': '₱18,499/pax', 'tag': 'Fly to Bangkok', 'gradient': [Color(0xFFE91E63), Color(0xFF880E4F)]},
-    {'name': 'Seoul & Nami Island Experience', 'detail': '5 Days & 4 Nights · Flight + Hotel + Visa Assist', 'desc': 'Explore Gyeongbokgung Palace in traditional Hanbok clothing. Cruise to scenic Nami Island and shop in Myeongdong district.', 'price': '₱24,999/pax', 'tag': 'K-Culture Tour', 'gradient': [Color(0xFF7B1FA2), Color(0xFF4A148C)]},
-    {'name': 'Tokyo, Kyoto & Osaka Classic', 'detail': '6 Days & 5 Nights · Flight + Bullet Train + Hotel', 'desc': 'Witness the futuristic Tokyo streets, take the Shinkansen bullet train to historic Kyoto shrines, and enjoy street food in Dotonbori, Osaka.', 'price': '₱38,999/pax', 'tag': 'Cherry Blossom', 'gradient': [Color(0xFFC62828), Color(0xFF7F0000)]},
-  ];
+  Future<void> _fetchTours() async {
+    try {
+      final res = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/tours'));
+      if (res.statusCode == 200) {
+        final List<dynamic> tours = json.decode(res.body) as List<dynamic>;
+        List<Map<String, dynamic>> normalized = tours.map((e) {
+          final m = Map<String, dynamic>.from(e as Map);
+          return _normalizeTour(m);
+        }).toList();
+
+        final dom = normalized.where((t) => (t['country'] ?? '').toString().toLowerCase().contains('philipp')).toList();
+        final intl = normalized.where((t) => !( (t['country'] ?? '').toString().toLowerCase().contains('philipp'))).toList();
+        setState(() {
+          _domestic = dom.cast<Map<String, dynamic>>();
+          _international = intl.cast<Map<String, dynamic>>();
+          _loadingTours = false;
+        });
+      } else {
+        setState(() => _loadingTours = false);
+      }
+    } catch (e) {
+      setState(() => _loadingTours = false);
+    }
+  }
+
+  Map<String, dynamic> _normalizeTour(Map raw) {
+    return {
+      'name': raw['tour_name'] ?? raw['tour'] ?? raw['name'] ?? '',
+      'detail': raw['duration'] ?? raw['detail'] ?? '',
+      'desc': raw['highlights'] ?? raw['desc'] ?? raw['inclusions'] ?? '',
+      'price': raw['price_per_pax'] ?? raw['price'] ?? '',
+      'tag': raw['promo'] ?? raw['tag'] ?? '',
+      'country': raw['country'] ?? '',
+      'destinations': raw['destinations'] ?? '',
+      'available_dates': raw['available_dates'] ?? raw['departure'] ?? '',
+      'hotel': raw['hotel'] ?? '',
+      'inclusions': raw['inclusions'] ?? '',
+      'exclusions': raw['exclusions'] ?? '',
+      'remarks': raw['remarks'] ?? '',
+      'raw': raw,
+      'gradient': [Color(0xFF1565C0), Color(0xFF42A5F5)],
+    };
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _fetchTours();
   }
 
   @override
@@ -3503,8 +4210,8 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
             child: TabBarView(
               controller: _tabController,
               children: [
-                _PackageList(packages: _domestic),
-                _PackageList(packages: _international),
+                _loadingTours ? Center(child: CircularProgressIndicator()) : _PackageList(packages: _domestic),
+                _loadingTours ? Center(child: CircularProgressIndicator()) : _PackageList(packages: _international),
               ],
             ),
           ),
@@ -3571,7 +4278,7 @@ class _PackageList extends StatelessWidget {
                           Text(p['price'] as String, style: const TextStyle(color: kGreen, fontWeight: FontWeight.w900, fontSize: 16)),
                         ]),
                         ElevatedButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RequestBookingScreen())),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => RequestBookingScreen(package: p))),
                           style: ElevatedButton.styleFrom(backgroundColor: kPink, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), padding: const EdgeInsets.symmetric(horizontal: 20)),
                           child: const Text('Book Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         ),
@@ -3592,7 +4299,8 @@ class _PackageList extends StatelessWidget {
 // REQUEST BOOKING SCREEN (Slide Form)
 // ==========================================
 class RequestBookingScreen extends StatefulWidget {
-  const RequestBookingScreen({super.key});
+  final Map<String, dynamic>? package;
+  const RequestBookingScreen({super.key, this.package});
 
   @override
   State<RequestBookingScreen> createState() => _RequestBookingScreenState();
@@ -3615,6 +4323,22 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
   bool _submitted = false;
 
   static const _services = ['Ferry Ticket', 'Airline Ticket', 'Tour Package', 'Custom Group Package', 'Apprenticeship / Educational Tour'];
+
+  @override
+  void initState() {
+    super.initState();
+    final pkg = widget.package;
+    if (pkg != null) {
+      _serviceType = 'Tour Package';
+      _fromCtrl.text = pkg['destinations'] ?? '';
+      _toCtrl.text = pkg['name'] ?? '';
+      _dateCtrl.text = pkg['available_dates'] ?? '';
+      _passengersCtrl.text = '1';
+      _notesCtrl.text = pkg['inclusions'] ?? '';
+      _nameCtrl.text = UserSession.username;
+      _emailCtrl.text = UserSession.email;
+    }
+  }
 
   void _next() {
     if (_page < 2) {

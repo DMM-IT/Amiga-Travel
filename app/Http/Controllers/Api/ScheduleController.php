@@ -47,7 +47,7 @@ class ScheduleController extends Controller
 
         $schedules = Schedule::forRouteAndDate($origin, $destination, $date, $mode)
             ->get()
-            ->map(fn($schedule) => $schedule->toBookingArray());
+            ->map(fn($schedule) => $schedule->toBookingArray($date));
 
         return response()->json([
             'status' => 'success',

@@ -29,17 +29,29 @@ class BookingController extends Controller
             'return_date' => 'nullable|date',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
+            'selected_transport_class_id' => 'nullable|integer|exists:transport_classes,id',
+            'selected_schedule_accommodation_id' => 'nullable|integer|exists:schedule_accommodations,id',
+            'has_vehicle' => 'nullable|boolean',
+            'vehicle_type' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
             'passengers' => 'required|array|min:1',
             'passengers.*.name' => 'required|string|max:255',
             'passengers.*.type' => 'required|string|in:adult,child',
             'passengers.*.discount_id' => 'nullable|integer|exists:discounts,id',
             'passengers.*.school_name' => 'nullable|string|max:255',
             'passengers.*.id_number' => 'nullable|string|max:255',
+            'passengers.*.seat_number' => 'nullable|string|max:255',
+            'passengers.*.seat_row' => 'nullable|integer',
+            'passengers.*.seat_section' => 'nullable|string|max:255',
             'accommodation_ids' => 'nullable|array',
             'accommodation_ids.*' => 'integer|exists:accommodations,id',
         ]);
 
         $schedule = Schedule::findOrFail($request->input('schedule_id'));
+        $scheduleAccommodation = $request->input('selected_schedule_accommodation_id')
+            ? \App\Models\ScheduleAccommodation::find($request->input('selected_schedule_accommodation_id'))
+            : null;
 
         $transaction = null;
 
@@ -57,10 +69,26 @@ class BookingController extends Controller
                 'schedule_departure_time' => $schedule->formatted_departure,
                 'schedule_arrival_time' => $schedule->formatted_arrival,
                 'schedule_price' => $schedule->price,
+                'schedule_accommodation_id' => $scheduleAccommodation?->id,
+                'schedule_accommodation_name' => $scheduleAccommodation?->name,
+                'schedule_accommodation_price' => $scheduleAccommodation?->price,
                 'client_name' => $request->input('client_name'),
                 'client_email' => $request->input('client_email'),
-                'total_price' => $this->calculatePrice($schedule, $request->input('passengers'), $request->input('trip_type'), $request->input('accommodation_ids', [])),
+                'total_price' => $this->calculatePrice(
+                    $schedule,
+                    $request->input('passengers'),
+                    $request->input('trip_type'),
+                    $request->input('accommodation_ids', []),
+                    $scheduleAccommodation,
+                    $request->input('selected_transport_class_id'),
+                    $request->input('has_vehicle', false),
+                    $request->input('vehicle_price', 0)
+                ),
                 'status' => 'pending',
+                'has_vehicle' => $request->input('has_vehicle', false),
+                'vehicle_type' => $request->input('vehicle_type'),
+                'vehicle_plate_number' => $request->input('vehicle_plate_number'),
+                'vehicle_price' => $request->input('vehicle_price'),
             ]);
 
             foreach ($request->input('passengers') as $passengerData) {
@@ -71,7 +99,19 @@ class BookingController extends Controller
                     'discount_id' => $passengerData['discount_id'] ?? null,
                     'school_name' => $passengerData['school_name'] ?? null,
                     'id_number' => $passengerData['id_number'] ?? null,
+                    'seat_number' => $passengerData['seat_number'] ?? null,
+                    'seat_row' => $passengerData['seat_row'] ?? null,
+                    'seat_section' => $passengerData['seat_section'] ?? null,
                 ]);
+            }
+
+            if ($request->input('selected_transport_class_id')) {
+                $transportClass = TransportClass::find($request->input('selected_transport_class_id'));
+                if ($transportClass) {
+                    $booking->transportClasses()->attach($transportClass->id, [
+                        'price' => $transportClass->effective_price,
+                    ]);
+                }
             }
 
             $accommodationIds = $request->input('accommodation_ids', []);
@@ -93,7 +133,7 @@ class BookingController extends Controller
 
             // Try sending email receipt (optional)
             try {
-                $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule');
+                $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses', 'scheduleAccommodation');
                 $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
                 if (! file_exists(dirname($receiptPath))) {
                     mkdir(dirname($receiptPath), 0755, true);
@@ -131,14 +171,23 @@ class BookingController extends Controller
         }
     }
 
-    private function calculatePrice(Schedule $schedule, array $passengers, string $tripType, array $accommodationIds = []): float
-    {
+    private function calculatePrice(
+        Schedule $schedule,
+        array $passengers,
+        string $tripType,
+        array $accommodationIds = [],
+        $scheduleAccommodation = null,
+        $selectedTransportClassId = null,
+        $hasVehicle = false,
+        $vehiclePrice = 0
+    ): float {
         $schedulePrice = floatval($schedule->price);
+        $scheduleAccommodationPrice = $scheduleAccommodation ? floatval($scheduleAccommodation->price) : 0;
         $tripMultiplier = $tripType === 'round_trip' ? 2 : 1;
         $discounts = Discount::all()->keyBy('id');
 
-        $ferryTotal = collect($passengers)->sum(function (array $passenger) use ($schedulePrice, $tripMultiplier, $discounts) {
-            $fare = $schedulePrice * $tripMultiplier;
+        $ferryTotal = collect($passengers)->sum(function (array $passenger) use ($schedulePrice, $scheduleAccommodationPrice, $tripMultiplier, $discounts) {
+            $fare = ($schedulePrice + $scheduleAccommodationPrice) * $tripMultiplier;
 
             if (! empty($passenger['discount_id'])) {
                 $discount = $discounts->get($passenger['discount_id']);
@@ -150,17 +199,35 @@ class BookingController extends Controller
             return $fare;
         });
 
+        $transportClassTotal = 0;
+        if ($selectedTransportClassId) {
+            $transportClass = TransportClass::find($selectedTransportClassId);
+            if ($transportClass) {
+                $transportClassTotal = floatval($transportClass->effective_price);
+            }
+        }
+
         $accommodationsTotal = 0;
         if (!empty($accommodationIds)) {
             $accommodationsTotal = \App\Models\Accommodation::whereIn('id', $accommodationIds)->sum('price');
         }
 
+        $vehicleTotal = $hasVehicle ? floatval($vehiclePrice ?? 0) : 0;
+
         $settings = PaymentSetting::current();
         $payingTravelers = count($passengers);
-        $serviceFee = ($payingTravelers * floatval($settings->fee_per_person ?? 0))
-            + (count($accommodationIds) * floatval($settings->fee_per_accommodation ?? 0));
+        $serviceFee = ($payingTravelers * floatval($settings->fee_per_person ?? 0));
 
-        return $ferryTotal + floatval($accommodationsTotal) + $serviceFee;
+        return $ferryTotal + $transportClassTotal + $accommodationsTotal + $vehicleTotal + $serviceFee;
+    }
+
+    public function vehicleRates()
+    {
+        $rates = VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        return response()->json([
+            'status' => 'success',
+            'vehicle_rates' => $rates
+        ]);
     }
 
     public function index(Request $request)
