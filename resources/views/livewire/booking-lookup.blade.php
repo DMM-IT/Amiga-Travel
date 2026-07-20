@@ -235,6 +235,24 @@
                                             </label>
                                         @endif
 
+                                        @php $rebookingQrPath = 
+                                            App\Models\PaymentSetting::current()->qr_code_path ?? null;
+                                        @endphp
+                                        @if($rebookingQrPath)
+                                            <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+                                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                                    <div class="flex-shrink-0 bg-slate-50 p-3 rounded-3xl border border-slate-200">
+                                                        <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="Rebooking payment QR code" class="h-32 w-32 rounded-2xl object-contain" />
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <p class="text-sm font-semibold text-slate-900">Scan to pay the rebooking fee</p>
+                                                        <p class="mt-2 text-sm text-slate-600">Use your preferred mobile wallet to scan this QR code and pay the exact rebooking fee: <span class="font-semibold">₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}</span>.</p>
+                                                        <p class="mt-3 text-xs text-slate-500">After payment, upload a photo of the receipt or payment confirmation below.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         <label class="mt-4 block">
                                             <span class="mb-2 block text-sm font-medium text-slate-700">Proof of Rebooking Fee Payment</span>
                                             <input type="file" wire:model="rebookingProof" class="mt-2 block w-full text-sm text-slate-600" />

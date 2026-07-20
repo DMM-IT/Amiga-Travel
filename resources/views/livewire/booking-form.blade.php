@@ -1,9 +1,9 @@
-<div class="min-h-screen bg-emerald-50">
-    <div class="min-h-screen w-full bg-emerald-50 overflow-visible">
-            <div class="bg-emerald-900 px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
+<div class="min-h-screen bg-pink-50">
+    <div class="min-h-screen w-full bg-pink-50 overflow-visible">
+            <div class="bg-pink-900 px-4 sm:px-6 lg:px-10 py-6 sm:py-8">
                 <div class="max-w-6xl mx-auto">
                     <h1 class="text-2xl sm:text-3xl font-semibold text-white">Amiga Gracia Travel Booking</h1>
-                    <p class="mt-2 text-emerald-200">Complete your travel booking in a few easy steps. Your confirmation email and payment QR code are created automatically when you submit.</p>
+                    <p class="mt-2 text-pink-200">Complete your travel booking in a few easy steps. Your confirmation email and payment QR code are created automatically when you submit.</p>
                 </div>
             </div>
             

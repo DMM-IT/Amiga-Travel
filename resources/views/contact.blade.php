@@ -177,22 +177,23 @@
             </div>
         </div>
 
-        <!-- Embedded Map Placeholder -->
-        <div class="mt-12 bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100 p-4">
-            <h3 class="text-lg font-bold text-slate-900 mb-4 px-4">Find Our Calapan Office</h3>
-            <div class="aspect-[21/9] w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative flex items-center justify-center">
-                <!-- Mock Map Styled Graphic -->
-                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80'); opacity: 0.15; filter: grayscale(1);"></div>
-                <div class="relative z-10 text-center p-6 max-w-md">
-                    <div class="mx-auto h-12 w-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-4 animate-bounce shadow-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                        </svg>
+        <!-- Embedded Map -->
+        <div class="mt-12 bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100">
+            <div class="flex flex-col gap-4 p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Find Our Calapan Office</h3>
+                        <p class="mt-2 text-sm text-slate-500 max-w-2xl">
+                            Exact location: Roxas Drive, Libis, Calapan City, Oriental Mindoro, 5200
+                        </p>
                     </div>
-                    <h4 class="font-bold text-slate-800 text-base">Amiga Gracia Travel Services</h4>
-                    <p class="text-xs text-slate-500 mt-1">Roxas Drive, Libis, Calapan City, Oriental Mindoro</p>
-                    <p class="text-[10px] text-slate-400 mt-4 uppercase font-bold tracking-wider">Calapan Main Office Location</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=13.414934994237933,121.18487931805026" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-4 py-2 text-sm font-semibold transition hover:bg-emerald-100 hover:text-emerald-900">
+                        Open in Google Maps
+                    </a>
                 </div>
+            </div>
+            <div class="aspect-[21/9] w-full overflow-hidden border-t border-slate-200">
+                <iframe class="w-full h-full" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?q=13.414934994237933,121.18487931805026&z=17&output=embed" aria-label="Map showing office location"></iframe>
             </div>
         </div>
     </div>
