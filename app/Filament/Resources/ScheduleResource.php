@@ -166,6 +166,9 @@ class ScheduleResource extends Resource
                 TextColumn::make('price')
                     ->money('PHP')
                     ->sortable(),
+                TextColumn::make('accommodation_label')
+                    ->label('Accommodations')
+                    ->wrap(),
                 TextColumn::make('availability_label')
                     ->label('Availability')
                     ->placeholder('Available'),

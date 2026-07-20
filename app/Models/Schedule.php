@@ -157,6 +157,27 @@ class Schedule extends Model
         return "{$hours}h {$minutes}m";
     }
 
+    public function getAccommodationLabelAttribute(): string
+    {
+        if ($this->ferryRoute?->mode === 'airline') {
+            $transportClasses = $this->relationLoaded('transportClasses')
+                ? $this->transportClasses
+                : $this->transportClasses()->get();
+
+            $names = $transportClasses->pluck('name')->filter()->all();
+
+            return empty($names) ? 'Standard classes' : implode(', ', $names);
+        }
+
+        $accommodations = $this->relationLoaded('scheduleAccommodations')
+            ? $this->scheduleAccommodations
+            : $this->scheduleAccommodations()->where('is_active', true)->get();
+
+        $names = $accommodations->pluck('name')->filter()->all();
+
+        return empty($names) ? 'Standard accommodation' : implode(', ', $names);
+    }
+
     public function getAirlineSeatingProfile(): ?array
     {
         $operator = $this->ferryRoute?->operator;

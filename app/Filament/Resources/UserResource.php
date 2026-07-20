@@ -6,7 +6,10 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms\Get;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Hidden;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Resources\UserResource\RelationManagers\BookingsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\LoginHistoriesRelationManager;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -49,7 +52,7 @@ class UserResource extends Resource
                 TextInput::make('password')
                     ->label('Password')
                     ->password()
-                    ->required(fn (?Pages\EditUser $livewire): bool => $livewire instanceof Pages\CreateUser)
+                    ->required(fn (?object $livewire): bool => $livewire instanceof Pages\CreateUser)
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? Hash::make($state) : null),
                 TextInput::make('password_confirmation')
@@ -57,23 +60,19 @@ class UserResource extends Resource
                     ->password()
                     ->same('password')
                     ->dehydrated(false)
-                    ->required(fn (?Pages\EditUser $livewire): bool => $livewire instanceof Pages\CreateUser),
-                Toggle::make('is_staff')
-                    ->label('Staff account')
-                    ->default(false)
-                    ->helperText('Enable this if this user should be able to log into the admin panel.'),
+                    ->required(fn (?object $livewire): bool => $livewire instanceof Pages\CreateUser),
+                Hidden::make('is_staff')
+                    ->default(true),
                 Toggle::make('is_admin')
                     ->label('Administrator account')
                     ->default(false)
                     ->helperText('Administrator accounts bypass permission checks and can access every feature.')
-                    ->visible(fn (Get $get): bool => $get('is_staff'))
                     ->reactive(),
                 CheckboxList::make('admin_permissions')
-                    ->label('Admin permissions')
+                    ->label('Staff features')
                     ->options(User::ADMIN_PERMISSIONS)
                     ->columns(2)
-                    ->helperText('Choose the admin features this staff user may access.')
-                    ->visible(fn (Get $get): bool => $get('is_staff'))
+                    ->helperText('Choose which admin features this staff user can access.')
                     ->disabled(fn (Get $get): bool => $get('is_admin')),
             ]);
     }
@@ -109,7 +108,8 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            LoginHistoriesRelationManager::class,
+            BookingsRelationManager::class,
         ];
     }
 

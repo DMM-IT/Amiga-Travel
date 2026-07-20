@@ -310,6 +310,18 @@
                                     @if ($has_vehicle)
                                         <div class="mt-6 grid gap-4 sm:grid-cols-3">
                                             <label class="block">
+                                                <span class="text-emerald-700 font-medium">Driver name</span>
+                                                <input type="text" wire:model.defer="driver_name" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., Juan Dela Cruz" />
+                                                @error('driver_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+
+                                            <label class="block">
+                                                <span class="text-emerald-700 font-medium">Driver birthday</span>
+                                                <input type="date" wire:model.defer="driver_birthday" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                                @error('driver_birthday')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            </label>
+
+                                            <label class="block">
                                                 <span class="text-emerald-700 font-medium">Vehicle type</span>
                                                 @if($vehicleRateCatalog->isNotEmpty())
                                                     <select wire:model.live="selected_vehicle_rate_id" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
@@ -323,7 +335,9 @@
                                                 @endif
                                                 @error('vehicle_type')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                             </label>
+                                        </div>
 
+                                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
                                             <label class="block">
                                                 <span class="text-emerald-700 font-medium">Plate number</span>
                                                 <input type="text" wire:model.defer="vehicle_plate_number" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., ABC 1234" />

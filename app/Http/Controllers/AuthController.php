@@ -25,6 +25,14 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (! Auth::attempt($credentials, $remember)) {
+            $this->logUserLogin(
+                null,
+                'web_login',
+                $request,
+                false,
+                'Failed web login attempt.'
+            );
+
             return back()
                 ->withInput($request->only('email', 'remember'))
                 ->withErrors(['email' => 'These credentials do not match our records.']);
@@ -32,7 +40,31 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        $this->logUserLogin(
+            Auth::user(),
+            'web_login',
+            $request,
+            true,
+            'Successful web login.'
+        );
+
         return redirect()->intended(route('dashboard'));
+    }
+
+    protected function logUserLogin(?User $user, string $type, Request $request, bool $success, string $description = null): void
+    {
+        \App\Models\UserLoginHistory::create([
+            'user_id' => $user?->id,
+            'email' => $request->input('email'),
+            'login_type' => $type,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'success' => $success,
+            'description' => $description,
+            'metadata' => [
+                'remember' => $request->boolean('remember'),
+            ],
+        ]);
     }
 
     public function showRegister(): View
@@ -53,6 +85,14 @@ class AuthController extends Controller
         Auth::login($user);
 
         $request->session()->regenerate();
+
+        $this->logUserLogin(
+            $user,
+            'web_register',
+            $request,
+            true,
+            'Successful web registration.'
+        );
 
         return redirect()->route('dashboard');
     }
@@ -75,6 +115,14 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($credentials)) {
+            $this->logUserLogin(
+                null,
+                'api_login',
+                $request,
+                false,
+                'Failed API login attempt.'
+            );
+
             return response()->json([
                 'message' => 'These credentials do not match our records.'
             ], 422);
@@ -83,6 +131,14 @@ class AuthController extends Controller
         $user = Auth::user();
         $user->api_token = \Illuminate\Support\Str::random(80);
         $user->save();
+
+        $this->logUserLogin(
+            $user,
+            'api_login',
+            $request,
+            true,
+            'Successful API login.'
+        );
 
         return response()->json([
             'status' => 'success',
@@ -106,6 +162,14 @@ class AuthController extends Controller
         $validated['api_token'] = \Illuminate\Support\Str::random(80);
 
         $user = User::create($validated);
+
+        $this->logUserLogin(
+            $user,
+            'api_register',
+            $request,
+            true,
+            'Successful API registration.'
+        );
 
         return response()->json([
             'status' => 'success',

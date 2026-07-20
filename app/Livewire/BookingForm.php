@@ -95,6 +95,8 @@ class BookingForm extends Component
     public string $vehicle_type = '';
     public string $vehicle_plate_number = '';
     public ?float $vehicle_price = null;
+    public string $driver_name = '';
+    public ?string $driver_birthday = null;
 
     public string $client_name = '';
     public string $client_email = '';
@@ -993,6 +995,8 @@ class BookingForm extends Component
                 'vehicle_type' => $this->vehicle_type,
                 'vehicle_plate_number' => $this->vehicle_plate_number,
                 'vehicle_price' => $this->vehicle_price,
+                'driver_name' => $this->driver_name,
+                'driver_birthday' => $this->driver_birthday,
             ]);
 
             foreach ($this->passengers as $passenger) {
@@ -1184,7 +1188,10 @@ class BookingForm extends Component
             'client_email' => 'required|email',
             'recaptchaToken' => $this->recaptchaRule(),
             'has_vehicle' => 'boolean',
-            'vehicle_type' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_birthday' => 'required_if:has_vehicle,true|nullable|date',
+            'selected_vehicle_rate_id' => $this->vehicleRateCatalog->isNotEmpty() ? 'required_if:has_vehicle,true|nullable|integer|exists:vehicle_rates,id' : 'nullable',
+            'vehicle_type' => $this->vehicleRateCatalog->isEmpty() ? 'required_if:has_vehicle,true|nullable|string|max:255' : 'nullable|string|max:255',
             'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
         ];

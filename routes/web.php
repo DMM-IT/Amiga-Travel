@@ -73,6 +73,28 @@ Route::get('/download', function () use ($renderWebsitePage) {
     return $renderWebsitePage('download', 'download');
 })->name('download');
 
+Route::get('/schedules', function () {
+    $routes = App\Models\FerryRoute::with([
+        'schedules' => function ($query) {
+            $query->where('is_active', true)->orderBy('departure_time');
+        },
+        'schedules.scheduleAccommodations',
+        'schedules.transportClasses',
+    ])->where('is_active', true)->orderBy('origin')->orderBy('destination')->get();
+
+    $dayNames = [
+        1 => 'Mon',
+        2 => 'Tue',
+        3 => 'Wed',
+        4 => 'Thu',
+        5 => 'Fri',
+        6 => 'Sat',
+        7 => 'Sun',
+    ];
+
+    return view('schedules', compact('routes', 'dayNames'));
+})->name('schedules');
+
 Route::get('/payment/{transaction}', function (Transaction $transaction) {
     $transaction->load('booking');
 
