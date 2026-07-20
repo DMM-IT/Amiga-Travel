@@ -305,9 +305,9 @@
     "semantic_hash": "ec377178484210e6f3b3dae13745c730"
   },
   "app/Filament/Resources/VehicleRateResource/Pages/ListVehicleRates.php": {
-    "mtime": 1784467577.1271038,
-    "ast_hash": "6e5fecb20ae75ab650e455876f6f4780",
-    "semantic_hash": "6e5fecb20ae75ab650e455876f6f4780"
+    "mtime": 1784560942.409107,
+    "ast_hash": "1f28c3a79913357d1ff74f7bf3c7e5a3",
+    "semantic_hash": "1f28c3a79913357d1ff74f7bf3c7e5a3"
   },
   "app/Filament/Resources/VehicleResource.php": {
     "mtime": 1784553592.9696274,
@@ -390,9 +390,9 @@
     "semantic_hash": "cb1940d1d27e5c92ef3f09866539f438"
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1784553592.9696274,
-    "ast_hash": "d7531ad8026c1f187ac8c09ce61b15cd",
-    "semantic_hash": "d7531ad8026c1f187ac8c09ce61b15cd"
+    "mtime": 1784560942.409107,
+    "ast_hash": "d1fc1e51914577eee67f28597f9e9e38",
+    "semantic_hash": "d1fc1e51914577eee67f28597f9e9e38"
   },
   "app/Livewire/BookingLookup.php": {
     "mtime": 1784553592.9696274,
@@ -865,9 +865,9 @@
     "semantic_hash": "b2a39c30b7f99024d8965b72e7128986"
   },
   "database/seeders/DatabaseSeeder.php": {
-    "mtime": 1784467577.1822193,
-    "ast_hash": "6b81db84dd853d04c1a3a931ab0b21cc",
-    "semantic_hash": "6b81db84dd853d04c1a3a931ab0b21cc"
+    "mtime": 1784560942.409107,
+    "ast_hash": "fc75b99b1cadbb51d14ac9b00208ec76",
+    "semantic_hash": "fc75b99b1cadbb51d14ac9b00208ec76"
   },
   "database/seeders/DiscountSeeder.php": {
     "mtime": 1784467577.1822193,
@@ -895,9 +895,9 @@
     "semantic_hash": "15b5ae8785e8e5b9b768747cd48c5d99"
   },
   "database/seeders/VehicleRateSeeder.php": {
-    "mtime": 1784467577.1842444,
-    "ast_hash": "82489f329289772c4aecbba8fa412892",
-    "semantic_hash": "82489f329289772c4aecbba8fa412892"
+    "mtime": 1784560942.409107,
+    "ast_hash": "7757699294a280a77a383ebb062c482b",
+    "semantic_hash": "7757699294a280a77a383ebb062c482b"
   },
   "database/seeders/WebsiteSettingSeeder.php": {
     "mtime": 1784467577.1842444,
@@ -1305,9 +1305,9 @@
     "semantic_hash": "6b34952efa7aa35527654583506cfced"
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1784553592.9938068,
-    "ast_hash": "548da1124602f66e3b1570abde23a3cd",
-    "semantic_hash": "548da1124602f66e3b1570abde23a3cd"
+    "mtime": 1784560942.4167328,
+    "ast_hash": "383079f0a29f16e84a13a8a384ed3a96",
+    "semantic_hash": "383079f0a29f16e84a13a8a384ed3a96"
   },
   "resources/views/livewire/booking-lookup.blade.php": {
     "mtime": 1784553592.9949102,
@@ -1943,5 +1943,50 @@
     "mtime": 1784467577.412856,
     "ast_hash": "eef6341acda9d41456a82fb1c75c93ce",
     "semantic_hash": "eef6341acda9d41456a82fb1c75c93ce"
+  },
+  "app/Filament/Resources/VehicleBrandResource.php": {
+    "mtime": 1784560942.406014,
+    "ast_hash": "97b228c55bfbee7fbc98c1035e818079",
+    "semantic_hash": "97b228c55bfbee7fbc98c1035e818079"
+  },
+  "app/Filament/Resources/VehicleBrandResource/Pages/CreateVehicleBrand.php": {
+    "mtime": 1784560942.407565,
+    "ast_hash": "3b0329f965e014380d223fb559d108e3",
+    "semantic_hash": "3b0329f965e014380d223fb559d108e3"
+  },
+  "app/Filament/Resources/VehicleBrandResource/Pages/EditVehicleBrand.php": {
+    "mtime": 1784560942.4080791,
+    "ast_hash": "00696e7d11f2e43ab19a105ba37ece72",
+    "semantic_hash": "00696e7d11f2e43ab19a105ba37ece72"
+  },
+  "app/Filament/Resources/VehicleBrandResource/Pages/ListVehicleBrands.php": {
+    "mtime": 1784560942.4085922,
+    "ast_hash": "e8cb1d8181ec39b0220c60cbb349a36f",
+    "semantic_hash": "e8cb1d8181ec39b0220c60cbb349a36f"
+  },
+  "app/Filament/Resources/VehicleBrandResource/RelationManagers/VehicleModelsRelationManager.php": {
+    "mtime": 1784560942.409107,
+    "ast_hash": "30a6e8c88377a4c743ec5a7012ff3c33",
+    "semantic_hash": "30a6e8c88377a4c743ec5a7012ff3c33"
+  },
+  "app/Models/VehicleBrand.php": {
+    "mtime": 1784560942.409107,
+    "ast_hash": "368cb9924832af0b4cdd53080101e0c2",
+    "semantic_hash": "368cb9924832af0b4cdd53080101e0c2"
+  },
+  "app/Models/VehicleModel.php": {
+    "mtime": 1784560942.409107,
+    "ast_hash": "cb7ce88b4bb7324ec5dcc7f4674d34f1",
+    "semantic_hash": "cb7ce88b4bb7324ec5dcc7f4674d34f1"
+  },
+  "database/migrations/2026_07_20_170000_create_vehicle_brands_and_models_tables.php": {
+    "mtime": 1784560942.409107,
+    "ast_hash": "28b013d2e251edc7d42525cab481d73b",
+    "semantic_hash": "28b013d2e251edc7d42525cab481d73b"
+  },
+  "database/seeders/VehicleBrandModelSeeder.php": {
+    "mtime": 1784560942.409107,
+    "ast_hash": "00887368959552564b1abb7b829c2ec4",
+    "semantic_hash": "00887368959552564b1abb7b829c2ec4"
   }
 }
