@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FerryRouteResource\Pages;
 
 use App\Filament\Resources\FerryRouteResource;
+use App\Models\Vehicle;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -15,5 +16,14 @@ class EditFerryRoute extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (! empty($data['vehicle_id'])) {
+            $data['operator'] = optional(Vehicle::find($data['vehicle_id']))->operator;
+        }
+
+        return $data;
     }
 }

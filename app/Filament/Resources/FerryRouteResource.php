@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\FerryRouteResource\Pages;
 use App\Models\FerryRoute;
 use App\Models\User;
+use App\Models\Vehicle;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -57,21 +58,43 @@ class FerryRouteResource extends Resource
                         'airline' => 'Airline',
                     ])
                     ->default('ferry')
-                    ->required(),
+                    ->reactive()
+                    ->required()
+                    ->afterStateUpdated(function (string $state, callable $set) {
+                        $set('vehicle_id', null);
+                        $set('operator', null);
+                    }),
 
                 Select::make('vehicle_id')
                     ->label('Vehicle')
-                    ->relationship('vehicle', 'name')
-                    ->getOptionLabelFromRecordUsing(fn (\App\Models\Vehicle $record) => "{$record->name} ({$record->vehicle_id}) - {$record->operator}")
-                    ->preload()
+                    ->options(fn (callable $get) => Vehicle::query()
+                        ->when($get('mode'), fn ($query, $mode) => $query->where('type', $mode))
+                        ->where('is_active', true)
+                        ->orderBy('name')
+                        ->get()
+                        ->mapWithKeys(fn (Vehicle $vehicle) => [$vehicle->id => "{$vehicle->name} ({$vehicle->vehicle_id}) - {$vehicle->operator}"])
+                        ->toArray())
+                    ->reactive()
                     ->searchable()
-                    ->hint('Select a vehicle or leave empty to add operator manually'),
+                    ->afterStateHydrated(function ($state, callable $set) {
+                        if ($state) {
+                            $set('operator', optional(Vehicle::find($state))->operator);
+                        }
+                    })
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $set('operator', optional(Vehicle::find($state))->operator);
+                        } else {
+                            $set('operator', null);
+                        }
+                    })
+                    ->hint('Select a vehicle from the ferry/airline list'),
 
                 TextInput::make('operator')
-                    ->label('Operator (Fallback)')
-                    ->placeholder('e.g. 2GO, Starlight, Cebu Pacific')
-                    ->maxLength(255)
-                    ->helperText('Used if no vehicle is selected'),
+                    ->label('Operator')
+                    ->disabled()
+                    ->reactive()
+                    ->dehydrated(),
 
                 Toggle::make('is_active')
                     ->label('Available for booking')
@@ -96,6 +119,7 @@ class FerryRouteResource extends Resource
                     ->sortable(),
                 TextColumn::make('operator')
                     ->label('Operator')
+                    ->getStateUsing(fn (FerryRoute $record): ?string => $record->vehicle?->operator ?: $record->operator)
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('mode')
