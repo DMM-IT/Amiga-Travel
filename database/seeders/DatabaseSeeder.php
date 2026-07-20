@@ -16,23 +16,30 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create a seeded admin account so it is restored after migrate:refresh --seed.
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => 'admin',
-            'is_admin' => true,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('admin'),
+                'is_admin' => true,
+                'is_staff' => false,
+            ],
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'is_staff' => true,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'is_staff' => true,
+            ],
+        );
 
         $this->call([
             DiscountSeeder::class,
             FerryRouteSeeder::class,
             TransportClassSeeder::class,
+            VehicleRateSeeder::class,
+            VehicleBrandModelSeeder::class,
         ]);
     }
 }

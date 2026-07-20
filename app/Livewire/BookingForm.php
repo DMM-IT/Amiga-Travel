@@ -15,6 +15,8 @@ use App\Models\PaymentSetting;
 use App\Models\Schedule;
 use App\Models\ScheduleAccommodation;
 use App\Models\TransportClass;
+use App\Models\VehicleBrand;
+use App\Models\VehicleModel;
 use App\Models\VehicleRate;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
@@ -91,12 +93,17 @@ class BookingForm extends Component
 
     // Car booking fields
     public bool $has_vehicle = false;
+    public string $vehicle_booking_method = 'category';
     public ?int $selected_vehicle_rate_id = null;
+    public ?int $selected_brand_id = null;
+    public ?int $selected_model_id = null;
     public string $vehicle_type = '';
     public string $vehicle_plate_number = '';
     public ?float $vehicle_price = null;
     public string $driver_name = '';
     public ?string $driver_birthday = null;
+    public \Illuminate\Support\Collection $vehicleBrandCatalog;
+    public \Illuminate\Support\Collection $vehicleModelCatalog;
 
     public string $client_name = '';
     public string $client_email = '';
@@ -113,8 +120,18 @@ class BookingForm extends Component
         $this->discounts = Discount::all()->sortBy('name')->values();
         $this->transportClassCatalog = TransportClass::query()->where('is_active', true)->orderBy('name')->get();
         $this->vehicleRateCatalog = VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $this->vehicleBrandCatalog = VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $this->vehicleModelCatalog = collect();
         $this->accommodationCatalog = Accommodation::query()->where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
+
+        if ($this->selected_brand_id) {
+            $this->vehicleModelCatalog = VehicleModel::query()
+                ->where('vehicle_brand_id', $this->selected_brand_id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        }
 
         // Check if we have tour/package query params first
         $allowed = [
@@ -135,6 +152,14 @@ class BookingForm extends Component
         } else {
             // If we have package params, clear the draft to avoid conflicts
             session()->forget('booking_draft');
+        }
+
+        if ($this->selected_brand_id) {
+            $this->vehicleModelCatalog = VehicleModel::query()
+                ->where('vehicle_brand_id', $this->selected_brand_id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
         }
 
         // Now apply tour/package query params
@@ -814,9 +839,76 @@ class BookingForm extends Component
     {
         if (! $value) {
             $this->selected_vehicle_rate_id = null;
+            $this->selected_brand_id = null;
+            $this->selected_model_id = null;
             $this->vehicle_type = '';
             $this->vehicle_plate_number = '';
             $this->vehicle_price = null;
+        }
+
+        $this->saveDraft();
+    }
+
+    public function updatedVehicleBookingMethod(string $value): void
+    {
+        if ($value === 'category') {
+            $this->selected_brand_id = null;
+            $this->selected_model_id = null;
+            if ($this->selected_vehicle_rate_id) {
+                $this->updatedSelectedVehicleRateId($this->selected_vehicle_rate_id);
+            } else {
+                $this->vehicle_type = '';
+                $this->vehicle_price = null;
+            }
+        }
+
+        if ($value === 'brand_model') {
+            $this->selected_vehicle_rate_id = null;
+            $this->vehicle_type = '';
+            $this->vehicle_price = null;
+        }
+
+        $this->saveDraft();
+    }
+
+    public function updatedSelectedBrandId($value): void
+    {
+        if (blank($value)) {
+            $this->vehicleModelCatalog = collect();
+            $this->selected_model_id = null;
+            $this->vehicle_type = '';
+            $this->vehicle_price = null;
+            $this->saveDraft();
+            return;
+        }
+
+        $this->vehicleModelCatalog = VehicleModel::query()
+            ->where('vehicle_brand_id', (int) $value)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $this->selected_model_id = null;
+        $this->vehicle_type = '';
+        $this->vehicle_price = null;
+        $this->saveDraft();
+    }
+
+    public function updatedSelectedModelId($value): void
+    {
+        if (blank($value)) {
+            $this->vehicle_type = '';
+            $this->vehicle_price = null;
+            $this->saveDraft();
+            return;
+        }
+
+        $model = $this->vehicleModelCatalog->firstWhere('id', (int) $value);
+        $brandName = $this->vehicleBrandCatalog->firstWhere('id', (int) $this->selected_brand_id)?->name;
+
+        if ($model) {
+            $this->vehicle_type = trim(($brandName ? $brandName . ' ' : '') . $model->name);
+            $this->vehicle_price = floatval($model->price);
         }
 
         $this->saveDraft();
@@ -1073,7 +1165,10 @@ class BookingForm extends Component
             'selected_schedule_accommodation_id' => $this->selected_schedule_accommodation_id,
             'selected_transport_class_id' => $this->selected_transport_class_id,
             'has_vehicle' => $this->has_vehicle,
+            'vehicle_booking_method' => $this->vehicle_booking_method,
             'selected_vehicle_rate_id' => $this->selected_vehicle_rate_id,
+            'selected_brand_id' => $this->selected_brand_id,
+            'selected_model_id' => $this->selected_model_id,
             'vehicle_type' => $this->vehicle_type,
             'vehicle_plate_number' => $this->vehicle_plate_number,
             'vehicle_price' => $this->vehicle_price,
@@ -1117,9 +1212,13 @@ class BookingForm extends Component
                     },
                 ],
                 'has_vehicle' => 'boolean',
-                'vehicle_type' => 'required_if:has_vehicle,true|nullable|string|max:255',
-                'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
-                'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
+            'vehicle_booking_method' => 'required|string|in:category,brand_model',
+            'selected_vehicle_rate_id' => $this->has_vehicle && $this->vehicle_booking_method === 'category' && $this->vehicleRateCatalog->isNotEmpty() ? 'required|integer|exists:vehicle_rates,id' : 'nullable',
+            'selected_brand_id' => $this->has_vehicle && $this->vehicle_booking_method === 'brand_model' ? 'required|integer|exists:vehicle_brands,id' : 'nullable',
+            'selected_model_id' => $this->has_vehicle && $this->vehicle_booking_method === 'brand_model' ? 'required|integer|exists:vehicle_models,id' : 'nullable',
+            'vehicle_type' => $this->vehicleRateCatalog->isNotEmpty() ? 'nullable|string|max:255' : 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
             ],
             2 => [
                 'selected_schedule_id' => $this->tour_id ? 'nullable' : 'required|integer|exists:schedules,id',
@@ -1188,10 +1287,13 @@ class BookingForm extends Component
             'client_email' => 'required|email',
             'recaptchaToken' => $this->recaptchaRule(),
             'has_vehicle' => 'boolean',
+            'vehicle_booking_method' => 'required|string|in:category,brand_model',
             'driver_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'driver_birthday' => 'required_if:has_vehicle,true|nullable|date',
-            'selected_vehicle_rate_id' => $this->vehicleRateCatalog->isNotEmpty() ? 'required_if:has_vehicle,true|nullable|integer|exists:vehicle_rates,id' : 'nullable',
-            'vehicle_type' => $this->vehicleRateCatalog->isEmpty() ? 'required_if:has_vehicle,true|nullable|string|max:255' : 'nullable|string|max:255',
+            'selected_vehicle_rate_id' => $this->vehicle_booking_method === 'category' && $this->vehicleRateCatalog->isNotEmpty() ? 'required_if:has_vehicle,true|nullable|integer|exists:vehicle_rates,id' : 'nullable',
+            'selected_brand_id' => $this->vehicle_booking_method === 'brand_model' ? 'required_if:has_vehicle,true|nullable|integer|exists:vehicle_brands,id' : 'nullable',
+            'selected_model_id' => $this->vehicle_booking_method === 'brand_model' ? 'required_if:has_vehicle,true|nullable|integer|exists:vehicle_models,id' : 'nullable',
+            'vehicle_type' => $this->vehicleRateCatalog->isNotEmpty() ? 'nullable|string|max:255' : 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
         ];

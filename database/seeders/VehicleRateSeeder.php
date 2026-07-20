@@ -14,16 +14,17 @@ class VehicleRateSeeder extends Seeder
     public function run(): void
     {
         $types = [
-            ['name' => 'Bicycle', 'price' => 150, 'sort_order' => 1],
-            ['name' => 'Motorcycle', 'price' => 350, 'sort_order' => 2],
-            ['name' => 'Tricycle', 'price' => 450, 'sort_order' => 3],
-            ['name' => 'Sedan / Car', 'price' => 1200, 'sort_order' => 4],
-            ['name' => 'SUV', 'price' => 1500, 'sort_order' => 5],
-            ['name' => 'Van', 'price' => 1800, 'sort_order' => 6],
-            ['name' => 'Pickup Truck', 'price' => 2200, 'sort_order' => 7],
-            ['name' => 'Light Truck', 'price' => 3500, 'sort_order' => 8],
-            ['name' => 'Medium Truck', 'price' => 5500, 'sort_order' => 9],
-            ['name' => 'Shipping Truck', 'price' => 8500, 'sort_order' => 10],
+            ['name' => 'MOTORCYCLE (100cc to 200cc)', 'price' => 400, 'sort_order' => 1],
+            ['name' => 'MOTORCYCLE (250cc & above)', 'price' => 500, 'sort_order' => 2],
+            ['name' => 'TRICYCLE', 'price' => 450, 'sort_order' => 3],
+            ['name' => 'MULTICAB', 'price' => 650, 'sort_order' => 4],
+            ['name' => 'AUV', 'price' => 700, 'sort_order' => 5],
+            ['name' => 'HATCHBACK', 'price' => 900, 'sort_order' => 6],
+            ['name' => 'OWNER / LIGHT CARS', 'price' => 1100, 'sort_order' => 7],
+            ['name' => 'OWNER JEEP', 'price' => 1200, 'sort_order' => 8],
+            ['name' => 'PICK - UP', 'price' => 1400, 'sort_order' => 9],
+            ['name' => 'SUV', 'price' => 1500, 'sort_order' => 10],
+            ['name' => 'VAN', 'price' => 1600, 'sort_order' => 11],
         ];
 
         foreach ($types as $type) {

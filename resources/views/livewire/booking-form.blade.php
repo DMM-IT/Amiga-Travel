@@ -308,53 +308,86 @@
                                     </div>
 
                                     @if ($has_vehicle)
-                                        <div class="mt-6 grid gap-4 sm:grid-cols-3">
-                                            <label class="block">
-                                                <span class="text-emerald-700 font-medium">Driver name</span>
-                                                <input type="text" wire:model.defer="driver_name" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., Juan Dela Cruz" />
-                                                @error('driver_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
+                                        <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-6">
+                                            <div class="grid gap-4 {{ $vehicle_booking_method === 'brand_model' ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} sm:grid-cols-2">
+                                                <div class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                    <p class="text-sm font-semibold text-emerald-900">Classify Cargo by:</p>
+                                                    <div class="mt-4 space-y-2">
+                                                        <label class="flex items-center gap-3 rounded-full border px-4 py-3 text-sm text-slate-900 transition {{ $vehicle_booking_method === 'category' ? 'border-emerald-900 bg-emerald-100' : 'border-slate-200 bg-white hover:border-emerald-200' }}">
+                                                            <input type="radio" wire:model.live="vehicle_booking_method" value="category" class="h-4 w-4 text-emerald-600" />
+                                                            <span>Category</span>
+                                                        </label>
 
-                                            <label class="block">
-                                                <span class="text-emerald-700 font-medium">Driver birthday</span>
-                                                <input type="date" wire:model.defer="driver_birthday" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-                                                @error('driver_birthday')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
+                                                        <label class="flex items-center gap-3 rounded-full border px-4 py-3 text-sm text-slate-900 transition {{ $vehicle_booking_method === 'brand_model' ? 'border-emerald-900 bg-emerald-100' : 'border-slate-200 bg-white hover:border-emerald-200' }}">
+                                                            <input type="radio" wire:model.live="vehicle_booking_method" value="brand_model" class="h-4 w-4 text-emerald-600" />
+                                                            <span>Brand</span>
+                                                        </label>
+                                                    </div>
+                                                    @error('vehicle_booking_method')<p class="mt-3 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
 
-                                            <label class="block">
-                                                <span class="text-emerald-700 font-medium">Vehicle type</span>
-                                                @if($vehicleRateCatalog->isNotEmpty())
-                                                    <select wire:model.live="selected_vehicle_rate_id" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
-                                                        <option value="">Select vehicle type</option>
-                                                        @foreach($vehicleRateCatalog as $rate)
-                                                            <option value="{{ $rate->id }}">{{ $rate->name }} — ₱{{ number_format($rate->price, 2) }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                @else
-                                                    <input type="text" wire:model.defer="vehicle_type" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., Car, Motorcycle" />
-                                                @endif
-                                                @error('vehicle_type')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
-                                        </div>
-
-                                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                                            <label class="block">
-                                                <span class="text-emerald-700 font-medium">Plate number</span>
-                                                <input type="text" wire:model.defer="vehicle_plate_number" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., ABC 1234" />
-                                                @error('vehicle_plate_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
-
-                                            <label class="block">
-                                                <span class="text-emerald-700 font-medium">Vehicle price</span>
-                                                @if($vehicleRateCatalog->isNotEmpty())
-                                                    <div class="mt-2 flex h-12 items-center rounded-3xl border border-emerald-200 bg-emerald-50 px-4 text-lg font-semibold text-emerald-900">
-                                                        ₱{{ number_format($vehicle_price ?? 0, 2) }}
+                                                @if($vehicle_booking_method === 'category')
+                                                    <div class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                        <label class="text-sm font-semibold text-emerald-900">Category *</label>
+                                                        <select wire:model.live="selected_vehicle_rate_id" class="mt-3 block w-full rounded-3xl border border-emerald-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                                                            <option value="">Select category</option>
+                                                            @foreach($vehicleRateCatalog as $rate)
+                                                                <option value="{{ $rate->id }}">{{ $rate->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('selected_vehicle_rate_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                                     </div>
                                                 @else
-                                                    <input type="number" wire:model.defer="vehicle_price" min="0" step="0.01" class="mt-2 block w-full rounded-3xl border border-emerald-300 bg-white px-4 py-3 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="0.00" />
+                                                    <div class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                        <label class="text-sm font-semibold text-emerald-900">Brand *</label>
+                                                        <select wire:model.live="selected_brand_id" class="mt-3 block w-full rounded-3xl border border-emerald-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+                                                            <option value="">Select brand</option>
+                                                            @foreach($vehicleBrandCatalog as $brand)
+                                                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('selected_brand_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                    </div>
+
+                                                    <div class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                        <label class="text-sm font-semibold text-emerald-900">Model *</label>
+                                                        <select wire:model.live="selected_model_id" class="mt-3 block w-full rounded-3xl border border-emerald-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" @if($vehicleModelCatalog->isEmpty()) disabled @endif>
+                                                            <option value="">Select model</option>
+                                                            @foreach($vehicleModelCatalog as $model)
+                                                                <option value="{{ $model->id }}">{{ $model->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('selected_model_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                    </div>
                                                 @endif
-                                                @error('vehicle_price')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
+
+                                                <div class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                    <label class="text-sm font-semibold text-emerald-900">Plate Number *</label>
+                                                    <input type="text" wire:model.defer="vehicle_plate_number" class="mt-3 block w-full rounded-3xl border border-emerald-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., ABC 1234" />
+                                                    @error('vehicle_plate_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+
+                                                <div class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                    <p class="text-sm font-semibold text-emerald-900">Cargo Rate</p>
+                                                    <div class="mt-3 flex h-14 items-center justify-center rounded-3xl border border-emerald-200 bg-slate-50 px-4 text-lg font-semibold text-emerald-900">
+                                                        ₱{{ number_format($vehicle_price ?? 0, 2) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                                                <label class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                    <span class="text-sm font-semibold text-emerald-900">Driver name</span>
+                                                    <input type="text" wire:model.defer="driver_name" class="mt-3 block w-full rounded-3xl border border-emerald-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="e.g., Juan Dela Cruz" />
+                                                    @error('driver_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </label>
+
+                                                <label class="rounded-3xl border border-emerald-200 bg-white p-4">
+                                                    <span class="text-sm font-semibold text-emerald-900">Driver birthday</span>
+                                                    <input type="date" wire:model.defer="driver_birthday" class="mt-3 block w-full rounded-3xl border border-emerald-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                                    @error('driver_birthday')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </label>
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
