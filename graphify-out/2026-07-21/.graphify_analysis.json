@@ -389,6 +389,7 @@
       "app_mail_bookingcancellation_bookingcancellation_build",
       "app_mail_bookingcancellation_bookingcancellation_construct",
       "app_mail_bookingcancellation_php_self",
+      "app_mail_bookingconfirmation",
       "app_mail_bookingconfirmation_bookingconfirmation",
       "app_mail_bookingconfirmation_bookingconfirmation_build",
       "app_mail_bookingconfirmation_bookingconfirmation_construct",
@@ -396,6 +397,9 @@
       "app_mail_bookingcreated_bookingcreated",
       "app_mail_bookingcreated_bookingcreated_build",
       "app_mail_bookingcreated_bookingcreated_construct",
+      "app_mail_paymentproofreceived",
+      "app_mail_paymentproofreceived_paymentproofreceived",
+      "app_mail_paymentproofreceived_paymentproofreceived_build",
       "app_mail_rebookingrequested",
       "app_mail_rebookingrequested_rebookingrequested",
       "app_mail_rebookingrequested_rebookingrequested_build",
@@ -421,12 +425,6 @@
       "app_models_booking_php_belongsto",
       "app_models_booking_php_belongstomany",
       "app_models_booking_php_hasmany",
-      "app_support_reportingservice_php_collection",
-      "app_support_reportingservice_reportingservice",
-      "app_support_reportingservice_reportingservice_getbookingstatusbreakdown",
-      "app_support_reportingservice_reportingservice_getoverallstats",
-      "app_support_reportingservice_reportingservice_getrevenuebyperiod",
-      "app_support_reportingservice_reportingservice_getstaffstats",
       "mailable",
       "queueable",
       "serializesmodels"
@@ -776,12 +774,13 @@
     "15": [
       "app_console_commands_purgeexpiredproofs",
       "app_filament_pages_overallreports",
+      "app_filament_pages_staffperformance",
+      "app_filament_resources_bookingresource",
       "app_filament_resources_bookingresource_pages_viewbooking",
       "app_filament_resources_transactionresource",
       "app_http_controllers_api_bookingcontroller",
       "app_livewire_bookingform",
       "app_livewire_bookinglookup",
-      "app_mail_bookingconfirmation",
       "app_models_accommodation",
       "app_models_booking",
       "app_models_discount",
@@ -789,6 +788,7 @@
       "app_models_transaction",
       "app_models_vehiclerate",
       "app_support_reportingservice",
+      "config_auth",
       "config_livewire",
       "config_mail",
       "tests_feature_bookinglookupcancellationtest",
@@ -819,7 +819,6 @@
       "page"
     ],
     "17": [
-      "app_filament_pages_staffperformance",
       "app_models_user",
       "app_models_user_php_hasmany",
       "app_models_user_php_panel",
@@ -831,8 +830,13 @@
       "app_models_user_user_isstaff",
       "app_models_user_user_issuperadmin",
       "app_models_user_user_loginhistories",
+      "app_support_reportingservice_php_collection",
+      "app_support_reportingservice_reportingservice",
+      "app_support_reportingservice_reportingservice_getbookingstatusbreakdown",
+      "app_support_reportingservice_reportingservice_getoverallstats",
+      "app_support_reportingservice_reportingservice_getrevenuebyperiod",
+      "app_support_reportingservice_reportingservice_getstaffstats",
       "authenticatable",
-      "config_auth",
       "filamentuser",
       "hasfactory",
       "notifiable"
@@ -891,15 +895,15 @@
       "app_filament_resources_accommodationresource_accommodationresource_table",
       "app_filament_resources_accommodationresource_php_form",
       "app_filament_resources_accommodationresource_php_table",
-      "app_filament_resources_bookingresource",
-      "app_filament_resources_bookingresource_bookingresource",
-      "app_filament_resources_bookingresource_bookingresource_canaccess",
-      "app_filament_resources_bookingresource_bookingresource_form",
-      "app_filament_resources_bookingresource_bookingresource_getpages",
-      "app_filament_resources_bookingresource_bookingresource_getrelations",
-      "app_filament_resources_bookingresource_bookingresource_table",
-      "app_filament_resources_bookingresource_php_form",
-      "app_filament_resources_bookingresource_php_table",
+      "app_filament_resources_discountresource",
+      "app_filament_resources_discountresource_discountresource",
+      "app_filament_resources_discountresource_discountresource_canaccess",
+      "app_filament_resources_discountresource_discountresource_form",
+      "app_filament_resources_discountresource_discountresource_getpages",
+      "app_filament_resources_discountresource_discountresource_getrelations",
+      "app_filament_resources_discountresource_discountresource_table",
+      "app_filament_resources_discountresource_php_form",
+      "app_filament_resources_discountresource_php_table",
       "resource"
     ],
     "21": [
@@ -1012,9 +1016,6 @@
       "app_filament_widgets_dashboardsummarywidget",
       "app_filament_widgets_dashboardsummarywidget_dashboardsummarywidget",
       "app_filament_widgets_dashboardsummarywidget_dashboardsummarywidget_getviewdata",
-      "app_mail_paymentproofreceived",
-      "app_mail_paymentproofreceived_paymentproofreceived",
-      "app_mail_paymentproofreceived_paymentproofreceived_build",
       "app_mail_paymentproofreceived_paymentproofreceived_construct",
       "app_models_transaction_php_belongsto",
       "app_models_transaction_transaction",
@@ -1252,15 +1253,14 @@
       "app_filament_resources_vehiclerateresource_vehiclerateresource_table"
     ],
     "46": [
-      "app_filament_resources_discountresource",
-      "app_filament_resources_discountresource_discountresource",
-      "app_filament_resources_discountresource_discountresource_canaccess",
-      "app_filament_resources_discountresource_discountresource_form",
-      "app_filament_resources_discountresource_discountresource_getpages",
-      "app_filament_resources_discountresource_discountresource_getrelations",
-      "app_filament_resources_discountresource_discountresource_table",
-      "app_filament_resources_discountresource_php_form",
-      "app_filament_resources_discountresource_php_table"
+      "app_filament_resources_bookingresource_bookingresource",
+      "app_filament_resources_bookingresource_bookingresource_canaccess",
+      "app_filament_resources_bookingresource_bookingresource_form",
+      "app_filament_resources_bookingresource_bookingresource_getpages",
+      "app_filament_resources_bookingresource_bookingresource_getrelations",
+      "app_filament_resources_bookingresource_bookingresource_table",
+      "app_filament_resources_bookingresource_php_form",
+      "app_filament_resources_bookingresource_php_table"
     ],
     "47": [
       "composer",
@@ -1909,7 +1909,7 @@
     "1": 0.05134575569358178,
     "2": 0.0597567424643046,
     "3": 0.0696969696969697,
-    "4": 0.0821256038647343,
+    "4": 0.09408033826638477,
     "5": 0.06504065040650407,
     "6": 0.07112375533428165,
     "7": 0.06507936507936508,
@@ -1920,19 +1920,19 @@
     "12": 0.07692307692307693,
     "13": 0.12,
     "14": 0.10333333333333333,
-    "15": 0.22631578947368422,
+    "15": 0.20346320346320346,
     "16": 0.1761904761904762,
-    "17": 0.19117647058823528,
+    "17": 0.1380952380952381,
     "18": 0.1368421052631579,
     "19": 0.1,
-    "20": 0.14619883040935672,
+    "20": 0.14035087719298245,
     "21": 0.1111111111111111,
     "22": 0.16911764705882354,
     "23": 0.25,
     "24": 0.2,
     "25": 0.18681318681318682,
     "26": 0.14285714285714285,
-    "27": 0.15833333333333333,
+    "27": 0.1794871794871795,
     "28": 0.21794871794871795,
     "29": 0.19230769230769232,
     "30": 0.15384615384615385,
@@ -1951,7 +1951,7 @@
     "43": 0.2777777777777778,
     "44": 0.3333333333333333,
     "45": 0.2777777777777778,
-    "46": 0.2777777777777778,
+    "46": 0.2857142857142857,
     "47": 0.25,
     "48": 0.25,
     "49": 0.38095238095238093,
@@ -2203,41 +2203,8 @@
       "why": "bridges separate communities"
     }
   ],
-  "questions": [
-    {
-      "type": "bridge_node",
-      "question": "Why does `User` connect `User` to `Booking`, `CreateRecord`, `VehicleResource.php`, `static`, `DatePicker`, `InquiryResource.php`, `ScheduleResource.php`, `UserResource.php`, `AuthController`, `VehicleRateResource.php`, `DiscountResource.php`, `Booking.php`, `ManageProofs`, `Resource`?",
-      "why": "High betweenness centrality (0.078) - this node is a cross-community bridge."
-    },
-    {
-      "type": "bridge_node",
-      "question": "Why does `BookingForm` connect `BookingForm` to `Component`, `Booking.php`?",
-      "why": "High betweenness centrality (0.060) - this node is a cross-community bridge."
-    },
-    {
-      "type": "bridge_node",
-      "question": "Why does `Booking` connect `Booking` to `AuthController`, `TestCase`, `Booking.php`, `BookingLookup`, `Model`, `Transaction`, `BookingController`, `OverallReports`, `Component`?",
-      "why": "High betweenness centrality (0.050) - this node is a cross-community bridge."
-    },
-    {
-      "type": "verify_inferred",
-      "question": "Are the 19 inferred relationships involving `Booking` (e.g. with `.loadStats()` and `.getViewData()`) actually correct?",
-      "why": "`Booking` has 19 INFERRED edges - model-reasoned connections that need verification."
-    },
-    {
-      "type": "isolated_nodes",
-      "question": "What connects `$schema`, `name`, `type` to the rest of the system?",
-      "why": "277 weakly-connected nodes found - possible documentation gaps or missing edges."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `main.dart` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.010101010101010102 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `BookingForm` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.05134575569358178 - nodes in this community are weakly interconnected."
-    }
-  ]
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
 }
