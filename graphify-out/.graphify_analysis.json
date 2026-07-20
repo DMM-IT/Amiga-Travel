@@ -850,9 +850,9 @@
       "app_filament_resources_inquiryresource_pages_listinquiries_listinquiries",
       "app_filament_resources_userloginhistoryresource_pages_listuserloginhistories",
       "app_filament_resources_userloginhistoryresource_pages_listuserloginhistories_listuserloginhistories",
-      "app_filament_resources_userresource_pages_listusers",
-      "app_filament_resources_userresource_pages_listusers_listusers",
-      "app_filament_resources_userresource_pages_listusers_listusers_getheaderactions",
+      "app_filament_resources_vehiclerateresource_pages_listvehiclerates",
+      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates",
+      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates_getheaderactions",
       "app_filament_resources_vehicleresource_pages_listvehicles",
       "app_filament_resources_vehicleresource_pages_listvehicles_listvehicles",
       "app_filament_resources_vehicleresource_pages_listvehicles_listvehicles_getheaderactions",
@@ -1435,9 +1435,9 @@
       "app_filament_resources_transportclassresource_pages_listtransportclasses_listtransportclasses_getheaderactions"
     ],
     "68": [
-      "app_filament_resources_vehiclerateresource_pages_listvehiclerates",
-      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates",
-      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates_getheaderactions"
+      "app_filament_resources_userresource_pages_listusers",
+      "app_filament_resources_userresource_pages_listusers_listusers",
+      "app_filament_resources_userresource_pages_listusers_listusers_getheaderactions"
     ],
     "69": [
       "composer_autoload_dev",
@@ -2190,8 +2190,41 @@
       "why": "bridges separate communities"
     }
   ],
-  "tokens": {
-    "input": 0,
-    "output": 0
-  }
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `User` connect `User` to `AuthController`, `AccommodationResource.php`, `DiscountResource.php`, `FerryRouteResource.php`, `InquiryResource.php`, `ScheduleResource.php`, `TransportClassResource.php`, `Booking.php`, `UserResource.php`, `VehicleRateResource.php`, `ManageProofs`, `auth.php`, `Resource`, `Vehicle`, `TransactionResource.php`?",
+      "why": "High betweenness centrality (0.081) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Booking` connect `Booking` to `BookingLookup`, `AuthController`, `Model`, `Booking.php`, `BookingController`, `Mailable`, `AdminNotificationFeedTest.php`, `OverallReports`, `Transaction`, `User`?",
+      "why": "High betweenness centrality (0.074) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `BookingForm` connect `BookingForm` to `Model`, `BookingLookup`?",
+      "why": "High betweenness centrality (0.058) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 19 inferred relationships involving `Booking` (e.g. with `.loadStats()` and `.getViewData()`) actually correct?",
+      "why": "`Booking` has 19 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `$schema`, `name`, `type` to the rest of the system?",
+      "why": "277 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `main.dart` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.010101010101010102 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `BookingForm` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.05501165501165501 - nodes in this community are weakly interconnected."
+    }
+  ]
 }

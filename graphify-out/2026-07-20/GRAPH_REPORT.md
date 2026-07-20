@@ -4,586 +4,391 @@
 - cluster-only mode — file stats not available
 
 ## Summary
-- 4624 nodes · 11729 edges · 226 communities (210 shown, 16 thin omitted)
-- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 1114 edges (avg confidence: 0.67)
+- 1523 nodes · 2261 edges · 185 communities (164 shown, 21 thin omitted)
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 85 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0371d25f`
+- Built from commit: `df0913eb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- chart.js
 - main.dart
-- rich-editor.js
-- chart.js
-- markdown-editor.js
-- User
-- getLength
-- constructor
-- select.js
-- draw
-- _update
-- format
-- x
-- P
-- Booking
-- Model
-- file-upload.js
-- setSelectedRange
-- qt
-- updateElements
-- te
 - BookingForm
-- getSelectedRange
-- I
-- getContext
-- support.js
-- T
-- getDatasetMeta
-- constructor
-- notifications.js
-- RelationManager
-- Schedule
-- deleteInDirection
-- draw
-- setAttribute
-- on
-- render
-- _update
-- EditRecord
-- Controller
-- ListRecords
-- get
-- cd
-- Seeder
-- vd
-- Vn
-- getOptionScopes
-- CreateRecord
-- State
-- C
-- fn
-- Tour
-- _each
-- St
-- notifyEditorElement
-- AuthController
-- my_application.cc
-- echo.js
-- m
-- getDatasetMeta
-- InquiryResource.php
-- DatePicker
-- PaymentSetting
-- StatelessWidget
-- appendBlockForElement
-- scripts
-- getAttachments
-- Vehicle
-- devDependencies
-- FlutterWindow
-- win32_window.cpp
-- qe
-- GeneratedPluginRegistrant.swift
-- preload
-- BookingLookup
 - Win32Window
-- composer.json
+- RelationManager
+- Seeder
+- BookingLookup
+- GeneratedPluginRegistrant.swift
+- AuthController
+- EditRecord
+- State
+- Model
+- scripts
+- Booking
+- CreateRecord
+- Booking.php
+- Schedule
+- my_application.cc
+- Mailable
+- ListRecords
+- StatelessWidget
+- ManageProofs
+- devDependencies
+- auth.php
+- Resource
+- Vehicle
+- User
+- Transaction
+- ViewRecord
+- FerryRoute.php
 - require
-- color-picker.js
 - manifest.json
+- TransactionResource.php
 - wWinMain
-- app.js
-- r
-- t
+- VehicleBrandResource.php
+- Controller
+- FerryRoute
+- Tour
 - manifest.json
-- A
-- buildTicks
-- .application
-- MessageHandler
-- RunnerTests.swift
-- Fe
+- TourResource.php
+- TransportClass
+- AccommodationResource.php
+- DiscountResource.php
+- FerryRouteResource.php
+- InquiryResource.php
+- ScheduleResource.php
+- TransportClassResource.php
+- UserResource.php
+- VehicleRateResource.php
+- BookingController
+- AdminNotificationFeedTest.php
+- BookingResource
+- composer.json
 - require-dev
-- setup
-- a
-- qt
+- .transportClasses
 - config
 - MaterialPageRoute
-- yn
-- br
-- AdminPanelProvider.php
-- Be
-- oe
-- pe
-- te
+- Command
+- OverallReports
 - AdminMiddleware.php
 - psr-4
 - widget_test.dart
-- le
+- TourController.php
+- TourDate.php
+- ListFerryRoutes.php
+- ListSchedules.php
+- ListTours
+- ListTransactions.php
+- ListTransportClasses.php
+- ListUsers.php
+- autoload-dev
 - extra
+- keywords
 - booking-form.blade.php
 - MainActivity
+- ListVehicleBrands
 - flutter_export_environment.sh
 - manage-website-settings.blade.php
 - overall-reports.blade.php
 - date-picker.blade.php
 - @gmail
+- Collection
 - String?
 
 ## God Nodes (most connected - your core abstractions)
-1. `_update()` - 88 edges
-2. `x()` - 85 edges
-3. `_update()` - 84 edges
-4. `te()` - 74 edges
-5. `V()` - 72 edges
-6. `BookingForm` - 65 edges
-7. `draw()` - 55 edges
-8. `Booking` - 53 edges
-9. `vd()` - 53 edges
-10. `m()` - 49 edges
+1. `BookingForm` - 68 edges
+2. `Booking` - 52 edges
+3. `Schedule` - 43 edges
+4. `User` - 37 edges
+5. `Transaction` - 23 edges
+6. `Win32Window` - 22 edges
+7. `BookingLookup` - 19 edges
+8. `ManageProofs` - 18 edges
+9. `TransportClass` - 18 edges
+10. `TestCase` - 17 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `constructor()` --indirect_call--> `Yn()`  [INFERRED]
-  public/js/filament/widgets/components/stats-overview/stat/chart.js → public/js/filament/filament/echo.js
-- `te()` --indirect_call--> `Pr()`  [INFERRED]
-  public/js/filament/forms/components/markdown-editor.js → public/js/filament/filament/echo.js
-- `getExtension()` --indirect_call--> `Ht()`  [INFERRED]
-  public/js/filament/forms/components/file-upload.js → public/js/filament/forms/components/markdown-editor.js
-- `_getTestState()` --indirect_call--> `Ht()`  [INFERRED]
-  public/js/filament/forms/components/file-upload.js → public/js/filament/forms/components/markdown-editor.js
-- `dt()` --indirect_call--> `Ht()`  [INFERRED]
-  public/js/filament/forms/components/rich-editor.js → public/js/filament/forms/components/markdown-editor.js
+- `wWinMain()` --calls--> `CreateAndAttachConsole()`  [INFERRED]
+  flutter_app/windows/runner/main.cpp → flutter_app/windows/runner/utils.cpp
+- `Win32Window::Win32Window()` --calls--> `Destroy`  [INFERRED]
+  flutter_app/windows/runner/win32_window.cpp → flutter_app/windows/runner/win32_window.h
+- `BookingController` --inherits--> `Controller`  [EXTRACTED]
+  app/Http/Controllers/Api/BookingController.php → app/Http/Controllers/Controller.php
+- `ScheduleController` --inherits--> `Controller`  [EXTRACTED]
+  app/Http/Controllers/Api/ScheduleController.php → app/Http/Controllers/Controller.php
+- `TourController` --inherits--> `Controller`  [EXTRACTED]
+  app/Http/Controllers/Api/TourController.php → app/Http/Controllers/Controller.php
 
 ## Import Cycles
 - None detected.
 
-## Communities (226 total, 16 thin omitted)
+## Communities (185 total, 21 thin omitted)
 
-### Community 0 - "chart.js"
-Cohesion: 0.01
-Nodes (109): acquireContext(), afterDraw(), alpha(), beforeDatasetDraw(), beforeDatasetsDraw(), bh(), Br(), Bt() (+101 more)
-
-### Community 1 - "main.dart"
+### Community 0 - "main.dart"
 Cohesion: 0.01
 Nodes (197): dart:convert, dart:io, DateTime, double?, _accommodations, _activePassengerIndex, adults, availableAccommodations (+189 more)
 
-### Community 2 - "rich-editor.js"
-Cohesion: 0.02
-Nodes (127): activateAttributeIfSupported(), appendStringToTextAtIndex(), applyBlockAttribute(), attachmentDidChangeUploadProgress(), attachmentIsManaged(), attributeChangedCallback(), Ca(), canRedo() (+119 more)
+### Community 1 - "BookingForm"
+Cohesion: 0.06
+Nodes (4): BookingForm, Collection, Tour, TourDate
 
-### Community 3 - "chart.js"
-Cohesion: 0.02
-Nodes (120): aa(), active(), alpha(), an(), _animateOptions(), be(), beforeDatasetDraw(), beforeDatasetsDraw() (+112 more)
+### Community 2 - "Win32Window"
+Cohesion: 0.06
+Nodes (53): RegisterPlugins(), DartProject, HWND, LPARAM, LRESULT, UINT, WPARAM, FlutterWindow (+45 more)
 
-### Community 4 - "markdown-editor.js"
-Cohesion: 0.04
-Nodes (123): _a(), Aa(), Ac(), ad(), af(), al(), An(), Be() (+115 more)
+### Community 3 - "RelationManager"
+Cohesion: 0.05
+Nodes (28): AccommodationsRelationManager, Form, Table, PassengersRelationManager, Form, Table, Form, Table (+20 more)
 
-### Community 5 - "User"
-Cohesion: 0.03
-Nodes (49): Action, ManagePaymentSettings, Form, ManageProofs, Collection, Form, Collection, StaffPerformance (+41 more)
+### Community 4 - "Seeder"
+Cohesion: 0.06
+Nodes (16): ManageWebsiteSettings, Form, VehicleBrand, VehicleModel, WebsiteSetting, BelongsTo, DatabaseSeeder, DiscountSeeder (+8 more)
 
-### Community 6 - "getLength"
-Cohesion: 0.03
-Nodes (127): addAttribute(), addAttributeAtRange(), addAttributesAtRange(), addHTMLAttribute(), appendText(), applyBlockAttributeAtRange(), breakFormattedBlock(), breaksOnReturn() (+119 more)
+### Community 5 - "BookingLookup"
+Cohesion: 0.08
+Nodes (6): BookingLookup, DatePicker, PaymentProof, UserDashboard, Component, WithFileUploads
 
-### Community 7 - "constructor"
-Cohesion: 0.03
-Nodes (122): _a(), abutsStart(), after(), afterAutoSkip(), Ag(), Ai(), Al(), before() (+114 more)
+### Community 6 - "GeneratedPluginRegistrant.swift"
+Cohesion: 0.07
+Nodes (25): Any, Cocoa, file_selector_macos, Flutter, AppDelegate, Bool, RunnerTests, RegisterGeneratedPlugins() (+17 more)
 
-### Community 8 - "select.js"
+### Community 7 - "AuthController"
+Cohesion: 0.11
+Nodes (12): AuthController, Request, BookingExportController, AppServiceProvider, AdminPanelProvider, Panel, Color, PanelProvider (+4 more)
+
+### Community 8 - "EditRecord"
 Cohesion: 0.09
-Nodes (59): [g](), [x](), $c(), D(), E(), g(), H(), _i() (+51 more)
+Nodes (12): EditAccommodation, EditBooking, EditDiscount, EditFerryRoute, EditSchedule, EditTour, EditTransportClass, EditUser (+4 more)
 
-### Community 9 - "draw"
-Cohesion: 0.04
-Nodes (112): ad(), adjustHitBoxes(), ae(), af(), C(), calculateLabelRotation(), _calculatePadding(), _computeGridLineItems() (+104 more)
-
-### Community 10 - "_update"
-Cohesion: 0.04
-Nodes (88): addBox(), afterBuildTicks(), afterCalculateLabelRotation(), afterDataLimits(), afterFit(), afterSetDimensions(), afterTickToLabelConversion(), afterUpdate() (+80 more)
-
-### Community 11 - "format"
-Cohesion: 0.05
-Nodes (64): Bl(), cf(), clone(), create(), Dl(), dtFormatter(), eg(), el() (+56 more)
-
-### Community 12 - "x"
-Cohesion: 0.10
-Nodes (78): Sg(), at(), B(), br(), Bt(), ca(), cd(), Cr() (+70 more)
-
-### Community 13 - "P"
-Cohesion: 0.07
-Nodes (42): addControllers(), addElements(), addPlugins(), addScales(), as(), At(), Bs(), buildOrUpdateControllers() (+34 more)
-
-### Community 14 - "Booking"
-Cohesion: 0.05
-Nodes (21): OverallReports, DashboardSummaryWidget, BookingCancellation, self, BookingConfirmation, BookingCreated, PaymentProofReceived, RebookingRequested (+13 more)
-
-### Community 15 - "Model"
-Cohesion: 0.06
-Nodes (27): Accommodation, BelongsToMany, Discount, HasMany, Inquiry, Passenger, BelongsTo, BelongsTo (+19 more)
-
-### Community 16 - "file-upload.js"
-Cohesion: 0.05
-Nodes (46): ba(), bi(), c(), ca(), clickPercent(), constructor(), e(), getExtension() (+38 more)
-
-### Community 17 - "setSelectedRange"
-Cohesion: 0.06
-Nodes (41): ArrowLeft(), ArrowRight(), canAcceptDataTransfer(), compositionControllerDidFocus(), compositionDidRequestChangingSelectionToLocationRange(), createDOMRangeFromLocationRange(), createDOMRangeFromPoint(), dragend() (+33 more)
-
-### Community 18 - "qt"
-Cohesion: 0.05
-Nodes (48): addEventListener(), Ah(), Au(), ba(), beforeDraw(), bindResponsiveEvents(), bu(), ch() (+40 more)
-
-### Community 19 - "updateElements"
-Cohesion: 0.05
-Nodes (66): applyStack(), aspectRatio(), buildOrUpdateElements(), _calculateBarIndexPixels(), _calculateBarValuePixels(), calculateCircumference(), Ce(), _circumference() (+58 more)
-
-### Community 20 - "te"
-Cohesion: 0.04
-Nodes (15): Bi(), bn(), Id(), ji(), Jr(), kd(), on(), qi() (+7 more)
-
-### Community 22 - "getSelectedRange"
-Cohesion: 0.06
-Nodes (68): attachFiles(), createLinkHTML(), cut(), decreaseListLevel(), drop(), findRangesOfBlocks(), fromJSON(), fromJSONString() (+60 more)
-
-### Community 23 - "I"
-Cohesion: 0.05
-Nodes (56): addEventListener(), bindEvents(), bindResponsiveEvents(), bindUserEvents(), buildOrUpdateScales(), cl(), _computeLabelSizes(), cs() (+48 more)
-
-### Community 24 - "getContext"
-Cohesion: 0.07
-Nodes (54): acquireContext(), calculateLabelRotation(), _calculatePadding(), _computeAngle(), _computeGridLineItems(), _computeLabelItems(), computeTickLimit(), _drawArgs() (+46 more)
-
-### Community 25 - "support.js"
-Cohesion: 0.06
-Nodes (40): ai(), apply(), B(), co(), Cr(), $e(), es(), Et() (+32 more)
-
-### Community 26 - "T"
-Cohesion: 0.07
-Nodes (50): xg(), ac(), Ai(), applyStack(), ar(), as(), aspectRatio(), ca() (+42 more)
-
-### Community 27 - "getDatasetMeta"
-Cohesion: 0.06
-Nodes (50): addElements(), afterDatasetsUpdate(), buildOrUpdateControllers(), buildOrUpdateElements(), _checkEventBindings(), configure(), _dataCheck(), datasetAnimationScopeKeys() (+42 more)
-
-### Community 28 - "constructor"
-Cohesion: 0.06
-Nodes (45): beforeinput(), box(), canApplyToDocument(), compositionend(), compositionstart(), compositionupdate(), constructor(), elementDidMutate() (+37 more)
-
-### Community 29 - "notifications.js"
-Cohesion: 0.06
-Nodes (24): actions(), button(), constructor(), danger(), dispatch(), dispatchSelf(), dispatchTo(), duration() (+16 more)
-
-### Community 30 - "RelationManager"
-Cohesion: 0.07
-Nodes (23): AccommodationsRelationManager, Form, Table, PassengersRelationManager, Form, Table, Form, Table (+15 more)
-
-### Community 31 - "Schedule"
-Cohesion: 0.08
-Nodes (8): BelongsTo, BelongsToMany, Builder, HasMany, Schedule, BelongsToMany, TransportClass, TransportClassSeeder
-
-### Community 32 - "deleteInDirection"
-Cohesion: 0.06
-Nodes (49): backspace(), canDecreaseNestingLevel(), canIncreaseNestingLevel(), createLocationRangeFromDOMRange(), d(), decreaseNestingLevel(), delete(), deleteByComposition() (+41 more)
-
-### Community 33 - "draw"
-Cohesion: 0.08
-Nodes (43): adjustHitBoxes(), afterDraw(), bc(), Bl(), clear(), _computeLabelArea(), _computeTitleHeight(), _createItems() (+35 more)
-
-### Community 34 - "setAttribute"
-Cohesion: 0.09
-Nodes (39): add(), applyKeyboardCommand(), attachmentDidChangeAttributes(), attachmentEditorDidRequestRemovalOfAttachment(), canBeGrouped(), checkValidity(), createCaptionElement(), createContentNodes() (+31 more)
-
-### Community 35 - "on"
-Cohesion: 0.08
-Nodes (32): Ac(), an(), color(), darken(), Dc(), desaturate(), eo(), fo() (+24 more)
-
-### Community 36 - "render"
-Cohesion: 0.07
-Nodes (39): attachmentManagerDidRequestRemovalOfAttachment(), cacheViewForObject(), canSyncDocumentView(), compositionControllerDidRequestRemovalOfAttachment(), compositionDidChangeDocument(), compositionDidLoadSnapshot(), createAttachmentNodes(), createChildView() (+31 more)
-
-### Community 37 - "_update"
-Cohesion: 0.08
-Nodes (39): afterBuildTicks(), afterCalculateLabelRotation(), afterDataLimits(), afterFit(), afterSetDimensions(), afterTickToLabelConversion(), afterUpdate(), beforeBuildTicks() (+31 more)
-
-### Community 38 - "EditRecord"
-Cohesion: 0.07
-Nodes (14): EditAccommodation, EditBooking, EditDiscount, FerryRouteResource, EditFerryRoute, Form, Table, EditSchedule (+6 more)
-
-### Community 39 - "Controller"
-Cohesion: 0.08
-Nodes (11): AccommodationController, DiscountController, PromotionController, Request, ScheduleController, Controller, FerryRoute, BelongsTo (+3 more)
-
-### Community 40 - "ListRecords"
-Cohesion: 0.08
-Nodes (13): ListAccommodations, ListBookings, ListDiscounts, ListFerryRoutes, ListInquiries, ListSchedules, ListTransactions, ListTransportClasses (+5 more)
-
-### Community 41 - "get"
-Cohesion: 0.09
-Nodes (32): active(), add(), _animateOptions(), _cachedScopes(), cancel(), _createAnimations(), _createDescriptors(), _descriptors() (+24 more)
-
-### Community 42 - "cd"
-Cohesion: 0.08
-Nodes (32): average(), Ca(), cd(), clear(), cn(), Da(), Fc(), fh() (+24 more)
-
-### Community 43 - "Seeder"
-Cohesion: 0.08
-Nodes (11): ManageWebsiteSettings, Form, WebsiteSetting, DatabaseSeeder, DiscountSeeder, ScheduleAccommodationSeeder, TourHotelsSeeder, VehicleRateSeeder (+3 more)
-
-### Community 44 - "vd"
-Cohesion: 0.06
-Nodes (91): e(), i(), l(), Ni(), o(), t(), u(), be() (+83 more)
-
-### Community 45 - "Vn"
-Cohesion: 0.16
-Nodes (33): _a(), aa(), ba(), Be(), Bi(), br(), Ca(), ce() (+25 more)
-
-### Community 46 - "getOptionScopes"
-Cohesion: 0.08
-Nodes (33): _a(), al(), ba(), _cachedScopes(), createResolver(), datasetElementScopeKeys(), fn(), get() (+25 more)
-
-### Community 47 - "CreateRecord"
-Cohesion: 0.09
-Nodes (15): CreateAccommodation, CreateBooking, CreateDiscount, CreateFerryRoute, CreateInquiry, CreateSchedule, CreateTour, CreateTransportClass (+7 more)
-
-### Community 48 - "State"
+### Community 9 - "State"
 Cohesion: 0.10
 Nodes (31): ActivityScreen, _ActivityScreenState, BookingSubmitScreen, _BookingSubmitScreenState, ContactScreen, _ContactScreenState, DiscountScreen, _DiscountScreenState (+23 more)
 
-### Community 49 - "C"
-Cohesion: 0.06
-Nodes (61): add(), afterAutoSkip(), Ao(), Bi(), buildLookupTable(), buildTicks(), C(), Co() (+53 more)
+### Community 10 - "Model"
+Cohesion: 0.13
+Nodes (10): Accommodation, BelongsToMany, Discount, HasMany, Passenger, BelongsTo, BelongsTo, ScheduleAccommodation (+2 more)
 
-### Community 50 - "fn"
-Cohesion: 0.14
-Nodes (30): Qt(), Cn(), da(), En(), fa(), Fi(), fn(), h() (+22 more)
-
-### Community 52 - "Tour"
-Cohesion: 0.11
-Nodes (10): ListTours, Form, Table, TourResource, Request, TourController, TourController, HasMany (+2 more)
-
-### Community 53 - "_each"
+### Community 11 - "scripts"
 Cohesion: 0.08
-Nodes (31): addControllers(), addPlugins(), addScales(), cancel(), _createDescriptors(), _descriptors(), dl(), Do() (+23 more)
+Nodes (27): scripts, dev, post-autoload-dump, post-create-project-cmd, post-root-package-install, post-update-cmd, pre-package-uninstall, setup (+19 more)
 
-### Community 54 - "St"
+### Community 12 - "Booking"
 Cohesion: 0.10
-Nodes (28): At(), average(), beforeDraw(), dataset(), Fa(), getCenterPoint(), getMaximumSize(), getProps() (+20 more)
+Nodes (5): Booking, BelongsTo, BelongsToMany, HasMany, ReportingService
 
-### Community 55 - "notifyEditorElement"
-Cohesion: 0.09
-Nodes (27): actionIsExternal(), canBeConsolidatedWith(), canInvokeAction(), compositionControllerDidBlur(), compositionControllerDidRender(), compositionControllerDidSyncDocumentView(), compositionDidAddAttachment(), compositionDidChangeAttachmentPreviewURL() (+19 more)
+### Community 13 - "CreateRecord"
+Cohesion: 0.12
+Nodes (13): CreateAccommodation, CreateBooking, CreateDiscount, CreateFerryRoute, CreateInquiry, CreateSchedule, CreateTour, CreateTransportClass (+5 more)
 
-### Community 56 - "AuthController"
+### Community 14 - "Booking.php"
 Cohesion: 0.14
-Nodes (8): AuthController, Request, BookingExportController, AppServiceProvider, RedirectResponse, Response, ServiceProvider, View
+Nodes (8): BaseTestCase, CreatesApplication, RefreshDatabase, BookingLookupCancellationTest, ExampleTest, TestCase, ExampleTest, ReportingServiceTest
 
-### Community 57 - "my_application.cc"
+### Community 15 - "Schedule"
+Cohesion: 0.12
+Nodes (3): BelongsTo, Builder, Schedule
+
+### Community 16 - "my_application.cc"
 Cohesion: 0.10
 Nodes (20): FlPluginRegistry, fl_register_plugins(), main(), my_application_activate(), my_application_class_init(), my_application_dispose(), my_application_init(), my_application_local_command_line() (+12 more)
 
-### Community 58 - "echo.js"
-Cohesion: 0.10
-Nodes (11): ar(), b(), cr(), g(), Me(), P(), Pr(), qt() (+3 more)
+### Community 17 - "Mailable"
+Cohesion: 0.21
+Nodes (10): BookingCancellation, self, BookingConfirmation, BookingCreated, PaymentProofReceived, RebookingRequested, RebookingVerification, Mailable (+2 more)
 
-### Community 59 - "m"
-Cohesion: 0.25
-Nodes (25): d(), Di(), f(), Ge(), I(), ir(), ja(), k() (+17 more)
-
-### Community 60 - "getDatasetMeta"
-Cohesion: 0.12
-Nodes (24): afterDatasetsUpdate(), _d(), generateLabels(), getDatasetMeta(), getDataVisibility(), getMaxBorderWidth(), getStyle(), _handleEvent() (+16 more)
-
-### Community 61 - "InquiryResource.php"
-Cohesion: 0.11
-Nodes (9): Form, ViewBooking, InquiryResource, ViewInquiry, Form, Table, ViewTransaction, ViewUserLoginHistory (+1 more)
-
-### Community 62 - "DatePicker"
-Cohesion: 0.10
-Nodes (5): DatePicker, PaymentProof, UserDashboard, Component, WithFileUploads
-
-### Community 63 - "PaymentSetting"
+### Community 18 - "ListRecords"
 Cohesion: 0.14
-Nodes (6): DeleteAllUsers, PurgeExpiredProofs, BookingController, Request, PaymentSetting, Command
+Nodes (8): ListAccommodations, ListBookings, ListDiscounts, ListInquiries, ListUserLoginHistories, ListVehicleRates, ListVehicles, ListRecords
 
-### Community 64 - "StatelessWidget"
+### Community 19 - "StatelessWidget"
 Cohesion: 0.10
 Nodes (20): _AboutFact, AboutScreen, AppDrawer, BookingSuccessScreen, _ContactInfoCard, _CounterButton, _Field, _FormPage (+12 more)
 
-### Community 65 - "appendBlockForElement"
-Cohesion: 0.18
-Nodes (20): appendAttachmentWithAttributes(), appendBlockForAttributesWithElement(), appendBlockForElement(), appendBlockForTextNode(), appendEmptyBlock(), appendPiece(), appendStringWithAttributes(), find() (+12 more)
+### Community 20 - "ManageProofs"
+Cohesion: 0.16
+Nodes (6): Action, ManageProofs, Form, PaymentSetting, HasActions, InteractsWithActions
 
-### Community 66 - "scripts"
-Cohesion: 0.11
-Nodes (19): scripts, dev, post-autoload-dump, post-create-project-cmd, post-update-cmd, pre-package-uninstall, test, Composer\\Config::disableProcessTimeout (+11 more)
-
-### Community 67 - "getAttachments"
-Cohesion: 0.11
-Nodes (20): canSetCurrentAttribute(), canSetCurrentBlockAttribute(), canSetCurrentTextAttribute(), compositionControllerDidRequestDeselectingAttachment(), compositionDidStartEditingAttachment(), didClickAttachment(), dragstart(), findAttachmentForElement() (+12 more)
-
-### Community 68 - "Vehicle"
-Cohesion: 0.14
-Nodes (6): self, HasMany, Vehicle, UserFactory, Factory, static
-
-### Community 69 - "devDependencies"
+### Community 21 - "devDependencies"
 Cohesion: 0.11
 Nodes (17): concurrently, laravel-vite-plugin, devDependencies, concurrently, laravel-vite-plugin, tailwindcss, @tailwindcss/vite, vite (+9 more)
 
-### Community 70 - "FlutterWindow"
-Cohesion: 0.13
-Nodes (13): DartProject, HWND, LPARAM, LRESULT, UINT, WPARAM, FlutterWindow, flutter_controller_ (+5 more)
+### Community 22 - "auth.php"
+Cohesion: 0.20
+Nodes (7): ManagePaymentSettings, Form, Collection, StaffPerformance, HasForms, InteractsWithForms, Page
 
-### Community 71 - "win32_window.cpp"
-Cohesion: 0.18
-Nodes (14): wchar_t, Scale(), Create, Destroy, UpdateTheme, Win32Window::Win32Window(), WindowClassRegistrar, class_registered_ (+6 more)
+### Community 23 - "Resource"
+Cohesion: 0.16
+Nodes (7): Form, Table, UserLoginHistoryResource, Form, Table, VehicleResource, Resource
 
-### Community 72 - "qe"
-Cohesion: 0.23
-Nodes (18): Ae(), at(), de(), dt(), fr(), Gt(), ht(), It() (+10 more)
-
-### Community 73 - "GeneratedPluginRegistrant.swift"
+### Community 24 - "Vehicle"
 Cohesion: 0.15
-Nodes (11): Cocoa, file_selector_macos, RegisterGeneratedPlugins(), MainFlutterWindow, FlutterMacOS, FlutterPluginRegistry, FlutterViewController, Foundation (+3 more)
+Nodes (6): self, HasMany, Vehicle, UserFactory, Factory, static
 
-### Community 74 - "preload"
-Cohesion: 0.10
-Nodes (22): attachmentForFile(), attributesForFile(), didChangeAttributes(), getContentType(), getHeight(), getHref(), getPreviewURL(), getType() (+14 more)
+### Community 25 - "User"
+Cohesion: 0.18
+Nodes (8): HasMany, Panel, User, Collection, Authenticatable, FilamentUser, HasFactory, Notifiable
 
-### Community 76 - "Win32Window"
+### Community 26 - "Transaction"
+Cohesion: 0.15
+Nodes (6): Collection, DashboardSummaryWidget, BelongsTo, Transaction, BookingRebookingFlowTest, Widget
+
+### Community 27 - "ViewRecord"
+Cohesion: 0.18
+Nodes (6): Form, ViewBooking, ViewInquiry, ViewTransaction, ViewUserLoginHistory, ViewRecord
+
+### Community 28 - "FerryRoute.php"
 Cohesion: 0.14
-Nodes (16): RegisterPlugins(), OnCreate, OnDestroy, HWND, Win32Window, child_content_, GetClientArea, OnCreate (+8 more)
+Nodes (3): BelongsTo, FerryRouteSeeder, ScheduleSeatingProfileTest
 
-### Community 77 - "composer.json"
-Cohesion: 0.14
-Nodes (13): autoload-dev, psr-4, description, keywords, license, minimum-stability, name, prefer-stable (+5 more)
-
-### Community 78 - "require"
+### Community 29 - "require"
 Cohesion: 0.14
 Nodes (14): require, anhskohbo/no-captcha, dompdf/dompdf, filament/filament, filament/support, intervention/image, laravel/framework, laravel/tinker (+6 more)
 
-### Community 81 - "manifest.json"
+### Community 30 - "manifest.json"
 Cohesion: 0.15
 Nodes (12): background_color, categories, description, display, icons, name, orientation, short_name (+4 more)
 
-### Community 82 - "wWinMain"
+### Community 31 - "TransactionResource.php"
+Cohesion: 0.21
+Nodes (4): Builder, Table, TransactionResource, Infolist
+
+### Community 32 - "wWinMain"
 Cohesion: 0.24
 Nodes (9): wWinMain(), string, wchar_t, CreateAndAttachConsole(), GetCommandLineArguments(), Utf8FromUtf16(), _In_, _In_opt_ (+1 more)
 
-### Community 83 - "app.js"
-Cohesion: 0.26
-Nodes (7): C(), D(), J(), O(), U(), v(), X()
+### Community 33 - "VehicleBrandResource.php"
+Cohesion: 0.22
+Nodes (3): Form, Table, VehicleBrandResource
 
-### Community 84 - "r"
-Cohesion: 0.18
-Nodes (12): Be(), ei(), ii(), le(), ni(), oi(), r(), ri() (+4 more)
+### Community 34 - "Controller"
+Cohesion: 0.27
+Nodes (4): AccommodationController, DiscountController, PromotionController, Controller
 
-### Community 85 - "t"
-Cohesion: 0.21
-Nodes (11): di(), e(), Ht(), i(), Ie(), Mt(), Re(), t() (+3 more)
+### Community 35 - "FerryRoute"
+Cohesion: 0.25
+Nodes (4): Request, ScheduleController, FerryRoute, HasMany
 
-### Community 86 - "manifest.json"
+### Community 36 - "Tour"
+Cohesion: 0.24
+Nodes (4): TourController, HasMany, Tour, Attribute
+
+### Community 37 - "manifest.json"
 Cohesion: 0.18
 Nodes (10): background_color, description, display, icons, name, orientation, prefer_related_applications, short_name (+2 more)
 
-### Community 87 - "A"
-Cohesion: 0.36
-Nodes (8): A(), connectedCallback(), Ge(), Je(), required(), setCustomValidity(), setFormValue(), Qe()
+### Community 38 - "TourResource.php"
+Cohesion: 0.27
+Nodes (3): Form, Table, TourResource
 
-### Community 88 - "buildTicks"
-Cohesion: 0.08
-Nodes (35): aa(), ar(), bf(), buildTicks(), determineDataLimits(), Dh(), _generate(), getDataTimestamps() (+27 more)
+### Community 39 - "TransportClass"
+Cohesion: 0.24
+Nodes (3): BelongsToMany, TransportClass, TransportClassSeeder
 
-### Community 89 - ".application"
-Cohesion: 0.20
-Nodes (8): Any, AppDelegate, Bool, AppDelegate, Bool, FlutterAppDelegate, NSApplication, UIApplication
+### Community 40 - "AccommodationResource.php"
+Cohesion: 0.28
+Nodes (3): AccommodationResource, Form, Table
 
-### Community 90 - "MessageHandler"
-Cohesion: 0.36
-Nodes (10): HWND, LPARAM, LRESULT, UINT, WPARAM, EnableFullDpiSupportIfAvailable(), GetHandle, GetThisFromHandle (+2 more)
+### Community 41 - "DiscountResource.php"
+Cohesion: 0.28
+Nodes (3): DiscountResource, Form, Table
 
-### Community 91 - "RunnerTests.swift"
-Cohesion: 0.22
-Nodes (6): Flutter, RunnerTests, RunnerTests, UIKit, XCTest, XCTestCase
+### Community 42 - "FerryRouteResource.php"
+Cohesion: 0.28
+Nodes (3): FerryRouteResource, Form, Table
 
-### Community 92 - "Fe"
-Cohesion: 0.22
-Nodes (9): Ce(), De(), Dt(), Fe(), He(), ir(), nr(), rt() (+1 more)
+### Community 43 - "InquiryResource.php"
+Cohesion: 0.28
+Nodes (3): InquiryResource, Form, Table
 
-### Community 93 - "require-dev"
+### Community 44 - "ScheduleResource.php"
+Cohesion: 0.28
+Nodes (3): Form, Table, ScheduleResource
+
+### Community 45 - "TransportClassResource.php"
+Cohesion: 0.28
+Nodes (3): Form, Table, TransportClassResource
+
+### Community 46 - "UserResource.php"
+Cohesion: 0.28
+Nodes (3): Form, Table, UserResource
+
+### Community 47 - "VehicleRateResource.php"
+Cohesion: 0.28
+Nodes (3): Form, Table, VehicleRateResource
+
+### Community 49 - "AdminNotificationFeedTest.php"
+Cohesion: 0.33
+Nodes (4): Inquiry, AdminNotificationFeed, Collection, AdminNotificationFeedTest
+
+### Community 50 - "BookingResource"
+Cohesion: 0.29
+Nodes (3): BookingResource, Form, Table
+
+### Community 51 - "composer.json"
+Cohesion: 0.25
+Nodes (7): description, license, minimum-stability, name, prefer-stable, $schema, type
+
+### Community 52 - "require-dev"
 Cohesion: 0.25
 Nodes (8): require-dev, fakerphp/faker, laravel/pail, laravel/pao, laravel/pint, mockery/mockery, nunomaduro/collision, phpunit/phpunit
 
-### Community 94 - "setup"
-Cohesion: 0.25
-Nodes (8): post-root-package-install, setup, composer install, npm install --ignore-scripts, npm run build, @php artisan key:generate, @php artisan migrate --force, @php -r \"file_exists('.env') || copy('.env.example', '.env');\
-
-### Community 95 - "a"
-Cohesion: 0.25
-Nodes (8): a(), at(), d(), f(), H(), ji(), L(), pt()
-
-### Community 96 - "qt"
-Cohesion: 0.36
-Nodes (8): hs(), Ln(), Nn(), ps(), qt(), Ro(), Se(), wo()
-
-### Community 97 - "config"
+### Community 54 - "config"
 Cohesion: 0.29
 Nodes (7): pestphp/pest-plugin, php-http/discovery, config, allow-plugins, optimize-autoloader, preferred-install, sort-packages
 
-### Community 98 - "MaterialPageRoute"
+### Community 55 - "MaterialPageRoute"
 Cohesion: 0.29
 Nodes (7): build, _goNext, _goToSchedule, _selectTransportOption, _showAirlineClassPicker, _showFerryAccommodationPicker, MaterialPageRoute
 
-### Community 99 - "yn"
-Cohesion: 0.33
-Nodes (7): ar(), ft(), kn(), sr(), wn(), Ye(), yn()
+### Community 56 - "Command"
+Cohesion: 0.40
+Nodes (3): DeleteAllUsers, PurgeExpiredProofs, Command
 
-### Community 100 - "br"
-Cohesion: 0.29
-Nodes (7): chartOptionScopes(), br(), ii(), vr(), xr(), Xs(), yr()
-
-### Community 101 - "AdminPanelProvider.php"
-Cohesion: 0.47
-Nodes (4): AdminPanelProvider, Panel, Color, PanelProvider
-
-### Community 106 - "AdminMiddleware.php"
+### Community 58 - "AdminMiddleware.php"
 Cohesion: 0.60
 Nodes (3): AdminMiddleware, Request, Closure
 
-### Community 107 - "psr-4"
+### Community 59 - "psr-4"
 Cohesion: 0.40
 Nodes (5): autoload, psr-4, App\\, Database\\Factories\\, Database\\Seeders\\
 
-### Community 108 - "widget_test.dart"
+### Community 60 - "widget_test.dart"
 Cohesion: 0.40
 Nodes (4): main, package:flutter_app/main.dart, package:flutter/material.dart, package:flutter_test/flutter_test.dart
 
-### Community 110 - "extra"
+### Community 69 - "autoload-dev"
+Cohesion: 0.67
+Nodes (3): autoload-dev, psr-4, Tests\\
+
+### Community 70 - "extra"
 Cohesion: 0.67
 Nodes (3): extra, laravel, dont-discover
+
+### Community 71 - "keywords"
+Cohesion: 0.67
+Nodes (3): keywords, framework, laravel
 
 ## Knowledge Gaps
 - **277 isolated node(s):** `$schema`, `name`, `type`, `description`, `laravel` (+272 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `A()` connect `A` to `draw`, `rich-editor.js`, `setAttribute`, `markdown-editor.js`, `select.js`, `draw`, `vd`, `x`, `fn`, `m`, `constructor`?**
-  _High betweenness centrality (0.052) - this node is a cross-community bridge._
-- **Why does `draw()` connect `draw` to `chart.js`, `on`, `select.js`, `cd`, `_update`, `qt`, `updateElements`, `I`, `A`, `getContext`, `m`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **Why does `Br()` connect `chart.js` to `setAttribute`, `constructor`, `x`, `t`, `constructor`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
-- **Are the 16 inferred relationships involving `x()` (e.g. with `g()` and `_i()`) actually correct?**
-  _`x()` has 16 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 20 inferred relationships involving `te()` (e.g. with `je()` and `Pr()`) actually correct?**
-  _`te()` has 20 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 29 inferred relationships involving `V()` (e.g. with `Sg()` and `g()`) actually correct?**
-  _`V()` has 29 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `User` connect `User` to `AuthController`, `AccommodationResource.php`, `DiscountResource.php`, `FerryRouteResource.php`, `InquiryResource.php`, `ScheduleResource.php`, `TransportClassResource.php`, `Booking.php`, `UserResource.php`, `VehicleRateResource.php`, `ManageProofs`, `auth.php`, `Resource`, `Vehicle`, `TransactionResource.php`?**
+  _High betweenness centrality (0.081) - this node is a cross-community bridge._
+- **Why does `Booking` connect `Booking` to `BookingLookup`, `AuthController`, `Model`, `Booking.php`, `BookingController`, `Mailable`, `AdminNotificationFeedTest.php`, `OverallReports`, `Transaction`, `User`?**
+  _High betweenness centrality (0.074) - this node is a cross-community bridge._
+- **Why does `BookingForm` connect `BookingForm` to `Model`, `BookingLookup`?**
+  _High betweenness centrality (0.058) - this node is a cross-community bridge._
+- **Are the 19 inferred relationships involving `Booking` (e.g. with `.loadStats()` and `.getViewData()`) actually correct?**
+  _`Booking` has 19 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `$schema`, `name`, `type` to the rest of the system?**
   _277 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `main.dart` be split into smaller, more focused modules?**
+  _Cohesion score 0.010101010101010102 - nodes in this community are weakly interconnected._
+- **Should `BookingForm` be split into smaller, more focused modules?**
+  _Cohesion score 0.05501165501165501 - nodes in this community are weakly interconnected._
