@@ -264,6 +264,10 @@
       "app_livewire_bookingform_bookingform_updatedvehiclebookingmethod",
       "app_livewire_bookingform_bookingform_updatereturndatefromduration",
       "app_livewire_bookingform_bookingform_validatepassengerextras",
+      "app_models_vehiclemodel",
+      "app_models_vehiclemodel_vehiclemodel",
+      "app_models_vehiclemodel_vehiclemodel_brand",
+      "belongsto",
       "collection",
       "tour",
       "tourdate"
@@ -333,151 +337,183 @@
       "wstring"
     ],
     "3": [
-      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager",
-      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_accommodationsrelationmanager",
-      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_accommodationsrelationmanager_form",
-      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_accommodationsrelationmanager_table",
-      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_php_form",
-      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_php_table",
-      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager",
-      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_passengersrelationmanager",
-      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_passengersrelationmanager_form",
-      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_passengersrelationmanager_table",
-      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_php_form",
-      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_php_table",
-      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager",
-      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_php_form",
-      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_php_table",
-      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager",
-      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_form",
-      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_table",
-      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager",
-      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_php_form",
-      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_php_table",
-      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_scheduleaccommodationsrelationmanager",
-      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_scheduleaccommodationsrelationmanager_form",
-      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_scheduleaccommodationsrelationmanager_table",
-      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager",
-      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_php_form",
-      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_php_table",
-      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager",
-      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_form",
-      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_table",
-      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager",
-      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_datesrelationmanager",
-      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_datesrelationmanager_form",
-      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_datesrelationmanager_table",
-      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_php_form",
-      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_php_table",
-      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager",
-      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager_bookingsrelationmanager",
-      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager_bookingsrelationmanager_table",
-      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager_php_table",
-      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager",
-      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager_loginhistoriesrelationmanager",
-      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager_loginhistoriesrelationmanager_table",
-      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager_php_table",
-      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager",
-      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_php_form",
-      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_php_table",
-      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_vehiclemodelsrelationmanager",
-      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_vehiclemodelsrelationmanager_form",
-      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_vehiclemodelsrelationmanager_table",
-      "app_models_userloginhistory",
-      "app_models_userloginhistory_php_belongsto",
-      "app_models_userloginhistory_userloginhistory",
-      "app_models_userloginhistory_userloginhistory_user",
-      "relationmanager"
+      "app_filament_resources_tourresource",
+      "app_filament_resources_tourresource_pages_listtours",
+      "app_filament_resources_tourresource_pages_listtours_listtours",
+      "app_filament_resources_tourresource_pages_listtours_listtours_getheaderactions",
+      "app_filament_resources_tourresource_pages_listtours_listtours_importtoursfromcsv",
+      "app_filament_resources_tourresource_php_form",
+      "app_filament_resources_tourresource_php_table",
+      "app_filament_resources_tourresource_tourresource",
+      "app_filament_resources_tourresource_tourresource_form",
+      "app_filament_resources_tourresource_tourresource_getpages",
+      "app_filament_resources_tourresource_tourresource_getrelations",
+      "app_filament_resources_tourresource_tourresource_table",
+      "app_http_controllers_api_accommodationcontroller",
+      "app_http_controllers_api_accommodationcontroller_accommodationcontroller",
+      "app_http_controllers_api_accommodationcontroller_accommodationcontroller_index",
+      "app_http_controllers_api_discountcontroller",
+      "app_http_controllers_api_discountcontroller_discountcontroller",
+      "app_http_controllers_api_promotioncontroller",
+      "app_http_controllers_api_promotioncontroller_promotioncontroller",
+      "app_http_controllers_api_promotioncontroller_promotioncontroller_index",
+      "app_http_controllers_api_schedulecontroller",
+      "app_http_controllers_api_schedulecontroller_php_request",
+      "app_http_controllers_api_schedulecontroller_schedulecontroller",
+      "app_http_controllers_api_schedulecontroller_schedulecontroller_destinations",
+      "app_http_controllers_api_schedulecontroller_schedulecontroller_origins",
+      "app_http_controllers_api_schedulecontroller_schedulecontroller_search",
+      "app_http_controllers_api_tourcontroller",
+      "app_http_controllers_api_tourcontroller_php_request",
+      "app_http_controllers_api_tourcontroller_tourcontroller",
+      "app_http_controllers_api_tourcontroller_tourcontroller_index",
+      "app_http_controllers_controller",
+      "app_http_controllers_controller_controller",
+      "app_http_controllers_tourcontroller",
+      "app_http_controllers_tourcontroller_tourcontroller",
+      "app_http_controllers_tourcontroller_tourcontroller_index",
+      "app_http_controllers_tourcontroller_tourcontroller_show",
+      "app_models_tour",
+      "app_models_tour_php_hasmany",
+      "app_models_tour_tour",
+      "app_models_tour_tour_activedates",
+      "app_models_tour_tour_dates",
+      "app_models_tour_tour_getavailabledatesattribute",
+      "app_models_tour_tour_image",
+      "attribute",
+      "routes_api"
     ],
     "4": [
-      "app_filament_pages_managewebsitesettings_managewebsitesettings",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_canaccess",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_form",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_getdefaultbookingcards",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_getformstatepath",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_getpagecontentschema",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_loadsettings",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_mount",
-      "app_filament_pages_managewebsitesettings_managewebsitesettings_save",
-      "app_filament_pages_managewebsitesettings_php_form",
-      "app_models_vehiclebrand",
-      "app_models_vehiclebrand_vehiclebrand",
-      "app_models_vehiclebrand_vehiclebrand_models",
-      "app_models_vehiclemodel",
-      "app_models_vehiclemodel_vehiclemodel",
-      "app_models_vehiclemodel_vehiclemodel_brand",
-      "app_models_websitesetting",
-      "app_models_websitesetting_websitesetting",
-      "app_models_websitesetting_websitesetting_getbookingcardnames",
-      "app_models_websitesetting_websitesetting_getorcreatebypage",
-      "app_models_websitesetting_websitesetting_getpageoptions",
-      "belongsto",
-      "database_seeders_databaseseeder",
-      "database_seeders_databaseseeder_databaseseeder",
-      "database_seeders_databaseseeder_databaseseeder_run",
-      "database_seeders_discountseeder",
-      "database_seeders_discountseeder_discountseeder",
-      "database_seeders_scheduleaccommodationseeder",
-      "database_seeders_scheduleaccommodationseeder_scheduleaccommodationseeder",
-      "database_seeders_scheduleaccommodationseeder_scheduleaccommodationseeder_run",
-      "database_seeders_tourhotelsseeder",
-      "database_seeders_tourhotelsseeder_tourhotelsseeder",
-      "database_seeders_tourhotelsseeder_tourhotelsseeder_run",
-      "database_seeders_vehiclebrandmodelseeder",
-      "database_seeders_vehiclebrandmodelseeder_vehiclebrandmodelseeder",
-      "database_seeders_vehiclebrandmodelseeder_vehiclebrandmodelseeder_run",
-      "database_seeders_vehiclerateseeder",
-      "database_seeders_vehiclerateseeder_vehiclerateseeder",
-      "database_seeders_vehiclerateseeder_vehiclerateseeder_run",
-      "database_seeders_websitesettingseeder",
-      "database_seeders_websitesettingseeder_websitesettingseeder",
-      "database_seeders_websitesettingseeder_websitesettingseeder_run",
-      "hasmany",
-      "seeder",
-      "withoutmodelevents"
+      "app_mail_bookingcancellation",
+      "app_mail_bookingcancellation_bookingcancellation",
+      "app_mail_bookingcancellation_bookingcancellation_build",
+      "app_mail_bookingcancellation_bookingcancellation_construct",
+      "app_mail_bookingcancellation_php_self",
+      "app_mail_bookingconfirmation",
+      "app_mail_bookingconfirmation_bookingconfirmation",
+      "app_mail_bookingconfirmation_bookingconfirmation_build",
+      "app_mail_bookingconfirmation_bookingconfirmation_construct",
+      "app_mail_bookingcreated",
+      "app_mail_bookingcreated_bookingcreated",
+      "app_mail_bookingcreated_bookingcreated_build",
+      "app_mail_bookingcreated_bookingcreated_construct",
+      "app_mail_paymentproofreceived",
+      "app_mail_paymentproofreceived_paymentproofreceived",
+      "app_mail_paymentproofreceived_paymentproofreceived_build",
+      "app_mail_rebookingrequested",
+      "app_mail_rebookingrequested_rebookingrequested",
+      "app_mail_rebookingrequested_rebookingrequested_build",
+      "app_mail_rebookingrequested_rebookingrequested_construct",
+      "app_mail_rebookingverification",
+      "app_mail_rebookingverification_rebookingverification",
+      "app_mail_rebookingverification_rebookingverification_build",
+      "app_mail_rebookingverification_rebookingverification_construct",
+      "app_models_booking_booking",
+      "app_models_booking_booking_accommodations",
+      "app_models_booking_booking_cancancelorrebook",
+      "app_models_booking_booking_getcancellationfeeamount",
+      "app_models_booking_booking_getrebookingfeeamount",
+      "app_models_booking_booking_getrefundamount",
+      "app_models_booking_booking_getschedulesummaryattribute",
+      "app_models_booking_booking_passengers",
+      "app_models_booking_booking_schedule",
+      "app_models_booking_booking_scheduleaccommodation",
+      "app_models_booking_booking_transaction",
+      "app_models_booking_booking_transactions",
+      "app_models_booking_booking_transportclasses",
+      "app_models_booking_booking_verifyrebooking",
+      "app_models_booking_php_belongsto",
+      "app_models_booking_php_belongstomany",
+      "app_models_booking_php_hasmany",
+      "mailable",
+      "queueable",
+      "serializesmodels"
     ],
     "5": [
-      "app_livewire_bookinglookup_bookinglookup",
-      "app_livewire_bookinglookup_bookinglookup_cancelbooking",
-      "app_livewire_bookinglookup_bookinglookup_cancelcancellationrequest",
-      "app_livewire_bookinglookup_bookinglookup_confirmcancellation",
-      "app_livewire_bookinglookup_bookinglookup_getcancellationsessionkey",
-      "app_livewire_bookinglookup_bookinglookup_loadcancellationwindowfromsession",
-      "app_livewire_bookinglookup_bookinglookup_mount",
-      "app_livewire_bookinglookup_bookinglookup_render",
-      "app_livewire_bookinglookup_bookinglookup_requestcancellation",
-      "app_livewire_bookinglookup_bookinglookup_requestrebooking",
-      "app_livewire_bookinglookup_bookinglookup_resetcancellationstate",
-      "app_livewire_bookinglookup_bookinglookup_resetrebookingstate",
-      "app_livewire_bookinglookup_bookinglookup_search",
-      "app_livewire_bookinglookup_bookinglookup_startcancellationwindow",
-      "app_livewire_bookinglookup_bookinglookup_submitrebookingproof",
-      "app_livewire_bookinglookup_bookinglookup_tickcancelcountdown",
-      "app_livewire_datepicker",
-      "app_livewire_datepicker_datepicker",
-      "app_livewire_datepicker_datepicker_getcalendardaysproperty",
-      "app_livewire_datepicker_datepicker_getmonthlabelproperty",
-      "app_livewire_datepicker_datepicker_mount",
-      "app_livewire_datepicker_datepicker_nextmonth",
-      "app_livewire_datepicker_datepicker_ondropdownopened",
-      "app_livewire_datepicker_datepicker_prevmonth",
-      "app_livewire_datepicker_datepicker_render",
-      "app_livewire_datepicker_datepicker_selectdate",
-      "app_livewire_datepicker_datepicker_togglecalendar",
-      "app_livewire_paymentproof",
-      "app_livewire_paymentproof_paymentproof",
-      "app_livewire_paymentproof_paymentproof_mount",
-      "app_livewire_paymentproof_paymentproof_render",
-      "app_livewire_paymentproof_paymentproof_submitproof",
-      "app_livewire_paymentproof_paymentproof_updatedproof",
-      "app_livewire_userdashboard",
-      "app_livewire_userdashboard_userdashboard",
-      "app_livewire_userdashboard_userdashboard_mount",
-      "app_livewire_userdashboard_userdashboard_render",
-      "component",
-      "withfileuploads"
+      "app_filament_resources_accommodationresource_pages_createaccommodation",
+      "app_filament_resources_accommodationresource_pages_createaccommodation_createaccommodation",
+      "app_filament_resources_bookingresource_pages_createbooking",
+      "app_filament_resources_bookingresource_pages_createbooking_createbooking",
+      "app_filament_resources_discountresource_pages_creatediscount",
+      "app_filament_resources_discountresource_pages_creatediscount_creatediscount",
+      "app_filament_resources_inquiryresource_pages_createinquiry",
+      "app_filament_resources_inquiryresource_pages_createinquiry_createinquiry",
+      "app_filament_resources_scheduleresource_pages_createschedule",
+      "app_filament_resources_scheduleresource_pages_createschedule_createschedule",
+      "app_filament_resources_tourresource_pages_createtour",
+      "app_filament_resources_tourresource_pages_createtour_createtour",
+      "app_filament_resources_transportclassresource",
+      "app_filament_resources_transportclassresource_pages_createtransportclass",
+      "app_filament_resources_transportclassresource_pages_createtransportclass_createtransportclass",
+      "app_filament_resources_transportclassresource_php_form",
+      "app_filament_resources_transportclassresource_php_table",
+      "app_filament_resources_transportclassresource_transportclassresource",
+      "app_filament_resources_transportclassresource_transportclassresource_canaccess",
+      "app_filament_resources_transportclassresource_transportclassresource_form",
+      "app_filament_resources_transportclassresource_transportclassresource_getpages",
+      "app_filament_resources_transportclassresource_transportclassresource_getrelations",
+      "app_filament_resources_transportclassresource_transportclassresource_table",
+      "app_filament_resources_userresource_pages_createuser",
+      "app_filament_resources_userresource_pages_createuser_createuser",
+      "app_filament_resources_vehiclebrandresource",
+      "app_filament_resources_vehiclebrandresource_pages_createvehiclebrand",
+      "app_filament_resources_vehiclebrandresource_pages_createvehiclebrand_createvehiclebrand",
+      "app_filament_resources_vehiclebrandresource_php_form",
+      "app_filament_resources_vehiclebrandresource_php_table",
+      "app_filament_resources_vehiclebrandresource_vehiclebrandresource",
+      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_canaccess",
+      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_form",
+      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_getpages",
+      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_getrelations",
+      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_shouldregisternavigation",
+      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_table",
+      "app_filament_resources_vehiclerateresource_pages_createvehiclerate",
+      "app_filament_resources_vehiclerateresource_pages_createvehiclerate_createvehiclerate",
+      "app_filament_resources_vehicleresource_pages_createvehicle",
+      "app_filament_resources_vehicleresource_pages_createvehicle_createvehicle",
+      "createrecord"
     ],
     "6": [
+      "app_filament_resources_accommodationresource_pages_listaccommodations",
+      "app_filament_resources_accommodationresource_pages_listaccommodations_listaccommodations",
+      "app_filament_resources_accommodationresource_pages_listaccommodations_listaccommodations_getheaderactions",
+      "app_filament_resources_bookingresource_pages_listbookings",
+      "app_filament_resources_bookingresource_pages_listbookings_listbookings",
+      "app_filament_resources_bookingresource_pages_listbookings_listbookings_getheaderactions",
+      "app_filament_resources_discountresource_pages_listdiscounts",
+      "app_filament_resources_discountresource_pages_listdiscounts_listdiscounts",
+      "app_filament_resources_discountresource_pages_listdiscounts_listdiscounts_getheaderactions",
+      "app_filament_resources_ferryrouteresource_pages_listferryroutes",
+      "app_filament_resources_ferryrouteresource_pages_listferryroutes_listferryroutes",
+      "app_filament_resources_ferryrouteresource_pages_listferryroutes_listferryroutes_getheaderactions",
+      "app_filament_resources_inquiryresource_pages_listinquiries",
+      "app_filament_resources_inquiryresource_pages_listinquiries_listinquiries",
+      "app_filament_resources_scheduleresource_pages_listschedules",
+      "app_filament_resources_scheduleresource_pages_listschedules_listschedules",
+      "app_filament_resources_scheduleresource_pages_listschedules_listschedules_getheaderactions",
+      "app_filament_resources_transactionresource_pages_listtransactions",
+      "app_filament_resources_transactionresource_pages_listtransactions_listtransactions",
+      "app_filament_resources_transactionresource_pages_listtransactions_listtransactions_getheaderactions",
+      "app_filament_resources_transportclassresource_pages_listtransportclasses",
+      "app_filament_resources_transportclassresource_pages_listtransportclasses_listtransportclasses",
+      "app_filament_resources_transportclassresource_pages_listtransportclasses_listtransportclasses_getheaderactions",
+      "app_filament_resources_userloginhistoryresource_pages_listuserloginhistories",
+      "app_filament_resources_userloginhistoryresource_pages_listuserloginhistories_listuserloginhistories",
+      "app_filament_resources_userresource_pages_listusers",
+      "app_filament_resources_userresource_pages_listusers_listusers",
+      "app_filament_resources_userresource_pages_listusers_listusers_getheaderactions",
+      "app_filament_resources_vehiclebrandresource_pages_listvehiclebrands",
+      "app_filament_resources_vehiclebrandresource_pages_listvehiclebrands_listvehiclebrands",
+      "app_filament_resources_vehiclebrandresource_pages_listvehiclebrands_listvehiclebrands_getheaderactions",
+      "app_filament_resources_vehiclerateresource_pages_listvehiclerates",
+      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates",
+      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates_getheaderactions",
+      "app_filament_resources_vehicleresource_pages_listvehicles",
+      "app_filament_resources_vehicleresource_pages_listvehicles_listvehicles",
+      "app_filament_resources_vehicleresource_pages_listvehicles_listvehicles_getheaderactions",
+      "listrecords"
+    ],
+    "7": [
       "any",
       "cocoa",
       "file_selector_macos",
@@ -515,7 +551,77 @@
       "xctest",
       "xctestcase"
     ],
-    "7": [
+    "8": [
+      "app_filament_resources_bookingresource_pages_viewbooking_php_form",
+      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking",
+      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_form",
+      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_getallrelationmanagers",
+      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_getheaderactions",
+      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_mutateformdatabeforefill",
+      "app_filament_resources_inquiryresource_pages_viewinquiry",
+      "app_filament_resources_inquiryresource_pages_viewinquiry_viewinquiry",
+      "app_filament_resources_transactionresource_pages_viewtransaction",
+      "app_filament_resources_transactionresource_pages_viewtransaction_viewtransaction",
+      "app_filament_resources_transactionresource_pages_viewtransaction_viewtransaction_getheaderactions",
+      "app_filament_resources_userloginhistoryresource",
+      "app_filament_resources_userloginhistoryresource_pages_viewuserloginhistory",
+      "app_filament_resources_userloginhistoryresource_pages_viewuserloginhistory_viewuserloginhistory",
+      "app_filament_resources_userloginhistoryresource_php_form",
+      "app_filament_resources_userloginhistoryresource_php_table",
+      "app_filament_resources_userloginhistoryresource_userloginhistoryresource",
+      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_canaccess",
+      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_form",
+      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_getpages",
+      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_table",
+      "app_livewire_datepicker",
+      "app_livewire_datepicker_datepicker",
+      "app_livewire_datepicker_datepicker_getcalendardaysproperty",
+      "app_livewire_datepicker_datepicker_getmonthlabelproperty",
+      "app_livewire_datepicker_datepicker_mount",
+      "app_livewire_datepicker_datepicker_nextmonth",
+      "app_livewire_datepicker_datepicker_ondropdownopened",
+      "app_livewire_datepicker_datepicker_prevmonth",
+      "app_livewire_datepicker_datepicker_render",
+      "app_livewire_datepicker_datepicker_selectdate",
+      "app_livewire_datepicker_datepicker_togglecalendar",
+      "viewrecord"
+    ],
+    "9": [
+      "app_models_schedule",
+      "app_models_schedule_php_belongsto",
+      "app_models_schedule_php_belongstomany",
+      "app_models_schedule_php_builder",
+      "app_models_schedule_php_hasmany",
+      "app_models_schedule_schedule",
+      "app_models_schedule_schedule_activescheduleaccommodations",
+      "app_models_schedule_schedule_aircraftsupportsclasscodes",
+      "app_models_schedule_schedule_bookings",
+      "app_models_schedule_schedule_buildcabinlayouts",
+      "app_models_schedule_schedule_buildseatrows",
+      "app_models_schedule_schedule_ferryroute",
+      "app_models_schedule_schedule_getaccommodationlabelattribute",
+      "app_models_schedule_schedule_getairlineseatingprofile",
+      "app_models_schedule_schedule_getdurationlabelattribute",
+      "app_models_schedule_schedule_getfallbackairlineseatingprofile",
+      "app_models_schedule_schedule_getformattedarrivalattribute",
+      "app_models_schedule_schedule_getformatteddepartureattribute",
+      "app_models_schedule_schedule_getoccupiedseatsfordate",
+      "app_models_schedule_schedule_getseatcolumnlettersattribute",
+      "app_models_schedule_schedule_getseatrowcountattribute",
+      "app_models_schedule_schedule_gettransportclasscodes",
+      "app_models_schedule_schedule_infertransportclasscode",
+      "app_models_schedule_schedule_resolveaircraftconfigkey",
+      "app_models_schedule_schedule_resolveoperatorconfigkey",
+      "app_models_schedule_schedule_scheduleaccommodations",
+      "app_models_schedule_schedule_scopeactive",
+      "app_models_schedule_schedule_scopeforrouteanddate",
+      "app_models_schedule_schedule_tobookingarray",
+      "app_models_schedule_schedule_transportclasses",
+      "artisan",
+      "routes_console",
+      "scripts_inspect_airline_schedule"
+    ],
+    "10": [
       "app_http_controllers_authcontroller",
       "app_http_controllers_authcontroller_authcontroller",
       "app_http_controllers_authcontroller_authcontroller_apilogin",
@@ -549,40 +655,7 @@
       "serviceprovider",
       "view"
     ],
-    "8": [
-      "app_filament_resources_accommodationresource_pages_editaccommodation",
-      "app_filament_resources_accommodationresource_pages_editaccommodation_editaccommodation",
-      "app_filament_resources_accommodationresource_pages_editaccommodation_editaccommodation_getheaderactions",
-      "app_filament_resources_bookingresource_pages_editbooking",
-      "app_filament_resources_bookingresource_pages_editbooking_editbooking",
-      "app_filament_resources_bookingresource_pages_editbooking_editbooking_getheaderactions",
-      "app_filament_resources_discountresource_pages_editdiscount",
-      "app_filament_resources_discountresource_pages_editdiscount_editdiscount",
-      "app_filament_resources_discountresource_pages_editdiscount_editdiscount_getheaderactions",
-      "app_filament_resources_ferryrouteresource_pages_editferryroute",
-      "app_filament_resources_ferryrouteresource_pages_editferryroute_editferryroute",
-      "app_filament_resources_ferryrouteresource_pages_editferryroute_editferryroute_getheaderactions",
-      "app_filament_resources_scheduleresource_pages_editschedule",
-      "app_filament_resources_scheduleresource_pages_editschedule_editschedule",
-      "app_filament_resources_scheduleresource_pages_editschedule_editschedule_getheaderactions",
-      "app_filament_resources_tourresource_pages_edittour",
-      "app_filament_resources_tourresource_pages_edittour_edittour",
-      "app_filament_resources_tourresource_pages_edittour_edittour_getheaderactions",
-      "app_filament_resources_transportclassresource_pages_edittransportclass",
-      "app_filament_resources_transportclassresource_pages_edittransportclass_edittransportclass",
-      "app_filament_resources_transportclassresource_pages_edittransportclass_edittransportclass_getheaderactions",
-      "app_filament_resources_userresource_pages_edituser",
-      "app_filament_resources_userresource_pages_edituser_edituser",
-      "app_filament_resources_vehiclebrandresource_pages_editvehiclebrand",
-      "app_filament_resources_vehiclebrandresource_pages_editvehiclebrand_editvehiclebrand",
-      "app_filament_resources_vehiclerateresource_pages_editvehiclerate",
-      "app_filament_resources_vehiclerateresource_pages_editvehiclerate_editvehiclerate",
-      "app_filament_resources_vehiclerateresource_pages_editvehiclerate_editvehiclerate_getheaderactions",
-      "app_filament_resources_vehicleresource_pages_editvehicle",
-      "app_filament_resources_vehicleresource_pages_editvehicle_editvehicle",
-      "editrecord"
-    ],
-    "9": [
+    "11": [
       "flutter_app_lib_main_activityscreen",
       "flutter_app_lib_main_activityscreenstate",
       "flutter_app_lib_main_bookingsubmitscreen",
@@ -615,39 +688,7 @@
       "state",
       "statefulwidget"
     ],
-    "10": [
-      "app_console_commands_purgeexpiredproofs",
-      "app_http_controllers_api_accommodationcontroller_accommodationcontroller_index",
-      "app_http_controllers_api_bookingcontroller",
-      "app_livewire_bookingform",
-      "app_models_accommodation",
-      "app_models_accommodation_accommodation",
-      "app_models_accommodation_accommodation_bookings",
-      "app_models_accommodation_accommodation_getcoverimageattribute",
-      "app_models_accommodation_php_belongstomany",
-      "app_models_discount",
-      "app_models_discount_discount",
-      "app_models_discount_discount_passengers",
-      "app_models_discount_php_hasmany",
-      "app_models_passenger",
-      "app_models_passenger_passenger",
-      "app_models_passenger_passenger_booking",
-      "app_models_passenger_passenger_discount",
-      "app_models_passenger_php_belongsto",
-      "app_models_paymentsetting",
-      "app_models_schedule",
-      "app_models_scheduleaccommodation",
-      "app_models_scheduleaccommodation_php_belongsto",
-      "app_models_scheduleaccommodation_scheduleaccommodation",
-      "app_models_scheduleaccommodation_scheduleaccommodation_schedule",
-      "app_models_transaction",
-      "app_models_transportclass",
-      "app_models_vehiclerate",
-      "app_models_vehiclerate_vehiclerate",
-      "database_seeders_discountseeder_discountseeder_run",
-      "model"
-    ],
-    "11": [
+    "12": [
       "composer_scripts",
       "composer_scripts_dev",
       "composer_scripts_post_autoload_dump",
@@ -676,116 +717,34 @@
       "ref_php_r_file_exists_database_database_sqlite_touch_database_database_sqlite",
       "ref_php_r_file_exists_env_copy_env_example_env"
     ],
-    "12": [
-      "app_mail_bookingcancellation_bookingcancellation_construct",
-      "app_mail_bookingconfirmation_bookingconfirmation_construct",
-      "app_mail_bookingcreated_bookingcreated_construct",
-      "app_mail_rebookingrequested_rebookingrequested_construct",
-      "app_mail_rebookingverification_rebookingverification_construct",
-      "app_models_booking_booking",
-      "app_models_booking_booking_accommodations",
-      "app_models_booking_booking_cancancelorrebook",
-      "app_models_booking_booking_getcancellationfeeamount",
-      "app_models_booking_booking_getrebookingfeeamount",
-      "app_models_booking_booking_getrefundamount",
-      "app_models_booking_booking_getschedulesummaryattribute",
-      "app_models_booking_booking_passengers",
-      "app_models_booking_booking_schedule",
-      "app_models_booking_booking_scheduleaccommodation",
-      "app_models_booking_booking_transaction",
-      "app_models_booking_booking_transactions",
-      "app_models_booking_booking_transportclasses",
-      "app_models_booking_booking_verifyrebooking",
-      "app_models_booking_php_belongsto",
-      "app_models_booking_php_belongstomany",
-      "app_models_booking_php_hasmany",
-      "app_support_reportingservice_reportingservice",
-      "app_support_reportingservice_reportingservice_getbookingstatusbreakdown",
-      "app_support_reportingservice_reportingservice_getoverallstats",
-      "app_support_reportingservice_reportingservice_getrevenuebyperiod"
-    ],
     "13": [
-      "app_filament_resources_accommodationresource_pages_createaccommodation",
-      "app_filament_resources_accommodationresource_pages_createaccommodation_createaccommodation",
-      "app_filament_resources_bookingresource_pages_createbooking",
-      "app_filament_resources_bookingresource_pages_createbooking_createbooking",
-      "app_filament_resources_discountresource_pages_creatediscount",
-      "app_filament_resources_discountresource_pages_creatediscount_creatediscount",
-      "app_filament_resources_ferryrouteresource_pages_createferryroute",
-      "app_filament_resources_ferryrouteresource_pages_createferryroute_createferryroute",
-      "app_filament_resources_inquiryresource_pages_createinquiry",
-      "app_filament_resources_inquiryresource_pages_createinquiry_createinquiry",
-      "app_filament_resources_scheduleresource_pages_createschedule",
-      "app_filament_resources_scheduleresource_pages_createschedule_createschedule",
-      "app_filament_resources_tourresource_pages_createtour",
-      "app_filament_resources_tourresource_pages_createtour_createtour",
-      "app_filament_resources_transportclassresource_pages_createtransportclass",
-      "app_filament_resources_transportclassresource_pages_createtransportclass_createtransportclass",
-      "app_filament_resources_userresource_pages_createuser",
-      "app_filament_resources_userresource_pages_createuser_createuser",
-      "app_filament_resources_vehiclebrandresource_pages_createvehiclebrand",
-      "app_filament_resources_vehiclebrandresource_pages_createvehiclebrand_createvehiclebrand",
-      "app_filament_resources_vehiclerateresource_pages_createvehiclerate",
-      "app_filament_resources_vehiclerateresource_pages_createvehiclerate_createvehiclerate",
-      "app_filament_resources_vehicleresource_pages_createvehicle",
-      "app_filament_resources_vehicleresource_pages_createvehicle_createvehicle",
-      "createrecord"
-    ],
-    "14": [
-      "app_filament_resources_bookingresource",
-      "app_filament_resources_bookingresource_pages_viewbooking",
-      "app_livewire_bookinglookup",
-      "app_models_booking",
+      "app_models_inquiry",
+      "app_models_inquiry_inquiry",
+      "app_support_adminnotificationfeed",
+      "app_support_adminnotificationfeed_adminnotificationfeed",
+      "app_support_adminnotificationfeed_adminnotificationfeed_getforuser",
+      "app_support_adminnotificationfeed_php_collection",
       "basetestcase",
-      "config_livewire",
-      "config_mail",
       "createsapplication",
       "refreshdatabase",
-      "tests_feature_bookinglookupcancellationtest",
       "tests_feature_bookinglookupcancellationtest_bookinglookupcancellationtest",
       "tests_feature_bookinglookupcancellationtest_bookinglookupcancellationtest_test_cancellation_request_can_be_confirmed_and_send_refund_email",
-      "tests_feature_bookingrebookingflowtest",
       "tests_feature_exampletest",
       "tests_feature_exampletest_exampletest",
       "tests_feature_exampletest_exampletest_test_the_application_returns_a_successful_response",
       "tests_testcase",
       "tests_testcase_testcase",
+      "tests_unit_adminnotificationfeedtest",
+      "tests_unit_adminnotificationfeedtest_adminnotificationfeedtest",
+      "tests_unit_adminnotificationfeedtest_adminnotificationfeedtest_test_it_builds_ordered_admin_notifications_for_bookings_and_inquiries",
       "tests_unit_exampletest",
       "tests_unit_exampletest_exampletest",
       "tests_unit_exampletest_exampletest_test_that_true_is_true",
-      "tests_unit_reportingservicetest",
       "tests_unit_reportingservicetest_reportingservicetest",
       "tests_unit_reportingservicetest_reportingservicetest_test_booking_status_breakdown_works",
       "tests_unit_reportingservicetest_reportingservicetest_test_overall_stats_are_calculated_correctly"
     ],
-    "15": [
-      "app_models_schedule_php_belongsto",
-      "app_models_schedule_php_builder",
-      "app_models_schedule_schedule",
-      "app_models_schedule_schedule_aircraftsupportsclasscodes",
-      "app_models_schedule_schedule_buildcabinlayouts",
-      "app_models_schedule_schedule_buildseatrows",
-      "app_models_schedule_schedule_ferryroute",
-      "app_models_schedule_schedule_getairlineseatingprofile",
-      "app_models_schedule_schedule_getdurationlabelattribute",
-      "app_models_schedule_schedule_getfallbackairlineseatingprofile",
-      "app_models_schedule_schedule_getformattedarrivalattribute",
-      "app_models_schedule_schedule_getformatteddepartureattribute",
-      "app_models_schedule_schedule_getoccupiedseatsfordate",
-      "app_models_schedule_schedule_getseatcolumnlettersattribute",
-      "app_models_schedule_schedule_getseatrowcountattribute",
-      "app_models_schedule_schedule_gettransportclasscodes",
-      "app_models_schedule_schedule_infertransportclasscode",
-      "app_models_schedule_schedule_resolveaircraftconfigkey",
-      "app_models_schedule_schedule_resolveoperatorconfigkey",
-      "app_models_schedule_schedule_scopeactive",
-      "app_models_schedule_schedule_scopeforrouteanddate",
-      "app_models_schedule_schedule_tobookingarray",
-      "artisan",
-      "routes_console",
-      "scripts_inspect_airline_schedule"
-    ],
-    "16": [
+    "14": [
       "flpluginregistry",
       "flutter_app_linux_flutter_generated_plugin_registrant_cc_flutter_app_linux_flutter_generated_plugin_registrant",
       "flutter_app_linux_flutter_generated_plugin_registrant_fl_register_plugins",
@@ -812,51 +771,97 @@
       "gtkapplication",
       "myapplicationclass"
     ],
+    "15": [
+      "app_console_commands_purgeexpiredproofs",
+      "app_filament_pages_overallreports",
+      "app_filament_pages_staffperformance",
+      "app_filament_resources_bookingresource",
+      "app_filament_resources_bookingresource_pages_viewbooking",
+      "app_filament_resources_transactionresource",
+      "app_http_controllers_api_bookingcontroller",
+      "app_livewire_bookingform",
+      "app_livewire_bookinglookup",
+      "app_models_accommodation",
+      "app_models_booking",
+      "app_models_discount",
+      "app_models_paymentsetting",
+      "app_models_transaction",
+      "app_models_vehiclerate",
+      "app_support_reportingservice",
+      "config_auth",
+      "config_livewire",
+      "config_mail",
+      "tests_feature_bookinglookupcancellationtest",
+      "tests_feature_bookingrebookingflowtest",
+      "tests_unit_reportingservicetest"
+    ],
+    "16": [
+      "action",
+      "app_filament_pages_managepaymentsettings",
+      "app_filament_pages_manageproofs",
+      "app_filament_pages_manageproofs_manageproofs",
+      "app_filament_pages_manageproofs_manageproofs_canaccess",
+      "app_filament_pages_manageproofs_manageproofs_deleteproof",
+      "app_filament_pages_manageproofs_manageproofs_deleteproofaction",
+      "app_filament_pages_manageproofs_manageproofs_deleteselected",
+      "app_filament_pages_manageproofs_manageproofs_deleteselectedaction",
+      "app_filament_pages_manageproofs_manageproofs_form",
+      "app_filament_pages_manageproofs_manageproofs_proofs",
+      "app_filament_pages_manageproofs_manageproofs_updatedselectall",
+      "app_filament_pages_manageproofs_manageproofs_updatedselectedtransactions",
+      "app_filament_pages_manageproofs_php_collection",
+      "app_filament_pages_manageproofs_php_form",
+      "app_filament_pages_managewebsitesettings",
+      "hasactions",
+      "hasforms",
+      "interactswithactions",
+      "interactswithforms",
+      "page"
+    ],
     "17": [
-      "app_mail_bookingcancellation",
-      "app_mail_bookingcancellation_bookingcancellation",
-      "app_mail_bookingcancellation_bookingcancellation_build",
-      "app_mail_bookingcancellation_php_self",
-      "app_mail_bookingconfirmation",
-      "app_mail_bookingconfirmation_bookingconfirmation",
-      "app_mail_bookingconfirmation_bookingconfirmation_build",
-      "app_mail_bookingcreated",
-      "app_mail_bookingcreated_bookingcreated",
-      "app_mail_bookingcreated_bookingcreated_build",
-      "app_mail_paymentproofreceived",
-      "app_mail_paymentproofreceived_paymentproofreceived",
-      "app_mail_paymentproofreceived_paymentproofreceived_build",
-      "app_mail_rebookingrequested",
-      "app_mail_rebookingrequested_rebookingrequested",
-      "app_mail_rebookingrequested_rebookingrequested_build",
-      "app_mail_rebookingverification",
-      "app_mail_rebookingverification_rebookingverification",
-      "app_mail_rebookingverification_rebookingverification_build",
-      "mailable",
-      "queueable",
-      "serializesmodels"
+      "app_models_user",
+      "app_models_user_php_hasmany",
+      "app_models_user_php_panel",
+      "app_models_user_user",
+      "app_models_user_user_bookings",
+      "app_models_user_user_canaccesspanel",
+      "app_models_user_user_hasadminpermission",
+      "app_models_user_user_hasanyadminpermission",
+      "app_models_user_user_isstaff",
+      "app_models_user_user_issuperadmin",
+      "app_models_user_user_loginhistories",
+      "app_support_reportingservice_php_collection",
+      "app_support_reportingservice_reportingservice",
+      "app_support_reportingservice_reportingservice_getbookingstatusbreakdown",
+      "app_support_reportingservice_reportingservice_getoverallstats",
+      "app_support_reportingservice_reportingservice_getrevenuebyperiod",
+      "app_support_reportingservice_reportingservice_getstaffstats",
+      "authenticatable",
+      "filamentuser",
+      "hasfactory",
+      "notifiable"
     ],
     "18": [
-      "app_filament_resources_accommodationresource_pages_listaccommodations",
-      "app_filament_resources_accommodationresource_pages_listaccommodations_listaccommodations",
-      "app_filament_resources_accommodationresource_pages_listaccommodations_listaccommodations_getheaderactions",
-      "app_filament_resources_bookingresource_pages_listbookings",
-      "app_filament_resources_bookingresource_pages_listbookings_listbookings",
-      "app_filament_resources_bookingresource_pages_listbookings_listbookings_getheaderactions",
-      "app_filament_resources_discountresource_pages_listdiscounts",
-      "app_filament_resources_discountresource_pages_listdiscounts_listdiscounts",
-      "app_filament_resources_discountresource_pages_listdiscounts_listdiscounts_getheaderactions",
-      "app_filament_resources_inquiryresource_pages_listinquiries",
-      "app_filament_resources_inquiryresource_pages_listinquiries_listinquiries",
-      "app_filament_resources_userloginhistoryresource_pages_listuserloginhistories",
-      "app_filament_resources_userloginhistoryresource_pages_listuserloginhistories_listuserloginhistories",
-      "app_filament_resources_userresource_pages_listusers",
-      "app_filament_resources_userresource_pages_listusers_listusers",
-      "app_filament_resources_userresource_pages_listusers_listusers_getheaderactions",
-      "app_filament_resources_vehicleresource_pages_listvehicles",
-      "app_filament_resources_vehicleresource_pages_listvehicles_listvehicles",
-      "app_filament_resources_vehicleresource_pages_listvehicles_listvehicles_getheaderactions",
-      "listrecords"
+      "app_filament_resources_accommodationresource_pages_editaccommodation",
+      "app_filament_resources_accommodationresource_pages_editaccommodation_editaccommodation",
+      "app_filament_resources_accommodationresource_pages_editaccommodation_editaccommodation_getheaderactions",
+      "app_filament_resources_bookingresource_pages_editbooking",
+      "app_filament_resources_bookingresource_pages_editbooking_editbooking",
+      "app_filament_resources_bookingresource_pages_editbooking_editbooking_getheaderactions",
+      "app_filament_resources_discountresource_pages_editdiscount",
+      "app_filament_resources_discountresource_pages_editdiscount_editdiscount",
+      "app_filament_resources_discountresource_pages_editdiscount_editdiscount_getheaderactions",
+      "app_filament_resources_scheduleresource_pages_editschedule",
+      "app_filament_resources_scheduleresource_pages_editschedule_editschedule",
+      "app_filament_resources_scheduleresource_pages_editschedule_editschedule_getheaderactions",
+      "app_filament_resources_tourresource_pages_edittour",
+      "app_filament_resources_tourresource_pages_edittour_edittour",
+      "app_filament_resources_tourresource_pages_edittour_edittour_getheaderactions",
+      "app_filament_resources_userresource_pages_edituser",
+      "app_filament_resources_userresource_pages_edituser_edituser",
+      "app_filament_resources_vehiclebrandresource_pages_editvehiclebrand",
+      "app_filament_resources_vehiclebrandresource_pages_editvehiclebrand_editvehiclebrand",
+      "editrecord"
     ],
     "19": [
       "flutter_app_lib_main_aboutfact",
@@ -881,25 +886,25 @@
       "statelesswidget"
     ],
     "20": [
-      "action",
-      "app_filament_pages_managepaymentsettings_managepaymentsettings_mount",
-      "app_filament_pages_managepaymentsettings_managepaymentsettings_save",
-      "app_filament_pages_manageproofs",
-      "app_filament_pages_manageproofs_manageproofs",
-      "app_filament_pages_manageproofs_manageproofs_canaccess",
-      "app_filament_pages_manageproofs_manageproofs_deleteproof",
-      "app_filament_pages_manageproofs_manageproofs_deleteproofaction",
-      "app_filament_pages_manageproofs_manageproofs_deleteselected",
-      "app_filament_pages_manageproofs_manageproofs_deleteselectedaction",
-      "app_filament_pages_manageproofs_manageproofs_form",
-      "app_filament_pages_manageproofs_manageproofs_mount",
-      "app_filament_pages_manageproofs_manageproofs_savesettings",
-      "app_filament_pages_manageproofs_manageproofs_updatedselectall",
-      "app_filament_pages_manageproofs_manageproofs_updatedselectedtransactions",
-      "app_filament_pages_manageproofs_php_form",
-      "app_models_paymentsetting_paymentsetting",
-      "hasactions",
-      "interactswithactions"
+      "app_filament_resources_accommodationresource",
+      "app_filament_resources_accommodationresource_accommodationresource",
+      "app_filament_resources_accommodationresource_accommodationresource_canaccess",
+      "app_filament_resources_accommodationresource_accommodationresource_form",
+      "app_filament_resources_accommodationresource_accommodationresource_getpages",
+      "app_filament_resources_accommodationresource_accommodationresource_getrelations",
+      "app_filament_resources_accommodationresource_accommodationresource_table",
+      "app_filament_resources_accommodationresource_php_form",
+      "app_filament_resources_accommodationresource_php_table",
+      "app_filament_resources_discountresource",
+      "app_filament_resources_discountresource_discountresource",
+      "app_filament_resources_discountresource_discountresource_canaccess",
+      "app_filament_resources_discountresource_discountresource_form",
+      "app_filament_resources_discountresource_discountresource_getpages",
+      "app_filament_resources_discountresource_discountresource_getrelations",
+      "app_filament_resources_discountresource_discountresource_table",
+      "app_filament_resources_discountresource_php_form",
+      "app_filament_resources_discountresource_php_table",
+      "resource"
     ],
     "21": [
       "concurrently",
@@ -922,131 +927,76 @@
       "vite"
     ],
     "22": [
-      "app_filament_pages_managepaymentsettings",
-      "app_filament_pages_managepaymentsettings_managepaymentsettings",
-      "app_filament_pages_managepaymentsettings_managepaymentsettings_canaccess",
-      "app_filament_pages_managepaymentsettings_managepaymentsettings_form",
-      "app_filament_pages_managepaymentsettings_php_form",
-      "app_filament_pages_managewebsitesettings",
-      "app_filament_pages_overallreports",
-      "app_filament_pages_staffperformance",
-      "app_filament_pages_staffperformance_php_collection",
-      "app_filament_pages_staffperformance_staffperformance",
-      "app_filament_pages_staffperformance_staffperformance_canaccess",
-      "app_filament_pages_staffperformance_staffperformance_mount",
-      "app_support_reportingservice",
-      "config_auth",
-      "hasforms",
-      "interactswithforms",
-      "page"
+      "app_models_websitesetting",
+      "database_seeders_databaseseeder",
+      "database_seeders_databaseseeder_databaseseeder",
+      "database_seeders_databaseseeder_databaseseeder_run",
+      "database_seeders_discountseeder",
+      "database_seeders_discountseeder_discountseeder",
+      "database_seeders_discountseeder_discountseeder_run",
+      "database_seeders_tourhotelsseeder",
+      "database_seeders_tourhotelsseeder_tourhotelsseeder",
+      "database_seeders_vehiclerateseeder",
+      "database_seeders_vehiclerateseeder_vehiclerateseeder",
+      "database_seeders_vehiclerateseeder_vehiclerateseeder_run",
+      "database_seeders_websitesettingseeder",
+      "database_seeders_websitesettingseeder_websitesettingseeder",
+      "database_seeders_websitesettingseeder_websitesettingseeder_run",
+      "seeder",
+      "withoutmodelevents"
     ],
     "23": [
-      "app_filament_resources_userloginhistoryresource",
-      "app_filament_resources_userloginhistoryresource_php_form",
-      "app_filament_resources_userloginhistoryresource_php_table",
-      "app_filament_resources_userloginhistoryresource_userloginhistoryresource",
-      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_canaccess",
-      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_form",
-      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_getpages",
-      "app_filament_resources_userloginhistoryresource_userloginhistoryresource_table",
-      "app_filament_resources_vehicleresource",
-      "app_filament_resources_vehicleresource_php_form",
-      "app_filament_resources_vehicleresource_php_table",
-      "app_filament_resources_vehicleresource_vehicleresource",
-      "app_filament_resources_vehicleresource_vehicleresource_canaccess",
-      "app_filament_resources_vehicleresource_vehicleresource_form",
-      "app_filament_resources_vehicleresource_vehicleresource_getpages",
-      "app_filament_resources_vehicleresource_vehicleresource_table",
-      "resource"
+      "app_livewire_bookinglookup_bookinglookup",
+      "app_livewire_bookinglookup_bookinglookup_cancelbooking",
+      "app_livewire_bookinglookup_bookinglookup_cancelcancellationrequest",
+      "app_livewire_bookinglookup_bookinglookup_confirmcancellation",
+      "app_livewire_bookinglookup_bookinglookup_getcancellationsessionkey",
+      "app_livewire_bookinglookup_bookinglookup_loadcancellationwindowfromsession",
+      "app_livewire_bookinglookup_bookinglookup_mount",
+      "app_livewire_bookinglookup_bookinglookup_render",
+      "app_livewire_bookinglookup_bookinglookup_requestcancellation",
+      "app_livewire_bookinglookup_bookinglookup_requestrebooking",
+      "app_livewire_bookinglookup_bookinglookup_resetcancellationstate",
+      "app_livewire_bookinglookup_bookinglookup_resetrebookingstate",
+      "app_livewire_bookinglookup_bookinglookup_search",
+      "app_livewire_bookinglookup_bookinglookup_startcancellationwindow",
+      "app_livewire_bookinglookup_bookinglookup_submitrebookingproof",
+      "app_livewire_bookinglookup_bookinglookup_tickcancelcountdown"
     ],
     "24": [
-      "app_models_ferryroute_ferryroute_activedestinationsfor",
-      "app_models_paymentsetting_paymentsetting_current",
-      "app_models_paymentsetting_php_self",
-      "app_models_vehicle",
-      "app_models_vehicle_php_hasmany",
-      "app_models_vehicle_vehicle",
-      "app_models_vehicle_vehicle_airlines",
-      "app_models_vehicle_vehicle_ferries",
-      "app_models_vehicle_vehicle_ferryroutes",
-      "app_models_vehicle_vehicle_getfullnameattribute",
-      "app_models_vehicle_vehicle_gettypelabel",
-      "database_factories_userfactory",
-      "database_factories_userfactory_userfactory",
-      "database_factories_userfactory_userfactory_definition",
-      "database_factories_userfactory_userfactory_unverified",
-      "factory",
-      "static"
+      "app_models_passenger",
+      "app_models_passenger_passenger",
+      "app_models_passenger_passenger_booking",
+      "app_models_passenger_passenger_discount",
+      "app_models_passenger_php_belongsto",
+      "app_models_tourdate",
+      "app_models_tourdate_php_belongsto",
+      "app_models_tourdate_tourdate",
+      "app_models_tourdate_tourdate_tour",
+      "app_models_userloginhistory",
+      "app_models_userloginhistory_php_belongsto",
+      "app_models_userloginhistory_userloginhistory",
+      "app_models_userloginhistory_userloginhistory_user",
+      "app_models_vehiclerate_vehiclerate",
+      "model"
     ],
     "25": [
-      "app_models_user",
-      "app_models_user_php_hasmany",
-      "app_models_user_php_panel",
-      "app_models_user_user",
-      "app_models_user_user_bookings",
-      "app_models_user_user_canaccesspanel",
-      "app_models_user_user_hasadminpermission",
-      "app_models_user_user_hasanyadminpermission",
-      "app_models_user_user_isstaff",
-      "app_models_user_user_issuperadmin",
-      "app_models_user_user_loginhistories",
-      "app_support_reportingservice_php_collection",
-      "app_support_reportingservice_reportingservice_getstaffstats",
-      "authenticatable",
-      "filamentuser",
-      "hasfactory",
-      "notifiable"
+      "app_filament_pages_managewebsitesettings_managewebsitesettings",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_canaccess",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_form",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_getdefaultbookingcards",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_getformstatepath",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_getpagecontentschema",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_loadsettings",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_mount",
+      "app_filament_pages_managewebsitesettings_managewebsitesettings_save",
+      "app_filament_pages_managewebsitesettings_php_form",
+      "app_models_websitesetting_websitesetting",
+      "app_models_websitesetting_websitesetting_getbookingcardnames",
+      "app_models_websitesetting_websitesetting_getorcreatebypage",
+      "app_models_websitesetting_websitesetting_getpageoptions"
     ],
     "26": [
-      "app_filament_pages_manageproofs_manageproofs_proofs",
-      "app_filament_pages_manageproofs_php_collection",
-      "app_filament_widgets_dashboardsummarywidget",
-      "app_filament_widgets_dashboardsummarywidget_dashboardsummarywidget",
-      "app_filament_widgets_dashboardsummarywidget_dashboardsummarywidget_getviewdata",
-      "app_mail_paymentproofreceived_paymentproofreceived_construct",
-      "app_models_transaction_php_belongsto",
-      "app_models_transaction_transaction",
-      "app_models_transaction_transaction_booking",
-      "app_models_transaction_transaction_deleteproof",
-      "app_models_transaction_transaction_getproofurlattribute",
-      "tests_feature_bookingrebookingflowtest_bookingrebookingflowtest",
-      "tests_feature_bookingrebookingflowtest_bookingrebookingflowtest_test_booking_rebooking_can_be_verified_and_dates_applied",
-      "tests_feature_bookingrebookingflowtest_bookingrebookingflowtest_test_rebooking_request_is_stored_as_pending_until_verified",
-      "widget"
-    ],
-    "27": [
-      "app_filament_resources_bookingresource_pages_viewbooking_php_form",
-      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking",
-      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_form",
-      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_getallrelationmanagers",
-      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_getheaderactions",
-      "app_filament_resources_bookingresource_pages_viewbooking_viewbooking_mutateformdatabeforefill",
-      "app_filament_resources_inquiryresource_pages_viewinquiry",
-      "app_filament_resources_inquiryresource_pages_viewinquiry_viewinquiry",
-      "app_filament_resources_transactionresource_pages_viewtransaction",
-      "app_filament_resources_transactionresource_pages_viewtransaction_viewtransaction",
-      "app_filament_resources_transactionresource_pages_viewtransaction_viewtransaction_getheaderactions",
-      "app_filament_resources_userloginhistoryresource_pages_viewuserloginhistory",
-      "app_filament_resources_userloginhistoryresource_pages_viewuserloginhistory_viewuserloginhistory",
-      "viewrecord"
-    ],
-    "28": [
-      "app_models_ferryroute",
-      "app_models_ferryroute_ferryroute_vehicle",
-      "app_models_ferryroute_php_belongsto",
-      "database_seeders_ferryrouteseeder",
-      "database_seeders_ferryrouteseeder_ferryrouteseeder",
-      "database_seeders_ferryrouteseeder_ferryrouteseeder_run",
-      "scripts_count_routes",
-      "scripts_inspect_schedule_object",
-      "tests_unit_scheduleseatingprofiletest",
-      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest",
-      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profile_falls_back_to_business_class_aircraft_when_business_is_present",
-      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profile_falls_back_when_vehicle_name_is_missing_for_two_class_configuration",
-      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profile_resolves_aliases_and_aircraft_variants",
-      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profiles_have_capacity_values_that_match_their_seat_counts"
-    ],
-    "29": [
       "composer_require",
       "composer_require_anhskohbo_no_captcha",
       "composer_require_dompdf_dompdf",
@@ -1061,6 +1011,51 @@
       "composer_require_simplesoftwareio_simple_qrcode",
       "composer_require_spatie_browsershot",
       "composer_require_spatie_laravel_pdf"
+    ],
+    "27": [
+      "app_filament_widgets_dashboardsummarywidget",
+      "app_filament_widgets_dashboardsummarywidget_dashboardsummarywidget",
+      "app_filament_widgets_dashboardsummarywidget_dashboardsummarywidget_getviewdata",
+      "app_mail_paymentproofreceived_paymentproofreceived_construct",
+      "app_models_transaction_php_belongsto",
+      "app_models_transaction_transaction",
+      "app_models_transaction_transaction_booking",
+      "app_models_transaction_transaction_deleteproof",
+      "app_models_transaction_transaction_getproofurlattribute",
+      "tests_feature_bookingrebookingflowtest_bookingrebookingflowtest",
+      "tests_feature_bookingrebookingflowtest_bookingrebookingflowtest_test_booking_rebooking_can_be_verified_and_dates_applied",
+      "tests_feature_bookingrebookingflowtest_bookingrebookingflowtest_test_rebooking_request_is_stored_as_pending_until_verified",
+      "widget"
+    ],
+    "28": [
+      "app_http_controllers_api_bookingcontroller_bookingcontroller",
+      "app_http_controllers_api_bookingcontroller_bookingcontroller_calculateprice",
+      "app_http_controllers_api_bookingcontroller_bookingcontroller_cancel",
+      "app_http_controllers_api_bookingcontroller_bookingcontroller_index",
+      "app_http_controllers_api_bookingcontroller_bookingcontroller_paymentsettings",
+      "app_http_controllers_api_bookingcontroller_bookingcontroller_store",
+      "app_http_controllers_api_bookingcontroller_bookingcontroller_uploadproof",
+      "app_http_controllers_api_bookingcontroller_bookingcontroller_vehiclerates",
+      "app_http_controllers_api_bookingcontroller_php_request",
+      "app_http_controllers_api_discountcontroller_discountcontroller_index",
+      "app_models_discount_discount",
+      "app_models_discount_discount_passengers",
+      "app_models_discount_php_hasmany"
+    ],
+    "29": [
+      "app_models_ferryroute",
+      "app_models_ferryroute_ferryroute",
+      "app_models_ferryroute_ferryroute_activeorigins",
+      "app_models_ferryroute_ferryroute_getlabelattribute",
+      "app_models_ferryroute_ferryroute_schedules",
+      "app_models_ferryroute_ferryroute_vehicle",
+      "app_models_ferryroute_php_belongsto",
+      "app_models_ferryroute_php_hasmany",
+      "database_seeders_ferryrouteseeder",
+      "database_seeders_ferryrouteseeder_ferryrouteseeder",
+      "database_seeders_ferryrouteseeder_ferryrouteseeder_run",
+      "scripts_count_routes",
+      "scripts_inspect_schedule_object"
     ],
     "30": [
       "public_manifest",
@@ -1078,18 +1073,18 @@
       "ref_travel"
     ],
     "31": [
-      "app_filament_pages_manageproofs_manageproofs_viewtransactionurl",
-      "app_filament_resources_transactionresource",
-      "app_filament_resources_transactionresource_php_builder",
-      "app_filament_resources_transactionresource_php_table",
-      "app_filament_resources_transactionresource_transactionresource",
-      "app_filament_resources_transactionresource_transactionresource_canaccess",
-      "app_filament_resources_transactionresource_transactionresource_geteloquentquery",
-      "app_filament_resources_transactionresource_transactionresource_getpages",
-      "app_filament_resources_transactionresource_transactionresource_getrelations",
-      "app_filament_resources_transactionresource_transactionresource_infolist",
-      "app_filament_resources_transactionresource_transactionresource_table",
-      "infolist"
+      "app_livewire_paymentproof",
+      "app_livewire_paymentproof_paymentproof",
+      "app_livewire_paymentproof_paymentproof_mount",
+      "app_livewire_paymentproof_paymentproof_render",
+      "app_livewire_paymentproof_paymentproof_submitproof",
+      "app_livewire_paymentproof_paymentproof_updatedproof",
+      "app_livewire_userdashboard",
+      "app_livewire_userdashboard_userdashboard",
+      "app_livewire_userdashboard_userdashboard_mount",
+      "app_livewire_userdashboard_userdashboard_render",
+      "component",
+      "withfileuploads"
     ],
     "32": [
       "flutter_app_windows_runner_main",
@@ -1106,58 +1101,32 @@
       "vector"
     ],
     "33": [
-      "app_filament_resources_vehiclebrandresource",
-      "app_filament_resources_vehiclebrandresource_pages_listvehiclebrands",
-      "app_filament_resources_vehiclebrandresource_php_form",
-      "app_filament_resources_vehiclebrandresource_php_table",
-      "app_filament_resources_vehiclebrandresource_vehiclebrandresource",
-      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_canaccess",
-      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_form",
-      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_getpages",
-      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_getrelations",
-      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_shouldregisternavigation",
-      "app_filament_resources_vehiclebrandresource_vehiclebrandresource_table"
+      "app_filament_pages_manageproofs_manageproofs_viewtransactionurl",
+      "app_filament_resources_transactionresource_php_builder",
+      "app_filament_resources_transactionresource_php_table",
+      "app_filament_resources_transactionresource_transactionresource",
+      "app_filament_resources_transactionresource_transactionresource_canaccess",
+      "app_filament_resources_transactionresource_transactionresource_geteloquentquery",
+      "app_filament_resources_transactionresource_transactionresource_getpages",
+      "app_filament_resources_transactionresource_transactionresource_getrelations",
+      "app_filament_resources_transactionresource_transactionresource_infolist",
+      "app_filament_resources_transactionresource_transactionresource_table",
+      "infolist"
     ],
     "34": [
-      "app_http_controllers_api_accommodationcontroller",
-      "app_http_controllers_api_accommodationcontroller_accommodationcontroller",
-      "app_http_controllers_api_discountcontroller",
-      "app_http_controllers_api_discountcontroller_discountcontroller",
-      "app_http_controllers_api_discountcontroller_discountcontroller_index",
-      "app_http_controllers_api_promotioncontroller",
-      "app_http_controllers_api_promotioncontroller_promotioncontroller",
-      "app_http_controllers_api_promotioncontroller_promotioncontroller_index",
-      "app_http_controllers_controller",
-      "app_http_controllers_controller_controller",
-      "routes_api"
+      "app_models_transportclass",
+      "app_models_transportclass_php_belongstomany",
+      "app_models_transportclass_transportclass",
+      "app_models_transportclass_transportclass_bookings",
+      "app_models_transportclass_transportclass_getcoverimageattribute",
+      "app_models_transportclass_transportclass_geteffectivepriceattribute",
+      "app_models_transportclass_transportclass_schedules",
+      "database_seeders_transportclassseeder",
+      "database_seeders_transportclassseeder_transportclassseeder",
+      "database_seeders_transportclassseeder_transportclassseeder_run",
+      "setup_transport_classes_per_airline"
     ],
     "35": [
-      "app_http_controllers_api_schedulecontroller",
-      "app_http_controllers_api_schedulecontroller_php_request",
-      "app_http_controllers_api_schedulecontroller_schedulecontroller",
-      "app_http_controllers_api_schedulecontroller_schedulecontroller_destinations",
-      "app_http_controllers_api_schedulecontroller_schedulecontroller_origins",
-      "app_http_controllers_api_schedulecontroller_schedulecontroller_search",
-      "app_models_ferryroute_ferryroute",
-      "app_models_ferryroute_ferryroute_activeorigins",
-      "app_models_ferryroute_ferryroute_getlabelattribute",
-      "app_models_ferryroute_ferryroute_schedules",
-      "app_models_ferryroute_php_hasmany"
-    ],
-    "36": [
-      "app_http_controllers_tourcontroller",
-      "app_http_controllers_tourcontroller_tourcontroller",
-      "app_http_controllers_tourcontroller_tourcontroller_index",
-      "app_http_controllers_tourcontroller_tourcontroller_show",
-      "app_models_tour_php_hasmany",
-      "app_models_tour_tour",
-      "app_models_tour_tour_activedates",
-      "app_models_tour_tour_dates",
-      "app_models_tour_tour_getavailabledatesattribute",
-      "app_models_tour_tour_image",
-      "attribute"
-    ],
-    "37": [
       "flutter_app_web_manifest",
       "flutter_app_web_manifest_background_color",
       "flutter_app_web_manifest_description",
@@ -1170,53 +1139,54 @@
       "flutter_app_web_manifest_start_url",
       "flutter_app_web_manifest_theme_color"
     ],
+    "36": [
+      "app_filament_resources_ferryrouteresource_pages_createferryroute",
+      "app_filament_resources_ferryrouteresource_pages_createferryroute_createferryroute",
+      "app_filament_resources_ferryrouteresource_pages_createferryroute_createferryroute_mutateformdatabeforecreate",
+      "app_models_vehicle",
+      "app_models_vehicle_php_hasmany",
+      "app_models_vehicle_vehicle",
+      "app_models_vehicle_vehicle_airlines",
+      "app_models_vehicle_vehicle_ferryroutes",
+      "app_models_vehicle_vehicle_getfullnameattribute",
+      "app_models_vehicle_vehicle_gettypelabel"
+    ],
+    "37": [
+      "app_filament_resources_vehicleresource",
+      "app_filament_resources_vehicleresource_pages_editvehicle",
+      "app_filament_resources_vehicleresource_pages_editvehicle_editvehicle",
+      "app_filament_resources_vehicleresource_php_form",
+      "app_filament_resources_vehicleresource_php_table",
+      "app_filament_resources_vehicleresource_vehicleresource",
+      "app_filament_resources_vehicleresource_vehicleresource_canaccess",
+      "app_filament_resources_vehicleresource_vehicleresource_form",
+      "app_filament_resources_vehicleresource_vehicleresource_getpages",
+      "app_filament_resources_vehicleresource_vehicleresource_table"
+    ],
     "38": [
-      "app_filament_resources_tourresource",
-      "app_filament_resources_tourresource_pages_listtours",
-      "app_filament_resources_tourresource_php_form",
-      "app_filament_resources_tourresource_php_table",
-      "app_filament_resources_tourresource_tourresource",
-      "app_filament_resources_tourresource_tourresource_form",
-      "app_filament_resources_tourresource_tourresource_getpages",
-      "app_filament_resources_tourresource_tourresource_getrelations",
-      "app_filament_resources_tourresource_tourresource_table",
-      "app_models_tour"
+      "app_models_ferryroute_ferryroute_activedestinationsfor",
+      "app_models_paymentsetting_paymentsetting_current",
+      "app_models_paymentsetting_php_self",
+      "app_models_vehicle_vehicle_ferries",
+      "database_factories_userfactory",
+      "database_factories_userfactory_userfactory",
+      "database_factories_userfactory_userfactory_definition",
+      "database_factories_userfactory_userfactory_unverified",
+      "factory",
+      "static"
     ],
     "39": [
-      "app_models_transportclass_php_belongstomany",
-      "app_models_transportclass_transportclass",
-      "app_models_transportclass_transportclass_bookings",
-      "app_models_transportclass_transportclass_getcoverimageattribute",
-      "app_models_transportclass_transportclass_geteffectivepriceattribute",
-      "app_models_transportclass_transportclass_schedules",
-      "database_seeders_transportclassseeder",
-      "database_seeders_transportclassseeder_transportclassseeder",
-      "database_seeders_transportclassseeder_transportclassseeder_run",
-      "setup_transport_classes_per_airline"
+      "app_filament_pages_managepaymentsettings_managepaymentsettings",
+      "app_filament_pages_managepaymentsettings_managepaymentsettings_canaccess",
+      "app_filament_pages_managepaymentsettings_managepaymentsettings_form",
+      "app_filament_pages_managepaymentsettings_managepaymentsettings_mount",
+      "app_filament_pages_managepaymentsettings_managepaymentsettings_save",
+      "app_filament_pages_managepaymentsettings_php_form",
+      "app_filament_pages_manageproofs_manageproofs_mount",
+      "app_filament_pages_manageproofs_manageproofs_savesettings",
+      "app_models_paymentsetting_paymentsetting"
     ],
     "40": [
-      "app_filament_resources_accommodationresource",
-      "app_filament_resources_accommodationresource_accommodationresource",
-      "app_filament_resources_accommodationresource_accommodationresource_canaccess",
-      "app_filament_resources_accommodationresource_accommodationresource_form",
-      "app_filament_resources_accommodationresource_accommodationresource_getpages",
-      "app_filament_resources_accommodationresource_accommodationresource_getrelations",
-      "app_filament_resources_accommodationresource_accommodationresource_table",
-      "app_filament_resources_accommodationresource_php_form",
-      "app_filament_resources_accommodationresource_php_table"
-    ],
-    "41": [
-      "app_filament_resources_discountresource",
-      "app_filament_resources_discountresource_discountresource",
-      "app_filament_resources_discountresource_discountresource_canaccess",
-      "app_filament_resources_discountresource_discountresource_form",
-      "app_filament_resources_discountresource_discountresource_getpages",
-      "app_filament_resources_discountresource_discountresource_getrelations",
-      "app_filament_resources_discountresource_discountresource_table",
-      "app_filament_resources_discountresource_php_form",
-      "app_filament_resources_discountresource_php_table"
-    ],
-    "42": [
       "app_filament_resources_ferryrouteresource",
       "app_filament_resources_ferryrouteresource_ferryrouteresource",
       "app_filament_resources_ferryrouteresource_ferryrouteresource_canaccess",
@@ -1224,10 +1194,10 @@
       "app_filament_resources_ferryrouteresource_ferryrouteresource_getpages",
       "app_filament_resources_ferryrouteresource_ferryrouteresource_getrelations",
       "app_filament_resources_ferryrouteresource_ferryrouteresource_table",
-      "app_filament_resources_ferryrouteresource_php_form",
-      "app_filament_resources_ferryrouteresource_php_table"
+      "form",
+      "table"
     ],
-    "43": [
+    "41": [
       "app_filament_resources_inquiryresource",
       "app_filament_resources_inquiryresource_inquiryresource",
       "app_filament_resources_inquiryresource_inquiryresource_canaccess",
@@ -1238,7 +1208,7 @@
       "app_filament_resources_inquiryresource_php_form",
       "app_filament_resources_inquiryresource_php_table"
     ],
-    "44": [
+    "42": [
       "app_filament_resources_scheduleresource",
       "app_filament_resources_scheduleresource_php_form",
       "app_filament_resources_scheduleresource_php_table",
@@ -1249,18 +1219,7 @@
       "app_filament_resources_scheduleresource_scheduleresource_getrelations",
       "app_filament_resources_scheduleresource_scheduleresource_table"
     ],
-    "45": [
-      "app_filament_resources_transportclassresource",
-      "app_filament_resources_transportclassresource_php_form",
-      "app_filament_resources_transportclassresource_php_table",
-      "app_filament_resources_transportclassresource_transportclassresource",
-      "app_filament_resources_transportclassresource_transportclassresource_canaccess",
-      "app_filament_resources_transportclassresource_transportclassresource_form",
-      "app_filament_resources_transportclassresource_transportclassresource_getpages",
-      "app_filament_resources_transportclassresource_transportclassresource_getrelations",
-      "app_filament_resources_transportclassresource_transportclassresource_table"
-    ],
-    "46": [
+    "43": [
       "app_filament_resources_userresource",
       "app_filament_resources_userresource_php_form",
       "app_filament_resources_userresource_php_table",
@@ -1271,7 +1230,18 @@
       "app_filament_resources_userresource_userresource_getrelations",
       "app_filament_resources_userresource_userresource_table"
     ],
-    "47": [
+    "44": [
+      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager",
+      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager_bookingsrelationmanager",
+      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager_bookingsrelationmanager_table",
+      "app_filament_resources_userresource_relationmanagers_bookingsrelationmanager_php_table",
+      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager",
+      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager_loginhistoriesrelationmanager",
+      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager_loginhistoriesrelationmanager_table",
+      "app_filament_resources_userresource_relationmanagers_loginhistoriesrelationmanager_php_table",
+      "relationmanager"
+    ],
+    "45": [
       "app_filament_resources_vehiclerateresource",
       "app_filament_resources_vehiclerateresource_php_form",
       "app_filament_resources_vehiclerateresource_php_table",
@@ -1282,29 +1252,7 @@
       "app_filament_resources_vehiclerateresource_vehiclerateresource_getrelations",
       "app_filament_resources_vehiclerateresource_vehiclerateresource_table"
     ],
-    "48": [
-      "app_http_controllers_api_bookingcontroller_bookingcontroller",
-      "app_http_controllers_api_bookingcontroller_bookingcontroller_calculateprice",
-      "app_http_controllers_api_bookingcontroller_bookingcontroller_cancel",
-      "app_http_controllers_api_bookingcontroller_bookingcontroller_index",
-      "app_http_controllers_api_bookingcontroller_bookingcontroller_paymentsettings",
-      "app_http_controllers_api_bookingcontroller_bookingcontroller_store",
-      "app_http_controllers_api_bookingcontroller_bookingcontroller_uploadproof",
-      "app_http_controllers_api_bookingcontroller_bookingcontroller_vehiclerates",
-      "app_http_controllers_api_bookingcontroller_php_request"
-    ],
-    "49": [
-      "app_models_inquiry",
-      "app_models_inquiry_inquiry",
-      "app_support_adminnotificationfeed",
-      "app_support_adminnotificationfeed_adminnotificationfeed",
-      "app_support_adminnotificationfeed_adminnotificationfeed_getforuser",
-      "app_support_adminnotificationfeed_php_collection",
-      "tests_unit_adminnotificationfeedtest",
-      "tests_unit_adminnotificationfeedtest_adminnotificationfeedtest",
-      "tests_unit_adminnotificationfeedtest_adminnotificationfeedtest_test_it_builds_ordered_admin_notifications_for_bookings_and_inquiries"
-    ],
-    "50": [
+    "46": [
       "app_filament_resources_bookingresource_bookingresource",
       "app_filament_resources_bookingresource_bookingresource_canaccess",
       "app_filament_resources_bookingresource_bookingresource_form",
@@ -1314,7 +1262,7 @@
       "app_filament_resources_bookingresource_php_form",
       "app_filament_resources_bookingresource_php_table"
     ],
-    "51": [
+    "47": [
       "composer",
       "composer_description",
       "composer_license",
@@ -1324,7 +1272,7 @@
       "composer_schema",
       "composer_type"
     ],
-    "52": [
+    "48": [
       "composer_require_dev",
       "composer_require_dev_fakerphp_faker",
       "composer_require_dev_laravel_pail",
@@ -1334,16 +1282,25 @@
       "composer_require_dev_nunomaduro_collision",
       "composer_require_dev_phpunit_phpunit"
     ],
-    "53": [
-      "app_models_schedule_php_belongstomany",
-      "app_models_schedule_php_hasmany",
-      "app_models_schedule_schedule_activescheduleaccommodations",
-      "app_models_schedule_schedule_bookings",
-      "app_models_schedule_schedule_getaccommodationlabelattribute",
-      "app_models_schedule_schedule_scheduleaccommodations",
-      "app_models_schedule_schedule_transportclasses"
+    "49": [
+      "app_models_scheduleaccommodation",
+      "app_models_scheduleaccommodation_php_belongsto",
+      "app_models_scheduleaccommodation_scheduleaccommodation",
+      "app_models_scheduleaccommodation_scheduleaccommodation_schedule",
+      "database_seeders_scheduleaccommodationseeder",
+      "database_seeders_scheduleaccommodationseeder_scheduleaccommodationseeder",
+      "database_seeders_scheduleaccommodationseeder_scheduleaccommodationseeder_run"
     ],
-    "54": [
+    "50": [
+      "app_models_vehiclebrand",
+      "app_models_vehiclebrand_vehiclebrand",
+      "app_models_vehiclebrand_vehiclebrand_models",
+      "database_seeders_vehiclebrandmodelseeder",
+      "database_seeders_vehiclebrandmodelseeder_vehiclebrandmodelseeder",
+      "database_seeders_vehiclebrandmodelseeder_vehiclebrandmodelseeder_run",
+      "hasmany"
+    ],
+    "51": [
       "composer_allow_plugins_pestphp_pest_plugin",
       "composer_allow_plugins_php_http_discovery",
       "composer_config",
@@ -1352,7 +1309,7 @@
       "composer_config_preferred_install",
       "composer_config_sort_packages"
     ],
-    "55": [
+    "52": [
       "flutter_app_lib_main_build",
       "flutter_app_lib_main_gonext",
       "flutter_app_lib_main_gotoschedule",
@@ -1361,7 +1318,7 @@
       "flutter_app_lib_main_showferryaccommodationpicker",
       "materialpageroute"
     ],
-    "56": [
+    "53": [
       "app_console_commands_deleteallusers",
       "app_console_commands_deleteallusers_deleteallusers",
       "app_console_commands_deleteallusers_deleteallusers_handle",
@@ -1369,601 +1326,654 @@
       "app_console_commands_purgeexpiredproofs_purgeexpiredproofs_handle",
       "command"
     ],
+    "54": [
+      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager",
+      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_accommodationsrelationmanager",
+      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_accommodationsrelationmanager_form",
+      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_accommodationsrelationmanager_table",
+      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_php_form",
+      "app_filament_resources_bookingresource_relationmanagers_accommodationsrelationmanager_php_table"
+    ],
+    "55": [
+      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager",
+      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_passengersrelationmanager",
+      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_passengersrelationmanager_form",
+      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_passengersrelationmanager_table",
+      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_php_form",
+      "app_filament_resources_bookingresource_relationmanagers_passengersrelationmanager_php_table"
+    ],
+    "56": [
+      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager",
+      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_php_form",
+      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_php_table",
+      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager",
+      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_form",
+      "app_filament_resources_bookingresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_table"
+    ],
     "57": [
+      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager",
+      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_php_form",
+      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_php_table",
+      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_scheduleaccommodationsrelationmanager",
+      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_scheduleaccommodationsrelationmanager_form",
+      "app_filament_resources_scheduleresource_relationmanagers_scheduleaccommodationsrelationmanager_scheduleaccommodationsrelationmanager_table"
+    ],
+    "58": [
+      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager",
+      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_php_form",
+      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_php_table",
+      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager",
+      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_form",
+      "app_filament_resources_scheduleresource_relationmanagers_transportclassesrelationmanager_transportclassesrelationmanager_table"
+    ],
+    "59": [
+      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager",
+      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_datesrelationmanager",
+      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_datesrelationmanager_form",
+      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_datesrelationmanager_table",
+      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_php_form",
+      "app_filament_resources_tourresource_relationmanagers_datesrelationmanager_php_table"
+    ],
+    "60": [
+      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager",
+      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_php_form",
+      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_php_table",
+      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_vehiclemodelsrelationmanager",
+      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_vehiclemodelsrelationmanager_form",
+      "app_filament_resources_vehiclebrandresource_relationmanagers_vehiclemodelsrelationmanager_vehiclemodelsrelationmanager_table"
+    ],
+    "61": [
+      "tests_unit_scheduleseatingprofiletest",
+      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest",
+      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profile_falls_back_to_business_class_aircraft_when_business_is_present",
+      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profile_falls_back_when_vehicle_name_is_missing_for_two_class_configuration",
+      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profile_resolves_aliases_and_aircraft_variants",
+      "tests_unit_scheduleseatingprofiletest_scheduleseatingprofiletest_test_airline_seating_profiles_have_capacity_values_that_match_their_seat_counts"
+    ],
+    "62": [
       "app_filament_pages_overallreports_overallreports",
       "app_filament_pages_overallreports_overallreports_canaccess",
       "app_filament_pages_overallreports_overallreports_loadstats",
       "app_filament_pages_overallreports_overallreports_mount",
       "app_filament_pages_overallreports_overallreports_updatedperiod"
     ],
-    "58": [
+    "63": [
       "app_http_middleware_adminmiddleware",
       "app_http_middleware_adminmiddleware_adminmiddleware",
       "app_http_middleware_adminmiddleware_adminmiddleware_handle",
       "app_http_middleware_adminmiddleware_php_request",
       "closure"
     ],
-    "59": [
+    "64": [
+      "app_models_accommodation_accommodation",
+      "app_models_accommodation_accommodation_bookings",
+      "app_models_accommodation_accommodation_getcoverimageattribute",
+      "app_models_accommodation_php_belongstomany",
+      "database_seeders_tourhotelsseeder_tourhotelsseeder_run"
+    ],
+    "65": [
       "composer_autoload",
       "composer_autoload_psr_4",
       "composer_psr_4_app",
       "composer_psr_4_database_factories",
       "composer_psr_4_database_seeders"
     ],
-    "60": [
+    "66": [
       "flutter_app_test_widget_test",
       "flutter_app_test_widget_test_main",
       "package_flutter_app_main_dart",
       "package_flutter_material_dart",
       "package_flutter_test_flutter_test_dart"
     ],
-    "61": [
-      "app_http_controllers_api_tourcontroller",
-      "app_http_controllers_api_tourcontroller_php_request",
-      "app_http_controllers_api_tourcontroller_tourcontroller",
-      "app_http_controllers_api_tourcontroller_tourcontroller_index"
-    ],
-    "62": [
-      "app_models_tourdate",
-      "app_models_tourdate_php_belongsto",
-      "app_models_tourdate_tourdate",
-      "app_models_tourdate_tourdate_tour"
-    ],
-    "63": [
-      "app_filament_resources_ferryrouteresource_pages_listferryroutes",
-      "app_filament_resources_ferryrouteresource_pages_listferryroutes_listferryroutes",
-      "app_filament_resources_ferryrouteresource_pages_listferryroutes_listferryroutes_getheaderactions"
-    ],
-    "64": [
-      "app_filament_resources_scheduleresource_pages_listschedules",
-      "app_filament_resources_scheduleresource_pages_listschedules_listschedules",
-      "app_filament_resources_scheduleresource_pages_listschedules_listschedules_getheaderactions"
-    ],
-    "65": [
-      "app_filament_resources_tourresource_pages_listtours_listtours",
-      "app_filament_resources_tourresource_pages_listtours_listtours_getheaderactions",
-      "app_filament_resources_tourresource_pages_listtours_listtours_importtoursfromcsv"
-    ],
-    "66": [
-      "app_filament_resources_transactionresource_pages_listtransactions",
-      "app_filament_resources_transactionresource_pages_listtransactions_listtransactions",
-      "app_filament_resources_transactionresource_pages_listtransactions_listtransactions_getheaderactions"
-    ],
     "67": [
-      "app_filament_resources_transportclassresource_pages_listtransportclasses",
-      "app_filament_resources_transportclassresource_pages_listtransportclasses_listtransportclasses",
-      "app_filament_resources_transportclassresource_pages_listtransportclasses_listtransportclasses_getheaderactions"
+      "app_filament_pages_staffperformance_php_collection",
+      "app_filament_pages_staffperformance_staffperformance",
+      "app_filament_pages_staffperformance_staffperformance_canaccess",
+      "app_filament_pages_staffperformance_staffperformance_mount"
     ],
     "68": [
-      "app_filament_resources_vehiclerateresource_pages_listvehiclerates",
-      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates",
-      "app_filament_resources_vehiclerateresource_pages_listvehiclerates_listvehiclerates_getheaderactions"
+      "app_filament_resources_ferryrouteresource_pages_editferryroute",
+      "app_filament_resources_ferryrouteresource_pages_editferryroute_editferryroute",
+      "app_filament_resources_ferryrouteresource_pages_editferryroute_editferryroute_getheaderactions",
+      "app_filament_resources_ferryrouteresource_pages_editferryroute_editferryroute_mutateformdatabeforesave"
     ],
     "69": [
+      "app_filament_resources_transportclassresource_pages_edittransportclass",
+      "app_filament_resources_transportclassresource_pages_edittransportclass_edittransportclass",
+      "app_filament_resources_transportclassresource_pages_edittransportclass_edittransportclass_getheaderactions"
+    ],
+    "70": [
+      "app_filament_resources_vehiclerateresource_pages_editvehiclerate",
+      "app_filament_resources_vehiclerateresource_pages_editvehiclerate_editvehiclerate",
+      "app_filament_resources_vehiclerateresource_pages_editvehiclerate_editvehiclerate_getheaderactions"
+    ],
+    "71": [
       "composer_autoload_dev",
       "composer_autoload_dev_psr_4",
       "composer_psr_4_tests"
     ],
-    "70": [
+    "72": [
       "composer_extra",
       "composer_extra_laravel",
       "composer_laravel_dont_discover"
     ],
-    "71": [
+    "73": [
       "composer_keywords",
       "ref_framework",
       "ref_laravel"
     ],
-    "72": [
+    "74": [
       "database_migrations_0001_01_01_000000_create_users_table",
       "database_migrations_0001_01_01_000000_create_users_table_down",
       "database_migrations_0001_01_01_000000_create_users_table_up"
     ],
-    "73": [
+    "75": [
       "database_migrations_0001_01_01_000001_create_cache_table",
       "database_migrations_0001_01_01_000001_create_cache_table_down",
       "database_migrations_0001_01_01_000001_create_cache_table_up"
     ],
-    "74": [
+    "76": [
       "database_migrations_0001_01_01_000002_create_jobs_table",
       "database_migrations_0001_01_01_000002_create_jobs_table_down",
       "database_migrations_0001_01_01_000002_create_jobs_table_up"
     ],
-    "75": [
+    "77": [
       "database_migrations_2026_07_06_122938_create_bookings_table",
       "database_migrations_2026_07_06_122938_create_bookings_table_down",
       "database_migrations_2026_07_06_122938_create_bookings_table_up"
     ],
-    "76": [
+    "78": [
       "database_migrations_2026_07_06_122939_create_accommodations_table",
       "database_migrations_2026_07_06_122939_create_accommodations_table_down",
       "database_migrations_2026_07_06_122939_create_accommodations_table_up"
     ],
-    "77": [
+    "79": [
       "database_migrations_2026_07_06_122939_create_discounts_table",
       "database_migrations_2026_07_06_122939_create_discounts_table_down",
       "database_migrations_2026_07_06_122939_create_discounts_table_up"
     ],
-    "78": [
+    "80": [
       "database_migrations_2026_07_06_122939_create_passengers_table",
       "database_migrations_2026_07_06_122939_create_passengers_table_down",
       "database_migrations_2026_07_06_122939_create_passengers_table_up"
     ],
-    "79": [
+    "81": [
       "database_migrations_2026_07_06_122940_create_transactions_table",
       "database_migrations_2026_07_06_122940_create_transactions_table_down",
       "database_migrations_2026_07_06_122940_create_transactions_table_up"
     ],
-    "80": [
+    "82": [
       "database_migrations_2026_07_06_123000_add_name_and_percentage_to_discounts_table",
       "database_migrations_2026_07_06_123000_add_name_and_percentage_to_discounts_table_down",
       "database_migrations_2026_07_06_123000_add_name_and_percentage_to_discounts_table_up"
     ],
-    "81": [
+    "83": [
       "database_migrations_2026_07_08_000001_convert_accommodations_to_catalog",
       "database_migrations_2026_07_08_000001_convert_accommodations_to_catalog_down",
       "database_migrations_2026_07_08_000001_convert_accommodations_to_catalog_up"
     ],
-    "82": [
+    "84": [
       "database_migrations_2026_07_08_000002_create_accommodation_booking_table",
       "database_migrations_2026_07_08_000002_create_accommodation_booking_table_down",
       "database_migrations_2026_07_08_000002_create_accommodation_booking_table_up"
     ],
-    "83": [
+    "85": [
       "database_migrations_2026_07_08_042046_create_payment_settings_table",
       "database_migrations_2026_07_08_042046_create_payment_settings_table_down",
       "database_migrations_2026_07_08_042046_create_payment_settings_table_up"
     ],
-    "84": [
+    "86": [
       "database_migrations_2026_07_09_000001_create_ferry_routes_and_schedules_table",
       "database_migrations_2026_07_09_000001_create_ferry_routes_and_schedules_table_down",
       "database_migrations_2026_07_09_000001_create_ferry_routes_and_schedules_table_up"
     ],
-    "85": [
+    "87": [
       "database_migrations_2026_07_09_000002_add_schedule_to_bookings_table",
       "database_migrations_2026_07_09_000002_add_schedule_to_bookings_table_down",
       "database_migrations_2026_07_09_000002_add_schedule_to_bookings_table_up"
     ],
-    "86": [
+    "88": [
       "database_migrations_2026_07_09_000003_add_proof_retention_days_to_payment_settings_table",
       "database_migrations_2026_07_09_000003_add_proof_retention_days_to_payment_settings_table_down",
       "database_migrations_2026_07_09_000003_add_proof_retention_days_to_payment_settings_table_up"
     ],
-    "87": [
+    "89": [
       "database_migrations_2026_07_10_000001_add_mode_and_operator_to_ferry_routes",
       "database_migrations_2026_07_10_000001_add_mode_and_operator_to_ferry_routes_down",
       "database_migrations_2026_07_10_000001_add_mode_and_operator_to_ferry_routes_up"
     ],
-    "88": [
+    "90": [
       "database_migrations_2026_07_11_150120_create_promotions_table",
       "database_migrations_2026_07_11_150120_create_promotions_table_down",
       "database_migrations_2026_07_11_150120_create_promotions_table_up"
     ],
-    "89": [
+    "91": [
       "database_migrations_2026_07_12_000000_create_website_settings_table",
       "database_migrations_2026_07_12_000000_create_website_settings_table_down",
       "database_migrations_2026_07_12_000000_create_website_settings_table_up"
     ],
-    "90": [
+    "92": [
       "database_migrations_2026_07_13_000000_add_confirmation_url_to_transactions_table",
       "database_migrations_2026_07_13_000000_add_confirmation_url_to_transactions_table_down",
       "database_migrations_2026_07_13_000000_add_confirmation_url_to_transactions_table_up"
     ],
-    "91": [
+    "93": [
       "database_migrations_2026_07_13_000000_add_is_staff_to_users_table",
       "database_migrations_2026_07_13_000000_add_is_staff_to_users_table_down",
       "database_migrations_2026_07_13_000000_add_is_staff_to_users_table_up"
     ],
-    "92": [
+    "94": [
       "database_migrations_2026_07_13_000001_add_admin_columns_to_users_table",
       "database_migrations_2026_07_13_000001_add_admin_columns_to_users_table_down",
       "database_migrations_2026_07_13_000001_add_admin_columns_to_users_table_up"
     ],
-    "93": [
+    "95": [
       "database_migrations_2026_07_13_142802_add_api_token_to_users_table",
       "database_migrations_2026_07_13_142802_add_api_token_to_users_table_down",
       "database_migrations_2026_07_13_142802_add_api_token_to_users_table_up"
     ],
-    "94": [
+    "96": [
       "database_migrations_2026_07_14_000000_add_discount_details_to_passengers_table",
       "database_migrations_2026_07_14_000000_add_discount_details_to_passengers_table_down",
       "database_migrations_2026_07_14_000000_add_discount_details_to_passengers_table_up"
     ],
-    "95": [
+    "97": [
       "database_migrations_2026_07_16_094556_create_vehicle_rates_table",
       "database_migrations_2026_07_16_094556_create_vehicle_rates_table_down",
       "database_migrations_2026_07_16_094556_create_vehicle_rates_table_up"
     ],
-    "96": [
+    "98": [
       "database_migrations_2026_07_16_094558_create_transport_classes_table",
       "database_migrations_2026_07_16_094558_create_transport_classes_table_down",
       "database_migrations_2026_07_16_094558_create_transport_classes_table_up"
     ],
-    "97": [
+    "99": [
       "database_migrations_2026_07_16_094600_add_class_and_operator_columns_to_bookings",
       "database_migrations_2026_07_16_094600_add_class_and_operator_columns_to_bookings_down",
       "database_migrations_2026_07_16_094600_add_class_and_operator_columns_to_bookings_up"
     ],
-    "98": [
+    "100": [
       "database_migrations_2026_07_16_094601_add_vehicle_name_to_schedules",
       "database_migrations_2026_07_16_094601_add_vehicle_name_to_schedules_down",
       "database_migrations_2026_07_16_094601_add_vehicle_name_to_schedules_up"
     ],
-    "99": [
+    "101": [
       "database_migrations_2026_07_16_094603_add_seat_fields_to_passengers",
       "database_migrations_2026_07_16_094603_add_seat_fields_to_passengers_down",
       "database_migrations_2026_07_16_094603_add_seat_fields_to_passengers_up"
     ],
-    "100": [
+    "102": [
       "database_migrations_2026_07_16_120001_add_sort_order_to_vehicle_rates_table",
       "database_migrations_2026_07_16_120001_add_sort_order_to_vehicle_rates_table_down",
       "database_migrations_2026_07_16_120001_add_sort_order_to_vehicle_rates_table_up"
     ],
-    "101": [
+    "103": [
       "database_migrations_2026_07_16_120002_create_schedule_accommodations_table",
       "database_migrations_2026_07_16_120002_create_schedule_accommodations_table_down",
       "database_migrations_2026_07_16_120002_create_schedule_accommodations_table_up"
     ],
-    "102": [
+    "104": [
       "database_migrations_2026_07_16_120003_add_schedule_accommodation_to_bookings_table",
       "database_migrations_2026_07_16_120003_add_schedule_accommodation_to_bookings_table_down",
       "database_migrations_2026_07_16_120003_add_schedule_accommodation_to_bookings_table_up"
     ],
-    "103": [
+    "105": [
       "database_migrations_2026_07_16_120004_add_seat_config_to_schedules_table",
       "database_migrations_2026_07_16_120004_add_seat_config_to_schedules_table_down",
       "database_migrations_2026_07_16_120004_add_seat_config_to_schedules_table_up"
     ],
-    "104": [
+    "106": [
       "database_migrations_2026_07_16_141354_add_destination_to_accommodations_table",
       "database_migrations_2026_07_16_141354_add_destination_to_accommodations_table_down",
       "database_migrations_2026_07_16_141354_add_destination_to_accommodations_table_up"
     ],
-    "105": [
+    "107": [
       "database_migrations_2026_07_16_160000_add_operator_code_and_sort_order_to_transport_classes_table",
       "database_migrations_2026_07_16_160000_add_operator_code_and_sort_order_to_transport_classes_table_down",
       "database_migrations_2026_07_16_160000_add_operator_code_and_sort_order_to_transport_classes_table_up"
     ],
-    "106": [
+    "108": [
       "database_migrations_2026_07_19_000001_create_vehicles_table",
       "database_migrations_2026_07_19_000001_create_vehicles_table_down",
       "database_migrations_2026_07_19_000001_create_vehicles_table_up"
     ],
-    "107": [
+    "109": [
       "database_migrations_2026_07_19_114454_add_sale_fields_to_transport_classes_table",
       "database_migrations_2026_07_19_114454_add_sale_fields_to_transport_classes_table_down",
       "database_migrations_2026_07_19_114454_add_sale_fields_to_transport_classes_table_up"
     ],
-    "108": [
+    "110": [
       "database_migrations_2026_07_19_134256_create_tours_table",
       "database_migrations_2026_07_19_134256_create_tours_table_down",
       "database_migrations_2026_07_19_134256_create_tours_table_up"
     ],
-    "109": [
+    "111": [
       "database_migrations_2026_07_19_134258_create_tour_dates_table",
       "database_migrations_2026_07_19_134258_create_tour_dates_table_down",
       "database_migrations_2026_07_19_134258_create_tour_dates_table_up"
     ],
-    "110": [
+    "112": [
       "database_migrations_2026_07_19_143215_add_cancellation_and_rebooking_fields_to_bookings_and_transactions",
       "database_migrations_2026_07_19_143215_add_cancellation_and_rebooking_fields_to_bookings_and_transactions_down",
       "database_migrations_2026_07_19_143215_add_cancellation_and_rebooking_fields_to_bookings_and_transactions_up"
     ],
-    "111": [
+    "113": [
       "database_migrations_2026_07_19_145227_add_missing_columns_to_bookings_and_transactions",
       "database_migrations_2026_07_19_145227_add_missing_columns_to_bookings_and_transactions_down",
       "database_migrations_2026_07_19_145227_add_missing_columns_to_bookings_and_transactions_up"
     ],
-    "112": [
+    "114": [
       "database_migrations_2026_07_19_180000_add_rebooking_request_columns_to_bookings_and_transactions",
       "database_migrations_2026_07_19_180000_add_rebooking_request_columns_to_bookings_and_transactions_down",
       "database_migrations_2026_07_19_180000_add_rebooking_request_columns_to_bookings_and_transactions_up"
     ],
-    "113": [
+    "115": [
       "database_migrations_2026_07_19_180000_create_inquiries_table",
       "database_migrations_2026_07_19_180000_create_inquiries_table_down",
       "database_migrations_2026_07_19_180000_create_inquiries_table_up"
     ],
-    "114": [
+    "116": [
       "database_migrations_2026_07_20_120000_create_user_login_histories_table",
       "database_migrations_2026_07_20_120000_create_user_login_histories_table_down",
       "database_migrations_2026_07_20_120000_create_user_login_histories_table_up"
     ],
-    "115": [
+    "117": [
       "database_migrations_2026_07_20_150000_add_driver_columns_to_bookings",
       "database_migrations_2026_07_20_150000_add_driver_columns_to_bookings_down",
       "database_migrations_2026_07_20_150000_add_driver_columns_to_bookings_up"
     ],
-    "116": [
+    "118": [
       "database_migrations_2026_07_20_170000_create_vehicle_brands_and_models_tables",
       "database_migrations_2026_07_20_170000_create_vehicle_brands_and_models_tables_down",
       "database_migrations_2026_07_20_170000_create_vehicle_brands_and_models_tables_up"
     ],
-    "117": [
+    "119": [
       "date_picker",
       "resources_views_livewire_booking_form_blade",
       "settriptype"
     ],
-    "118": [
+    "120": [
       "flutter_app_android_app_src_main_kotlin_com_amiga_travel_flutter_app_mainactivity",
       "flutter_app_android_app_src_main_kotlin_com_amiga_travel_flutter_app_mainactivity_mainactivity",
       "flutteractivity"
     ],
-    "119": [
-      "app_filament_resources_vehiclebrandresource_pages_listvehiclebrands_listvehiclebrands",
-      "app_filament_resources_vehiclebrandresource_pages_listvehiclebrands_listvehiclebrands_getheaderactions"
-    ],
-    "120": [
+    "121": [
       "flutter_app_macos_flutter_ephemeral_flutter_export_environment",
       "flutter_app_macos_flutter_ephemeral_flutter_export_environment_sh__entry"
     ],
-    "121": [
+    "122": [
       "resources_views_filament_pages_manage_website_settings_blade",
       "save"
     ],
-    "122": [
+    "123": [
       "resources_views_filament_pages_overall_reports_blade",
       "set"
     ],
-    "123": [
+    "124": [
       "resources_views_livewire_date_picker_blade",
       "togglecalendar"
     ],
-    "124": [
+    "125": [
       "tests_createsapplication",
       "tests_createsapplication_createapplication"
     ],
-    "125": [
+    "126": [
       "annotation_gmail"
     ],
-    "126": [
-      "app_livewire_bookingform_php_collection"
-    ],
     "127": [
-      "bootstrap_app"
+      "app_filament_resources_ferryrouteresource_php_form"
     ],
     "128": [
-      "bootstrap_providers"
+      "app_filament_resources_ferryrouteresource_php_table"
     ],
     "129": [
-      "config_airline_seating"
+      "app_livewire_bookingform_php_collection"
     ],
     "130": [
-      "config_app"
+      "bootstrap_app"
     ],
     "131": [
-      "config_cache"
+      "bootstrap_providers"
     ],
     "132": [
-      "config_database"
+      "config_airline_seating"
     ],
     "133": [
-      "config_filesystems"
+      "config_app"
     ],
     "134": [
-      "config_logging"
+      "config_cache"
     ],
     "135": [
-      "config_queue"
+      "config_database"
     ],
     "136": [
-      "config_services"
+      "config_filesystems"
     ],
     "137": [
-      "config_session"
+      "config_logging"
     ],
     "138": [
-      "config_spatie_laravel_pdf"
+      "config_queue"
     ],
     "139": [
-      "flutter_app_android_app_build"
+      "config_services"
     ],
     "140": [
-      "flutter_app_android_build"
+      "config_session"
     ],
     "141": [
-      "flutter_app_android_settings"
+      "config_spatie_laravel_pdf"
     ],
     "142": [
-      "flutter_app_ios_runner_runner_bridging_header"
+      "flutter_app_android_app_build"
     ],
     "143": [
-      "inspect_tours"
+      "flutter_app_android_build"
     ],
     "144": [
-      "none_string"
+      "flutter_app_android_settings"
     ],
     "145": [
-      "public_index"
+      "flutter_app_ios_runner_runner_bridging_header"
     ],
     "146": [
-      "resources_views_about_blade"
+      "inspect_tours"
     ],
     "147": [
-      "resources_views_book_blade"
+      "none_string"
     ],
     "148": [
-      "resources_views_book_status_blade"
+      "public_index"
     ],
     "149": [
-      "resources_views_contact_blade"
+      "resources_views_about_blade"
     ],
     "150": [
-      "resources_views_dashboard_blade"
+      "resources_views_book_blade"
     ],
     "151": [
-      "resources_views_download_blade"
+      "resources_views_book_status_blade"
     ],
     "152": [
-      "resources_views_emails_booking_cancellation_blade"
+      "resources_views_contact_blade"
     ],
     "153": [
-      "resources_views_emails_booking_confirmation_blade"
+      "resources_views_dashboard_blade"
     ],
     "154": [
-      "resources_views_emails_booking_created_blade"
+      "resources_views_download_blade"
     ],
     "155": [
-      "resources_views_emails_payment_proof_received_blade"
+      "resources_views_emails_booking_cancellation_blade"
     ],
     "156": [
-      "resources_views_emails_rebooking_requested_blade"
+      "resources_views_emails_booking_confirmation_blade"
     ],
     "157": [
-      "resources_views_emails_rebooking_verification_blade"
+      "resources_views_emails_booking_created_blade"
     ],
     "158": [
-      "resources_views_exports_bookings_pdf_blade"
+      "resources_views_emails_payment_proof_received_blade"
     ],
     "159": [
-      "resources_views_filament_admin_notification_bell_blade"
+      "resources_views_emails_rebooking_requested_blade"
     ],
     "160": [
-      "resources_views_filament_infolists_entries_proof_image_blade"
+      "resources_views_emails_rebooking_verification_blade"
     ],
     "161": [
-      "resources_views_filament_pages_manage_payment_settings_blade"
+      "resources_views_exports_bookings_pdf_blade"
     ],
     "162": [
-      "resources_views_filament_pages_manage_proofs_blade"
+      "resources_views_filament_admin_notification_bell_blade"
     ],
     "163": [
-      "resources_views_filament_pages_staff_performance_blade"
+      "resources_views_filament_infolists_entries_proof_image_blade"
     ],
     "164": [
-      "resources_views_filament_widgets_dashboard_summary_widget_blade"
+      "resources_views_filament_pages_manage_payment_settings_blade"
     ],
     "165": [
-      "resources_views_flutter_blade"
+      "resources_views_filament_pages_manage_proofs_blade"
     ],
     "166": [
-      "resources_views_gallery_blade"
+      "resources_views_filament_pages_staff_performance_blade"
     ],
     "167": [
-      "resources_views_home_blade"
+      "resources_views_filament_widgets_dashboard_summary_widget_blade"
     ],
     "168": [
-      "resources_views_layouts_app_blade"
+      "resources_views_flutter_blade"
     ],
     "169": [
-      "resources_views_livewire_booking_lookup_blade"
+      "resources_views_gallery_blade"
     ],
     "170": [
-      "resources_views_livewire_payment_proof_blade"
+      "resources_views_home_blade"
     ],
     "171": [
-      "resources_views_livewire_user_dashboard_blade"
+      "resources_views_layouts_app_blade"
     ],
     "172": [
-      "resources_views_login_blade"
+      "resources_views_livewire_booking_lookup_blade"
     ],
     "173": [
-      "resources_views_payment_blade"
+      "resources_views_livewire_payment_proof_blade"
     ],
     "174": [
-      "resources_views_pdf_receipt_blade"
+      "resources_views_livewire_user_dashboard_blade"
     ],
     "175": [
-      "resources_views_register_blade"
+      "resources_views_login_blade"
     ],
     "176": [
-      "resources_views_schedules_blade"
+      "resources_views_payment_blade"
     ],
     "177": [
-      "resources_views_services_blade"
+      "resources_views_pdf_receipt_blade"
     ],
     "178": [
-      "resources_views_tour_details_blade"
+      "resources_views_register_blade"
     ],
     "179": [
-      "resources_views_tour_package_blade"
+      "resources_views_schedules_blade"
     ],
     "180": [
-      "resources_views_vendor_filament_components_sidebar_index_blade"
+      "resources_views_services_blade"
     ],
     "181": [
-      "resources_views_welcome_blade"
+      "resources_views_tour_details_blade"
     ],
     "182": [
-      "scripts_inspect_tours"
+      "resources_views_tour_package_blade"
     ],
     "183": [
-      "scripts_install_flutter"
+      "resources_views_vendor_filament_components_sidebar_index_blade"
     ],
     "184": [
+      "resources_views_welcome_blade"
+    ],
+    "185": [
+      "scripts_inspect_tours"
+    ],
+    "186": [
+      "scripts_install_flutter"
+    ],
+    "187": [
       "scripts_mark_migration"
     ]
   },
   "cohesion": {
     "0": 0.010101010101010102,
-    "1": 0.05501165501165501,
+    "1": 0.05134575569358178,
     "2": 0.0597567424643046,
-    "3": 0.05387205387205387,
-    "4": 0.06363636363636363,
-    "5": 0.07827260458839407,
-    "6": 0.06507936507936508,
-    "7": 0.10685483870967742,
-    "8": 0.08817204301075268,
-    "9": 0.0967741935483871,
-    "10": 0.12643678160919541,
-    "11": 0.07692307692307693,
-    "12": 0.09538461538461539,
+    "3": 0.0696969696969697,
+    "4": 0.09408033826638477,
+    "5": 0.06504065040650407,
+    "6": 0.07112375533428165,
+    "7": 0.06507936507936508,
+    "8": 0.07007575757575757,
+    "9": 0.10795454545454546,
+    "10": 0.10685483870967742,
+    "11": 0.0967741935483871,
+    "12": 0.07692307692307693,
     "13": 0.12,
-    "14": 0.14333333333333334,
-    "15": 0.12333333333333334,
-    "16": 0.10333333333333333,
-    "17": 0.21212121212121213,
+    "14": 0.10333333333333333,
+    "15": 0.20346320346320346,
+    "16": 0.1761904761904762,
+    "17": 0.1380952380952381,
     "18": 0.1368421052631579,
     "19": 0.1,
-    "20": 0.16374269005847952,
+    "20": 0.14035087719298245,
     "21": 0.1111111111111111,
-    "22": 0.19852941176470587,
-    "23": 0.16176470588235295,
-    "24": 0.14705882352941177,
-    "25": 0.18382352941176472,
-    "26": 0.1523809523809524,
-    "27": 0.17582417582417584,
-    "28": 0.14285714285714285,
-    "29": 0.14285714285714285,
+    "22": 0.16911764705882354,
+    "23": 0.25,
+    "24": 0.2,
+    "25": 0.18681318681318682,
+    "26": 0.14285714285714285,
+    "27": 0.1794871794871795,
+    "28": 0.21794871794871795,
+    "29": 0.19230769230769232,
     "30": 0.15384615384615385,
     "31": 0.21212121212121213,
     "32": 0.24242424242424243,
-    "33": 0.21818181818181817,
-    "34": 0.2727272727272727,
-    "35": 0.2545454545454545,
-    "36": 0.23636363636363636,
-    "37": 0.18181818181818182,
-    "38": 0.26666666666666666,
-    "39": 0.24444444444444444,
+    "33": 0.18181818181818182,
+    "34": 0.23636363636363636,
+    "35": 0.18181818181818182,
+    "36": 0.2222222222222222,
+    "37": 0.24444444444444444,
+    "38": 0.24444444444444444,
+    "39": 0.25,
     "40": 0.2777777777777778,
     "41": 0.2777777777777778,
     "42": 0.2777777777777778,
     "43": 0.2777777777777778,
-    "44": 0.2777777777777778,
+    "44": 0.3333333333333333,
     "45": 0.2777777777777778,
-    "46": 0.2777777777777778,
-    "47": 0.2777777777777778,
-    "48": 0.3611111111111111,
-    "49": 0.3333333333333333,
-    "50": 0.2857142857142857,
-    "51": 0.25,
-    "52": 0.25,
-    "53": 0.3333333333333333,
-    "54": 0.2857142857142857,
-    "55": 0.2857142857142857,
-    "56": 0.4,
-    "57": 0.6,
-    "58": 0.6,
-    "59": 0.4,
-    "60": 0.4,
-    "61": 0.6666666666666666,
-    "62": 0.6666666666666666,
-    "63": 0.6666666666666666,
-    "64": 0.6666666666666666,
-    "65": 1.0,
-    "66": 0.6666666666666666,
-    "67": 0.6666666666666666,
-    "68": 0.6666666666666666,
+    "46": 0.2857142857142857,
+    "47": 0.25,
+    "48": 0.25,
+    "49": 0.38095238095238093,
+    "50": 0.38095238095238093,
+    "51": 0.2857142857142857,
+    "52": 0.2857142857142857,
+    "53": 0.4,
+    "54": 0.4666666666666667,
+    "55": 0.4666666666666667,
+    "56": 0.4666666666666667,
+    "57": 0.4666666666666667,
+    "58": 0.4666666666666667,
+    "59": 0.4666666666666667,
+    "60": 0.4666666666666667,
+    "61": 0.3333333333333333,
+    "62": 0.6,
+    "63": 0.6,
+    "64": 0.4,
+    "65": 0.4,
+    "66": 0.4,
+    "67": 0.5,
+    "68": 0.5,
     "69": 0.6666666666666666,
     "70": 0.6666666666666666,
     "71": 0.6666666666666666,
@@ -2014,8 +2024,8 @@
     "116": 0.6666666666666666,
     "117": 0.6666666666666666,
     "118": 0.6666666666666666,
-    "119": 1.0,
-    "120": 1.0,
+    "119": 0.6666666666666666,
+    "120": 0.6666666666666666,
     "121": 1.0,
     "122": 1.0,
     "123": 1.0,
@@ -2079,7 +2089,10 @@
     "181": 1.0,
     "182": 1.0,
     "183": 1.0,
-    "184": 1.0
+    "184": 1.0,
+    "185": 1.0,
+    "186": 1.0,
+    "187": 1.0
   },
   "gods": [
     {
@@ -2100,7 +2113,7 @@
     {
       "id": "app_models_user_user",
       "label": "User",
-      "degree": 37
+      "degree": 36
     },
     {
       "id": "app_models_transaction_transaction",
@@ -2168,10 +2181,10 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "ScheduleController",
+      "source": "AuthController",
       "target": "Controller",
       "source_files": [
-        "app/Http/Controllers/Api/ScheduleController.php",
+        "app/Http/Controllers/AuthController.php",
         "app/Http/Controllers/Controller.php"
       ],
       "confidence": "EXTRACTED",
@@ -2179,10 +2192,10 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "TourController",
+      "source": "BookingExportController",
       "target": "Controller",
       "source_files": [
-        "app/Http/Controllers/Api/TourController.php",
+        "app/Http/Controllers/BookingExportController.php",
         "app/Http/Controllers/Controller.php"
       ],
       "confidence": "EXTRACTED",
