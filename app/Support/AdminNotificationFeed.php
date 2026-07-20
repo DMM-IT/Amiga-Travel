@@ -40,7 +40,7 @@ class AdminNotificationFeed
                 ]);
             }
 
-            if ($booking->is_rebooked) {
+            if ($booking->is_rebooked && $booking->rebooking_status === 'pending') {
                 $notifications->push([
                     'id' => 'booking-rebook-' . $booking->id,
                     'type' => 'rebooking',

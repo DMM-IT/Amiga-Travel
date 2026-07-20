@@ -24,8 +24,10 @@
     @if ($notifications->isNotEmpty())
         <div
             x-show="open"
+            x-cloak
             x-transition
-            class="absolute -left-96 top-12 z-50 w-96 rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
+            class="fixed right-2 top-16 z-50 w-96 max-w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
+            style="max-height: calc(100vh - 5rem);"
             @click.outside="open = false"
         >
             <div class="sticky top-0 border-b border-gray-100 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900 rounded-t-xl">
@@ -33,7 +35,7 @@
                     Notifications ({{ $unreadCount }})
                 </div>
             </div>
-            <div class="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+            <div class="overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800" style="max-height: calc(100vh - 8rem);">
                 @foreach ($notifications as $notification)
                     <a href="{{ $notification['url'] }}" class="block px-4 py-3 hover:bg-gray-50 transition dark:hover:bg-gray-800">
                         <div class="flex flex-col gap-1">

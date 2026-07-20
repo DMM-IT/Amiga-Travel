@@ -29,6 +29,7 @@ class User extends Authenticatable implements FilamentUser
         'manage_schedules' => 'Schedules',
         'manage_transactions' => 'Transactions',
         'manage_users' => 'Staff accounts',
+        'manage_inquiries' => 'Inquiries',
         'manage_payment_settings' => 'Payment settings',
         'manage_website_settings' => 'Website settings',
         'manage_proofs' => 'Payment proofs',

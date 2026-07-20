@@ -95,7 +95,13 @@ class BookingResource extends Resource
                     ->label('Plate Number')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('status')
-                    ->badge(),
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'confirmed' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'secondary',
+                    }),
                 Tables\Columns\TextColumn::make('rebooking_status')
                     ->label('Rebooking')
                     ->badge()
@@ -121,9 +127,11 @@ class BookingResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('verifyRebooking')
-                    ->label('Verify rebooking')
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('verifyBooking')
+                    ->label('Verify booking')
+                    ->icon('heroicon-m-check')
+                    ->button()
                     ->form([
                         Forms\Components\TextInput::make('confirmation_url')
                             ->label('Confirmation URL')
@@ -135,7 +143,7 @@ class BookingResource extends Resource
                             ->acceptedFileTypes(['application/pdf'])
                             ->maxSize(10240),
                     ])
-                    ->visible(fn (Booking $record): bool => $record->rebooking_status === 'pending')
+                    ->visible(fn (Booking $record): bool => $record->status === 'pending')
                     ->requiresConfirmation()
                     ->action(function (Booking $record, array $data): void {
                         if (empty($data['confirmation_url']) && empty($data['confirmation_pdf'])) {
