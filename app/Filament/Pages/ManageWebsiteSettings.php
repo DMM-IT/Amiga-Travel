@@ -850,6 +850,7 @@ class ManageWebsiteSettings extends Page implements HasForms
             'gallery'    => '/gallery',
             'services'   => '/services',
             'tour_package' => '/tour-package',
+            'schedules'  => '/schedules',
             'contact_us' => '/contact-us',
             'download'   => '/download',
             'header'     => '/',
@@ -890,6 +891,13 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'color' => 'purple',
                     'pos'   => 'top:30%;left:34%;width:66%;height:33%',
                     'description' => 'Book a Trip and Check My Booking cards',
+                ],
+                'sliding_text' => [
+                    'label' => 'Sliding Text',
+                    'icon'  => '📢',
+                    'color' => 'pink',
+                    'pos'   => 'top:67%;left:34%;width:66%;height:10%',
+                    'description' => 'Scrolling marquee text below booking section',
                 ],
             ],
             'header' => [
@@ -972,6 +980,23 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'color' => 'indigo',
                     'pos'   => 'top:34%;left:0%;width:100%;height:60%',
                     'description' => 'Domestic and international packages',
+                ],
+            ],
+            'schedules' => [
+                'schedules_hero' => [
+                    'label' => 'Hero Section',
+                    'icon'  => '🗓',
+                    'color' => 'green',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:35%',
+                    'description' => 'Page title, subtitle, and description text',
+                ],
+                'schedules_filters' => [
+                    'label' => 'Filter & Routes',
+                    'icon'  => '🔍',
+                    'color' => 'blue',
+                    'pos'   => 'top:44%;left:0%;width:100%;height:50%',
+                    'description' => 'Section title and filter labels',
+                    'locked' => true,
                 ],
             ],
             'contact_us' => [

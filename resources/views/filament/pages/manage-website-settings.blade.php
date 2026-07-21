@@ -756,6 +756,37 @@
                     </div>
                 @endforeach
 
+            {{-- ======================================= --}}
+            {{-- SLIDING TEXT (HOME)                      --}}
+            {{-- ======================================= --}}
+            @elseif($activeSection === 'sliding_text')
+                <div class="ws-field">
+                    <label class="ws-label">Sliding Text</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.sliding_text" rows="3"
+                              placeholder="Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours."></textarea>
+                </div>
+                <div class="ws-note" style="margin-top:.5rem;">This text scrolls continuously in the pink banner below the booking section on the home page.</div>
+
+            {{-- ======================================= --}}
+            {{-- SCHEDULES HERO                           --}}
+            {{-- ======================================= --}}
+            @elseif($activeSection === 'schedules_hero')
+                <div class="ws-field">
+                    <label class="ws-label">Hero Badge Text</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.schedules_badge"
+                           placeholder="Real-time schedules">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Page Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.schedules_title"
+                           placeholder="Schedule and Routes">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Description</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.schedules_description" rows="3"
+                              placeholder="Browse available ferry and airline routes with live pricing, departure times, and accommodation options."></textarea>
+                </div>
+
             @else
                 <div class="ws-lock-note">Select a highlighted section in the preview to edit it.</div>
             @endif

@@ -25,6 +25,7 @@ class WebsiteSetting extends Model
         'gallery' => 'Gallery',
         'services' => 'Services',
         'tour_package' => 'Tour Package',
+        'schedules' => 'Schedules',
         'contact_us' => 'Contact Us',
         'download' => 'Download',
     ];

@@ -2,33 +2,87 @@
 
 @section('content')
 {{-- Hero Section --}}
-<div class="relative bg-gradient-to-br from-[#216417] via-[#1a5212] to-[#0e3b0a] overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
-        <svg class="absolute top-0 right-0 w-[600px] h-[600px] -translate-y-1/4 translate-x-1/4 text-white" viewBox="0 0 200 200" fill="currentColor">
-            <circle cx="100" cy="100" r="100" opacity="0.08"/>
-        </svg>
-        <svg class="absolute bottom-0 left-0 w-[400px] h-[400px] translate-y-1/4 -translate-x-1/4 text-white" viewBox="0 0 200 200" fill="currentColor">
-            <circle cx="100" cy="100" r="80" opacity="0.06"/>
-        </svg>
-    </div>
+@php
+    $origins = $routes->pluck('origin')->unique()->sort()->values();
+    $destinations = $routes->pluck('destination')->unique()->sort()->values();
+@endphp
+<div x-data="{
+    activeFilter: 'all',
+    selectedOrigin: '',
+    selectedDestination: '',
+    swapRoute() {
+        let tmp = this.selectedOrigin;
+        this.selectedOrigin = this.selectedDestination;
+        this.selectedDestination = tmp;
+    },
+    matchesSearch(origin, destination) {
+        if (this.selectedOrigin && origin !== this.selectedOrigin) return false;
+        if (this.selectedDestination && destination !== this.selectedDestination) return false;
+        return true;
+    },
+    matchesMode(mode) {
+        return this.activeFilter === 'all' || this.activeFilter === mode;
+    }
+}">
+<div class="relative bg-[#216417] overflow-hidden">
+    <div class="absolute inset-0 bg-no-repeat bg-cover bg-center pointer-events-none" style="background-image: url('{{ asset('images/world-map.svg') }}'); opacity: 0.1;"></div>
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <div>
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div class="flex-1">
                 <div class="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 mb-4">
                     <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span class="text-sm font-medium text-emerald-100">Real-time schedules</span>
+                    <span class="text-sm font-medium text-emerald-100">{{ data_get($pageContent ?? [], 'schedules_badge', 'Real-time schedules') }}</span>
                 </div>
                 <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-                    Schedule and Routes
+                    {{ data_get($pageContent ?? [], 'schedules_title', 'Schedule and Routes') }}
                 </h1>
                 <p class="mt-2 text-xl font-medium text-emerald-100">
                     for {{ \Carbon\Carbon::parse($startDate)->format('F j') }} - {{ \Carbon\Carbon::parse($endDate)->format('F j, Y') }}
                 </p>
-                <p class="mt-3 text-base sm:text-lg text-emerald-100/80 max-w-xl">
-                    Browse available ferry and airline routes with live pricing, departure times, and accommodation options.
+                <p class="mt-3 text-base sm:text-lg text-emerald-100/80 max-w-xl pr-4">
+                    {{ data_get($pageContent ?? [], 'schedules_description', 'Browse available ferry and airline routes with live pricing, departure times, and accommodation options.') }}
                 </p>
             </div>
 
+            {{-- Origin / Destination Search Box (Horizontal) --}}
+            <div class="w-full relative z-10 max-w-md shrink-0">
+                <div class="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-md sm:rounded-full rounded-2xl border border-white/20 sm:h-14 shadow-lg shadow-black/10">
+                    {{-- Origin --}}
+                    <div class="w-full sm:flex-1 h-14 sm:h-full relative group">
+                        <label class="absolute top-1.5 left-4 text-[10px] font-semibold uppercase tracking-wider text-emerald-100/70">Origin</label>
+                        <select x-model="selectedOrigin" class="w-full h-full pt-4 pb-1 px-4 text-sm font-bold text-white bg-transparent border-0 focus:ring-0 focus:outline-none appearance-none cursor-pointer [&>option]:text-slate-800">
+                            <option value="">All Origins</option>
+                            @foreach($origins as $origin)
+                                <option value="{{ $origin }}">{{ $origin }}</option>
+                            @endforeach
+                        </select>
+                        <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-white transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                        </div>
+                    </div>
+
+                    {{-- Swap Button --}}
+                    <div class="relative sm:h-full flex justify-center items-center py-1 sm:py-0 px-1 z-10">
+                        <button @click="swapRoute()" type="button" class="group flex items-center justify-center w-8 h-8 rounded-full bg-white/20 border border-white/30 text-white hover:bg-[#ee018d] hover:border-[#ee018d] hover:shadow-[0_0_15px_rgba(238,1,141,0.5)] transition-all duration-300" title="Swap origin and destination">
+                            <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                        </button>
+                    </div>
+
+                    {{-- Destination --}}
+                    <div class="w-full sm:flex-1 h-14 sm:h-full relative group sm:border-l border-t sm:border-t-0 border-white/20">
+                        <label class="absolute top-1.5 left-4 text-[10px] font-semibold uppercase tracking-wider text-emerald-100/70">Destination</label>
+                        <select x-model="selectedDestination" class="w-full h-full pt-4 pb-1 px-4 text-sm font-bold text-white bg-transparent border-0 focus:ring-0 focus:outline-none appearance-none cursor-pointer [&>option]:text-slate-800">
+                            <option value="">Where Are You Headed?</option>
+                            @foreach($destinations as $dest)
+                                <option value="{{ $dest }}">{{ $dest }}</option>
+                            @endforeach
+                        </select>
+                        <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/50 group-hover:text-white transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- Quick Stats --}}
@@ -66,29 +120,8 @@
 </div>
 
 {{-- Search + Filter --}}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-10" x-data="{
-    activeFilter: 'all',
-    selectedOrigin: '',
-    selectedDestination: '',
-    swapRoute() {
-        let tmp = this.selectedOrigin;
-        this.selectedOrigin = this.selectedDestination;
-        this.selectedDestination = tmp;
-    },
-    matchesSearch(origin, destination) {
-        if (this.selectedOrigin && origin !== this.selectedOrigin) return false;
-        if (this.selectedDestination && destination !== this.selectedDestination) return false;
-        return true;
-    },
-    matchesMode(mode) {
-        return this.activeFilter === 'all' || this.activeFilter === mode;
-    }
-}">
-    {{-- Origin / Destination Search Bar --}}
-    @php
-        $origins = $routes->pluck('origin')->unique()->sort()->values();
-        $destinations = $routes->pluck('destination')->unique()->sort()->values();
-    @endphp
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-10">
+    {{-- Date Search Bar --}}
     <form action="{{ route('schedules') }}" method="GET" class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden mb-4 p-4 flex flex-col sm:flex-row gap-4 items-end">
         <div class="flex-1 w-full">
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Start Date</label>
@@ -102,46 +135,6 @@
             Apply Dates
         </button>
     </form>
-
-    <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden mb-4">
-        <div class="h-1 bg-gradient-to-r from-[#216417] via-emerald-400 to-[#216417]"></div>
-        <div class="flex flex-col sm:flex-row items-stretch">
-            {{-- Origin --}}
-            <div class="flex-1 relative">
-                <label class="absolute top-3 left-5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Origin</label>
-                <select x-model="selectedOrigin" class="w-full h-full pt-8 pb-3 px-5 text-sm font-medium text-slate-700 bg-transparent border-0 focus:ring-0 focus:outline-none appearance-none cursor-pointer">
-                    <option value="">All Origins</option>
-                    @foreach($origins as $origin)
-                        <option value="{{ $origin }}">{{ $origin }}</option>
-                    @endforeach
-                </select>
-                <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
-                </div>
-            </div>
-
-            {{-- Swap Button --}}
-            <div class="flex items-center justify-center px-1 sm:px-0">
-                <button @click="swapRoute()" type="button" class="group flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 bg-white text-slate-400 hover:border-[#216417] hover:text-[#216417] hover:bg-emerald-50 transition-all duration-200 shadow-sm hover:shadow" title="Swap origin and destination">
-                    <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
-                </button>
-            </div>
-
-            {{-- Destination --}}
-            <div class="flex-1 relative border-t sm:border-t-0 sm:border-l border-slate-100">
-                <label class="absolute top-3 left-5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Destination</label>
-                <select x-model="selectedDestination" class="w-full h-full pt-8 pb-3 px-5 text-sm font-medium text-slate-700 bg-transparent border-0 focus:ring-0 focus:outline-none appearance-none cursor-pointer">
-                    <option value="">Where Are You Headed?</option>
-                    @foreach($destinations as $dest)
-                        <option value="{{ $dest }}">{{ $dest }}</option>
-                    @endforeach
-                </select>
-                <div class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
-                </div>
-            </div>
-        </div>
-    </div>
 
     {{-- Mode Filter Tabs --}}
     <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-2 flex flex-wrap gap-2">
@@ -229,79 +222,130 @@
                     {{-- Schedule Cards Grid --}}
                     <div class="p-4 sm:p-6">
                         @if($route->schedules->count() > 0)
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                @foreach($route->schedules as $schedule)
-                                    <div class="group relative rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:border-[#216417]/30 hover:shadow-md">
-                                        {{-- Service Name & Time --}}
-                                        <div class="flex items-start justify-between mb-3">
-                                            <div>
-                                                <h3 class="font-bold text-slate-900 text-sm leading-tight">{{ $schedule->service_name }}</h3>
-                                                @if($schedule->vehicle_name)
-                                                    <p class="text-xs text-slate-500 mt-0.5">{{ $schedule->vehicle_name }}</p>
-                                                @endif
-                                            </div>
-                                            <span class="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-sm font-bold text-emerald-700">
-                                                ₱{{ number_format($schedule->price, 0) }}
-                                            </span>
-                                        </div>
+                            <div x-data="{
+                                activeSlide: 0,
+                                totalSlides: {{ $route->schedules->count() }},
+                                itemsPerPage: 3,
+                                get pages() { return Math.ceil(this.totalSlides / this.itemsPerPage); },
+                                init() {
+                                    this.updateItemsPerPage();
+                                    window.addEventListener('resize', () => this.updateItemsPerPage());
+                                    
+                                    $refs.slider.addEventListener('scroll', () => {
+                                        let page = Math.round($refs.slider.scrollLeft / $refs.slider.clientWidth);
+                                        this.activeSlide = page;
+                                    });
+                                },
+                                updateItemsPerPage() {
+                                    this.itemsPerPage = window.innerWidth >= 1280 ? 3 : (window.innerWidth >= 768 ? 2 : 1);
+                                },
+                                goToPage(page) {
+                                    $refs.slider.scrollTo({ left: page * $refs.slider.clientWidth, behavior: 'smooth' });
+                                }
+                            }" class="relative w-full group">
+                                
+                                <style>
+                                    .hide-scroll::-webkit-scrollbar { display: none; }
+                                </style>
+                                
+                                {{-- Prev Button --}}
+                                <button x-show="pages > 1" @click="goToPage(Math.max(0, activeSlide - 1))" class="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed" :disabled="activeSlide === 0">
+                                    <svg class="w-5 h-5 pr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                
+                                {{-- Next Button --}}
+                                <button x-show="pages > 1" @click="goToPage(Math.min(pages - 1, activeSlide + 1))" class="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 disabled:cursor-not-allowed" :disabled="activeSlide === pages - 1">
+                                    <svg class="w-5 h-5 pl-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                </button>
 
-                                        {{-- Time Bar --}}
-                                        <div class="flex items-center gap-3 py-3 border-t border-b border-slate-100">
-                                            <div class="text-center">
-                                                <p class="text-lg font-bold text-slate-900 leading-none">{{ $schedule->formatted_departure }}</p>
-                                                <p class="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Depart</p>
-                                            </div>
-                                            <div class="flex-1 flex flex-col items-center">
-                                                <p class="text-[10px] font-medium text-slate-400 mb-1">{{ $schedule->duration_label }}</p>
-                                                <div class="relative w-full h-px bg-slate-200">
-                                                    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#216417]"></div>
-                                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#216417]"></div>
-                                                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                                                        @if($isFerry)
-                                                            <svg class="w-3.5 h-3.5 text-[#216417]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
-                                                        @else
-                                                            <svg class="w-3.5 h-3.5 text-[#216417]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                {{-- Slider --}}
+                                <div x-ref="slider" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 hide-scroll" style="scrollbar-width: none;">
+                                    @foreach($route->schedules as $schedule)
+                                        <div class="snap-start shrink-0 w-full md:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.67rem)]">
+                                            <div class="h-full group relative rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:border-[#216417]/30 hover:shadow-md">
+                                                {{-- Service Name & Time --}}
+                                                <div class="flex items-start justify-between mb-3">
+                                                    <div>
+                                                        <h3 class="font-bold text-slate-900 text-sm leading-tight">{{ $schedule->service_name }}</h3>
+                                                        @if($schedule->vehicle_name)
+                                                            <p class="text-xs text-slate-500 mt-0.5">{{ $schedule->vehicle_name }}</p>
                                                         @endif
                                                     </div>
+                                                    <span class="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-sm font-bold text-emerald-700">
+                                                        ₱{{ number_format($schedule->price, 0) }}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                            <div class="text-center">
-                                                <p class="text-lg font-bold text-slate-900 leading-none">{{ $schedule->formatted_arrival }}</p>
-                                                <p class="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Arrive</p>
+
+                                                {{-- Time Bar --}}
+                                                <div class="flex items-center gap-3 py-3 border-t border-b border-slate-100">
+                                                    <div class="text-center">
+                                                        <p class="text-lg font-bold text-slate-900 leading-none">{{ $schedule->formatted_departure }}</p>
+                                                        <p class="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Depart</p>
+                                                    </div>
+                                                    <div class="flex-1 flex flex-col items-center">
+                                                        <p class="text-[10px] font-medium text-slate-400 mb-1">{{ $schedule->duration_label }}</p>
+                                                        <div class="relative w-full h-px bg-slate-200">
+                                                            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#216417]"></div>
+                                                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#216417]"></div>
+                                                            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                                                                @if($isFerry)
+                                                                    <svg class="w-3.5 h-3.5 text-[#216417]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
+                                                                @else
+                                                                    <svg class="w-3.5 h-3.5 text-[#216417]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center">
+                                                        <p class="text-lg font-bold text-slate-900 leading-none">{{ $schedule->formatted_arrival }}</p>
+                                                        <p class="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Arrive</p>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Details --}}
+                                                <div class="mt-3 space-y-2">
+                                                    {{-- Departure Date --}}
+                                                    <div class="flex items-center gap-2">
+                                                        <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                        <p class="text-xs font-semibold text-slate-700">
+                                                            {{ \Carbon\Carbon::parse($schedule->departure_time)->format('l, F j, Y') }}
+                                                        </p>
+                                                    </div>
+
+                                                    {{-- Accommodation / Classes --}}
+                                                    <div class="flex items-start gap-2">
+                                                        <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                                        <p class="text-xs text-slate-600 leading-relaxed">{{ $schedule->accommodation_label }}</p>
+                                                    </div>
+
+                                                    {{-- Availability --}}
+                                                    @if($schedule->availability_label && $schedule->availability_label !== 'Available')
+                                                        <div class="flex items-center gap-2">
+                                                            <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                                            <p class="text-xs font-medium text-amber-600">{{ $schedule->availability_label }}</p>
+                                                        </div>
+                                                    @else
+                                                        <div class="flex items-center gap-2">
+                                                            <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                            <p class="text-xs font-medium text-emerald-600">Available</p>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-
-                                        {{-- Details --}}
-                                        <div class="mt-3 space-y-2">
-                                            {{-- Departure Date --}}
-                                            <div class="flex items-center gap-2">
-                                                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                <p class="text-xs font-semibold text-slate-700">
-                                                    {{ \Carbon\Carbon::parse($schedule->departure_time)->format('l, F j, Y') }}
-                                                </p>
-                                            </div>
-
-                                            {{-- Accommodation / Classes --}}
-                                            <div class="flex items-start gap-2">
-                                                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                                                <p class="text-xs text-slate-600 leading-relaxed">{{ $schedule->accommodation_label }}</p>
-                                            </div>
-
-                                            {{-- Availability --}}
-                                            @if($schedule->availability_label && $schedule->availability_label !== 'Available')
-                                                <div class="flex items-center gap-2">
-                                                    <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                                    <p class="text-xs font-medium text-amber-600">{{ $schedule->availability_label }}</p>
-                                                </div>
-                                            @else
-                                                <div class="flex items-center gap-2">
-                                                    <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                    <p class="text-xs font-medium text-emerald-600">Available</p>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
+                                    @endforeach
+                                </div>
+                                
+                                {{-- Pagination Dots --}}
+                                <div x-show="pages > 1" class="flex justify-center items-center gap-2 mt-4 pb-2">
+                                    <template x-for="page in pages" :key="page">
+                                        <button @click="goToPage(page - 1)" 
+                                            :class="activeSlide === (page - 1) ? 'w-8 bg-[#216417]' : 'w-2 bg-slate-300 hover:bg-[#216417]/50'" 
+                                            class="h-2 rounded-full transition-all duration-300"
+                                            :aria-label="'Go to slide page ' + page">
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
 
                             {{-- Mobile Book Button --}}
@@ -358,4 +402,5 @@
     </div>
 </div>
 @endif
+</div>
 @endsection

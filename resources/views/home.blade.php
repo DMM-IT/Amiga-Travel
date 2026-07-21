@@ -149,6 +149,34 @@
                 <p class="text-[10px] text-slate-400">{{ data_get($pageContent, 'footer_note', 'Amiga Gracia Travel Services · travel-2go.com.ph') }}</p>
             </div>
         </div>
+        
+        {{-- Sliding Promotional Text --}}
+        <style>
+            @keyframes marquee {
+                0% { transform: translateX(0%); }
+                100% { transform: translateX(-50%); }
+            }
+            .animate-marquee-infinite {
+                animation: marquee 20s linear infinite;
+                width: max-content;
+            }
+        </style>
+        @php
+            $slidingText = data_get($pageContent, 'sliding_text', 'Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours.');
+        @endphp
+        <div class="mt-14 overflow-hidden rounded-[1.5rem] bg-[#ee018d] shadow-lg relative flex items-center py-10">
+            <div class="absolute top-0 bottom-0 left-0 w-12 bg-gradient-to-r from-[#ee018d] to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute top-0 bottom-0 right-0 w-12 bg-gradient-to-l from-[#ee018d] to-transparent z-10 pointer-events-none"></div>
+            
+            <div class="animate-marquee-infinite whitespace-nowrap flex text-lg sm:text-xl font-bold text-white tracking-wide">
+                @for($i = 0; $i < 4; $i++)
+                <span class="px-8 flex items-center gap-3">
+                    <svg class="w-6 h-6 text-[#216417]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    {{ $slidingText }}
+                </span>
+                @endfor
+            </div>
+        </div>
     </div>
 </div>
 
@@ -159,7 +187,17 @@
         <p class="text-xs text-slate-500 mt-2">{{ data_get($pageContent, 'booking_section_description', 'Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.') }}</p>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        @forelse($bookingCards as $card)
+        @php
+            $displayCards = collect($bookingCards ?? []);
+            while ($displayCards->count() < 6) {
+                $displayCards->push([
+                    'title' => 'Travel Booking',
+                    'description' => 'Kasiyahan po namin ang paglingkuran kayo.',
+                    'image' => null,
+                ]);
+            }
+        @endphp
+        @foreach($displayCards->take(6) as $card)
             @php
                 $rawCardImage = data_get($card, 'image');
                 if (is_array($rawCardImage)) { $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null; }
@@ -188,11 +226,7 @@
                     </div>
                 </div>
             </div>
-        @empty
-            <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center text-slate-500">
-                No booking cards are available yet.
-            </div>
-        @endforelse
+        @endforeach
     </div>
 </div>
 @endsection

@@ -90,7 +90,10 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
     // Filter out routes that have no schedules in this date range
     $routes = $routes->filter(fn ($route) => $route->schedules->isNotEmpty());
 
-    return view('schedules', compact('routes', 'startDate', 'endDate'));
+    $settings = WebsiteSetting::firstWhere('page', 'schedules');
+    $pageContent = $settings->content ?? [];
+
+    return view('schedules', compact('routes', 'startDate', 'endDate', 'pageContent'));
 })->name('schedules');
 
 Route::get('/payment/{transaction}', function (Transaction $transaction) {
