@@ -52,17 +52,30 @@ class ScheduleResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn (FerryRoute $record) => $record->label)
                     ->searchable(['origin', 'destination'])
                     ->preload()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $route = \App\Models\FerryRoute::with('vehicle')->find($state);
+                            if ($route?->vehicle) {
+                                $set('service_name', $route->vehicle->name);
+                                $set('vehicle_name', $route->vehicle->vehicle_id);
+                            }
+                        } else {
+                            $set('service_name', null);
+                            $set('vehicle_name', null);
+                        }
+                    })
                     ->required()
                     ->columnSpanFull(),
 
                 TextInput::make('service_name')
-                    ->label('Service name')
+                    ->label('Name/Model')
                     ->placeholder('e.g. Fast Ferry')
                     ->required()
                     ->maxLength(255),
 
                 TextInput::make('vehicle_name')
-                    ->label('Vehicle Name')
+                    ->label('IMO/Tail No.')
                     ->placeholder('e.g. MV Amiga, Flight 123')
                     ->nullable()
                     ->maxLength(255),
@@ -135,10 +148,11 @@ class ScheduleResource extends Resource
                     ->toggleable(),
 
                 TextColumn::make('service_name')
+                    ->label('Name/Model')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('vehicle_name')
-                    ->label('Vehicle')
+                    ->label('IMO/Tail No.')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),

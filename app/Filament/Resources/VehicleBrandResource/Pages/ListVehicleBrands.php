@@ -14,10 +14,8 @@ class ListVehicleBrands extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('category')
-                ->label('Category')
-                ->url(VehicleRateResource::getUrl('index'))
-                ->color('secondary'),
+            \Filament\Actions\Action::make('toggleView')
+                ->view('filament.pages.actions.brand-category-toggle'),
 
             Actions\CreateAction::make(),
         ];

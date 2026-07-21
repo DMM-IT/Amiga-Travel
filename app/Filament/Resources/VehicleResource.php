@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\VehicleResource\Pages;
 use App\Models\User;
 use App\Models\Vehicle;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -15,6 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Filament\Forms\Get;
 use Illuminate\Support\Facades\Auth;
 
 class VehicleResource extends Resource
@@ -26,12 +28,13 @@ class VehicleResource extends Resource
     protected static ?string $navigationGroup = 'Travel';
     protected static ?int $navigationSort = 3;
 
-    protected static ?string $navigationLabel = 'Ferries & Airlines';
+    protected static ?string $navigationLabel = 'Ferry & Airline';
+    protected static ?string $modelLabel = 'Vehicle';
+    protected static ?string $pluralModelLabel = 'Ferry & Airline';
 
     public static function canAccess(): bool
     {
         $user = Auth::user();
-
         return $user instanceof User && ($user->is_admin || $user->is_staff);
     }
 
@@ -39,34 +42,47 @@ class VehicleResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('type')
+                ToggleButtons::make('type')
                     ->label('Vehicle Type')
                     ->options([
                         'ferry' => 'Ferry',
                         'airline' => 'Airline',
                     ])
+                    ->grouped()
                     ->required()
-                    ->native(false),
+                    ->live()
+                    ->columnSpanFull(),
 
                 TextInput::make('name')
-                    ->label('Vehicle Name')
-                    ->placeholder('e.g. MV Superferry 16, Philippine Airlines PR123')
+                    ->label(fn (Get $get) => $get('type') === 'airline' ? 'Vehicle Model' : 'Vessel Name')
+                    ->placeholder(fn (Get $get) => $get('type') === 'airline' ? 'e.g. Airbus A320' : 'e.g. MV Superferry 16')
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
 
                 TextInput::make('vehicle_id')
-                    ->label('Vehicle ID/Code')
-                    ->placeholder('e.g. SF-16, PR123')
+                    ->label(fn (Get $get) => $get('type') === 'airline' ? 'Tail No.' : 'IMO Number')
+                    ->placeholder(fn (Get $get) => $get('type') === 'airline' ? 'e.g. RP-C1234' : 'e.g. IMO 1234567')
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
 
-                TextInput::make('operator')
+                Select::make('operator')
                     ->label('Operating Company')
-                    ->placeholder('e.g. Superferry, Philippine Airlines')
+                    ->options(fn (Get $get) => match ($get('type')) {
+                        'airline' => [
+                            'Philippine Airlines' => 'Philippine Airlines (PAL)',
+                            'Cebu Pacific Air' => 'Cebu Pacific Air',
+                            'Philippines AirAsia' => 'Philippines AirAsia',
+                        ],
+                        'ferry' => [
+                            '2GO' => '2GO',
+                            'Starlite' => 'Starlite',
+                        ],
+                        default => [],
+                    })
                     ->required()
-                    ->maxLength(255),
+                    ->native(false),
 
                 TextInput::make('capacity')
                     ->label('Passenger Capacity')
@@ -91,7 +107,7 @@ class VehicleResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('type')
-                    ->label('Type')
+                    ->label(fn ($livewire) => $livewire->vehicleType === 'airline' ? 'Vehicle Type' : 'Vessel Type')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'ferry' => '🚢 Ferry',
                         'airline' => '✈️ Airline',
@@ -105,11 +121,11 @@ class VehicleResource extends Resource
                     })
                     ->sortable(),
                 TextColumn::make('name')
-                    ->label('Vehicle Name')
+                    ->label(fn ($livewire) => $livewire->vehicleType === 'airline' ? 'Model' : 'Vessel Name')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('vehicle_id')
-                    ->label('ID/Code')
+                    ->label(fn ($livewire) => $livewire->vehicleType === 'airline' ? 'Tail No.' : 'IMO No.')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('operator')
@@ -123,17 +139,14 @@ class VehicleResource extends Resource
                     ->label('Active'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->options([
-                        'ferry' => 'Ferry',
-                        'airline' => 'Airline',
-                    ]),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active'),
             ])
+            ->actionsColumnLabel('Action')
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->disabled(fn (Vehicle $record) => $record->ferryRoutes()->exists()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

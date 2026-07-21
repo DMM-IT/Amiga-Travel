@@ -402,12 +402,14 @@ class Schedule extends Model
         $airlineSeatingProfile = $mode === 'airline' ? $this->getAirlineSeatingProfile() : null;
         $cabinLayouts = $airlineSeatingProfile ? $this->buildCabinLayouts($airlineSeatingProfile) : [];
 
-        // Explicitly fetch accommodations and transport classes
-        $activeAccommodations = $this->activeScheduleAccommodations()->get();
-        $activeTransportClasses = $this->transportClasses()
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
+        // Explicitly fetch accommodations and transport classes using eager loaded relations if available
+        $activeAccommodations = $this->relationLoaded('scheduleAccommodations')
+            ? $this->scheduleAccommodations->where('is_active', true)
+            : $this->activeScheduleAccommodations()->get();
+            
+        $activeTransportClasses = $this->relationLoaded('transportClasses')
+            ? $this->transportClasses->where('is_active', true)->sortBy('sort_order')
+            : $this->transportClasses()->where('is_active', true)->orderBy('sort_order')->get();
 
         return [
             'id' => $this->id,

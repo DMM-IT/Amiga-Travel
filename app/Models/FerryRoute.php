@@ -56,9 +56,10 @@ class FerryRoute extends Model
             ->when($mode, function ($query, $mode) {
                 $query->where('mode', $mode);
             })
+            ->select('origin')
+            ->distinct()
             ->orderBy('origin')
             ->pluck('origin')
-            ->unique()
             ->values()
             ->all();
     }
@@ -71,9 +72,10 @@ class FerryRoute extends Model
             ->when($mode, function ($query, $mode) {
                 $query->where('mode', $mode);
             })
+            ->select('destination')
+            ->distinct()
             ->orderBy('destination')
             ->pluck('destination')
-            ->unique()
             ->values()
             ->all();
     }

@@ -600,7 +600,9 @@ class BookingForm extends Component
                       ->where('destination', $this->destination)
                       ->where('mode', $this->mode)
                       ->where('is_active', true);
-            })->get();
+            })
+            ->select('departure_time')
+            ->get();
 
         if ($schedules->isEmpty()) {
             $this->available_schedule_dates = [];
@@ -787,9 +789,10 @@ class BookingForm extends Component
     protected function getAvailableSchedules(): array
     {
         return Schedule::query()
+            ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
             ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
             ->get()
-            ->map(fn (Schedule $schedule) => $schedule->toBookingArray())
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date))
             ->values()
             ->all();
     }

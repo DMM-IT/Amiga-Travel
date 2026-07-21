@@ -13,10 +13,8 @@ class ListVehicleRates extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('brands')
-                ->label('Brand / Model')
-                ->url(\App\Filament\Resources\VehicleBrandResource::getUrl('index'))
-                ->color('secondary'),
+            \Filament\Actions\Action::make('toggleView')
+                ->view('filament.pages.actions.brand-category-toggle'),
 
             Actions\CreateAction::make(),
         ];

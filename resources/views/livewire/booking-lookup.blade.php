@@ -300,6 +300,7 @@
                                                     <span class="mb-2 block text-sm font-medium text-slate-700">Departure Date</span>
                                                     <div
                                                         class="relative"
+                                                        wire:ignore
                                                         x-data="{}"
                                                         x-init="
                                                             $nextTick(() => {
@@ -356,6 +357,7 @@
                                                         <span class="mb-2 block text-sm font-medium text-slate-700">Return Date</span>
                                                         <div
                                                             class="relative"
+                                                            wire:ignore
                                                             x-data="{}"
                                                             x-init="
                                                                 $nextTick(() => {

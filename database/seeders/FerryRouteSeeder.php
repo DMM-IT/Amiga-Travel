@@ -4,20 +4,23 @@ namespace Database\Seeders;
 
 use App\Models\FerryRoute;
 use App\Models\Schedule;
+use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class FerryRouteSeeder extends Seeder
 {
-    /**
-     * Seed reseller routes and schedules. Prices are placeholders — update
-     * them in the admin panel (Schedules) to match operator quotes.
-     */
     public function run(): void
     {
-        $daily = [1, 2, 3, 4, 5, 6, 7];
+        // Clear old routes and schedules to prevent duplicates with old logic
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schedule::truncate();
+        FerryRoute::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Ferry operators
-        $ferryOperators = ['Starlight', '2GO'];
+        $ferries = Vehicle::where('type', 'ferry')->where('is_active', true)->get();
+        $airlines = Vehicle::where('type', 'airline')->where('is_active', true)->get();
 
         $ferryRoutes = [
             ['Manila', 'Boracay'],
@@ -29,129 +32,127 @@ class FerryRouteSeeder extends Seeder
 
         $ferryTemplates = [
             [
-                'service_name' => 'Fast Ferry',
-                'departure_time' => '08:00',
-                'arrival_time' => '11:30',
                 'duration_minutes' => 210,
                 'price' => 1800,
                 'availability_label' => 'Available',
+                'departure_time' => '08:00',
+                'arrival_time' => '11:30',
             ],
             [
-                'service_name' => 'Express Ferry',
-                'departure_time' => '10:00',
-                'arrival_time' => '13:30',
                 'duration_minutes' => 210,
                 'price' => 2200,
                 'availability_label' => 'Limited availability',
+                'departure_time' => '10:00',
+                'arrival_time' => '13:30',
             ],
             [
-                'service_name' => 'Express Ferry',
-                'departure_time' => '12:00',
-                'arrival_time' => '15:30',
                 'duration_minutes' => 210,
                 'price' => 2700,
                 'availability_label' => 'Available',
+                'departure_time' => '12:00',
+                'arrival_time' => '15:30',
             ],
         ];
 
-        foreach ($ferryRoutes as [$origin, $destination]) {
-            foreach ($ferryOperators as $operator) {
-                $route = FerryRoute::updateOrCreate(
-                    ['origin' => $origin, 'destination' => $destination, 'mode' => 'ferry', 'operator' => $operator],
-                    ['is_active' => true, 'mode' => 'ferry', 'operator' => $operator],
-                );
+        foreach ($ferries as $index => $ferry) {
+            $routePair = $ferryRoutes[$index % count($ferryRoutes)];
+            
+            $route = FerryRoute::updateOrCreate(
+                [
+                    'origin' => $routePair[0],
+                    'destination' => $routePair[1],
+                    'mode' => 'ferry',
+                    'operator' => $ferry->operator,
+                ],
+                [
+                    'vehicle_id' => $ferry->id,
+                    'is_active' => true,
+                ]
+            );
 
-                foreach ($ferryTemplates as $template) {
-                    for ($i = 0; $i < 7; $i++) {
-                        $date = \Carbon\Carbon::today()->addDays($i)->format('Y-m-d');
-                        $depTime = \Carbon\Carbon::parse($date . ' ' . $template['departure_time']);
-                        $arrTime = \Carbon\Carbon::parse($date . ' ' . $template['arrival_time']);
-                        if ($arrTime->lessThan($depTime)) {
-                            $arrTime->addDay();
-                        }
-                        Schedule::updateOrCreate(
-                            [
-                                'ferry_route_id' => $route->id,
-                                'service_name' => $template['service_name'],
-                                'departure_time' => $depTime,
-                            ],
-                            array_merge($template, [
-                                'arrival_time' => $arrTime,
-                                'is_active' => true,
-                            ])
-                        );
+            foreach ($ferryTemplates as $template) {
+                for ($i = 0; $i < 7; $i++) {
+                    $date = Carbon::today()->addDays($i)->format('Y-m-d');
+                    $depTime = Carbon::parse($date . ' ' . $template['departure_time']);
+                    $arrTime = Carbon::parse($date . ' ' . $template['arrival_time']);
+                    
+                    if ($arrTime->lessThan($depTime)) {
+                        $arrTime->addDay();
                     }
+                    
+                    Schedule::create(array_merge($template, [
+                        'ferry_route_id' => $route->id,
+                        'service_name' => $ferry->name,
+                        'vehicle_name' => $ferry->vehicle_id,
+                        'departure_time' => $depTime,
+                        'arrival_time' => $arrTime,
+                        'is_active' => true,
+                    ]));
                 }
             }
         }
-
-        // Airline operators and routes
-        $airlineOperators = ['Cebu Pacific', 'Philippine AirAsia', 'Philippine Airlines'];
-        $airlineSeatingConfig = config('airline_seating.operators');
 
         $airlineRoutes = [
             ['Manila', 'Cebu'],
             ['Manila', 'Davao'],
             ['Manila', 'Iloilo'],
+            ['Cebu', 'Davao'],
+            ['Manila', 'Palawan'],
         ];
 
         $airlineTemplates = [
             [
-                'service_name' => 'Morning Flight',
-                'departure_time' => '06:00',
-                'arrival_time' => '07:30',
                 'duration_minutes' => 90,
                 'price' => 1500,
                 'availability_label' => 'Available',
+                'departure_time' => '06:00',
+                'arrival_time' => '07:30',
             ],
             [
-                'service_name' => 'Midday Flight',
-                'departure_time' => '12:00',
-                'arrival_time' => '13:30',
                 'duration_minutes' => 90,
                 'price' => 2000,
                 'availability_label' => 'Limited availability',
+                'departure_time' => '12:00',
+                'arrival_time' => '13:30',
             ],
         ];
 
-        foreach ($airlineRoutes as $routeIndex => [$origin, $destination]) {
-            foreach ($airlineOperators as $operator) {
-                $route = FerryRoute::updateOrCreate(
-                    ['origin' => $origin, 'destination' => $destination, 'mode' => 'airline', 'operator' => $operator],
-                    ['is_active' => true, 'mode' => 'airline', 'operator' => $operator],
-                );
+        foreach ($airlines as $index => $airline) {
+            $routePair = $airlineRoutes[$index % count($airlineRoutes)];
+            
+            $route = FerryRoute::updateOrCreate(
+                [
+                    'origin' => $routePair[0],
+                    'destination' => $routePair[1],
+                    'mode' => 'airline',
+                    'operator' => $airline->operator,
+                ],
+                [
+                    'vehicle_id' => $airline->id,
+                    'is_active' => true,
+                ]
+            );
 
-                $operatorAircraft = array_keys($airlineSeatingConfig[$operator]['aircraft'] ?? []);
-
-                foreach ($airlineTemplates as $templateIndex => $template) {
-                    $aircraftType = $operatorAircraft[($routeIndex * count($airlineTemplates) + $templateIndex) % count($operatorAircraft)] ?? null;
-
-                    for ($i = 0; $i < 7; $i++) {
-                        $date = \Carbon\Carbon::today()->addDays($i)->format('Y-m-d');
-                        $depTime = \Carbon\Carbon::parse($date . ' ' . $template['departure_time']);
-                        $arrTime = \Carbon\Carbon::parse($date . ' ' . $template['arrival_time']);
-                        if ($arrTime->lessThan($depTime)) {
-                            $arrTime->addDay();
-                        }
-                        Schedule::updateOrCreate(
-                            [
-                                'ferry_route_id' => $route->id,
-                                'service_name' => $operator . ' ' . $template['service_name'],
-                                'departure_time' => $depTime,
-                            ],
-                            array_merge(
-                                $template,
-                                [
-                                    'service_name' => $operator . ' ' . $template['service_name'],
-                                    'vehicle_name' => $aircraftType,
-                                    'arrival_time' => $arrTime,
-                                    'seat_rows' => null,
-                                    'seat_columns' => null,
-                                    'is_active' => true,
-                                ]
-                            ),
-                        );
+            foreach ($airlineTemplates as $template) {
+                for ($i = 0; $i < 7; $i++) {
+                    $date = Carbon::today()->addDays($i)->format('Y-m-d');
+                    $depTime = Carbon::parse($date . ' ' . $template['departure_time']);
+                    $arrTime = Carbon::parse($date . ' ' . $template['arrival_time']);
+                    
+                    if ($arrTime->lessThan($depTime)) {
+                        $arrTime->addDay();
                     }
+                    
+                    Schedule::create(array_merge($template, [
+                        'ferry_route_id' => $route->id,
+                        'service_name' => $airline->name,
+                        'vehicle_name' => $airline->vehicle_id,
+                        'departure_time' => $depTime,
+                        'arrival_time' => $arrTime,
+                        'seat_rows' => null,
+                        'seat_columns' => null,
+                        'is_active' => true,
+                    ]));
                 }
             }
         }

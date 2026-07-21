@@ -490,13 +490,13 @@
                                                         @if ($schedule['vehicle_name'])
                                                             <p class="mt-1 text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">{{ $schedule['vehicle_name'] }}</p>
                                                         @endif
-                                                        <p class="mt-2 text-sm font-semibold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-[#db2777]' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
+                                                        <p class="mt-2 text-sm font-semibold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-slate-900' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
                                                     </div>
                                                     <span class="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider {{ $selected_schedule_id === $schedule['id'] ? 'border-white/30 bg-white/20 text-white' : 'border-slate-200 bg-slate-50 text-slate-600' }}">{{ $schedule['availability'] }}</span>
                                                 </div>
                                                 <div class="mt-5 pt-4 border-t {{ $selected_schedule_id === $schedule['id'] ? 'border-white/20' : 'border-slate-100' }} space-y-1">
                                                     <p class="text-sm font-medium {{ $selected_schedule_id === $schedule['id'] ? 'text-white/90' : 'text-slate-600' }}">Duration: {{ $schedule['duration'] }}</p>
-                                                    <p class="text-lg font-bold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-[#db2777]' }}">Fare: ₱{{ number_format($schedule['price'], 2) }}</p>
+                                                    <p class="text-lg font-bold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-slate-900' }}">Fare: ₱{{ number_format($schedule['price'], 2) }}</p>
                                                 </div>
                                             </button>
                                         @empty
@@ -804,10 +804,14 @@
                                 @php
                                     $countByType[$passenger['type']] = ($countByType[$passenger['type']] ?? 0) + 1;
                                 @endphp
-                                <div wire:key="passenger-{{ $index }}" class="grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
-                                    <div class="rounded-full bg-[#db2777] px-4 py-2 text-center text-xs uppercase tracking-wider font-bold text-white lg:self-center lg:min-w-[72px] lg:max-w-[96px] shadow-sm">
-                                        {{ $typeLabels[$passenger['type']] }} {{ $countByType[$passenger['type']] }}
+                                <div wire:key="passenger-{{ $index }}" class="flex flex-col lg:flex-row gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                                    <div class="flex-shrink-0 lg:w-32 lg:pt-8">
+                                        <div class="rounded-full bg-[#db2777] px-4 py-2 text-center text-xs uppercase tracking-wider font-bold text-white shadow-sm inline-block w-full">
+                                            {{ $typeLabels[$passenger['type']] }} {{ $countByType[$passenger['type']] }}
+                                        </div>
                                     </div>
+                                    
+                                    <div class="flex-grow grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:items-end">
 
                                     <label class="block min-w-0">
                                         <span class="text-slate-900 font-bold text-sm">Name</span>
@@ -922,6 +926,7 @@
                                             </label>
                                         </div>
                                     @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </div>

@@ -88,6 +88,7 @@ class VehicleRateResource extends Resource
             ->filters([
                 //
             ])
+            ->actionsColumnLabel('Action')
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

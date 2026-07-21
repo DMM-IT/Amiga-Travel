@@ -49,5 +49,16 @@
                 @endforeach
             </div>
         </div>
+    @else
+        <div class="w-80 sm:w-96 max-w-[calc(100vw-2rem)] rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-xl border border-gray-200 dark:border-gray-700">
+            <div class="sticky top-0 border-b border-gray-100 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900 rounded-t-xl">
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                    Notifications (0)
+                </div>
+            </div>
+            <div class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                No notifications here!
+            </div>
+        </div>
     @endif
 </x-filament::dropdown>
