@@ -1,6 +1,21 @@
 @php use Filament\Support\Enums\MaxWidth; @endphp
 
 <x-filament-panels::page>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 dark:bg-primary-500 dark:hover:bg-primary-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download PDF
+        </a>
+        <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-700 dark:hover:bg-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download CSV
+        </a>
+    </div>
+    
     <div class="space-y-6">
         <!-- Period Selector -->
         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
@@ -163,17 +178,12 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Last 5 bookings created in the system.</p>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700">
-                            Download PDF
-                        </a>
-                        <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700">
-                            Download CSV
-                        </a>
+                        <!-- Buttons moved to the top left -->
                     </div>
                 </div>
 
-                <div class="mt-6 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                <div class="mt-6 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm whitespace-nowrap">
                         <thead class="bg-gray-50 dark:bg-gray-800">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Transaction</th>
@@ -212,8 +222,8 @@
                     </div>
                 </div>
 
-                <div class="mt-6 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                <div class="mt-6 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm whitespace-nowrap">
                         <thead class="bg-gray-50 dark:bg-gray-800">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Transaction</th>

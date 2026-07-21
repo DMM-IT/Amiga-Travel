@@ -117,25 +117,23 @@
                                         </a>
 
                                         @if($booking->canCancelOrRebook())
-                                            @if(! $cancellationRequested && ! $cancellationExpired && ! $rebookingRequested)
-                                                <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
-                                                    Cancel Booking
-                                                </button>
+                                        @if(! $cancellationRequested && ! $rebookingRequested)
+                                                @if(! $cancellationExpired)
+                                                    <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
+                                                        Cancel Booking
+                                                    </button>
+                                                @else
+                                                    <div class="flex flex-col gap-1">
+                                                        <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-400 shadow-sm cursor-not-allowed">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                                            Cancel Booking
+                                                        </button>
+                                                        <p class="text-xs text-slate-500">Timer expired — cancellation unavailable.</p>
+                                                    </div>
+                                                @endif
                                                 <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
                                                     Rebook
                                                 </button>
-                                            @elseif($cancellationExpired)
-                                                <div class="space-y-2">
-                                                    <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-500 shadow-sm">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                            <path d="M10 14l2-2 2 2"></path>
-                                                            <path d="M12 7v5"></path>
-                                                            <circle cx="12" cy="12" r="10"></circle>
-                                                        </svg>
-                                                        Cancellation unavailable
-                                                    </button>
-                                                    <p class="text-xs text-slate-500">The 5-minute cancellation timer has expired, so this booking can no longer be cancelled here.</p>
-                                                </div>
                                             @endif
                                         @else
                                             <div class="space-y-2">
@@ -152,18 +150,54 @@
                                     @if(! $cancellationWindowActive)
                                         <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                                             <p class="text-sm font-semibold text-amber-800">Cancellation</p>
-                                            <p class="mt-2 text-sm text-amber-700">Enter where you'd like the refund sent. Cancellation fee: 50% of total price (₱{{ number_format($booking->getCancellationFeeAmount(), 2) }}), Refund amount: 50% (₱{{ number_format($booking->getRefundAmount(), 2) }}).</p>
-                                            <label class="mt-3 block">
-                                                <span class="mb-2 block text-sm font-medium text-slate-700">Where should the agency send your refund?</span>
-                                                <input
-                                                    type="text"
-                                                    wire:model.defer="refund_destination"
-                                                    placeholder="e.g. GCash 0917xxxxxxx"
-                                                    class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2"
-                                                    style="--tw-ring-color:#ee018d;"
-                                                />
-                                                @error('refund_destination')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
+                                            <p class="mt-2 text-sm text-amber-700">Select your refund method and fill in your details. Cancellation fee: 50% of total price (₱{{ number_format($booking->getCancellationFeeAmount(), 2) }}), Refund amount: 50% (₱{{ number_format($booking->getRefundAmount(), 2) }}).</p>
+
+                                            <div class="mt-3 space-y-3">
+                                                {{-- Refund Method Dropdown --}}
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">Refund Method</label>
+                                                    <select wire:model="refund_method" class="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;">
+                                                        <option value="GCash">GCash</option>
+                                                        <option value="Online Wallet">Online Wallet</option>
+                                                        <option value="Bank Account">Bank Account</option>
+                                                    </select>
+                                                    @error('refund_method')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+
+                                                {{-- Institution (shown for Bank Account & Online Wallet) --}}
+                                                @if(in_array($refund_method, ['Bank Account', 'Online Wallet']))
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">
+                                                        {{ $refund_method === 'Bank Account' ? 'Bank Name' : 'Wallet Provider' }}
+                                                    </label>
+                                                    <input type="text" wire:model.defer="refund_bank_name"
+                                                        placeholder="{{ $refund_method === 'Bank Account' ? 'e.g. BDO, BPI, Metrobank' : 'e.g. Maya, PayMaya, GrabPay' }}"
+                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
+                                                    @error('refund_bank_name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+                                                @endif
+
+                                                {{-- Account / Number --}}
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">
+                                                        {{ $refund_method === 'GCash' ? 'GCash Number' : 'Account Number' }}
+                                                    </label>
+                                                    <input type="text" wire:model.defer="refund_account_number"
+                                                        placeholder="{{ $refund_method === 'GCash' ? 'e.g. 0917xxxxxxx' : 'e.g. 1234-5678-9012' }}"
+                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
+                                                    @error('refund_account_number')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+
+                                                {{-- Account Name --}}
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">Account Name</label>
+                                                    <input type="text" wire:model.defer="refund_account_name"
+                                                        placeholder="Full name on the account"
+                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
+                                                    @error('refund_account_name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+                                            </div>
+
                                             <div class="mt-4 flex flex-wrap gap-3">
                                                 <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                                     Cancel Request
@@ -178,27 +212,67 @@
                                             <div class="flex items-center justify-between gap-2">
                                                 <div>
                                                     <p class="text-sm font-semibold text-amber-800">Cancellation active</p>
-                                                    <p class="mt-1 text-sm text-amber-700">You started the cancellation timer after uploading proof. Confirm within the next 5 minutes to cancel your booking. Refund is 50% of total price.</p>
+                                                    <p class="mt-1 text-sm text-amber-700">Confirm within the next 5 minutes to cancel your booking. Refund is 50% of total price.</p>
                                                 </div>
                                                 <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700">
                                                     {{ gmdate('i:s', max(0, $cancelCountdown)) }}
                                                 </span>
                                             </div>
-                                            <label class="mt-3 block">
-                                                <span class="mb-2 block text-sm font-medium text-slate-700">Where should the agency send your refund?</span>
-                                                <input
-                                                    type="text"
-                                                    wire:model.defer="refund_destination"
-                                                    placeholder="e.g. GCash 0917xxxxxxx"
-                                                    class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2"
-                                                    style="--tw-ring-color:#ee018d;"
-                                                />
-                                                @error('refund_destination')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
+
+                                            {{-- Show compiled destination as read-only summary --}}
+                                            @if(filled($refund_destination))
+                                            <div class="mt-3 rounded-xl bg-white border border-amber-100 px-4 py-3">
+                                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Refund will be sent to</p>
+                                                <p class="text-sm text-slate-800">{{ $refund_destination }}</p>
+                                            </div>
+                                            @else
+                                            <div class="mt-3 space-y-3">
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">Refund Method</label>
+                                                    <select wire:model="refund_method" class="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;">
+                                                        <option value="GCash">GCash</option>
+                                                        <option value="Online Wallet">Online Wallet</option>
+                                                        <option value="Bank Account">Bank Account</option>
+                                                    </select>
+                                                    @error('refund_method')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+                                                @if(in_array($refund_method, ['Bank Account', 'Online Wallet']))
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $refund_method === 'Bank Account' ? 'Bank Name' : 'Wallet Provider' }}</label>
+                                                    <input type="text" wire:model.defer="refund_bank_name"
+                                                        placeholder="{{ $refund_method === 'Bank Account' ? 'e.g. BDO, BPI, Metrobank' : 'e.g. Maya, PayMaya, GrabPay' }}"
+                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
+                                                    @error('refund_bank_name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+                                                @endif
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $refund_method === 'GCash' ? 'GCash Number' : 'Account Number' }}</label>
+                                                    <input type="text" wire:model.defer="refund_account_number"
+                                                        placeholder="{{ $refund_method === 'GCash' ? 'e.g. 0917xxxxxxx' : 'e.g. 1234-5678-9012' }}"
+                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
+                                                    @error('refund_account_number')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+                                                <div>
+                                                    <label class="mb-1 block text-sm font-medium text-slate-700">Account Name</label>
+                                                    <input type="text" wire:model.defer="refund_account_name"
+                                                        placeholder="Full name on the account"
+                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
+                                                    @error('refund_account_name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+                                            </div>
+                                            @endif
+
                                             <div class="mt-4 flex flex-wrap gap-3">
-                                                <button wire:click.prevent="confirmCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
-                                                    Confirm Cancellation
-                                                </button>
+                                                @if($cancelCountdown > 0)
+                                                 <button wire:click.prevent="confirmCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
+                                                     Confirm Cancellation
+                                                 </button>
+                                                @else
+                                                 <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-400 shadow-sm cursor-not-allowed">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                                     Timer Expired
+                                                 </button>
+                                                @endif
                                                 <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                                     Cancel Request
                                                 </button>
@@ -216,42 +290,102 @@
                                         <p class="mt-2 text-sm text-blue-700">To rebook, please select your new travel dates and upload proof of payment for the 30% rebooking fee: ₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}.</p>
 
                                         <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                                            <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                                                <p class="text-sm font-medium text-slate-700">Trip Type</p>
-                                                <p class="mt-2 text-base font-semibold text-slate-900">{{ $booking->return_date ? 'Round trip' : 'One-way' }}</p>
-                                            </div>
-                                            <label class="block">
-                                                <span class="mb-2 block text-sm font-medium text-slate-700">Departure Date</span>
-                                                <input type="date" wire:model="rebooking_departure_date" class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#3b82f6;" />
-                                                @error('rebooking_departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
-                                        </div>
-
-                                        @if($booking->return_date)
-                                            <label class="mt-4 block">
-                                                <span class="mb-2 block text-sm font-medium text-slate-700">Return Date</span>
-                                                <input type="date" wire:model="rebooking_return_date" class="block w-full rounded-2xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#3b82f6;" />
-                                                @error('rebooking_return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
-                                        @endif
-
-                                        @php $rebookingQrPath = 
-                                            App\Models\PaymentSetting::current()->qr_code_path ?? null;
-                                        @endphp
-                                        @if($rebookingQrPath)
-                                            <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-                                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                                                    <div class="flex-shrink-0 bg-slate-50 p-3 rounded-3xl border border-slate-200">
-                                                        <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="Rebooking payment QR code" class="h-32 w-32 rounded-2xl object-contain" />
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <p class="text-sm font-semibold text-slate-900">Scan to pay the rebooking fee</p>
-                                                        <p class="mt-2 text-sm text-slate-600">Use your preferred mobile wallet to scan this QR code and pay the exact rebooking fee: <span class="font-semibold">₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}</span>.</p>
-                                                        <p class="mt-3 text-xs text-slate-500">After payment, upload a photo of the receipt or payment confirmation below.</p>
-                                                    </div>
+                                            <!-- Left Column: Trip Type & Departure Date -->
+                                            <div class="space-y-4">
+                                                <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                                    <p class="text-sm font-medium text-slate-700">Trip Type</p>
+                                                    <p class="mt-2 text-base font-semibold text-slate-900">{{ $booking->return_date ? 'Round trip' : 'One-way' }}</p>
                                                 </div>
+                                                <label class="block">
+                                                    <span class="mb-2 block text-sm font-medium text-slate-700">Departure Date</span>
+                                                    <div
+                                                        class="relative"
+                                                        x-data="{}"
+                                                        x-init="
+                                                            $nextTick(() => {
+                                                                flatpickr($el.querySelector('input'), {
+                                                                    dateFormat: 'Y-m-d',
+                                                                    altInput: true,
+                                                                    altFormat: 'F j, Y',
+                                                                    minDate: 'today',
+                                                                    disableMobile: true,
+                                                                    onChange: function(sel, dateStr) {
+                                                                        $wire.set('rebooking_departure_date', dateStr);
+                                                                    }
+                                                                });
+                                                            })
+                                                        "
+                                                    >
+                                                        <input
+                                                            type="text"
+                                                            readonly
+                                                            placeholder="Select departure date"
+                                                            class="block w-full rounded-2xl border border-slate-300 bg-white pl-4 pr-10 py-3 text-sm shadow-sm cursor-pointer focus:outline-none focus:ring-2"
+                                                            style="--tw-ring-color:#3b82f6;"
+                                                        />
+                                                        <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                                    </div>
+                                                    @error('rebooking_departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </label>
                                             </div>
-                                        @endif
+
+                                            <!-- Right Column: QR Code & Return Date -->
+                                            <div class="space-y-4">
+                                                @php 
+                                                    $rebookingQrPath = App\Models\PaymentSetting::current()->qr_code_path ?? null;
+                                                @endphp
+                                                <div class="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-4">
+                                                    <div>
+                                                        <p class="text-sm font-medium text-slate-700">Scan to Pay Fee</p>
+                                                        <p class="mt-2 text-base font-semibold text-blue-600">₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}</p>
+                                                    </div>
+                                                    @if($rebookingQrPath)
+                                                        <div class="flex-shrink-0 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                                                            <a href="{{ asset('storage/' . $rebookingQrPath) }}" target="_blank" title="Click to enlarge QR code">
+                                                                <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="QR code" class="h-12 w-12 rounded-lg object-contain cursor-pointer hover:opacity-80 transition" />
+                                                            </a>
+                                                        </div>
+                                                    @else
+                                                        <div class="flex-shrink-0 bg-slate-100 p-2 rounded-xl text-xs text-slate-400">
+                                                            No QR Code
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                @if($booking->return_date)
+                                                    <label class="block">
+                                                        <span class="mb-2 block text-sm font-medium text-slate-700">Return Date</span>
+                                                        <div
+                                                            class="relative"
+                                                            x-data="{}"
+                                                            x-init="
+                                                                $nextTick(() => {
+                                                                    flatpickr($el.querySelector('input'), {
+                                                                        dateFormat: 'Y-m-d',
+                                                                        altInput: true,
+                                                                        altFormat: 'F j, Y',
+                                                                        minDate: 'today',
+                                                                        disableMobile: true,
+                                                                        onChange: function(sel, dateStr) {
+                                                                            $wire.set('rebooking_return_date', dateStr);
+                                                                        }
+                                                                    });
+                                                                })
+                                                            "
+                                                        >
+                                                            <input
+                                                                type="text"
+                                                                readonly
+                                                                placeholder="Select return date"
+                                                                class="block w-full rounded-2xl border border-slate-300 bg-white pl-4 pr-10 py-3 text-sm shadow-sm cursor-pointer focus:outline-none focus:ring-2"
+                                                                style="--tw-ring-color:#3b82f6;"
+                                                            />
+                                                            <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                                        </div>
+                                                        @error('rebooking_return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                    </label>
+                                                @endif
+                                            </div>
+                                        </div>
 
                                         <label class="mt-4 block">
                                             <span class="mb-2 block text-sm font-medium text-slate-700">Proof of Rebooking Fee Payment</span>

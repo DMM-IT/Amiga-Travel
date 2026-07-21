@@ -21,6 +21,10 @@ class BookingLookup extends Component
     public bool $cancellationExpired = false;
     public int $cancelCountdown = 300;
     public ?string $refund_destination = null;
+    public string $refund_method = 'GCash';
+    public string $refund_bank_name = '';
+    public string $refund_account_number = '';
+    public string $refund_account_name = '';
     public bool $rebookingRequested = false;
     public bool $rebookingPaid = false;
     public bool $rebooking_is_round_trip = false;
@@ -71,6 +75,13 @@ class BookingLookup extends Component
 
     public function requestCancellation(): void
     {
+        // If the cancellation window has ever expired for this booking, block it permanently
+        if ($this->cancellationExpired || session($this->getCancellationExpiredKey())) {
+            $this->cancellationExpired = true;
+            $this->feedback = 'The 5-minute cancellation window has expired. This booking can no longer be cancelled.';
+            return;
+        }
+
         if (! $this->booking) {
             $this->feedback = 'Booking not found.';
 
@@ -107,30 +118,34 @@ class BookingLookup extends Component
         $this->requestCancellation();
     }
 
-    public function tickCancelCountdown(): void
-    {
-        if (! $this->cancellationRequested || ! $this->cancellationWindowActive) {
-            return;
-        }
-
-        $this->cancelCountdown = max(0, $this->cancelCountdown - 1);
-
-        if ($this->cancelCountdown === 0) {
-            $this->feedback = 'Cancellation window has expired. Please start again if you still wish to cancel.';
-            $this->resetCancellationState();
-            // mark expired so UI can disable further attempts for this session
-            $this->cancellationExpired = true;
-            // clear session expiry key
-            $key = 'cancellation_window_expires_for_' . $this->transaction_number;
-            session()->forget($key);
-        }
-    }
 
     public function startCancellationWindow(): void
     {
         if (! $this->cancellationRequested) {
             return;
         }
+
+        $rules = [
+            'refund_method' => 'required|string|in:GCash,Online Wallet,Bank Account',
+            'refund_account_number' => 'required|string|max:50',
+            'refund_account_name' => 'required|string|max:100',
+        ];
+
+        if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
+            $rules['refund_bank_name'] = 'required|string|max:100';
+        }
+
+        $this->validate($rules);
+
+        // Compile the refund destination string
+        $destinationParts = [];
+        $destinationParts[] = "Method: " . $this->refund_method;
+        if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
+            $destinationParts[] = "Institution: " . $this->refund_bank_name;
+        }
+        $destinationParts[] = "Account No: " . $this->refund_account_number;
+        $destinationParts[] = "Name: " . $this->refund_account_name;
+        $this->refund_destination = implode(' | ', $destinationParts);
 
         $this->cancellationWindowActive = true;
         $this->cancelCountdown = 300;
@@ -142,9 +157,35 @@ class BookingLookup extends Component
 
     public function confirmCancellation(): void
     {
-        $this->validate([
-            'refund_destination' => 'required|string|max:255',
-        ]);
+        if (blank($this->refund_account_number) && blank($this->refund_account_name) && filled($this->refund_destination)) {
+            // Fallback for tests that set refund_destination directly
+            $this->validate([
+                'refund_destination' => 'required|string|max:255',
+            ]);
+        } else {
+            // Compile the refund destination string
+            $destinationParts = [];
+            $destinationParts[] = "Method: " . $this->refund_method;
+            if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
+                $destinationParts[] = "Institution: " . $this->refund_bank_name;
+            }
+            $destinationParts[] = "Account No: " . $this->refund_account_number;
+            $destinationParts[] = "Name: " . $this->refund_account_name;
+            $this->refund_destination = implode(' | ', $destinationParts);
+
+            // Perform validation
+            $rules = [
+                'refund_method' => 'required|string|in:GCash,Online Wallet,Bank Account',
+                'refund_account_number' => 'required|string|max:50',
+                'refund_account_name' => 'required|string|max:100',
+            ];
+
+            if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
+                $rules['refund_bank_name'] = 'required|string|max:100';
+            }
+
+            $this->validate($rules);
+        }
 
         if (! $this->booking) {
             $this->feedback = 'Booking not found.';
@@ -185,6 +226,39 @@ class BookingLookup extends Component
 
         $this->feedback = "Your booking has been cancelled successfully. Cancellation fee: ₱" . number_format($cancellationFee, 2) . ", Refund amount: ₱" . number_format($refundAmount, 2) . ". A confirmation email has been sent.";
         $this->resetCancellationState();
+    }
+
+    public function tickCancelCountdown(): void
+    {
+        if (! $this->cancellationWindowActive) {
+            return;
+        }
+
+        $key = $this->getCancellationSessionKey();
+        $expires = session($key);
+
+        if (! $expires) {
+            $this->cancellationWindowActive = false;
+            $this->cancellationExpired = true;
+            $this->cancelCountdown = 0;
+            session([$this->getCancellationExpiredKey() => true]);
+            return;
+        }
+
+        $remaining = $expires - now()->timestamp;
+
+        if ($remaining <= 0) {
+            $this->cancelCountdown = 0;
+            $this->cancellationWindowActive = false;
+            $this->cancellationExpired = true;
+            $this->cancellationRequested = false;
+            session()->forget($key);
+            session([$this->getCancellationExpiredKey() => true]);
+            $this->feedback = 'The 5-minute cancellation window has expired. You can no longer cancel this booking.';
+            return;
+        }
+
+        $this->cancelCountdown = $remaining;
     }
 
     public function cancelCancellationRequest(): void
@@ -254,8 +328,21 @@ class BookingLookup extends Component
         return 'cancellation_window_expires_for_' . $this->transaction_number;
     }
 
+    private function getCancellationExpiredKey(): string
+    {
+        return 'cancellation_expired_for_' . $this->transaction_number;
+    }
+
     private function loadCancellationWindowFromSession(): void
     {
+        // Check persistent expired marker first — this survives page refreshes
+        if (session($this->getCancellationExpiredKey())) {
+            $this->cancellationExpired = true;
+            $this->cancellationWindowActive = false;
+            $this->cancellationRequested = false;
+            return;
+        }
+
         $key = $this->getCancellationSessionKey();
         $expires = session($key);
 
@@ -264,10 +351,13 @@ class BookingLookup extends Component
         }
 
         if (now()->timestamp >= $expires) {
-            $this->cancellationExpired = true;
+            // Window has expired — mark it permanently
             session()->forget($key);
-            $this->resetCancellationState();
-            $this->feedback = 'The cancellation window has expired. Upload proof again to start a new 5-minute window.';
+            session([$this->getCancellationExpiredKey() => true]);
+            $this->cancellationExpired = true;
+            $this->cancellationWindowActive = false;
+            $this->cancellationRequested = false;
+            $this->feedback = 'The cancellation window has expired. This booking can no longer be cancelled.';
             return;
         }
 
@@ -283,6 +373,13 @@ class BookingLookup extends Component
         $this->cancellationExpired = false;
         $this->cancelCountdown = 300;
         $this->refund_destination = null;
+        $this->refund_method = 'GCash';
+        $this->refund_bank_name = '';
+        $this->refund_account_number = '';
+        $this->refund_account_name = '';
+        // NOTE: do NOT delete the cancellation_expired session key here.
+        // It must survive page refreshes. Only startCancellationWindow() clears it
+        // when the user explicitly begins a fresh cancellation attempt.
     }
 
     private function resetRebookingState(): void

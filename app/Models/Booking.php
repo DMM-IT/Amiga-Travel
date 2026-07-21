@@ -45,6 +45,8 @@ class Booking extends Model
         'rebooking_status',
         'rebooking_departure_date',
         'rebooking_return_date',
+        'verified_by_user_id',
+        'verified_at',
     ];
 
     protected $casts = [
@@ -98,6 +100,12 @@ class Booking extends Model
         return $this->hasOne(Transaction::class);
     }
 
+    public function verifiedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by_user_id');
+    }
+
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
@@ -142,17 +150,24 @@ class Booking extends Model
             return;
         }
 
+        $staffId = $this->verified_by_user_id ?? \Illuminate\Support\Facades\Auth::id();
+        $now = $this->verified_at ?? now();
+
         $this->update([
             'departure_date' => $this->rebooking_departure_date,
             'return_date' => $this->rebooking_return_date,
             'status' => 'confirmed',
             'is_rebooked' => true,
             'rebooking_status' => 'verified',
+            'verified_by_user_id' => $staffId,
+            'verified_at' => $now,
         ]);
 
         if ($this->transaction) {
             $this->transaction->update([
                 'payment_status' => 'paid',
+                'verified_by_user_id' => $staffId,
+                'verified_at' => $now,
             ]);
         }
 

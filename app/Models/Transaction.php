@@ -15,6 +15,8 @@ class Transaction extends Model
         'confirmation_url',
         'rebooking_fee',
         'rebooking_proof_of_payment',
+        'verified_by_user_id',
+        'verified_at',
     ];
 
     protected $casts = [
@@ -24,6 +26,11 @@ class Transaction extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function verifiedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by_user_id');
     }
 
     public function getProofUrlAttribute(): ?string

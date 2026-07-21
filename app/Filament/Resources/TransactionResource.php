@@ -238,8 +238,20 @@ class TransactionResource extends Resource
                             $receiptDisk = null;
                         }
 
-                        $record->update(['payment_status' => 'paid']);
-                        $record->booking->update(['status' => 'confirmed']);
+                        $staffUserId = Auth::id();
+                        $now = now();
+
+                        $record->update([
+                            'payment_status' => 'paid',
+                            'verified_by_user_id' => $staffUserId,
+                            'verified_at' => $now,
+                        ]);
+
+                        $record->booking->update([
+                            'status' => 'confirmed',
+                            'verified_by_user_id' => $staffUserId,
+                            'verified_at' => $now,
+                        ]);
 
                         Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath, $receiptDisk));
                     })

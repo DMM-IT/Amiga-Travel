@@ -46,6 +46,7 @@ class AdminNotificationFeedTest extends TestCase
             'return_date' => '2026-07-26',
             'status' => 'pending',
             'is_rebooked' => true,
+            'rebooking_status' => 'pending',
             'total_price' => 1500,
             'client_email' => 'client@example.com',
             'client_name' => 'Client Three',

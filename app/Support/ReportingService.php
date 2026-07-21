@@ -49,18 +49,23 @@ class ReportingService
         ];
     }
 
-    public function getStaffStats(): Collection
+    public function getStaffStats(?string $date = null): Collection
     {
         $staffUsers = User::where('is_staff', '=', true, 'and')
             ->orWhere('is_admin', '=', true, 'and')
-            ->with('bookings')
             ->get();
 
-        return $staffUsers->map(function (User $user) {
-            $bookings = Booking::query()
-                ->get(); // In a real scenario, add staff_id to bookings to track who created/processed them
+        return $staffUsers->map(function (User $user) use ($date) {
+            // Get bookings verified by this staff member
+            $query = Booking::where('verified_by_user_id', $user->id);
+            
+            if ($date) {
+                $query->whereDate('verified_at', $date);
+            }
+            
+            $bookings = $query->get();
 
-            // Calculate revenue from bookings with paid transactions
+            // Calculate revenue from bookings verified by this user with paid transactions
             $paidBookings = $bookings->filter(function (Booking $booking) {
                 return $booking->transactions()->where('payment_status', 'paid')->exists();
             });

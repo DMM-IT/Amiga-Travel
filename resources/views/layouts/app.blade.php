@@ -12,6 +12,28 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
+
+        {{-- Flatpickr (global) --}}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+        <style>
+            .flatpickr-calendar { font-family: inherit; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px -5px rgba(0,0,0,.15); overflow: hidden; }
+            .flatpickr-calendar.arrowTop:before,.flatpickr-calendar.arrowTop:after { display:none; }
+            .flatpickr-months { background:#3b82f6; border-radius:1rem 1rem 0 0; padding:4px 0; }
+            .flatpickr-month,.flatpickr-current-month .cur-month,.flatpickr-current-month .cur-year { color:#fff; fill:#fff; font-weight:600; }
+            .flatpickr-prev-month,.flatpickr-next-month { color:#fff; fill:#fff; padding:8px 14px; }
+            .flatpickr-prev-month:hover,.flatpickr-next-month:hover { background:rgba(255,255,255,.2); border-radius:8px; }
+            .flatpickr-weekdays { background:#eff6ff; }
+            span.flatpickr-weekday { color:#3b82f6; font-weight:700; font-size:.68rem; text-transform:uppercase; }
+            .flatpickr-day { border-radius:.6rem; font-size:.85rem; color:#1e293b; height:34px; line-height:34px; }
+            .flatpickr-day:hover { background:#dbeafe; border-color:transparent; }
+            .flatpickr-day.today { border-color:#3b82f6; color:#3b82f6; font-weight:700; }
+            .flatpickr-day.today:hover { background:#dbeafe; }
+            .flatpickr-day.selected,.flatpickr-day.selected:hover { background:#3b82f6; border-color:#3b82f6; color:#fff; font-weight:700; }
+            .flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay { color:#cbd5e1; }
+            .flatpickr-day.flatpickr-disabled { color:#e2e8f0; }
+            .flatpickr-innerContainer { padding:6px 8px 8px; }
+        </style>
     </head>
     <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
         <header class="bg-[#216417] text-white sticky top-0 z-50 shadow-md">

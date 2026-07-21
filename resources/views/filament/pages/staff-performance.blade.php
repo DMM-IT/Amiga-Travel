@@ -2,9 +2,15 @@
 
 <x-filament-panels::page>
     <div class="space-y-6">
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Staff Performance Overview</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Performance metrics for each staff member</p>
+        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Staff Performance Overview</h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Performance metrics for each staff member based on when they verified the booking.</p>
+            </div>
+            
+            <div class="w-64">
+                {{ $this->form }}
+            </div>
         </div>
 
         <!-- Staff Table -->
@@ -30,11 +36,14 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
                             Revenue Handled
                         </th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                            Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($staffStats as $staff)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-white/5">
                             <td class="px-6 py-4">
                                 <div>
                                     <p class="font-medium text-gray-900 dark:text-white">{{ $staff['name'] }}</p>
@@ -66,6 +75,59 @@
                             </td>
                             <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
                                 ₱{{ number_format($staff['total_revenue_handled'], 2) }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-right">
+                                <button type="button" 
+                                    x-data 
+                                    x-on:click="$dispatch('open-modal', { id: 'staff-bookings-{{ $staff['id'] }}' })"
+                                    class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
+                                    View Bookings
+                                </button>
+                                
+                                <x-filament::modal id="staff-bookings-{{ $staff['id'] }}" width="4xl">
+                                    <x-slot name="heading">
+                                        Bookings verified by {{ $staff['name'] }} on {{ $filterDate }}
+                                    </x-slot>
+                                    
+                                    @php
+                                        $bookings = $this->getStaffBookings($staff['id']);
+                                    @endphp
+                                    
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm text-left">
+                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                <tr>
+                                                    <th class="px-4 py-3">Transaction #</th>
+                                                    <th class="px-4 py-3">Client</th>
+                                                    <th class="px-4 py-3">Status</th>
+                                                    <th class="px-4 py-3">Price</th>
+                                                    <th class="px-4 py-3">Verified Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($bookings as $booking)
+                                                    <tr class="border-b dark:border-gray-700">
+                                                        <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $booking->transaction_number }}</td>
+                                                        <td class="px-4 py-3">{{ $booking->client_name }}</td>
+                                                        <td class="px-4 py-3">
+                                                            <span class="px-2 py-1 text-xs rounded-full 
+                                                                {{ $booking->status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : 
+                                                                   ($booking->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') }}">
+                                                                {{ ucfirst($booking->status) }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="px-4 py-3">₱{{ number_format($booking->total_price, 2) }}</td>
+                                                        <td class="px-4 py-3 text-gray-500">{{ $booking->verified_at ? $booking->verified_at->format('h:i A') : '-' }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="5" class="px-4 py-4 text-center text-gray-500">No bookings verified on this date.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </x-filament::modal>
                             </td>
                         </tr>
                     @empty

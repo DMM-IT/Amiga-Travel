@@ -163,9 +163,13 @@ class BookingResource extends Resource
                             $receiptPath = Storage::disk('public')->path($pdfPath);
                         }
 
-                        $record->verifyRebooking($ticketUrl, $receiptPath, $receiptDisk);
-                    })
-                    ->color('success'),
+                         $record->update([
+                             'verified_by_user_id' => Auth::id(),
+                             'verified_at' => now(),
+                         ]);
+                         $record->verifyRebooking($ticketUrl, $receiptPath, $receiptDisk);
+                     })
+                     ->color('success'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
