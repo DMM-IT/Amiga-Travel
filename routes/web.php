@@ -73,26 +73,24 @@ Route::get('/download', function () use ($renderWebsitePage) {
     return $renderWebsitePage('download', 'download');
 })->name('download');
 
-Route::get('/schedules', function () {
+Route::get('/schedules', function (\Illuminate\Http\Request $request) {
+    $startDate = $request->query('start_date', \Carbon\Carbon::today()->format('Y-m-d'));
+    $endDate = $request->query('end_date', \Carbon\Carbon::today()->addDays(6)->format('Y-m-d'));
+
     $routes = App\Models\FerryRoute::with([
-        'schedules' => function ($query) {
-            $query->where('is_active', true)->orderBy('departure_time');
+        'schedules' => function ($query) use ($startDate, $endDate) {
+            $query->where('is_active', true)
+                  ->whereBetween('departure_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                  ->orderBy('departure_time');
         },
         'schedules.scheduleAccommodations',
         'schedules.transportClasses',
     ])->where('is_active', true)->orderBy('origin')->orderBy('destination')->get();
+    
+    // Filter out routes that have no schedules in this date range
+    $routes = $routes->filter(fn ($route) => $route->schedules->isNotEmpty());
 
-    $dayNames = [
-        1 => 'Mon',
-        2 => 'Tue',
-        3 => 'Wed',
-        4 => 'Thu',
-        5 => 'Fri',
-        6 => 'Sat',
-        7 => 'Sun',
-    ];
-
-    return view('schedules', compact('routes', 'dayNames'));
+    return view('schedules', compact('routes', 'startDate', 'endDate'));
 })->name('schedules');
 
 Route::get('/payment/{transaction}', function (Transaction $transaction) {

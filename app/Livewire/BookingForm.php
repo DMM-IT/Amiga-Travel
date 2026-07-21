@@ -42,6 +42,7 @@ class BookingForm extends Component
     public ?string $return_date = null;
     public ?int $duration_days = null;
     public array $available_package_dates = [];
+    public array $available_schedule_dates = [];
     public int $adults = 1;
     public int $children = 0;
     public ?int $selected_schedule_id = null;
@@ -297,8 +298,11 @@ class BookingForm extends Component
         }
 
         // Fetch available schedules if needed
-        if (! blank($this->origin) && ! blank($this->destination) && ! blank($this->departure_date)) {
-            $this->availableSchedules = $this->getAvailableSchedules();
+        if (! blank($this->origin) && ! blank($this->destination)) {
+            $this->updateAvailableScheduleDates();
+            if (! blank($this->departure_date)) {
+                $this->availableSchedules = $this->getAvailableSchedules();
+            }
         }
 
         $this->syncPassengerEntries();
@@ -574,7 +578,47 @@ class BookingForm extends Component
         $this->showDestinationDropdown = false;
         $this->destinationSearch = '';
 
+        $this->updateAvailableScheduleDates();
         $this->saveDraft();
+    }
+
+    protected function updateAvailableScheduleDates(): void
+    {
+        if ($this->prefilled_from_package || $this->tour_id) {
+            $this->available_schedule_dates = [];
+            return;
+        }
+
+        if (empty($this->mode) || empty($this->origin) || empty($this->destination)) {
+            $this->available_schedule_dates = [];
+            return;
+        }
+
+        $schedules = Schedule::active()
+            ->whereHas('ferryRoute', function ($query) {
+                $query->where('origin', $this->origin)
+                      ->where('destination', $this->destination)
+                      ->where('mode', $this->mode)
+                      ->where('is_active', true);
+            })->get();
+
+        if ($schedules->isEmpty()) {
+            $this->available_schedule_dates = [];
+            return;
+        }
+
+        $dates = $schedules->pluck('departure_time')
+            ->filter()
+            ->map(fn ($date) => Carbon::parse($date)->format('Y-m-d'))
+            ->unique()
+            ->values()
+            ->all();
+
+        $this->available_schedule_dates = $dates;
+        
+        if ($this->departure_date && !in_array($this->departure_date, $this->available_schedule_dates)) {
+            $this->departure_date = null;
+        }
     }
 
     public function updatedOriginSearch(): void

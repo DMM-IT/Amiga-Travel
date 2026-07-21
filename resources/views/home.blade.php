@@ -39,9 +39,9 @@
         </div>
     </div>
 @endif
-<div class="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row items-stretch gap-6">
+<div class="max-w-7xl mx-auto px-0 lg:px-4 py-0 lg:py-6 flex flex-col lg:flex-row items-start gap-0 lg:gap-6">
     <!-- Left Column: Scrolling Image Carousel -->
-    <div class="w-full lg:w-1/2 rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-slate-200 relative bg-white flex items-center justify-center min-h-[280px] sm:min-h-[360px] lg:min-h-[520px]"
+    <div class="w-full lg:w-4/12 rounded-none lg:rounded-[2rem] overflow-hidden shadow-none lg:shadow-xl ring-0 lg:ring-1 ring-slate-200 relative bg-white flex items-center justify-center min-h-[280px] sm:min-h-[360px] lg:min-h-[520px]"
          x-data="{
             activeSlide: 0,
             slides: [
@@ -67,7 +67,7 @@
          }">
         
         <template x-if="slides.length > 0">
-            <div class="w-full h-full min-h-[240px] sm:min-h-[340px] relative group aspect-[16/9] sm:aspect-[3/2] lg:aspect-[4/3]">
+            <div class="w-full h-full relative group aspect-[16/9] lg:aspect-[3/4]">
                 <!-- Images -->
                 <template x-for="(slide, index) in slides" :key="index">
                     <img :src="slide" 
@@ -103,7 +103,7 @@
         </template>
 
         <template x-if="slides.length === 0">
-            <div class="w-full h-full min-h-[380px] flex flex-col items-center justify-center p-6 text-center bg-slate-50">
+            <div class="w-full h-full min-h-[280px] lg:min-h-[600px] flex flex-col items-center justify-center p-6 text-center bg-slate-50 aspect-[16/9] lg:aspect-[3/4]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -114,7 +114,7 @@
     </div>
 
     <!-- Right Column: Form -->
-    <div class="w-full lg:w-1/2">
+    <div class="w-full lg:w-8/12 px-4 py-6 lg:px-0 lg:py-0">
         <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden h-full flex flex-col">
             <div class="px-6 py-8 sm:px-10 sm:py-10 text-center flex-shrink-0" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
                 <h1 class="text-xl sm:text-2xl font-semibold text-white">{{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia Travel Services' }}</h1>
@@ -161,7 +161,9 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         @forelse($bookingCards as $card)
             @php
-                $cardImage = data_get($card, 'image') ? asset('storage/' . data_get($card, 'image')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                $rawCardImage = data_get($card, 'image');
+                if (is_array($rawCardImage)) { $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null; }
+                $cardImage = $rawCardImage ? asset('storage/' . $rawCardImage) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
                 $cardTitle = data_get($card, 'title', 'Travel Booking');
                 $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
                 $buttonText = data_get($pageContent, 'booking_button_text', 'Book Now');

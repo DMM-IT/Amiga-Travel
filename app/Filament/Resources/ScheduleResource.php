@@ -8,11 +8,11 @@ use App\Filament\Resources\ScheduleResource\RelationManagers\TransportClassesRel
 use App\Models\FerryRoute;
 use App\Models\Schedule;
 use App\Models\User;
-use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -67,12 +67,12 @@ class ScheduleResource extends Resource
                     ->nullable()
                     ->maxLength(255),
 
-                TimePicker::make('departure_time')
+                DateTimePicker::make('departure_time')
                     ->label('Departure time')
                     ->seconds(false)
                     ->required(),
 
-                TimePicker::make('arrival_time')
+                DateTimePicker::make('arrival_time')
                     ->label('Arrival time')
                     ->seconds(false)
                     ->required(),
@@ -90,20 +90,6 @@ class ScheduleResource extends Resource
                     ->minValue(0)
                     ->required(),
 
-                CheckboxList::make('operating_days')
-                    ->label('Operating days')
-                    ->options([
-                        1 => 'Monday',
-                        2 => 'Tuesday',
-                        3 => 'Wednesday',
-                        4 => 'Thursday',
-                        5 => 'Friday',
-                        6 => 'Saturday',
-                        7 => 'Sunday',
-                    ])
-                    ->columns(2)
-                    ->required()
-                    ->columnSpanFull(),
 
                 TextInput::make('availability_label')
                     ->label('Availability note')
@@ -147,6 +133,7 @@ class ScheduleResource extends Resource
                     ->label('Mode')
                     ->sortable()
                     ->toggleable(),
+
                 TextColumn::make('service_name')
                     ->searchable()
                     ->sortable(),
@@ -157,11 +144,11 @@ class ScheduleResource extends Resource
                     ->toggleable(),
                 TextColumn::make('departure_time')
                     ->label('Departs')
-                    ->time('H:i')
+                    ->dateTime('M j, Y H:i')
                     ->sortable(),
                 TextColumn::make('arrival_time')
                     ->label('Arrives')
-                    ->time('H:i')
+                    ->dateTime('M j, Y H:i')
                     ->sortable(),
                 TextColumn::make('price')
                     ->money('PHP')

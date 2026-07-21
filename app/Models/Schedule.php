@@ -21,7 +21,6 @@ class Schedule extends Model
         'arrival_time',
         'duration_minutes',
         'price',
-        'operating_days',
         'availability_label',
         'seat_rows',
         'seat_columns',
@@ -29,7 +28,8 @@ class Schedule extends Model
     ];
 
     protected $casts = [
-        'operating_days' => 'array',
+        'departure_time' => 'datetime',
+        'arrival_time' => 'datetime',
         'price' => 'decimal:2',
         'seat_columns' => 'array',
         'is_active' => 'boolean',
@@ -95,13 +95,6 @@ class Schedule extends Model
 
     public function scopeForRouteAndDate(Builder $query, string $origin, string $destination, string $date, ?string $mode = null): Builder
     {
-        try {
-            $dayOfWeek = Carbon::parse($date)->dayOfWeekIso;
-        } catch (\Throwable $e) {
-            // If the provided date is not parseable (e.g. 'Multiple dates'), return an empty query
-            return $query->whereRaw('0 = 1');
-        }
-
         return $query->active()
             ->whereHas('ferryRoute', function (Builder $routeQuery) use ($origin, $destination, $mode) {
                 $routeQuery->where('origin', $origin)
@@ -112,7 +105,7 @@ class Schedule extends Model
                     $routeQuery->where('mode', $mode);
                 }
             })
-            ->whereJsonContains('operating_days', $dayOfWeek)
+            ->whereDate('departure_time', $date)
             ->orderBy('departure_time');
     }
 

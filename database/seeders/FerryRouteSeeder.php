@@ -62,18 +62,25 @@ class FerryRouteSeeder extends Seeder
                 );
 
                 foreach ($ferryTemplates as $template) {
-                    Schedule::updateOrCreate(
-                        [
-                            'ferry_route_id' => $route->id,
-                            'service_name' => $template['service_name'],
-                            'departure_time' => $template['departure_time'],
-                        ],
-                        [
-                            ...$template,
-                            'operating_days' => $daily,
-                            'is_active' => true,
-                        ],
-                    );
+                    for ($i = 0; $i < 7; $i++) {
+                        $date = \Carbon\Carbon::today()->addDays($i)->format('Y-m-d');
+                        $depTime = \Carbon\Carbon::parse($date . ' ' . $template['departure_time']);
+                        $arrTime = \Carbon\Carbon::parse($date . ' ' . $template['arrival_time']);
+                        if ($arrTime->lessThan($depTime)) {
+                            $arrTime->addDay();
+                        }
+                        Schedule::updateOrCreate(
+                            [
+                                'ferry_route_id' => $route->id,
+                                'service_name' => $template['service_name'],
+                                'departure_time' => $depTime,
+                            ],
+                            array_merge($template, [
+                                'arrival_time' => $arrTime,
+                                'is_active' => true,
+                            ])
+                        );
+                    }
                 }
             }
         }
@@ -119,24 +126,32 @@ class FerryRouteSeeder extends Seeder
                 foreach ($airlineTemplates as $templateIndex => $template) {
                     $aircraftType = $operatorAircraft[($routeIndex * count($airlineTemplates) + $templateIndex) % count($operatorAircraft)] ?? null;
 
-                    Schedule::updateOrCreate(
-                        [
-                            'ferry_route_id' => $route->id,
-                            'service_name' => $operator . ' ' . $template['service_name'],
-                            'departure_time' => $template['departure_time'],
-                        ],
-                        array_merge(
-                            $template,
+                    for ($i = 0; $i < 7; $i++) {
+                        $date = \Carbon\Carbon::today()->addDays($i)->format('Y-m-d');
+                        $depTime = \Carbon\Carbon::parse($date . ' ' . $template['departure_time']);
+                        $arrTime = \Carbon\Carbon::parse($date . ' ' . $template['arrival_time']);
+                        if ($arrTime->lessThan($depTime)) {
+                            $arrTime->addDay();
+                        }
+                        Schedule::updateOrCreate(
                             [
+                                'ferry_route_id' => $route->id,
                                 'service_name' => $operator . ' ' . $template['service_name'],
-                                'vehicle_name' => $aircraftType,
-                                'operating_days' => $daily,
-                                'seat_rows' => null,
-                                'seat_columns' => null,
-                                'is_active' => true,
-                            ]
-                        ),
-                    );
+                                'departure_time' => $depTime,
+                            ],
+                            array_merge(
+                                $template,
+                                [
+                                    'service_name' => $operator . ' ' . $template['service_name'],
+                                    'vehicle_name' => $aircraftType,
+                                    'arrival_time' => $arrTime,
+                                    'seat_rows' => null,
+                                    'seat_columns' => null,
+                                    'is_active' => true,
+                                ]
+                            ),
+                        );
+                    }
                 }
             }
         }

@@ -430,6 +430,12 @@ class ManageWebsiteSettings extends Page implements HasForms
 
     public ?array $settingsData = [];
 
+    public bool $editMode = false;
+
+    public string $activeSection = '';
+
+    public int $iframeKey = 0;
+
     public function mount(): void
     {
         $this->currentPage = request('page', 'home');
@@ -741,6 +747,260 @@ class ManageWebsiteSettings extends Page implements HasForms
                 ->body($e->getMessage())
                 ->send();
         }
+    }
+
+    public function toggleEditMode(): void
+    {
+        $this->editMode = !$this->editMode;
+        if (!$this->editMode) {
+            $this->activeSection = '';
+        }
+    }
+
+    public function setActiveSection(string $section): void
+    {
+        $this->activeSection = $section;
+    }
+
+    public function closePanel(): void
+    {
+        $this->activeSection = '';
+    }
+
+    public function saveSectionDirect(): void
+    {
+        try {
+            $setting = WebsiteSetting::getOrCreateByPage($this->currentPage);
+            $data = $this->settingsData ?? [];
+            $updateData = [];
+            foreach (['content', 'hero_images', 'header_data', 'footer_data', 'booking_cards', 'is_active'] as $field) {
+                if (array_key_exists($field, $data)) {
+                    $updateData[$field] = $data[$field];
+                }
+            }
+            $setting->update($updateData);
+            $this->iframeKey++;
+            $this->dispatch('refresh-preview');
+            Notification::make()
+                ->success()
+                ->title('Saved!')
+                ->body('Changes have been published to the website.')
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title('Save failed')
+                ->body($e->getMessage())
+                ->send();
+        }
+    }
+
+    public function removeHeroImage(int $index): void
+    {
+        $images = $this->settingsData['hero_images'] ?? [];
+        array_splice($images, $index, 1);
+        $this->settingsData['hero_images'] = array_values($images);
+    }
+
+    public function addQuickFact(): void
+    {
+        $facts = $this->settingsData['content']['quick_facts'] ?? [];
+        $facts[] = ['label' => '', 'value' => ''];
+        $this->settingsData['content']['quick_facts'] = $facts;
+    }
+
+    public function removeQuickFact(int $index): void
+    {
+        $facts = $this->settingsData['content']['quick_facts'] ?? [];
+        array_splice($facts, $index, 1);
+        $this->settingsData['content']['quick_facts'] = array_values($facts);
+    }
+
+    public function addSocialLink(string $type = 'footer'): void
+    {
+        if ($type === 'contact') {
+            $links = $this->settingsData['content']['social_links'] ?? [];
+            $links[] = ['platform' => '', 'url' => ''];
+            $this->settingsData['content']['social_links'] = $links;
+        } else {
+            $links = $this->settingsData['footer_data']['social_links'] ?? [];
+            $links[] = ['platform' => '', 'url' => ''];
+            $this->settingsData['footer_data']['social_links'] = $links;
+        }
+    }
+
+    public function removeSocialLink(int $index, string $type = 'footer'): void
+    {
+        if ($type === 'contact') {
+            $links = $this->settingsData['content']['social_links'] ?? [];
+            array_splice($links, $index, 1);
+            $this->settingsData['content']['social_links'] = array_values($links);
+        } else {
+            $links = $this->settingsData['footer_data']['social_links'] ?? [];
+            array_splice($links, $index, 1);
+            $this->settingsData['footer_data']['social_links'] = array_values($links);
+        }
+    }
+
+    public function getPreviewUrl(): string
+    {
+        $map = [
+            'home'       => '/',
+            'about'      => '/about',
+            'gallery'    => '/gallery',
+            'services'   => '/services',
+            'tour_package' => '/tour-package',
+            'contact_us' => '/contact-us',
+            'download'   => '/download',
+            'header'     => '/',
+            'footer'     => '/',
+        ];
+        return url($map[$this->currentPage] ?? '/');
+    }
+
+    public function getPageSections(): array
+    {
+        return match ($this->currentPage) {
+            'home' => [
+                'nav_links' => [
+                    'label' => 'Navigation (Locked)',
+                    'icon'  => '🔒',
+                    'color' => 'slate',
+                    'pos'   => 'top:0%;left:0%;width:100%;height:8%',
+                    'description' => 'Navigation links are part of the template',
+                    'locked' => true,
+                ],
+                'promotion_images' => [
+                    'label' => 'Promotion Images',
+                    'icon'  => '🖼',
+                    'color' => 'blue',
+                    'pos'   => 'top:9%;left:0%;width:33%;height:54%',
+                    'description' => 'Carousel images on the left column',
+                ],
+                'welcome_section' => [
+                    'label' => 'Welcome Section',
+                    'icon'  => '👋',
+                    'color' => 'green',
+                    'pos'   => 'top:9%;left:34%;width:66%;height:20%',
+                    'description' => 'Welcome title and subtitle text',
+                ],
+                'hero_cards' => [
+                    'label' => 'Quick Action Cards',
+                    'icon'  => '🃏',
+                    'color' => 'purple',
+                    'pos'   => 'top:30%;left:34%;width:66%;height:33%',
+                    'description' => 'Book a Trip and Check My Booking cards',
+                ],
+            ],
+            'header' => [
+                'header_config' => [
+                    'label' => 'Header Configuration',
+                    'icon'  => '🏷',
+                    'color' => 'amber',
+                    'pos'   => 'top:0%;left:0%;width:100%;height:9%',
+                    'description' => 'Logo, company name, phone, and email',
+                ],
+            ],
+            'footer' => [
+                'footer_config' => [
+                    'label' => 'Footer Content',
+                    'icon'  => '🔗',
+                    'color' => 'slate',
+                    'pos'   => 'top:70%;left:0%;width:100%;height:30%',
+                    'description' => 'About text, contact info, social links',
+                ],
+            ],
+            'about' => [
+                'about_content' => [
+                    'label' => 'About Content',
+                    'icon'  => '📝',
+                    'color' => 'emerald',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:40%',
+                    'description' => 'Page title and main description',
+                ],
+                'quick_facts' => [
+                    'label' => 'Quick Facts',
+                    'icon'  => '📋',
+                    'color' => 'blue',
+                    'pos'   => 'top:49%;left:0%;width:100%;height:42%',
+                    'description' => 'Fact cards shown on the About page',
+                ],
+            ],
+            'gallery' => [
+                'gallery_header' => [
+                    'label' => 'Gallery Header',
+                    'icon'  => '🖼',
+                    'color' => 'pink',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:25%',
+                    'description' => 'Page title, badge, and description',
+                ],
+                'gallery_items' => [
+                    'label' => 'Gallery Items',
+                    'icon'  => '🖼',
+                    'color' => 'violet',
+                    'pos'   => 'top:34%;left:0%;width:100%;height:60%',
+                    'description' => 'Gallery images and captions',
+                ],
+            ],
+            'services' => [
+                'services_header' => [
+                    'label' => 'Services Header',
+                    'icon'  => '⚙️',
+                    'color' => 'emerald',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:30%',
+                    'description' => 'Page title, description, and CTA',
+                ],
+                'service_cards' => [
+                    'label' => 'Service Cards',
+                    'icon'  => '🃏',
+                    'color' => 'blue',
+                    'pos'   => 'top:39%;left:0%;width:100%;height:55%',
+                    'description' => 'Individual service card content',
+                ],
+            ],
+            'tour_package' => [
+                'tour_header' => [
+                    'label' => 'Tour Header',
+                    'icon'  => '✈️',
+                    'color' => 'sky',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:25%',
+                    'description' => 'Page title and description',
+                ],
+                'tour_packages' => [
+                    'label' => 'Tour Packages',
+                    'icon'  => '🌏',
+                    'color' => 'indigo',
+                    'pos'   => 'top:34%;left:0%;width:100%;height:60%',
+                    'description' => 'Domestic and international packages',
+                ],
+            ],
+            'contact_us' => [
+                'contact_info' => [
+                    'label' => 'Contact Information',
+                    'icon'  => '📞',
+                    'color' => 'green',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:88%',
+                    'description' => 'Phone, email, address, and social links',
+                ],
+            ],
+            'download' => [
+                'download_content' => [
+                    'label' => 'Download Header',
+                    'icon'  => '📱',
+                    'color' => 'orange',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:40%',
+                    'description' => 'Page title, description, how it works',
+                ],
+                'download_steps' => [
+                    'label' => 'Download Steps',
+                    'icon'  => '📋',
+                    'color' => 'amber',
+                    'pos'   => 'top:49%;left:0%;width:100%;height:45%',
+                    'description' => 'Installation steps for the app',
+                ],
+            ],
+            default => [],
+        };
     }
 
     public function getFormStatePath(): ?string

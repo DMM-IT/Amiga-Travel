@@ -48,9 +48,19 @@
                     <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
                         <a href="{{ url('/') }}" class="border-b-2 {{ request()->is('/') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Home</a>
                         <a href="{{ url('/about') }}" class="border-b-2 {{ request()->is('about') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">About</a>
-                        <a href="{{ url('/gallery') }}" class="border-b-2 {{ request()->is('gallery') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Gallery</a>
-                        <a href="{{ url('/services') }}" class="border-b-2 {{ request()->is('services') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Services</a>
-                        <a href="{{ url('/tour-package') }}" class="border-b-2 {{ request()->is('tour-package') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Tour Package</a>
+                        <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
+                            <button class="border-b-2 {{ request()->is('gallery') || request()->is('services') || request()->is('tour-package') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition flex items-center gap-1">
+                                Discover
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                                <div class="py-1">
+                                    <a href="{{ url('/gallery') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('gallery') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Gallery</a>
+                                    <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Services</a>
+                                    <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Tour Package</a>
+                                </div>
+                            </div>
+                        </div>
                         <a href="{{ url('/schedules') }}" class="border-b-2 {{ request()->is('schedules') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Schedules</a>
                         <a href="{{ url('/contact-us') }}" class="border-b-2 {{ request()->is('contact-us') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Contact Us</a>
                         <a href="{{ url('/download') }}" class="border-b-2 {{ request()->is('download') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Download</a>
@@ -81,9 +91,17 @@
                 <div class="max-w-full mx-auto px-4 py-4 space-y-3">
                     <a href="{{ url('/') }}" class="block rounded-xl px-4 py-3 {{ request()->is('/') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Home</a>
                     <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">About</a>
-                    <a href="{{ url('/gallery') }}" class="block rounded-xl px-4 py-3 {{ request()->is('gallery') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Gallery</a>
-                    <a href="{{ url('/services') }}" class="block rounded-xl px-4 py-3 {{ request()->is('services') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Services</a>
-                    <a href="{{ url('/tour-package') }}" class="block rounded-xl px-4 py-3 {{ request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Tour Package</a>
+                    <div x-data="{ open: false }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('gallery') || request()->is('services') || request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">
+                            Discover
+                            <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1">
+                            <a href="{{ url('/gallery') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('gallery') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Gallery</a>
+                            <a href="{{ url('/services') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('services') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Services</a>
+                            <a href="{{ url('/tour-package') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Tour Package</a>
+                        </div>
+                    </div>
                     <a href="{{ url('/contact-us') }}" class="block rounded-xl px-4 py-3 {{ request()->is('contact-us') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Contact Us</a>
                     <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Download</a>
                     <div class="border-t border-white/10 pt-3">
