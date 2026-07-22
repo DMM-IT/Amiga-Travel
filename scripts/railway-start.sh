@@ -1,13 +1,12 @@
 #!/usr/bin/env sh
 set -e
 
+# Set APP_URL FIRST, before any artisan commands (fixes malformed host error)
+export APP_URL="${APP_URL:-https://amiga-travel-production.up.railway.app}"
+export APP_NAME="${APP_NAME:-Amiga Travel}"
+
 if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force
-fi
-
-# Set a safe APP_URL for migrations and app startup
-if [ -z "$APP_URL" ]; then
-  export APP_URL="http://localhost:10000"
 fi
 
 if [ -z "$SESSION_DRIVER" ]; then
