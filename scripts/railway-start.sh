@@ -5,6 +5,11 @@ if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force
 fi
 
+# Set a safe APP_URL for migrations and app startup
+if [ -z "$APP_URL" ]; then
+  export APP_URL="http://localhost:10000"
+fi
+
 if [ -z "$SESSION_DRIVER" ]; then
   export SESSION_DRIVER=database
 fi
