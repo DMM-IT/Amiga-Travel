@@ -78,7 +78,8 @@ BROADCAST_CONNECTION="log"
 EOF
 
 # Run migrations and setup
-php artisan migrate --force --no-interaction 2>/dev/null || true
+# Skip migrations if they timeout (database might not be fully ready)
+timeout 15 php artisan migrate --force --no-interaction 2>/dev/null || echo "Migrations skipped or timed out"
 php artisan storage:link --quiet 2>/dev/null || true
 
 # Start Laravel server
