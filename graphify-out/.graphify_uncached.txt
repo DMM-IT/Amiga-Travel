@@ -1,3 +1,15 @@
+C:\laragon\www\AMIGA\Amiga-Travel\.agents\rules\graphify.md
+C:\laragon\www\AMIGA\Amiga-Travel\.agents\workflows\graphify.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\CLAUDE.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\SKILL.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\add-watch.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\exports.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\extraction-spec.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\github-and-merge.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\hooks.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\query.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\transcribe.md
+C:\laragon\www\AMIGA\Amiga-Travel\.claude\skills\graphify\references\update.md
 C:\laragon\www\AMIGA\Amiga-Travel\.copilot\skills\graphify\SKILL.md
 C:\laragon\www\AMIGA\Amiga-Travel\.copilot\skills\graphify\references\add-watch.md
 C:\laragon\www\AMIGA\Amiga-Travel\.copilot\skills\graphify\references\exports.md
@@ -18,6 +30,7 @@ C:\laragon\www\AMIGA\Amiga-Travel\.github\skills\graphify\references\query.md
 C:\laragon\www\AMIGA\Amiga-Travel\.github\skills\graphify\references\transcribe.md
 C:\laragon\www\AMIGA\Amiga-Travel\.github\skills\graphify\references\update.md
 C:\laragon\www\AMIGA\Amiga-Travel\APPLY_INSTRUCTIONS.txt
+C:\laragon\www\AMIGA\Amiga-Travel\CLAUDE.md
 C:\laragon\www\AMIGA\Amiga-Travel\README.md
 C:\laragon\www\AMIGA\Amiga-Travel\SETUP_FLUTTER_ANDROID.md
 C:\laragon\www\AMIGA\Amiga-Travel\flutter_app\README.md
@@ -89,3 +102,4 @@ C:\laragon\www\AMIGA\Amiga-Travel\flutter_app\web\icons\Icon-maskable-512.png
 C:\laragon\www\AMIGA\Amiga-Travel\public\images\amiga-logo-transparent.png
 C:\laragon\www\AMIGA\Amiga-Travel\public\images\amiga-logo.jpg
 C:\laragon\www\AMIGA\Amiga-Travel\public\images\app-icon-original.png
+C:\laragon\www\AMIGA\Amiga-Travel\public\images\world-map.svg
