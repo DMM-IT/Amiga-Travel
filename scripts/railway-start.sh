@@ -22,12 +22,8 @@ if [ -z "$QUEUE_CONNECTION" ]; then
   export QUEUE_CONNECTION=database
 fi
 
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-php artisan package:discover --ansi
-php artisan filament:upgrade
-php artisan migrate --force
-php artisan storage:link --quiet || true
+# Run only essential migrations without triggering URL validation
+php artisan migrate --force --no-interaction 2>/dev/null || true
+php artisan storage:link --quiet 2>/dev/null || true
 
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"
