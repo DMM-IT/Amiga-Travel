@@ -11,6 +11,7 @@ class ListVehicles extends ListRecords
 {
     protected static string $resource = VehicleResource::class;
 
+    #[\Livewire\Attributes\Url]
     public string $vehicleType = 'ferry';
 
     public function setVehicleType($type)

@@ -32,12 +32,34 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('AMIGA GRACIA')
-            ->brandLogo(new \Illuminate\Support\HtmlString(
-                '<div class="flex items-center gap-2">
-                    <img src="' . asset('images/amiga-logo-transparent.png') . '" alt="Amiga Gracia" class="h-7 w-auto" />
-                    <span class="font-bold uppercase tracking-wider text-gray-950 dark:text-white">AMIGA GRACIA</span>
-                </div>'
-            ))
+            ->brandLogo(new \Illuminate\Support\HtmlString('
+                <style>
+                    /* Force the Filament logo wrapper to always display so the icon stays visible when collapsed */
+                    .fi-sidebar-header > div:first-child {
+                        display: flex !important;
+                        opacity: 1 !important;
+                        min-width: 0;
+                    }
+                    /* Hide scrollbar in the sidebar navigation */
+                    .fi-sidebar-nav {
+                        scrollbar-width: none !important;
+                    }
+                    .fi-sidebar-nav::-webkit-scrollbar {
+                        display: none !important;
+                    }
+                    /* Add visible border to separate sidebar from main content */
+                    .fi-sidebar {
+                        border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+                    }
+                    .dark .fi-sidebar {
+                        border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+                    }
+                </style>
+                <div class="flex items-center gap-3 w-full overflow-hidden">
+                    <img src="' . asset('images/amiga-logo-transparent.png') . '" alt="Amiga Gracia" class="h-7 w-auto shrink-0" />
+                    <span class="font-bold uppercase tracking-wider text-gray-950 dark:text-white whitespace-nowrap transition-all duration-300" x-show="$store.sidebar.isOpen" x-cloak>AMIGA GRACIA</span>
+                </div>
+            '))
             ->brandLogoHeight('2.5rem')
             ->sidebarCollapsibleOnDesktop()
             ->favicon(asset('images/amiga-logo-transparent.png'))
@@ -53,11 +75,13 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_AFTER, function (): View {
                 return view('filament.admin.notification-bell');
             })
+            ->renderHook(
+                PanelsRenderHook::SCRIPTS_BEFORE,
+                fn (): string => '<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>'
+            )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-                \App\Filament\Widgets\DashboardSummaryWidget::class,
+                // Removed AccountWidget
             ])
             ->middleware([
                 EncryptCookies::class,

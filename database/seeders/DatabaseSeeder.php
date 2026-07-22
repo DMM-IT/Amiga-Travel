@@ -36,15 +36,15 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
-    DiscountSeeder::class,
-    FerryRouteSeeder::class,
-    ScheduleAccommodationSeeder::class,
-    TourHotelsSeeder::class,
-    TransportClassSeeder::class,
-    VehicleBrandModelSeeder::class,  // moved up — creates brands/models first
-    VehicleRateSeeder::class,         // moved up if it also depends on brand/model
-    VehicleSeeder::class,             // now runs after its dependencies exist
-    WebsiteSettingSeeder::class,
-]);
+            DiscountSeeder::class,
+            ScheduleAccommodationSeeder::class,
+            TourHotelsSeeder::class,
+            TransportClassSeeder::class,
+            VehicleBrandModelSeeder::class,
+            VehicleRateSeeder::class,
+            VehicleSeeder::class,
+            FerryRouteSeeder::class,
+            WebsiteSettingSeeder::class,
+        ]);
     }
 }

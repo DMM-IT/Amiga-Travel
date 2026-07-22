@@ -270,6 +270,14 @@
         <iframe id="ws-iframe"
                 src="{{ $previewUrl }}"
                 class="ws-iframe"
+                @load="
+                    try {
+                        let p = $event.target.contentWindow.location.pathname;
+                        if (p && p !== 'blank') {
+                            $wire.syncPage(p);
+                        }
+                    } catch(e) {}
+                "
                 title="Website Preview — {{ $pages[$currentPage] ?? $currentPage }}">
         </iframe>
 
@@ -709,6 +717,38 @@
                 <button class="ws-add" wire:click="addSocialLink('contact')">+ Add Social Link</button>
 
             {{-- ======================================= --}}
+            {{-- FAQs CONTENT                             --}}
+            {{-- ======================================= --}}
+            @elseif($activeSection === 'faqs_content')
+                <div class="ws-field">
+                    <label class="ws-label">Page Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.title" placeholder="Frequently Asked Questions">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Page Description</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.description" rows="3"></textarea>
+                </div>
+                <div class="ws-hr"></div>
+                <div class="ws-sh">Q&A Items</div>
+                @foreach($content['faqs'] ?? [] as $fi => $faq)
+                    <div class="ws-rep">
+                        <div class="ws-rep-hd">
+                            <span class="ws-rep-num">Question {{ $fi + 1 }}</span>
+                            <button class="ws-rep-del" wire:click="removeFaq({{ $fi }})">×</button>
+                        </div>
+                        <div class="ws-field">
+                            <label class="ws-label">Question</label>
+                            <input type="text" class="ws-input" wire:model.blur="settingsData.content.faqs.{{ $fi }}.question" placeholder="How can I book a ticket?">
+                        </div>
+                        <div class="ws-field" style="margin-bottom:0">
+                            <label class="ws-label">Answer</label>
+                            <textarea class="ws-textarea" wire:model.blur="settingsData.content.faqs.{{ $fi }}.answer" rows="3" placeholder="Answer here..."></textarea>
+                        </div>
+                    </div>
+                @endforeach
+                <button class="ws-add" wire:click="addFaq">+ Add Question</button>
+
+            {{-- ======================================= --}}
             {{-- DOWNLOAD CONTENT                         --}}
             {{-- ======================================= --}}
             @elseif($activeSection === 'download_content')
@@ -807,25 +847,30 @@
 {{-- ============================================================ --}}
 {{-- ADVANCED SETTINGS (full Filament form in collapsible)         --}}
 {{-- ============================================================ --}}
-<details class="ws-adv">
-    <summary>
+<div class="ws-adv" x-data="{ advancedOpen: false }" wire:ignore.self>
+    <button type="button" @click="advancedOpen = !advancedOpen" class="w-full flex items-center justify-between px-5 py-3.5 text-[0.8rem] font-medium text-[var(--fi-text-color,#64748b)] bg-[var(--fi-page-background-color)] hover:bg-white/5 transition-colors cursor-pointer select-none border-b border-[rgba(148,163,184,.1)]">
         <span style="display:flex;align-items:center;gap:.5rem;">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
             Advanced Settings — Full Form Editor
         </span>
-        <span style="font-size:.65rem;opacity:.4">Image uploads · Repeaters · SEO</span>
-    </summary>
-    <div class="ws-adv-body">
-        {{ $this->form }}
-        <div class="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-gray-700/40">
-            <x-filament::button type="button" color="gray" tag="a" :href="route('filament.admin.pages.dashboard')">
-                Cancel
-            </x-filament::button>
-            <x-filament::button type="button" wire:click="save">
-                Save All Settings
-            </x-filament::button>
+        <div class="flex items-center gap-4">
+            <span style="font-size:.65rem;opacity:.4">Image uploads · Repeaters · SEO</span>
+            <svg :class="{'rotate-180': advancedOpen}" class="w-4 h-4 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+    </button>
+    <div x-show="advancedOpen" style="display: none;">
+        <div class="ws-adv-body">
+            {{ $this->form }}
+            <div class="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-gray-700/40">
+                <x-filament::button type="button" color="gray" tag="a" :href="route('filament.admin.pages.dashboard')">
+                    Cancel
+                </x-filament::button>
+                <x-filament::button type="button" wire:click="save">
+                    Save All Settings
+                </x-filament::button>
+            </div>
         </div>
     </div>
-</details>
+</div>
 
 </x-filament-panels::page>

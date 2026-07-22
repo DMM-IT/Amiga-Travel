@@ -64,7 +64,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->maxLength(255),
                                 ])
                                 ->columns(1)
-                                ->defaultItems(fn () => [
+                                ->default(fn () => [
                                     ['label' => 'Established', 'value' => 'July 2017 in Oriental Mindoro'],
                                     ['label' => 'Key Partnerships', 'value' => '2GO and Starlite Ferries'],
                                     ['label' => 'Specialty', 'value' => 'Ferry bookings, Educational tours, Apprenticeship programs'],
@@ -393,6 +393,36 @@ class ManageWebsiteSettings extends Page implements HasForms
                         ]),
                 ];
 
+            case 'faqs':
+                return [
+                    Section::make('FAQs')
+                        ->description('Manage Frequently Asked Questions')
+                        ->schema([
+                            TextInput::make('content.title')
+                                ->label('Page Title')
+                                ->default('Frequently Asked Questions')
+                                ->maxLength(255),
+                            Textarea::make('content.description')
+                                ->label('Page Description')
+                                ->rows(3)
+                                ->maxLength(255),
+                            Repeater::make('content.faqs')
+                                ->label('Q&A Items')
+                                ->schema([
+                                    TextInput::make('question')
+                                        ->label('Question')
+                                        ->required()
+                                        ->maxLength(255),
+                                    Textarea::make('answer')
+                                        ->label('Answer')
+                                        ->required()
+                                        ->rows(4),
+                                ])
+                                ->columns(1)
+                                ->columnSpanFull(),
+                        ]),
+                ];
+
             default:
                 return [
                     Section::make('Page Information')
@@ -446,6 +476,19 @@ class ManageWebsiteSettings extends Page implements HasForms
     {
         $setting = WebsiteSetting::getOrCreateByPage($this->currentPage);
         
+        if ($this->currentPage === 'faqs' && empty($setting->content)) {
+            $setting->content = [
+                'title' => 'Frequently Asked Questions',
+                'description' => 'Find answers to common questions about bookings, policies, and our services.',
+                'faqs' => [
+                    ['question' => 'How can I book a ticket?', 'answer' => 'You can book a ticket online through our Schedules page or by visiting our branch offices.'],
+                    ['question' => 'What is your refund policy?', 'answer' => 'Refund policies depend on the transport operator. Generally, cancellations made within 24 hours of departure are non-refundable.'],
+                    ['question' => 'Do you offer custom tours?', 'answer' => 'Yes! We specialize in custom tours and educational packages. Contact us for a personalized quote.'],
+                ]
+            ];
+            $setting->save();
+        }
+
         if ($this->currentPage === 'header') {
             $this->form->fill([
                 'header_data' => $setting->header_data ?? [],
@@ -549,6 +592,24 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->required(),
                                 ])
                                 ->columnSpanFull(),
+                            Repeater::make('footer_data.transit_links')
+                                ->label('Transit Links')
+                                ->schema([
+                                    TextInput::make('label')
+                                        ->label('Display Text (e.g. 2GO Travel)')
+                                        ->required()
+                                        ->maxLength(100),
+                                    TextInput::make('url')
+                                        ->label('URL (e.g. /book/new)')
+                                        ->required()
+                                        ->maxLength(255),
+                                ])
+                                ->columnSpanFull()
+                                ->default([
+                                    ['label' => '2GO Travel', 'url' => '/book/new'],
+                                    ['label' => 'Starlite Ferry', 'url' => '/book/new'],
+                                    ['label' => 'Airline Ticketing', 'url' => '/book/new'],
+                                ]),
                             Toggle::make('is_active')
                                 ->label('Active')
                                 ->default(true),
@@ -802,6 +863,20 @@ class ManageWebsiteSettings extends Page implements HasForms
         $this->settingsData['hero_images'] = array_values($images);
     }
 
+    public function addFaq(): void
+    {
+        $faqs = $this->settingsData['content']['faqs'] ?? [];
+        $faqs[] = ['question' => '', 'answer' => ''];
+        $this->settingsData['content']['faqs'] = $faqs;
+    }
+
+    public function removeFaq(int $index): void
+    {
+        $faqs = $this->settingsData['content']['faqs'] ?? [];
+        array_splice($faqs, $index, 1);
+        $this->settingsData['content']['faqs'] = array_values($faqs);
+    }
+
     public function addQuickFact(): void
     {
         $facts = $this->settingsData['content']['quick_facts'] ?? [];
@@ -842,6 +917,31 @@ class ManageWebsiteSettings extends Page implements HasForms
         }
     }
 
+    public function syncPage(string $path): void
+    {
+        $map = [
+            '/' => 'home',
+            '/about' => 'about',
+            '/gallery' => 'gallery',
+            '/services' => 'services',
+            '/tour-package' => 'tour_package',
+            '/schedules' => 'schedules',
+            '/contact-us' => 'contact_us',
+            '/download' => 'download',
+            '/faqs' => 'faqs',
+        ];
+        
+        $cleanPath = rtrim($path, '/') ?: '/';
+        
+        if (isset($map[$cleanPath])) {
+            $key = $map[$cleanPath];
+            // Only redirect if the navigated page is different from the current settings page tab
+            if ($this->currentPage !== $key && !in_array($this->currentPage, ['header', 'footer'])) {
+                $this->redirect(route('filament.admin.pages.manage-website-settings', ['page' => $key]));
+            }
+        }
+    }
+
     public function getPreviewUrl(): string
     {
         $map = [
@@ -853,6 +953,7 @@ class ManageWebsiteSettings extends Page implements HasForms
             'schedules'  => '/schedules',
             'contact_us' => '/contact-us',
             'download'   => '/download',
+            'faqs'       => '/faqs',
             'header'     => '/',
             'footer'     => '/',
         ];
@@ -1006,6 +1107,15 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'color' => 'green',
                     'pos'   => 'top:8%;left:0%;width:100%;height:88%',
                     'description' => 'Phone, email, address, and social links',
+                ],
+            ],
+            'faqs' => [
+                'faqs_content' => [
+                    'label' => 'FAQs Content',
+                    'icon'  => '❓',
+                    'color' => 'pink',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:85%',
+                    'description' => 'Manage Frequently Asked Questions',
                 ],
             ],
             'download' => [

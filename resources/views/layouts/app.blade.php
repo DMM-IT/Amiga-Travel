@@ -62,7 +62,18 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="{{ url('/contact-us') }}" class="border-b-2 {{ request()->is('contact-us') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Contact Us</a>
+                        <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
+                            <button class="border-b-2 {{ request()->is('contact-us') || request()->is('faqs') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition flex items-center gap-1">
+                                Get Help
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                                <div class="py-1">
+                                    <a href="{{ url('/contact-us') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('contact-us') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Contact Us</a>
+                                    <a href="{{ url('/faqs') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('faqs') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">FAQs</a>
+                                </div>
+                            </div>
+                        </div>
                         <a href="{{ url('/download') }}" class="border-b-2 {{ request()->is('download') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Download</a>
                     </nav>
 
@@ -103,7 +114,16 @@
                             <a href="{{ url('/tour-package') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Tour Package</a>
                         </div>
                     </div>
-                    <a href="{{ url('/contact-us') }}" class="block rounded-xl px-4 py-3 {{ request()->is('contact-us') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Contact Us</a>
+                    <div x-data="{ open: false }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('contact-us') || request()->is('faqs') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">
+                            Get Help
+                            <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1">
+                            <a href="{{ url('/contact-us') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Contact Us</a>
+                            <a href="{{ url('/faqs') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">FAQs</a>
+                        </div>
+                    </div>
                     <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Download</a>
                     <div class="border-t border-white/10 pt-3">
                         @if(!empty($headerData['phone']))
@@ -123,7 +143,7 @@
 
         <footer class="relative overflow-hidden bg-[#0e2709] text-white pt-16 pb-8 mt-12">
             <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-white/10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-12 border-b border-white/10">
                     <!-- Column 1: Logo & Tagline -->
                     <div class="space-y-4">
                         <div class="flex items-center gap-3">
@@ -174,13 +194,26 @@
                     <div class="space-y-4">
                         <h5 class="text-sm font-bold uppercase tracking-wider text-emerald-400">Transit</h5>
                         <ul class="space-y-2 text-sm text-slate-300 font-medium">
-                            <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">2GO Travel</a></li>
-                            <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Starlite Ferry</a></li>
-                            <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Airline Ticketing</a></li>
+                            @forelse($footerData['transit_links'] ?? [] as $transit)
+                                <li><a href="{{ $transit['url'] }}" class="hover:text-emerald-300 transition">{{ $transit['label'] }}</a></li>
+                            @empty
+                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">2GO Travel</a></li>
+                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Starlite Ferry</a></li>
+                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Airline Ticketing</a></li>
+                            @endforelse
                         </ul>
                     </div>
 
-                    <!-- Column 4: Contact details -->
+                    <!-- Column 4: Support -->
+                    <div class="space-y-4">
+                        <h5 class="text-sm font-bold uppercase tracking-wider text-emerald-400">Support</h5>
+                        <ul class="space-y-2 text-sm text-slate-300 font-medium">
+                            <li><a href="{{ url('/contact-us') }}" class="hover:text-emerald-300 transition">Contact Us</a></li>
+                            <li><a href="{{ url('/faqs') }}" class="hover:text-emerald-300 transition">Frequently Asked Questions</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 5: Contact details -->
                     <div class="space-y-4">
                         <h5 class="text-sm font-bold uppercase tracking-wider text-emerald-400">Contact Info</h5>
                         <ul class="space-y-3 text-sm text-slate-300 font-medium">

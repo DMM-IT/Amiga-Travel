@@ -73,6 +73,10 @@ Route::get('/download', function () use ($renderWebsitePage) {
     return $renderWebsitePage('download', 'download');
 })->name('download');
 
+Route::get('/faqs', function () use ($renderWebsitePage) {
+    return $renderWebsitePage('faqs', 'faqs');
+})->name('faqs');
+
 Route::get('/schedules', function (\Illuminate\Http\Request $request) {
     $startDate = $request->query('start_date', \Carbon\Carbon::today()->format('Y-m-d'));
     $endDate = $request->query('end_date', \Carbon\Carbon::today()->addDays(6)->format('Y-m-d'));
