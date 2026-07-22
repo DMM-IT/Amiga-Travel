@@ -12,7 +12,7 @@ export QUEUE_CONNECTION="${QUEUE_CONNECTION:-database}"
 
 # Create .env file in container from Railway environment variables
 # This overrides the local .env that was copied into the image
-cat > /app/.env <<EOF
+cat > /var/www/html/.env <<EOF
 APP_NAME="Amiga Travel"
 APP_ENV=production
 APP_DEBUG=false
