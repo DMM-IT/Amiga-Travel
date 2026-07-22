@@ -1,6 +1,5 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.3-cli-alpine
 
-# System dependencies
 RUN apk add --no-cache \
     bash \
     curl \
@@ -12,30 +11,28 @@ RUN apk add --no-cache \
     nodejs \
     npm \
     zip \
-    unzip
+    unzip \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
 
-# PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip bcmath intl
+RUN docker-php-ext-install pdo pdo_mysql mbstring zip bcmath intl gd
 
-# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /var/www/html
 
-# Copy dependency manifests first for better caching
 COPY composer.json composer.lock ./
 COPY package.json package-lock.json ./
 
-# Install PHP and Node dependencies, build assets
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 RUN npm install --legacy-peer-deps
 RUN npm run build
 
-# Copy remaining project files
 COPY . .
 
-# Fix permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod +x /var/www/html/scripts/railway-start.sh \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 10000
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+CMD ["/var/www/html/scripts/railway-start.sh"]
