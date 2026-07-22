@@ -2,6 +2,7 @@
 set -e
 
 # Set defaults for Railway deployment
+# These should be set in Railway Variables, but provide sensible defaults
 export APP_ENV="${APP_ENV:-production}"
 export APP_DEBUG="${APP_DEBUG:-false}"
 export APP_URL="${APP_URL:-https://amiga-travel-production.up.railway.app}"
@@ -10,18 +11,22 @@ export SESSION_DRIVER="${SESSION_DRIVER:-database}"
 export CACHE_STORE="${CACHE_STORE:-database}"
 export QUEUE_CONNECTION="${QUEUE_CONNECTION:-database}"
 
-# Set database defaults (Railway MySQL)
+# Database - these MUST be set in Railway Variables
 export DB_CONNECTION="${DB_CONNECTION:-mysql}"
-export DB_HOST="${DB_HOST:-mysql.railway.internal}"
+export DB_HOST="${DB_HOST}"
 export DB_PORT="${DB_PORT:-3306}"
 export DB_DATABASE="${DB_DATABASE:-railway}"
 export DB_USERNAME="${DB_USERNAME:-root}"
+export DB_PASSWORD="${DB_PASSWORD}"
 
-# Set mail defaults
+# Mail settings
 export MAIL_MAILER="${MAIL_MAILER:-smtp}"
 export MAIL_HOST="${MAIL_HOST:-smtp.gmail.com}"
 export MAIL_PORT="${MAIL_PORT:-587}"
 export MAIL_ENCRYPTION="${MAIL_ENCRYPTION:-tls}"
+export MAIL_USERNAME="${MAIL_USERNAME}"
+export MAIL_PASSWORD="${MAIL_PASSWORD}"
+export MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS}"
 
 # Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
@@ -35,9 +40,9 @@ fi
 # Create .env file in container from Railway environment variables
 # This overrides the local .env that was copied into the image
 cat > /var/www/html/.env <<EOF
-APP_NAME="Amiga Travel"
-APP_ENV=production
-APP_DEBUG=false
+APP_NAME=Amiga Travel
+APP_ENV=$APP_ENV
+APP_DEBUG=$APP_DEBUG
 APP_KEY=$APP_KEY
 APP_URL=$APP_URL
 APP_LOCALE=en
