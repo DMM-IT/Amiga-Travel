@@ -248,4 +248,105 @@ class AuthController extends Controller
             'lookup_token' => $this->issueLookupToken($user->email),
         ]);
     }
+
+    /**
+     * Step 1 of OTP-gated registration: validate inputs, cache pending data, send OTP email.
+     */
+    public function requestRegisterOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $otp   = (string) random_int(100000, 999999);
+
+        // Cache the pending registration data for 10 minutes
+        Cache::put('pending_register:' . $email, [
+            'name'     => $validated['name'],
+            'email'    => $email,
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'otp'      => $otp,
+        ], now()->addMinutes(10));
+
+        Mail::raw(
+            "Hello {$validated['name']},\n\nYour Amiga Gracia registration verification code is: {$otp}\n\nThis code expires in 10 minutes. Do not share it with anyone.",
+            function ($message) use ($email, $validated): void {
+                $message->to($email)->subject('Amiga Gracia – Email Verification Code');
+            }
+        );
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'A 6-digit verification code has been sent to your email.',
+        ]);
+    }
+
+    /**
+     * Step 2 of OTP-gated registration: verify OTP and create the user account.
+     */
+    public function verifyRegisterOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'otp'   => 'required|string|size:6',
+        ]);
+
+        $email   = strtolower(trim($validated['email']));
+        $pending = Cache::get('pending_register:' . $email);
+
+        if (! $pending) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Registration session expired. Please start over.',
+            ], 422);
+        }
+
+        if (! hash_equals((string) $pending['otp'], $validated['otp'])) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Invalid or expired verification code.',
+            ], 422);
+        }
+
+        // Double-check uniqueness (race condition guard)
+        if (User::where('email', $email)->exists()) {
+            Cache::forget('pending_register:' . $email);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'An account with this email already exists.',
+            ], 422);
+        }
+
+        Cache::forget('pending_register:' . $email);
+
+        $user = User::create([
+            'name'              => $pending['name'],
+            'email'             => $pending['email'],
+            'password'          => $pending['password'],
+            'api_token'         => Str::random(80),
+            'email_verified_at' => now(),
+        ]);
+
+        $this->logUserLogin(
+            $user,
+            'api_register',
+            $request,
+            true,
+            'Successful OTP-verified API registration.'
+        );
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Account created successfully!',
+            'user'    => [
+                'name'  => $user->name,
+                'email' => $user->email,
+            ],
+            'token'        => $user->api_token,
+            'lookup_token' => $this->issueLookupToken($user->email),
+        ]);
+    }
 }

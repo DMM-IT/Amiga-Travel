@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'apiLogin']);
 Route::post('/register', [AuthController::class, 'apiRegister']);
+Route::post('/register/request-otp', [AuthController::class, 'requestRegisterOtp']);
+Route::post('/register/verify-otp', [AuthController::class, 'verifyRegisterOtp']);
 Route::post('/email-verification/request', [AuthController::class, 'requestEmailVerification']);
 Route::post('/email-verification/verify', [AuthController::class, 'verifyEmail']);
 
@@ -41,3 +43,18 @@ Route::get('/discounts', [DiscountController::class, 'index']);
 Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/tours', [\App\Http\Controllers\Api\TourController::class, 'index']);
 Route::get('/vehicle-rates', [BookingController::class, 'vehicleRates']);
+
+Route::get('/app-version', function () {
+    $pubspecPath = base_path('flutter_app/pubspec.yaml');
+    $version = '1.0.0+1';
+    if (file_exists($pubspecPath)) {
+        $content = file_get_contents($pubspecPath);
+        if (preg_match('/^version:\s*(.+)$/m', $content, $matches)) {
+            $version = trim($matches[1]);
+        }
+    }
+    return response()->json([
+        'version' => $version,
+        'force_update' => true,
+    ]);
+});

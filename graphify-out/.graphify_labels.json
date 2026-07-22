@@ -115,6 +115,8 @@
   "113": "Core Module 113",
   "114": "Core Module 114",
   "115": "Core Module 115",
+  "116": "AccommodationResource.php",
+  "117": "InquiryResource.php",
   "118": "Database Seeders & Testing (C118)",
   "119": "Core Module 119",
   "120": "Core Module 120",
@@ -243,6 +245,7 @@
   "243": "Core Module 243",
   "244": "Core Module 244",
   "245": "graphify reference: query, path, explain",
+  "246": "UserResource.php",
   "247": "graphify reference: add a URL and watch a folder",
   "248": "graphify reference: commit hook and native CLAUDE.md integration",
   "249": "graphify reference: incremental update and cluster-only",
@@ -275,5 +278,7 @@
   "276": "booking-status-chart.blade.php",
   "277": "recent-activity-widget.blade.php",
   "278": "revenue-chart.blade.php",
-  "279": "top-routes-widget.blade.php"
+  "279": "top-routes-widget.blade.php",
+  "280": "AdminMiddleware.php",
+  "281": "flutter_export_environment.sh"
 }

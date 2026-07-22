@@ -62,6 +62,20 @@
         ];
     @endphp
 
+    @php
+        $pubspecPath = base_path('flutter_app/pubspec.yaml');
+        $version = '1.0.0+1';
+        if (file_exists($pubspecPath)) {
+            $content = file_get_contents($pubspecPath);
+            if (preg_match('/^version:\s*(.+)$/m', $content, $matches)) {
+                $version = trim($matches[1]);
+            }
+        }
+        
+        $apkPath = public_path('downloads/amiga-travel.apk');
+        $size = file_exists($apkPath) ? round(filesize($apkPath) / 1048576, 1) . ' MB' : '17.6 MB';
+    @endphp
+
     <!-- Hero Section -->
     <div class="relative overflow-hidden" style="background: linear-gradient(135deg, #216417 0%, #14400e 60%, #0a2d06 100%);">
         <div class="absolute inset-0 opacity-10">
@@ -136,11 +150,11 @@
                     <div class="mt-8 pt-8 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-white/70 max-w-lg mx-auto lg:mx-0 text-left">
                         <div>
                             <p class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Version</p>
-                            <p class="text-sm font-semibold text-white mt-0.5">1.0.0 (Release)</p>
+                            <p class="text-sm font-semibold text-white mt-0.5">{{ $version }}</p>
                         </div>
                         <div>
                             <p class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">File Size</p>
-                            <p class="text-sm font-semibold text-white mt-0.5">17.6 MB</p>
+                            <p class="text-sm font-semibold text-white mt-0.5">{{ $size }}</p>
                         </div>
                         <div>
                             <p class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Requires</p>

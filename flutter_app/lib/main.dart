@@ -42,6 +42,9 @@ class UserSession {
   static String token = '';
   static String lookupToken = '';
 
+  // Match this with pubspec.yaml version
+  static const String appVersion = '1.0.1+2';
+
   static String getBaseUrl() {
     const configuredUrl = String.fromEnvironment(
       'API_BASE_URL',
@@ -142,7 +145,53 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 5), () {
+    _checkVersionAndProceed();
+  }
+
+  Future<void> _checkVersionAndProceed() async {
+    // 1. Check for app updates
+    try {
+      final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version'))
+          .timeout(const Duration(seconds: 5));
+          
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final latestVersion = data['version'] as String;
+        
+        // If versions don't match, show update prompt
+        if (latestVersion != UserSession.appVersion) {
+          if (mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Update Required'),
+                content: Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
+                actions: [
+                  FilledButton(
+                    onPressed: () async {
+                      final url = Uri.parse('${UserSession.getBaseUrl()}/download');
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    style: FilledButton.styleFrom(backgroundColor: kGreen),
+                    child: const Text('Update Now'),
+                  ),
+                ],
+              ),
+            );
+          }
+          return; // Stop initialization, wait for update
+        }
+      }
+    } catch (e) {
+      debugPrint('Version check failed: $e');
+      // Proceed if server is unreachable
+    }
+
+    // 2. Proceed to app
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -318,11 +367,23 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _handleLogout() {
+    setState(() {
+      UserSession.isLoggedIn = false;
+      UserSession.isEmailVerified = false;
+      UserSession.username = 'Traveler';
+      UserSession.email = 'user@amigagracia.com';
+      UserSession.token = '';
+      UserSession.lookupToken = '';
+      _selectedIndex = 0; // Immediately navigate away from Transaction tab
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: AppDrawer(onLogout: () => setState(() {})),
+      drawer: AppDrawer(onLogout: _handleLogout),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.white),
@@ -1447,12 +1508,21 @@ class ActivityScreen extends StatefulWidget {
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
+  // Login/Register form fields
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   bool _isLoading = false;
   bool _obscure = true;
   bool _isSignUp = false;
+
+  // OTP registration state
+  String? _pendingRegisterEmail;  // non-null when OTP step is active
+  final _otpCtrl = TextEditingController();
+  bool _otpLoading = false;
+
+  // Guest booking lookup (separate from login/register fields)
+  final _guestEmailCtrl = TextEditingController();
   bool _verificationRequested = false;
   bool _verificationLoading = false;
   final _verificationCodeCtrl = TextEditingController();
@@ -1475,6 +1545,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _nameCtrl.dispose();
+    _otpCtrl.dispose();
+    _guestEmailCtrl.dispose();
     _verificationCodeCtrl.dispose();
     super.dispose();
   }
@@ -1493,7 +1565,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Future<void> _requestEmailVerification() async {
-    final email = _emailCtrl.text.trim();
+    final email = _guestEmailCtrl.text.trim();
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter the email used for your booking.'), backgroundColor: Colors.red));
       return;
@@ -1520,7 +1592,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Future<void> _verifyEmail() async {
-    final email = _emailCtrl.text.trim();
+    final email = _guestEmailCtrl.text.trim();
     final code = _verificationCodeCtrl.text.trim();
     if (code.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter the six-digit verification code.'), backgroundColor: Colors.red));
@@ -1713,12 +1785,107 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
-  void _submitAuth() async {
-    final email = _emailCtrl.text.trim();
+  // Step 1 of registration: request OTP
+  Future<void> _requestRegisterOtp() async {
+    final email    = _emailCtrl.text.trim();
     final password = _passCtrl.text;
-    final name = _nameCtrl.text.trim();
+    final name     = _nameCtrl.text.trim();
 
-    if (email.isEmpty || password.isEmpty || (_isSignUp && name.isEmpty)) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in your username, email, and password.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 8 characters.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/register/request-otp'),
+        headers: {'Accept': 'application/json'},
+        body: {'name': name, 'email': email, 'password': password},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _pendingRegisterEmail = email;
+          _otpCtrl.clear();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'OTP sent! Check your email.'), backgroundColor: kGreen),
+        );
+      } else {
+        final msg = data['message'] ?? data['errors']?.values?.first?.first ?? 'Could not send OTP.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // Step 2 of registration: verify OTP and complete account creation
+  Future<void> _verifyRegisterOtp() async {
+    final otp = _otpCtrl.text.trim();
+    if (otp.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter the 6-digit code sent to your email.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    setState(() => _otpLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/register/verify-otp'),
+        headers: {'Accept': 'application/json'},
+        body: {'email': _pendingRegisterEmail!, 'otp': otp},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          UserSession.isLoggedIn = true;
+          UserSession.username = data['user']['name'];
+          UserSession.email = data['user']['email'];
+          UserSession.token = data['token'];
+          UserSession.lookupToken = data['lookup_token'] ?? '';
+          UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
+          _pendingRegisterEmail = null;
+        });
+        widget.onLoginSuccess();
+        _fetchBookings();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'Welcome, ${UserSession.username}!'), backgroundColor: kGreen),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'Verification failed.'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _otpLoading = false);
+    }
+  }
+
+  void _submitAuth() async {
+    final email    = _emailCtrl.text.trim();
+    final password = _passCtrl.text;
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill out all required fields.'), backgroundColor: Colors.red),
       );
@@ -1728,16 +1895,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final baseUrl = UserSession.getBaseUrl();
-      final endpoint = _isSignUp ? '/api/register' : '/api/login';
-      final body = _isSignUp
-          ? {'name': name, 'email': email, 'password': password}
-          : {'email': email, 'password': password};
-
       final response = await http.post(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('${UserSession.getBaseUrl()}/api/login'),
         headers: {'Accept': 'application/json'},
-        body: body,
+        body: {'email': email, 'password': password},
       );
 
       final data = jsonDecode(response.body);
@@ -1754,10 +1915,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         widget.onLoginSuccess();
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isSignUp ? 'Registration successful!' : 'Welcome back, ${data['user']['name']}!'),
-            backgroundColor: kGreen,
-          ),
+          SnackBar(content: Text('Welcome back, ${data['user']['name']}!'), backgroundColor: kGreen),
         );
       } else {
         final errorMsg = data['message'] ?? 'Authentication failed. Please check your credentials.';
@@ -1777,17 +1935,79 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     if (!UserSession.isLoggedIn && !UserSession.isEmailVerified) {
+      // ── OTP verification screen (after sign-up form submitted) ──────────
+      if (_pendingRegisterEmail != null) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset('assets/icon/app_icon.png', height: 90, width: 90, fit: BoxFit.contain),
+              const SizedBox(height: 24),
+              const Text(
+                'Verify Your Email',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: kGreen),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'We sent a 6-digit code to\n$_pendingRegisterEmail',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13, color: kSlate500),
+              ),
+              const SizedBox(height: 36),
+              TextField(
+                controller: _otpCtrl,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 12),
+                decoration: InputDecoration(
+                  hintText: '000000',
+                  hintStyle: const TextStyle(color: kSlate300, fontSize: 28, letterSpacing: 12),
+                  prefixIcon: const Icon(Icons.lock_clock_outlined, color: kGreen),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'The code expires in 10 minutes.',
+                style: TextStyle(fontSize: 12, color: kSlate400),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity, height: 52,
+                child: ElevatedButton(
+                  onPressed: _otpLoading ? null : _verifyRegisterOtp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPink,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 4,
+                  ),
+                  child: _otpLoading
+                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                      : const Text('Verify & Create Account', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => setState(() => _pendingRegisterEmail = null),
+                child: const Text('← Back to sign up', style: TextStyle(color: kSlate500)),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // ── Login / Register form ────────────────────────────────────────────
       return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 16),
-            Container(
-              height: 88, width: 88,
-              decoration: const BoxDecoration(color: kGreen, shape: BoxShape.circle),
-              child: const Icon(Icons.directions_boat, color: Colors.white, size: 46),
-            ),
+            // Amiga Gracia logo (transparent bg) instead of ship icon
+            Image.asset('assets/icon/app_icon.png', height: 88, width: 88, fit: BoxFit.contain),
             const SizedBox(height: 20),
             Text(
               _isSignUp ? 'Create Account' : 'Welcome Back!',
@@ -1801,6 +2021,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ),
             const SizedBox(height: 36),
 
+            // ── Guest booking lookup card ──────────────────────────────────
             Card(
               color: kSlate50,
               child: Padding(
@@ -1817,7 +2038,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         controller: _verificationCodeCtrl,
                         keyboardType: TextInputType.number,
                         maxLength: 6,
-                        decoration: const InputDecoration(labelText: 'Six-digit email code', prefixIcon: Icon(Icons.verified_outlined, color: kGreen)),
+                        decoration: const InputDecoration(
+                          labelText: 'Six-digit email code',
+                          prefixIcon: Icon(Icons.verified_outlined, color: kGreen),
+                        ),
                       ),
                       SizedBox(
                         width: double.infinity,
@@ -1826,27 +2050,42 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           child: const Text('Verify email and view bookings'),
                         ),
                       ),
-                    ] else
+                    ] else ...[
+                      // Separate email field for guest lookup only
+                      TextField(
+                        controller: _guestEmailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: 'Booking email address',
+                          prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: _verificationLoading ? null : _requestEmailVerification,
-                          icon: const Icon(Icons.mark_email_read_outlined),
+                          icon: _verificationLoading
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: kGreen))
+                              : const Icon(Icons.mark_email_read_outlined),
                           label: const Text('Send email verification code'),
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
 
+            // ── Sign-up extra field: Username ──────────────────────────────
             if (_isSignUp) ...[
               TextField(
                 controller: _nameCtrl,
                 keyboardType: TextInputType.name,
                 decoration: InputDecoration(
-                  labelText: 'Full Name',
+                  labelText: 'Username',
                   prefixIcon: const Icon(Icons.person_outline, color: kGreen),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -1883,7 +2122,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             SizedBox(
               width: double.infinity, height: 52,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _submitAuth,
+                onPressed: _isLoading ? null : (_isSignUp ? _requestRegisterOtp : _submitAuth),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPink,
                   foregroundColor: Colors.white,
@@ -1892,12 +2131,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 ),
                 child: _isLoading
                     ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                    : Text(_isSignUp ? 'Register' : 'Login', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    : Text(_isSignUp ? 'Sign Up' : 'Login', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: () => setState(() { _isSignUp = !_isSignUp; _emailCtrl.clear(); _passCtrl.clear(); _nameCtrl.clear(); }),
+              onPressed: () => setState(() {
+                _isSignUp = !_isSignUp;
+                _emailCtrl.clear();
+                _passCtrl.clear();
+                _nameCtrl.clear();
+              }),
               child: Text(
                 _isSignUp ? 'Already have an account? Login' : "Don't have an account? Register",
                 style: const TextStyle(color: kPink, fontWeight: FontWeight.bold),
@@ -2410,9 +2654,8 @@ class AppDrawer extends StatelessWidget {
               leading: const Icon(Icons.logout, color: Colors.redAccent),
               title: const Text('Log out', style: TextStyle(color: Colors.redAccent)),
               onTap: () {
-                UserSession.isLoggedIn = false;
                 Navigator.pop(context);
-                onLogout();
+                onLogout(); // Clears full session & navigates to Home tab
               },
             ),
           const Padding(
