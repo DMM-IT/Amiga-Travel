@@ -272,9 +272,16 @@
                 class="ws-iframe"
                 @load="
                     try {
-                        let p = $event.target.contentWindow.location.pathname;
+                        let iframe = $event.target;
+                        let p = iframe.contentWindow.location.pathname;
                         if (p && p !== 'blank') {
                             $wire.syncPage(p);
+                        }
+                        let doc = iframe.contentDocument || iframe.contentWindow.document;
+                        if (doc) {
+                            let style = doc.createElement('style');
+                            style.textContent = 'html, body { scrollbar-width: none !important; } html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; }';
+                            doc.head.appendChild(style);
                         }
                     } catch(e) {}
                 "

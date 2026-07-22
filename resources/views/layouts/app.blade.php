@@ -183,10 +183,13 @@
                         <ul class="space-y-2 text-sm text-slate-300 font-medium">
                             <li><a href="{{ url('/') }}" class="hover:text-emerald-300 transition">Home</a></li>
                             <li><a href="{{ url('/about') }}" class="hover:text-emerald-300 transition">About</a></li>
+                            <li><a href="{{ url('/schedules') }}" class="hover:text-emerald-300 transition">Schedules</a></li>
                             <li><a href="{{ url('/gallery') }}" class="hover:text-emerald-300 transition">Gallery</a></li>
                             <li><a href="{{ url('/services') }}" class="hover:text-emerald-300 transition">Services</a></li>
                             <li><a href="{{ url('/tour-package') }}" class="hover:text-emerald-300 transition">Tour Packages</a></li>
+                            <li><a href="{{ url('/faqs') }}" class="hover:text-emerald-300 transition">Frequently Asked Questions</a></li>
                             <li><a href="{{ url('/contact-us') }}" class="hover:text-emerald-300 transition">Contact Us</a></li>
+                            <li><a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Download</a></li>
                         </ul>
                     </div>
 
