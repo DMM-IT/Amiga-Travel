@@ -5,10 +5,6 @@ if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force
 fi
 
-if [ -z "$APP_URL" ] || [ "$APP_URL" = "https://your-railway-domain.up.railway.app" ]; then
-  export APP_URL="https://amiga-travel-production.up.railway.app"
-fi
-
 if [ -z "$SESSION_DRIVER" ]; then
   export SESSION_DRIVER=database
 fi
