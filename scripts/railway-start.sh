@@ -2,7 +2,10 @@
 set -e
 
 # Set APP_URL FIRST, before any artisan commands (fixes malformed host error)
-export APP_URL="${APP_URL:-https://amiga-travel-production.up.railway.app}"
+# Handle both unset and empty APP_URL variables from Railway
+if [ -z "$APP_URL" ]; then
+  export APP_URL="https://amiga-travel-production.up.railway.app"
+fi
 export APP_NAME="${APP_NAME:-Amiga Travel}"
 
 if [ -z "$APP_KEY" ]; then
