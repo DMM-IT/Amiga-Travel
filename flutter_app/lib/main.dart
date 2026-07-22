@@ -43,7 +43,7 @@ class UserSession {
     // For development use localhost so the Flutter app can reach the local Laravel server.
     // If running on an Android emulator, replace with 10.0.2.2:8000 as needed.
     if (kIsWeb) return '';
-    return 'https://travel-2go.com.ph';
+    return 'https://amiga-travel.up.railway.app';
   }
 }
 
