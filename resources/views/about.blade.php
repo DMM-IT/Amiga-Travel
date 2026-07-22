@@ -78,14 +78,23 @@
             <div class="max-w-3xl mx-auto text-center">
                 <h3 class="text-2xl font-bold mb-4">Our Trusted Travel Operators</h3>
                 <p class="text-emerald-100/90 mb-8 max-w-xl mx-auto">
-                    We maintain strong, direct partnerships with major transit and cargo networks to bring you reliable service at competitive rates.
+                    We maintain strong, direct partnerships with major sea transit, cargo, and airline networks to bring you reliable service at competitive rates.
                 </p>
-                <div class="grid grid-cols-2 gap-6 items-center justify-items-center">
-                    <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
-                        <span class="font-black tracking-widest text-lg text-white">2GO TRAVEL</span>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 items-stretch justify-items-center">
+                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
+                        <span class="font-black tracking-widest text-sm text-[#ee018d]">2GO TRAVEL</span>
                     </div>
-                    <div class="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-2xl w-full text-center hover:bg-white/15 transition">
-                        <span class="font-black tracking-widest text-lg text-white">STARLITE</span>
+                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
+                        <span class="font-black tracking-widest text-sm text-[#ee018d]">STARLITE</span>
+                    </div>
+                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
+                        <span class="font-black tracking-widest text-sm text-[#ee018d]">PHILIPPINE AIRLINES</span>
+                    </div>
+                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
+                        <span class="font-black tracking-widest text-sm text-[#ee018d]">CEBU PACIFIC</span>
+                    </div>
+                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
+                        <span class="font-black tracking-widest text-sm text-[#ee018d]">PHILIPPINES AIRASIA</span>
                     </div>
                 </div>
             </div>

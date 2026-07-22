@@ -114,42 +114,7 @@
     </div>
 
     <!-- Right Column: Form -->
-    <div class="w-full lg:w-8/12 px-4 py-6 lg:px-0 lg:py-0">
-        <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden h-full flex flex-col">
-            <div class="px-6 py-8 sm:px-10 sm:py-10 text-center flex-shrink-0" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
-                <h1 class="text-xl sm:text-2xl font-semibold text-white">{{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia Travel Services' }}</h1>
-                <p class="mt-3 text-sm sm:text-base text-white/85 max-w-lg mx-auto">{{ $pageContent['welcome_subtitle'] ?? 'Ferry bookings, accommodations, and everything in between — made easy. What would you like to do today?' }}</p>
-            </div>
-
-            <div class="p-5 sm:p-7 grid gap-5 sm:grid-cols-2 flex-grow">
-                <a href="{{ url('/book/new') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="--hover-border: #216417;" onmouseover="this.style.borderColor='#216417'" onmouseout="this.style.borderColor=''">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#eaf5e8;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color:#216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                    <h2 class="mt-3 text-base font-semibold text-slate-900">Book a Trip</h2>
-                    <p class="mt-1 text-xs text-slate-500 flex-grow">Start a new booking — choose your route, schedule, passengers, and accommodations.</p>
-                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#216417;">Get started →</span>
-                </a>
-
-                <a href="{{ url('/book/status') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" onmouseover="this.style.borderColor='#ee018d'" onmouseout="this.style.borderColor=''">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#fde6f3;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color:#ee018d;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.2 4.2a7.5 7.5 0 0012.45 12.45z" />
-                        </svg>
-                    </div>
-                    <h2 class="mt-3 text-base font-semibold text-slate-900">Check My Booking</h2>
-                    <p class="mt-1 text-xs text-slate-500 flex-grow">Already booked? Enter your transaction number to view your booking details and status.</p>
-                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#ee018d;">Check status →</span>
-                </a>
-            </div>
-
-            <div class="px-6 pb-4 sm:px-10 text-center flex-shrink-0">
-                <p class="text-[10px] text-slate-400">{{ data_get($pageContent, 'footer_note', 'Amiga Gracia Travel Services · travel-2go.com.ph') }}</p>
-            </div>
-        </div>
-        
+    <div class="w-full lg:w-8/12 px-4 py-6 lg:px-0 lg:py-0 flex flex-col gap-14 justify-between">
         {{-- Sliding Promotional Text --}}
         <style>
             @keyframes marquee {
@@ -164,17 +129,48 @@
         @php
             $slidingText = data_get($pageContent, 'sliding_text', 'Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours.');
         @endphp
-        <div class="mt-14 overflow-hidden rounded-[1.5rem] bg-[#ee018d] shadow-lg relative flex items-center py-10">
+        <div class="overflow-hidden rounded-[1.5rem] bg-[#ee018d] shadow-lg relative flex items-center py-10">
             <div class="absolute top-0 bottom-0 left-0 w-12 bg-gradient-to-r from-[#ee018d] to-transparent z-10 pointer-events-none"></div>
             <div class="absolute top-0 bottom-0 right-0 w-12 bg-gradient-to-l from-[#ee018d] to-transparent z-10 pointer-events-none"></div>
             
-            <div class="animate-marquee-infinite whitespace-nowrap flex text-lg sm:text-xl font-bold text-white tracking-wide">
+            <div class="animate-marquee-infinite whitespace-nowrap flex text-2xl sm:text-3xl font-black text-white tracking-wide">
                 @for($i = 0; $i < 4; $i++)
-                <span class="px-8 flex items-center gap-3">
-                    <svg class="w-6 h-6 text-[#216417]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span class="px-8 flex items-center gap-4">
+                    <svg class="w-8 h-8 text-[#216417] shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     {{ $slidingText }}
                 </span>
                 @endfor
+            </div>
+        </div>
+
+        <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden flex-grow flex flex-col">
+            <div class="px-6 py-8 sm:px-10 sm:py-10 text-center flex-shrink-0" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
+                <h1 class="text-xl sm:text-2xl font-semibold text-white">{{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia Travel Services' }}</h1>
+                <p class="mt-3 text-sm sm:text-base text-white/85 max-w-lg mx-auto">{{ $pageContent['welcome_subtitle'] ?? 'Ferry bookings, accommodations, and everything in between — made easy. What would you like to do today?' }}</p>
+            </div>
+ 
+            <div class="p-5 sm:p-7 grid gap-5 sm:grid-cols-2 flex-grow">
+                <a href="{{ url('/book/new') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="--hover-border: #216417;" onmouseover="this.style.borderColor='#216417'" onmouseout="this.style.borderColor=''">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#eaf5e8;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color:#216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <h2 class="mt-3 text-base font-semibold text-slate-900">Book a Trip</h2>
+                    <p class="mt-1 text-xs text-slate-500 flex-grow">Start a new booking — choose your route, schedule, passengers, and accommodations.</p>
+                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#216417;">Get started →</span>
+                </a>
+ 
+                <a href="{{ url('/book/status') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" onmouseover="this.style.borderColor='#ee018d'" onmouseout="this.style.borderColor=''">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#fde6f3;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color:#ee018d;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.2 4.2a7.5 7.5 0 0012.45 12.45z" />
+                        </svg>
+                    </div>
+                    <h2 class="mt-3 text-base font-semibold text-slate-900">Check My Booking</h2>
+                    <p class="mt-1 text-xs text-slate-500 flex-grow">Already booked? Enter your transaction number to view your booking details and status.</p>
+                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#ee018d;">Check status →</span>
+                </a>
             </div>
         </div>
     </div>

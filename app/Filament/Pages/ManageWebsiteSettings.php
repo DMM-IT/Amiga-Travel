@@ -66,7 +66,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->columns(1)
                                 ->default(fn () => [
                                     ['label' => 'Established', 'value' => 'July 2017 in Oriental Mindoro'],
-                                    ['label' => 'Key Partnerships', 'value' => '2GO and Starlite Ferries'],
+                                    ['label' => 'Key Partnerships', 'value' => '2GO, Starlite Ferries, and major airlines'],
                                     ['label' => 'Specialty', 'value' => 'Ferry bookings, Educational tours, Apprenticeship programs'],
                                 ]),
                         ]),
@@ -979,26 +979,26 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'pos'   => 'top:9%;left:0%;width:33%;height:54%',
                     'description' => 'Carousel images on the left column',
                 ],
+                'sliding_text' => [
+                    'label' => 'Sliding Text',
+                    'icon'  => '📢',
+                    'color' => 'pink',
+                    'pos'   => 'top:9%;left:34%;width:66%;height:10%',
+                    'description' => 'Sliding promotional marquee',
+                ],
                 'welcome_section' => [
                     'label' => 'Welcome Section',
                     'icon'  => '👋',
                     'color' => 'green',
-                    'pos'   => 'top:9%;left:34%;width:66%;height:20%',
+                    'pos'   => 'top:21%;left:34%;width:66%;height:20%',
                     'description' => 'Welcome title and subtitle text',
                 ],
                 'hero_cards' => [
                     'label' => 'Quick Action Cards',
                     'icon'  => '🃏',
                     'color' => 'purple',
-                    'pos'   => 'top:30%;left:34%;width:66%;height:33%',
+                    'pos'   => 'top:43%;left:34%;width:66%;height:31%',
                     'description' => 'Book a Trip and Check My Booking cards',
-                ],
-                'sliding_text' => [
-                    'label' => 'Sliding Text',
-                    'icon'  => '📢',
-                    'color' => 'pink',
-                    'pos'   => 'top:67%;left:34%;width:66%;height:10%',
-                    'description' => 'Scrolling marquee text below booking section',
                 ],
             ],
             'header' => [
