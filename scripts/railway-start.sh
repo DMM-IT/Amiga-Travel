@@ -5,11 +5,13 @@ if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force
 fi
 
-if [ -z "$APP_URL" ]; then
+if [ -z "$APP_URL" ] || [ "$APP_URL" = "http://localhost" ]; then
   if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
     export APP_URL="https://$RAILWAY_PUBLIC_DOMAIN"
+  elif [ -n "$RAILWAY_ENVIRONMENT_NAME" ]; then
+    export APP_URL="https://$RAILWAY_ENVIRONMENT_NAME.railway.app"
   else
-    export APP_URL="http://localhost"
+    export APP_URL="http://localhost:10000"
   fi
 fi
 
