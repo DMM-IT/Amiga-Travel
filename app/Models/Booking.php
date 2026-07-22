@@ -41,6 +41,7 @@ class Booking extends Model
         'cancellation_fee',
         'refund_amount',
         'refund_destination',
+        'cancellation_window_expires_at',
         'is_rebooked',
         'rebooking_status',
         'rebooking_departure_date',
@@ -63,6 +64,7 @@ class Booking extends Model
         'tour_inclusions' => 'array',
         'cancellation_fee' => 'decimal:2',
         'refund_amount' => 'decimal:2',
+        'cancellation_window_expires_at' => 'datetime',
         'is_rebooked' => 'boolean',
     ];
 

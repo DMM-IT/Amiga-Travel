@@ -3,13 +3,79 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Booking;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function requestEmailVerification(Request $request)
+    {
+        $validated = $request->validate(['email' => 'required|email']);
+        $email = strtolower(trim($validated['email']));
+
+        if (! Booking::where('client_email', '=', $email, 'and')->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No booking was found for this email address.',
+            ], 404);
+        }
+
+        $code = (string) random_int(100000, 999999);
+        Cache::put('booking_lookup_otp:' . $email, $code, now()->addMinutes(10));
+
+        Mail::raw("Your Amiga Gracia booking verification code is {$code}. It expires in 10 minutes.", function ($message) use ($email): void {
+            $message->to($email)->subject('Amiga Gracia booking verification code');
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'A verification code was sent to your email.',
+        ]);
+    }
+
+    public function verifyEmail(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+        ]);
+        $email = strtolower(trim($validated['email']));
+        $cacheKey = 'booking_lookup_otp:' . $email;
+
+        if (! hash_equals((string) Cache::get($cacheKey, ''), $validated['code'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The verification code is invalid or expired.',
+            ], 422);
+        }
+
+        Cache::forget($cacheKey);
+        User::where('email', '=', $email, 'and')->update(['email_verified_at' => now()]);
+        $lookupToken = Str::random(80);
+        Cache::put('booking_lookup_token:' . hash('sha256', $lookupToken), $email, now()->addDays(30));
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Email verified successfully.',
+            'email' => $email,
+            'lookup_token' => $lookupToken,
+        ]);
+    }
+
+    private function issueLookupToken(string $email): string
+    {
+        $lookupToken = Str::random(80);
+        Cache::put('booking_lookup_token:' . hash('sha256', $lookupToken), strtolower($email), now()->addDays(30));
+
+        return $lookupToken;
+    }
+
     public function showLogin(): View
     {
         return view('login');
@@ -129,7 +195,7 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $user->api_token = \Illuminate\Support\Str::random(80);
+        $user->api_token = Str::random(80);
         $user->save();
 
         $this->logUserLogin(
@@ -147,6 +213,7 @@ class AuthController extends Controller
                 'email' => $user->email,
             ],
             'token' => $user->api_token,
+            'lookup_token' => $this->issueLookupToken($user->email),
         ]);
     }
 
@@ -159,7 +226,7 @@ class AuthController extends Controller
         ]);
 
         $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
-        $validated['api_token'] = \Illuminate\Support\Str::random(80);
+        $validated['api_token'] = Str::random(80);
 
         $user = User::create($validated);
 
@@ -178,6 +245,7 @@ class AuthController extends Controller
                 'email' => $user->email,
             ],
             'token' => $user->api_token,
+            'lookup_token' => $this->issueLookupToken($user->email),
         ]);
     }
 }

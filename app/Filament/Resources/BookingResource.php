@@ -151,6 +151,7 @@ class BookingResource extends Resource
                         }
 
                         $ticketUrl = $data['confirmation_url'] ?? null;
+                        $confirmationPdfPath = null;
                         $receiptPath = null;
                         $receiptDisk = null;
 
@@ -158,16 +159,33 @@ class BookingResource extends Resource
                             $pdfPath = is_string($data['confirmation_pdf'])
                                 ? $data['confirmation_pdf']
                                 : $data['confirmation_pdf']->storeAs('receipts', 'rebooking-' . $record->transaction_number . '.pdf', 'public');
+                            $confirmationPdfPath = $pdfPath;
 
                             $receiptDisk = 'public';
                             $receiptPath = Storage::disk('public')->path($pdfPath);
+
+                            $record->transaction?->update(['confirmation_pdf' => $pdfPath]);
                         }
 
-                         $record->update([
-                             'verified_by_user_id' => Auth::id(),
-                             'verified_at' => now(),
-                         ]);
-                         $record->verifyRebooking($ticketUrl, $receiptPath, $receiptDisk);
+                        $record->transaction?->update(['confirmation_url' => $ticketUrl]);
+
+                        $record->update([
+                            'verified_by_user_id' => Auth::id(),
+                            'verified_at' => now(),
+                        ]);
+
+                        if ($record->rebooking_status === 'pending') {
+                            $record->verifyRebooking($ticketUrl, $receiptPath, $receiptDisk);
+                        } else {
+                            $record->update(['status' => 'confirmed']);
+                            $record->transaction?->update([
+                                'payment_status' => 'paid',
+                                'confirmation_url' => $ticketUrl,
+                                'confirmation_pdf' => $confirmationPdfPath,
+                                'verified_by_user_id' => Auth::id(),
+                                'verified_at' => now(),
+                            ]);
+                        }
                      })
                      ->color('success'),
             ])

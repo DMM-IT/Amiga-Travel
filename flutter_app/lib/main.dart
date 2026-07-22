@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,9 +36,11 @@ const kSlate50 = Color(0xFFF8FAFC);
 // ==========================================
 class UserSession {
   static bool isLoggedIn = false;
+  static bool isEmailVerified = false;
   static String username = 'Traveler';
   static String email = 'user@amigagracia.com';
   static String token = '';
+  static String lookupToken = '';
 
   static String getBaseUrl() {
     // For development use localhost so the Flutter app can reach the local Laravel server.
@@ -1447,6 +1450,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool _isLoading = false;
   bool _obscure = true;
   bool _isSignUp = false;
+  bool _verificationRequested = false;
+  bool _verificationLoading = false;
+  final _verificationCodeCtrl = TextEditingController();
 
   List<dynamic> _bookings = [];
   bool _loadingBookings = false;
@@ -1456,6 +1462,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
     super.initState();
     if (UserSession.isLoggedIn) {
       _fetchBookings();
+    } else {
+      _loadVerifiedEmail();
     }
   }
 
@@ -1464,15 +1472,91 @@ class _ActivityScreenState extends State<ActivityScreen> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _nameCtrl.dispose();
+    _verificationCodeCtrl.dispose();
     super.dispose();
   }
 
-  void _fetchBookings() async {
+  Future<void> _loadVerifiedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('verified_email');
+    final lookupToken = prefs.getString('booking_lookup_token');
+    if (!mounted || email == null || lookupToken == null) return;
+    setState(() {
+      UserSession.email = email;
+      UserSession.lookupToken = lookupToken;
+      UserSession.isEmailVerified = true;
+    });
+    _fetchBookings();
+  }
+
+  Future<void> _requestEmailVerification() async {
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter the email used for your booking.'), backgroundColor: Colors.red));
+      return;
+    }
+    setState(() => _verificationLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/email-verification/request'),
+        headers: {'Accept': 'application/json'},
+        body: {'email': email},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        setState(() => _verificationRequested = true);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Verification code sent to your email.'), backgroundColor: kGreen));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Unable to send verification code.'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _verificationLoading = false);
+    }
+  }
+
+  Future<void> _verifyEmail() async {
+    final email = _emailCtrl.text.trim();
+    final code = _verificationCodeCtrl.text.trim();
+    if (code.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter the six-digit verification code.'), backgroundColor: Colors.red));
+      return;
+    }
+    setState(() => _verificationLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/email-verification/verify'),
+        headers: {'Accept': 'application/json'},
+        body: {'email': email, 'code': code},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('verified_email', data['email']);
+        await prefs.setString('booking_lookup_token', data['lookup_token']);
+        setState(() {
+          UserSession.email = data['email'];
+          UserSession.lookupToken = data['lookup_token'];
+          UserSession.isEmailVerified = true;
+        });
+        _fetchBookings();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Verification failed.'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _verificationLoading = false);
+    }
+  }
+
+  Future<void> _fetchBookings() async {
     setState(() => _loadingBookings = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
       final response = await http.get(
-        Uri.parse('$baseUrl/api/bookings?email=${Uri.encodeComponent(UserSession.email)}'),
+        Uri.parse('$baseUrl/api/bookings?email=${Uri.encodeComponent(UserSession.email)}&lookup_token=${Uri.encodeComponent(UserSession.lookupToken)}'),
         headers: {'Accept': 'application/json'},
       );
       final data = jsonDecode(response.body);
@@ -1488,7 +1572,28 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
-  void _cancelBooking(int id) async {
+  Future<String?> _askRefundDestination() async {
+    final controller = TextEditingController();
+    final destination = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Refund destination'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'GCash, wallet, or bank account'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Back')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Continue')),
+        ],
+      ),
+    );
+    controller.dispose();
+    return destination;
+  }
+
+  Future<void> _cancelBooking(int id) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1502,18 +1607,106 @@ class _ActivityScreenState extends State<ActivityScreen> {
       ),
     );
     if (confirm != true) return;
+    final refundDestination = await _askRefundDestination();
+    if (refundDestination == null || refundDestination.isEmpty) return;
 
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.post(Uri.parse('$baseUrl/api/bookings/$id/cancel'), headers: {'Accept': 'application/json'});
-      if (res.statusCode == 200) {
-        _fetchBookings();
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking cancelled successfully.'), backgroundColor: Colors.green));
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/bookings/$id/cancel'),
+        headers: {'Accept': 'application/json'},
+        body: {'email': UserSession.email, 'refund_destination': refundDestination},
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        await _fetchBookings();
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cancelled. Refund: ₱${data['refund_amount']}'), backgroundColor: Colors.green));
       } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to cancel booking.'), backgroundColor: Colors.red));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Failed to cancel booking.'), backgroundColor: Colors.red));
       }
     } catch (e) {
-      debugPrint('Error: $e');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+    }
+  }
+
+  Future<void> _rebookBooking(Map<String, dynamic> booking) async {
+    final now = DateTime.now();
+    final firstDate = now.add(const Duration(days: 1));
+    final departure = await showDatePicker(
+      context: context,
+      firstDate: firstDate,
+      lastDate: DateTime(now.year + 2),
+      initialDate: firstDate,
+      helpText: 'New departure date',
+    );
+    if (departure == null || !mounted) return;
+
+    DateTime? returnDate;
+    if (booking['return_date'] != null) {
+      returnDate = await showDatePicker(
+        context: context,
+        firstDate: departure,
+        lastDate: DateTime(now.year + 2),
+        initialDate: departure.add(const Duration(days: 1)),
+        helpText: 'New return date',
+      );
+      if (returnDate == null || !mounted) return;
+    }
+
+    XFile? proof;
+    final picker = ImagePicker();
+    final fee = ((booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3;
+    final shouldSubmit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Request rebooking'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Rebooking fee: ₱${fee.toStringAsFixed(2)}'),
+              const SizedBox(height: 8),
+              const Text('Upload your payment proof so staff can verify the request.'),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  proof = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+                  setDialogState(() {});
+                },
+                icon: const Icon(Icons.upload_file),
+                label: Text(proof == null ? 'Choose proof image' : 'Proof selected'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit request')),
+          ],
+        ),
+      ),
+    );
+    if (shouldSubmit != true) return;
+
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/${booking['id']}/rebook'));
+      request.headers['Accept'] = 'application/json';
+      request.fields['email'] = UserSession.email;
+      request.fields['departure_date'] = departure.toIso8601String().split('T')[0];
+      if (returnDate != null) request.fields['return_date'] = returnDate.toIso8601String().split('T')[0];
+      if (proof != null) request.files.add(await http.MultipartFile.fromPath('proof', proof!.path));
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        await _fetchBookings();
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rebooking request submitted for verification.'), backgroundColor: Colors.green));
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Rebooking failed.'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
     }
   }
 
@@ -1552,6 +1745,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.username = data['user']['name'];
           UserSession.email = data['user']['email'];
           UserSession.token = data['token'];
+          UserSession.lookupToken = data['lookup_token'] ?? '';
+          UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
         });
         widget.onLoginSuccess();
         _fetchBookings();
@@ -1578,7 +1773,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!UserSession.isLoggedIn) {
+    if (!UserSession.isLoggedIn && !UserSession.isEmailVerified) {
       return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
         child: Column(
@@ -1602,6 +1797,46 @@ class _ActivityScreenState extends State<ActivityScreen> {
               style: const TextStyle(fontSize: 13, color: kSlate500),
             ),
             const SizedBox(height: 36),
+
+            Card(
+              color: kSlate50,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Check your booking without logging in', style: TextStyle(fontWeight: FontWeight.bold, color: kGreen)),
+                    const SizedBox(height: 6),
+                    const Text('Verify the email used for your booking to view its status and e-ticket.', style: TextStyle(fontSize: 12, color: kSlate600)),
+                    const SizedBox(height: 12),
+                    if (_verificationRequested) ...[
+                      TextField(
+                        controller: _verificationCodeCtrl,
+                        keyboardType: TextInputType.number,
+                        maxLength: 6,
+                        decoration: const InputDecoration(labelText: 'Six-digit email code', prefixIcon: Icon(Icons.verified_outlined, color: kGreen)),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: _verificationLoading ? null : _verifyEmail,
+                          child: const Text('Verify email and view bookings'),
+                        ),
+                      ),
+                    ] else
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _verificationLoading ? null : _requestEmailVerification,
+                          icon: const Icon(Icons.mark_email_read_outlined),
+                          label: const Text('Send email verification code'),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
 
             if (_isSignUp) ...[
               TextField(
@@ -1774,21 +2009,27 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           ),
                         ],
                       ),
-                      if (status == 'pending' || status == 'unpaid') ...[
+                      if (b['rebooking_status'] == 'pending') ...[
                         const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () => _cancelBooking(b['id']),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: const Text('Cancel Booking', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('Rebooking request pending verification', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            await Navigator.push(context, MaterialPageRoute(builder: (_) => BookingDetailsScreen(booking: Map<String, dynamic>.from(b))));
+                            _fetchBookings();
+                          },
+                          icon: const Icon(Icons.open_in_new, size: 18),
+                          label: const Text('Open booking', style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: kGreen,
+                            side: const BorderSide(color: kGreen),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
@@ -1798,6 +2039,306 @@ class _ActivityScreenState extends State<ActivityScreen> {
       ),
     );
   }
+}
+
+class BookingDetailsScreen extends StatefulWidget {
+  final Map<String, dynamic> booking;
+
+  const BookingDetailsScreen({super.key, required this.booking});
+
+  @override
+  State<BookingDetailsScreen> createState() => _BookingDetailsScreenState();
+}
+
+class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
+  late Map<String, dynamic> _booking;
+  final _refundInstitutionCtrl = TextEditingController();
+  final _refundAccountCtrl = TextEditingController();
+  final _refundNameCtrl = TextEditingController();
+  DateTime? _cancellationExpiresAt;
+  Timer? _cancellationTimer;
+  String _refundMethod = 'GCash';
+  bool _cancellationStarted = false;
+  bool _busy = false;
+  String? _qrCodeUrl;
+
+  String get _baseUrl => UserSession.getBaseUrl();
+  String get _paymentStatus => (_booking['transaction']?['payment_status'] ?? 'unpaid').toString();
+  bool get _canManage => _booking['status'] == 'pending' && _paymentStatus != 'paid' && _paymentStatus != 'cancelled';
+  bool get _isRoundTrip => _booking['return_date'] != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _booking = Map<String, dynamic>.from(widget.booking);
+    _fetchPaymentSettings();
+  }
+
+  @override
+  void dispose() {
+    _cancellationTimer?.cancel();
+    _refundInstitutionCtrl.dispose();
+    _refundAccountCtrl.dispose();
+    _refundNameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchPaymentSettings() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/api/payment-settings'), headers: {'Accept': 'application/json'});
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && mounted) setState(() => _qrCodeUrl = data['qr_code_url']);
+    } catch (_) {}
+  }
+
+  void _showMessage(String message, {bool error = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: error ? Colors.red : kGreen));
+  }
+
+  Future<void> _startCancellation() async {
+    setState(() => _busy = true);
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/cancel'),
+        headers: {'Accept': 'application/json'},
+        body: {'email': UserSession.email, 'action': 'start'},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['status'] != 'success') {
+        _showMessage(data['message'] ?? 'Unable to start cancellation.', error: true);
+        return;
+      }
+      _cancellationExpiresAt = DateTime.parse(data['expires_at']).toLocal();
+      _cancellationStarted = true;
+      _cancellationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+      setState(() {});
+    } catch (e) {
+      _showMessage('Connection error: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  String _refundDestination() {
+    final parts = ['Method: $_refundMethod'];
+    if (_refundMethod != 'GCash') parts.add('Institution: ${_refundInstitutionCtrl.text.trim()}');
+    parts.add('Account No: ${_refundAccountCtrl.text.trim()}');
+    parts.add('Name: ${_refundNameCtrl.text.trim()}');
+    return parts.join(' | ');
+  }
+
+  Future<void> _confirmCancellation() async {
+    if (_refundAccountCtrl.text.trim().isEmpty || _refundNameCtrl.text.trim().isEmpty || (_refundMethod != 'GCash' && _refundInstitutionCtrl.text.trim().isEmpty)) {
+      _showMessage('Complete the refund details first.', error: true);
+      return;
+    }
+    if (_cancellationExpiresAt == null || DateTime.now().isAfter(_cancellationExpiresAt!)) {
+      _showMessage('The cancellation window has expired.', error: true);
+      return;
+    }
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm cancellation'),
+        content: Text('A 50% fee will be deducted. Your estimated refund is ₱${((( _booking['total_price'] as num?)?.toDouble() ?? 0) * 0.5).toStringAsFixed(2)}.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    setState(() => _busy = true);
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/cancel'),
+        headers: {'Accept': 'application/json'},
+        body: {'email': UserSession.email, 'action': 'confirm', 'refund_destination': _refundDestination()},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        _booking['status'] = 'cancelled';
+        _booking['cancellation_fee'] = data['cancellation_fee'];
+        _booking['refund_amount'] = data['refund_amount'];
+        _cancellationTimer?.cancel();
+        setState(() => _cancellationStarted = false);
+        _showMessage('Booking cancelled. Refund: ₱${data['refund_amount']}');
+      } else {
+        _showMessage(data['message'] ?? 'Cancellation failed.', error: true);
+      }
+    } catch (e) {
+      _showMessage('Connection error: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _uploadPaymentProof() async {
+    final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (proof == null) return;
+    setState(() => _busy = true);
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/proof'));
+      request.headers['Accept'] = 'application/json';
+      request.fields['email'] = UserSession.email;
+      request.files.add(await http.MultipartFile.fromPath('proof', proof.path));
+      final response = await http.Response.fromStream(await request.send());
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        final transaction = Map<String, dynamic>.from(_booking['transaction'] ?? {});
+        transaction['payment_status'] = 'pending';
+        _booking['transaction'] = transaction;
+        setState(() {});
+        _showMessage('Payment proof uploaded for verification.');
+      } else {
+        _showMessage(data['message'] ?? 'Upload failed.', error: true);
+      }
+    } catch (e) {
+      _showMessage('Upload error: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _rebook() async {
+    final now = DateTime.now();
+    final departure = await showDatePicker(context: context, firstDate: now.add(const Duration(days: 1)), lastDate: DateTime(now.year + 2), initialDate: now.add(const Duration(days: 1)), helpText: 'New departure date');
+    if (departure == null || !mounted) return;
+    DateTime? returnDate;
+    if (_isRoundTrip) {
+      returnDate = await showDatePicker(context: context, firstDate: departure, lastDate: DateTime(now.year + 2), initialDate: departure.add(const Duration(days: 1)), helpText: 'New return date');
+      if (returnDate == null || !mounted) return;
+    }
+    final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (proof == null) return;
+    final fee = ((_booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Submit rebooking request'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text('Rebooking fee: ₱${fee.toStringAsFixed(2)}'),
+          if (_qrCodeUrl != null) ...[const SizedBox(height: 12), Image.network(_qrCodeUrl!, height: 120, width: 120, errorBuilder: (_, __, ___) => const SizedBox.shrink())],
+          const SizedBox(height: 12),
+          const Text('Payment proof selected. Submit it for staff verification?'),
+        ]),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit'))],
+      ),
+    );
+    if (confirm != true) return;
+    setState(() => _busy = true);
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/rebook'));
+      request.headers['Accept'] = 'application/json';
+      request.fields['email'] = UserSession.email;
+      request.fields['departure_date'] = departure.toIso8601String().split('T')[0];
+      if (returnDate != null) request.fields['return_date'] = returnDate.toIso8601String().split('T')[0];
+      request.files.add(await http.MultipartFile.fromPath('proof', proof.path));
+      final response = await http.Response.fromStream(await request.send());
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        _booking['rebooking_status'] = 'pending';
+        setState(() {});
+        _showMessage('Rebooking request submitted for verification.');
+      } else {
+        _showMessage(data['message'] ?? 'Rebooking failed.', error: true);
+      }
+    } catch (e) {
+      _showMessage('Upload error: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _openSupport() async {
+    final subjectCtrl = TextEditingController(text: 'Booking ${_booking['transaction_number']} support');
+    final messageCtrl = TextEditingController();
+    final submit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Contact support'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: subjectCtrl, decoration: const InputDecoration(labelText: 'Subject')),
+          TextField(controller: messageCtrl, maxLines: 4, decoration: const InputDecoration(labelText: 'Message')),
+        ]),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Send'))],
+      ),
+    );
+    if (submit != true || messageCtrl.text.trim().isEmpty) return;
+    try {
+      final response = await http.post(Uri.parse('$_baseUrl/api/support'), headers: {'Accept': 'application/json'}, body: {
+        'name': UserSession.username,
+        'email': UserSession.email,
+        'subject': subjectCtrl.text.trim(),
+        'message': 'Booking ${_booking['transaction_number']}: ${messageCtrl.text.trim()}',
+      });
+      final data = jsonDecode(response.body);
+      _showMessage(response.statusCode == 200 ? 'Support request sent.' : (data['message'] ?? 'Unable to contact support.'), error: response.statusCode != 200);
+    } catch (e) {
+      _showMessage('Connection error: $e', error: true);
+    } finally {
+      subjectCtrl.dispose();
+      messageCtrl.dispose();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status = (_booking['status'] ?? 'pending').toString();
+    final expiry = _cancellationExpiresAt;
+    final secondsLeft = expiry == null ? 0 : expiry.difference(DateTime.now()).inSeconds.clamp(0, 300);
+    final transaction = Map<String, dynamic>.from(_booking['transaction'] ?? {});
+    return Scaffold(
+      appBar: AppBar(title: const Text('Booking details')),
+      body: ListView(padding: const EdgeInsets.all(16), children: [
+        _detailHeader(status),
+        const SizedBox(height: 12),
+        _detailSection('Trip', [
+          '${_booking['origin']} → ${_booking['destination']}',
+          'Departure: ${_booking['departure_date']?.toString().split('T')[0] ?? '—'}',
+          if (_booking['return_date'] != null) 'Return: ${_booking['return_date'].toString().split('T')[0]}',
+          _booking['schedule_summary'] ?? _booking['schedule_service'] ?? 'Schedule not recorded',
+        ]),
+        _detailSection('Payment', ['Status: ${_paymentStatus.toUpperCase()}', 'Total: ₱${_booking['total_price'] ?? '0.00'}']),
+        if (_paymentStatus == 'unpaid' || _paymentStatus == 'pending') ...[
+          OutlinedButton.icon(onPressed: _busy ? null : _uploadPaymentProof, icon: const Icon(Icons.upload_file), label: const Text('Upload payment proof')),
+        ],
+        if (_booking['rebooking_status'] == 'pending')
+          _detailSection('Rebooking', ['Request pending verification', 'New dates will appear after approval.']),
+        if (transaction['confirmation_url'] != null)
+          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(transaction['confirmation_url'])), icon: const Icon(Icons.confirmation_num), label: const Text('Open confirmation')),
+        if (_booking['confirmation_url'] != null)
+          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_url'])), icon: const Icon(Icons.link), label: const Text('Open e-ticket link')),
+        if (_booking['confirmation_pdf_url'] != null)
+          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_pdf_url'])), icon: const Icon(Icons.picture_as_pdf), label: const Text('Open e-ticket PDF')),
+        if (_booking['ticket_url'] != null)
+          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['ticket_url'])), icon: const Icon(Icons.download), label: const Text('Download ticket')),
+        const SizedBox(height: 12),
+        if (_canManage && !_cancellationStarted) ...[
+          OutlinedButton.icon(onPressed: _busy ? null : _rebook, icon: const Icon(Icons.calendar_month), label: const Text('Request rebooking')),
+          OutlinedButton.icon(onPressed: _busy ? null : _startCancellation, icon: const Icon(Icons.cancel_outlined), label: const Text('Start cancellation'), style: OutlinedButton.styleFrom(foregroundColor: Colors.red)),
+        ],
+        if (_cancellationStarted) ...[
+          _detailSection('Cancellation', ['Complete the refund details and confirm within ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}.', 'Cancellation fee: 50% of total price']),
+          DropdownButtonFormField<String>(value: _refundMethod, decoration: const InputDecoration(labelText: 'Refund method'), items: const [DropdownMenuItem(value: 'GCash', child: Text('GCash')), DropdownMenuItem(value: 'Online Wallet', child: Text('Online Wallet')), DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account'))], onChanged: (value) => setState(() => _refundMethod = value ?? 'GCash')),
+          if (_refundMethod != 'GCash') TextField(controller: _refundInstitutionCtrl, decoration: const InputDecoration(labelText: 'Bank or wallet provider')),
+          TextField(controller: _refundAccountCtrl, decoration: InputDecoration(labelText: _refundMethod == 'GCash' ? 'GCash number' : 'Account number')),
+          TextField(controller: _refundNameCtrl, decoration: const InputDecoration(labelText: 'Account name')),
+          const SizedBox(height: 12),
+          FilledButton.icon(onPressed: _busy || secondsLeft == 0 ? null : _confirmCancellation, icon: const Icon(Icons.check), label: Text(secondsLeft == 0 ? 'Window expired' : 'Confirm cancellation')),
+        ],
+        const SizedBox(height: 12),
+        OutlinedButton.icon(onPressed: _openSupport, icon: const Icon(Icons.support_agent), label: const Text('Contact support')),
+      ]),
+    );
+  }
+
+  Widget _detailHeader(String status) => Card(color: kGreen, child: Padding(padding: const EdgeInsets.all(18), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_booking['transaction_number'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)), const SizedBox(height: 8), Text(status.toUpperCase(), style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold))])));
+
+  Widget _detailSection(String title, List<String> values) => Card(margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)), const SizedBox(height: 8), ...values.map((value) => Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(value, style: const TextStyle(color: kSlate600))))])));
 }
 
 // ==========================================
@@ -3267,6 +3808,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       final baseUrl = UserSession.getBaseUrl();
       final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/$_bookingId/proof'));
       request.headers['Accept'] = 'application/json';
+      request.fields['email'] = UserSession.email;
       request.files.add(await http.MultipartFile.fromPath('proof', _proofImage!.path));
       final streamed = await request.send();
       final res = await http.Response.fromStream(streamed);

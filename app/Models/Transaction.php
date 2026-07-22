@@ -13,6 +13,7 @@ class Transaction extends Model
         'payment_status',
         'proof_of_payment',
         'confirmation_url',
+        'confirmation_pdf',
         'rebooking_fee',
         'rebooking_proof_of_payment',
         'verified_by_user_id',

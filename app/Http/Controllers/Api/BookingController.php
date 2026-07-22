@@ -15,6 +15,7 @@ use App\Models\PaymentSetting;
 use App\Models\Discount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmation;
@@ -239,12 +240,37 @@ class BookingController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
+            'lookup_token' => 'required|string',
         ]);
+
+        $verifiedEmail = Cache::get('booking_lookup_token:' . hash('sha256', $request->input('lookup_token')));
+        if (! $verifiedEmail || strtolower($verifiedEmail) !== strtolower($request->input('email'))) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Email verification is required before viewing bookings.',
+            ], 401);
+        }
 
         $bookings = \App\Models\Booking::where('client_email', '=', $request->input('email'), 'and')
             ->with(['passengers.discount', 'accommodations', 'transaction', 'schedule'])
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $bookings = $bookings->map(function (Booking $booking) {
+            $data = $booking->toArray();
+            $transaction = $booking->transaction;
+            if ($transaction?->confirmation_pdf) {
+                $data['confirmation_pdf_url'] = asset('storage/' . $transaction->confirmation_pdf);
+            }
+            $data['confirmation_url'] = $transaction?->confirmation_url;
+            $data['ticket_url'] = URL::temporarySignedRoute(
+                'ticket.download',
+                now()->addDays(7),
+                ['booking' => $booking->id]
+            );
+
+            return $data;
+        });
 
         return response()->json([
             'status' => 'success',
@@ -255,10 +281,14 @@ class BookingController extends Controller
     public function uploadProof(Request $request, $id)
     {
         $request->validate([
+            'email' => 'required|email',
             'proof' => 'required|file|image|max:10240', // max 10MB file
         ]);
 
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::whereKey($id)
+            ->where('client_email', $request->input('email'))
+            ->with('transaction')
+            ->firstOrFail();
         $transaction = $booking->transaction;
 
         if (!$transaction) {
@@ -301,20 +331,119 @@ class BookingController extends Controller
 
     public function cancel(Request $request, $id)
     {
-        $booking = Booking::findOrFail($id);
+        $request->validate([
+            'email' => 'required|email',
+            'action' => 'nullable|string|in:start,confirm',
+            'refund_destination' => 'nullable|string|max:255',
+        ]);
 
-        if ($booking->status !== 'pending' && $booking->status !== 'unpaid') {
+        $booking = Booking::whereKey($id)
+            ->where('client_email', $request->input('email'))
+            ->with('transaction')
+            ->firstOrFail();
+
+        if (! $booking->canCancelOrRebook() || $booking->status !== 'pending' || ! $booking->transaction || ! in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Only pending or unpaid bookings can be cancelled.'
+                'message' => 'This booking can no longer be cancelled.'
             ], 400);
         }
 
-        $booking->update(['status' => 'cancelled']);
+        if ($request->input('action', 'confirm') === 'start') {
+            $expiresAt = now()->addMinutes(5);
+            $booking->update(['cancellation_window_expires_at' => $expiresAt]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Cancellation window started.',
+                'expires_at' => $expiresAt->toISOString(),
+                'cancellation_fee' => (float) $booking->getCancellationFeeAmount(),
+                'refund_amount' => (float) $booking->getRefundAmount(),
+            ]);
+        }
+
+        if (! $booking->cancellation_window_expires_at || now()->greaterThan($booking->cancellation_window_expires_at)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The five-minute cancellation window has expired. Start a new cancellation request.',
+            ], 400);
+        }
+
+        $request->validate(['refund_destination' => 'required|string|max:255']);
+
+        $booking->update([
+            'status' => 'cancelled',
+            'cancellation_fee' => $booking->getCancellationFeeAmount(),
+            'refund_amount' => $booking->getRefundAmount(),
+            'refund_destination' => $request->input('refund_destination'),
+            'cancellation_window_expires_at' => null,
+        ]);
+
+        if ($booking->transaction) {
+            $booking->transaction->update(['payment_status' => 'cancelled']);
+        }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Booking cancelled successfully.'
+            'message' => 'Booking cancelled successfully.',
+            'cancellation_fee' => (float) $booking->cancellation_fee,
+            'refund_amount' => (float) $booking->refund_amount,
+        ]);
+    }
+
+    public function rebook(Request $request, $id)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'departure_date' => 'required|date|after_or_equal:today',
+            'return_date' => 'nullable|date|after_or_equal:departure_date',
+            'proof' => 'required|file|image|max:10240',
+        ]);
+
+        $booking = Booking::whereKey($id)
+            ->where('client_email', $request->input('email'))
+            ->with('transaction')
+            ->firstOrFail();
+
+        if (! $booking->canCancelOrRebook() || ! in_array($booking->status, ['pending', 'unpaid'], true)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'This booking can no longer be rebooked.',
+            ], 400);
+        }
+
+        if ($booking->rebooking_status === 'pending') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'A rebooking request is already pending verification.',
+            ], 400);
+        }
+
+        $transaction = $booking->transaction ?: Transaction::create([
+            'booking_id' => $booking->id,
+            'payment_status' => 'unpaid',
+        ]);
+        $proofPath = $request->hasFile('proof')
+            ? $request->file('proof')->store('rebooking_proofs', 'public')
+            : null;
+        $rebookingFee = $booking->getRebookingFeeAmount();
+
+        $transaction->update([
+            'rebooking_fee' => $rebookingFee,
+            'rebooking_proof_of_payment' => $proofPath,
+            'payment_status' => 'pending',
+        ]);
+        $booking->update([
+            'rebooking_status' => 'pending',
+            'rebooking_departure_date' => $request->input('departure_date'),
+            'rebooking_return_date' => $request->input('return_date'),
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Rebooking request submitted for verification.',
+            'rebooking_fee' => (float) $rebookingFee,
+            'rebooking_status' => 'pending',
         ]);
     }
 }
