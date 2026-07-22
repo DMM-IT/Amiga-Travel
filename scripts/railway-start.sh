@@ -2,7 +2,12 @@
 set -e
 
 # Set APP_URL FIRST, before any artisan commands (fixes malformed host error)
-export APP_URL="${APP_URL:-https://amiga-travel-production.up.railway.app}"
+# Use :- for unset OR :+ for unset/empty
+export APP_URL="${APP_URL:+$APP_URL}"
+if [ -z "$APP_URL" ]; then
+  export APP_URL="https://amiga-travel-production.up.railway.app"
+fi
+
 export APP_NAME="${APP_NAME:-Amiga Travel}"
 
 if [ -z "$APP_KEY" ]; then
@@ -26,3 +31,4 @@ php artisan migrate --force --no-interaction 2>/dev/null || true
 php artisan storage:link --quiet 2>/dev/null || true
 
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"
+
