@@ -115,7 +115,7 @@
                         </div>
 
                         <!-- Direct Flutter APK Download Link -->
-                        <a href="{{ asset('downloads/amiga-travel.apk') }}"
+                        <a href="{{ asset('flutter_app\build\app\outputs\flutter-apk\app-release.apk') }}"
                            class="group inline-flex items-center gap-3 px-8 py-4 bg-white text-emerald-950 hover:bg-slate-100 font-bold text-base rounded-2xl shadow-lg shadow-black/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 border border-white/20"
                            download
                         >
