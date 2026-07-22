@@ -1856,7 +1856,7 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Visit Website'),
             onTap: () async {
               Navigator.pop(context);
-              final url = Uri.parse('http://127.0.0.1:8000');
+              final url = Uri.parse('https://amiga-travel.up.railway.app');
               if (await canLaunchUrl(url)) await launchUrl(url, mode: LaunchMode.externalApplication);
             },
           ),
