@@ -1,4 +1,25 @@
-# flutter_app
+# Amiga Gracia Flutter App
+
+The mobile app calls the Laravel API. Railway database credentials belong only in
+the Laravel service environment and must never be passed to Flutter or included in
+an APK.
+
+## Railway build
+
+From this directory:
+
+```powershell
+flutter pub get
+flutter build apk --release --dart-define=API_BASE_URL=https://amiga-travel.up.railway.app
+```
+
+The APK is generated at `build/app/outputs/flutter-apk/app-release.apk`.
+
+For local development, override the API endpoint without editing source code:
+
+```powershell
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+```
 
 A new Flutter project.
 

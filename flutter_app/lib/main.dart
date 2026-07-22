@@ -43,10 +43,13 @@ class UserSession {
   static String lookupToken = '';
 
   static String getBaseUrl() {
-    // For development use localhost so the Flutter app can reach the local Laravel server.
-    // If running on an Android emulator, replace with 10.0.2.2:8000 as needed.
-    if (kIsWeb) return '';
-    return 'https://amiga-travel.up.railway.app';
+    const configuredUrl = String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'https://amiga-travel.up.railway.app',
+    );
+
+    if (kIsWeb && configuredUrl.isEmpty) return '';
+    return configuredUrl.replaceFirst(RegExp(r'/$'), '');
   }
 }
 
