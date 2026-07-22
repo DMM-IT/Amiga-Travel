@@ -28,8 +28,11 @@ COPY . .
 
 RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts --optimize-autoloader \
     && npm install --legacy-peer-deps \
-    && npm run build \
-    && chmod +x /var/www/html/scripts/railway-start.sh \
+    && npm run build
+
+RUN php artisan package:discover --ansi
+
+RUN chmod +x /var/www/html/scripts/railway-start.sh \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 10000
