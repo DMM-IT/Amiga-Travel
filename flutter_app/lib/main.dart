@@ -2021,63 +2021,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ),
             const SizedBox(height: 36),
 
-            // ── Guest booking lookup card ──────────────────────────────────
-            Card(
-              color: kSlate50,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Check your booking without logging in', style: TextStyle(fontWeight: FontWeight.bold, color: kGreen)),
-                    const SizedBox(height: 6),
-                    const Text('Verify the email used for your booking to view its status and e-ticket.', style: TextStyle(fontSize: 12, color: kSlate600)),
-                    const SizedBox(height: 12),
-                    if (_verificationRequested) ...[
-                      TextField(
-                        controller: _verificationCodeCtrl,
-                        keyboardType: TextInputType.number,
-                        maxLength: 6,
-                        decoration: const InputDecoration(
-                          labelText: 'Six-digit email code',
-                          prefixIcon: Icon(Icons.verified_outlined, color: kGreen),
-                        ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: _verificationLoading ? null : _verifyEmail,
-                          child: const Text('Verify email and view bookings'),
-                        ),
-                      ),
-                    ] else ...[
-                      // Separate email field for guest lookup only
-                      TextField(
-                        controller: _guestEmailCtrl,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          labelText: 'Booking email address',
-                          prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: _verificationLoading ? null : _requestEmailVerification,
-                          icon: _verificationLoading
-                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: kGreen))
-                              : const Icon(Icons.mark_email_read_outlined),
-                          label: const Text('Send email verification code'),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+
 
             // ── Sign-up extra field: Username ──────────────────────────────
             if (_isSignUp) ...[
