@@ -12,10 +12,21 @@ class ScheduleController extends Controller
     public function origins(Request $request)
     {
         $mode = $request->input('mode', '');
-        $origins = FerryRoute::activeOrigins($mode ?: null);
+        $operator = $request->input('operator', '');
+        $origins = FerryRoute::activeOrigins($mode ?: null, $operator ?: null);
         return response()->json([
             'status' => 'success',
             'origins' => $origins
+        ]);
+    }
+
+    public function operators(Request $request)
+    {
+        $mode = $request->input('mode', '');
+        $operators = FerryRoute::activeOperatorsFor($mode ?: null);
+        return response()->json([
+            'status' => 'success',
+            'operators' => $operators
         ]);
     }
 
@@ -25,7 +36,8 @@ class ScheduleController extends Controller
             'origin' => 'required|string',
         ]);
         $mode = $request->input('mode', '');
-        $destinations = FerryRoute::activeDestinationsFor($request->input('origin'), $mode ?: null);
+        $operator = $request->input('operator', '');
+        $destinations = FerryRoute::activeDestinationsFor($request->input('origin'), $mode ?: null, $operator ?: null);
         return response()->json([
             'status' => 'success',
             'destinations' => $destinations
@@ -44,10 +56,21 @@ class ScheduleController extends Controller
         $destination = $request->input('destination');
         $date = $request->input('date');
         $mode = $request->input('mode', null);
+        $operator = $request->input('operator', null);
 
-        $schedules = Schedule::forRouteAndDate($origin, $destination, $date, $mode)
+        $activeRule = \App\Models\GraciaPointRule::where('is_active', true)->first();
+
+        $schedules = Schedule::forRouteAndDate($origin, $destination, $date, $mode, $operator)
             ->get()
-            ->map(fn($schedule) => $schedule->toBookingArray($date));
+            ->map(function ($schedule) use ($date, $activeRule) {
+                $arr = $schedule->toBookingArray($date);
+                $pts = 0;
+                if ($activeRule && $activeRule->spend_threshold_centavos > 0) {
+                    $pts = (int) floor(($arr['price'] * 100) / $activeRule->spend_threshold_centavos) * $activeRule->points_awarded;
+                }
+                $arr['gracia_points'] = $pts;
+                return $arr;
+            });
 
         return response()->json([
             'status' => 'success',

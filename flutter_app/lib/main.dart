@@ -55,7 +55,7 @@ class UserSession {
   static String lookupToken = '';
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.4+8';
+  static const String appVersion = '1.0.5+9';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -110,6 +110,7 @@ class UserSession {
 class BookingData {
   String mode = 'ferry'; // ferry | airline
   String tripType = 'one_way';
+  String? operator;
   String origin = '';
   String destination = '';
   String departureDate = '';
@@ -475,7 +476,15 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  String? _travelMode;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _navigateToTravel(String mode) {
+    setState(() {
+      _travelMode = mode;
+      _selectedIndex = 2;
+    });
+  }
 
   void _handleLogout() async {
     await UserSession.clear();
@@ -518,16 +527,29 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         ),
+        actions: [
+          if (UserSession.isLoggedIn)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.volunteer_activism, color: kPink, size: 20),
+                  const SizedBox(width: 6),
+                  const Text('Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kPink)),
+                ],
+              ),
+            ),
+        ],
       ),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
           HomeScreen(
-            onBookFerry: () => setState(() => _selectedIndex = 2),
-            onBookAirline: () => setState(() => _selectedIndex = 2),
+            onBookFerry: () => _navigateToTravel('ferry'),
+            onBookAirline: () => _navigateToTravel('airline'),
           ),
           const SchedulesScreen(),
-          const TravelScreen(),
+          TravelScreen(initialMode: _travelMode),
           GraciaPointsScreen(), // Removed const to allow rebuild on login state change
           ActivityScreen(onLoginSuccess: () => setState(() {})),
         ],
@@ -558,14 +580,14 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Travel',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.stars_outlined),
-            activeIcon: Icon(Icons.stars),
+            icon: Icon(Icons.volunteer_activism_outlined),
+            activeIcon: Icon(Icons.volunteer_activism),
             label: 'Gracia',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long_outlined),
             activeIcon: Icon(Icons.receipt_long),
-            label: 'Transaction',
+            label: 'Transactions',
           ),
         ],
       ),
@@ -1141,7 +1163,8 @@ class _ServiceCard extends StatelessWidget {
 // 2. TRAVEL SCREEN (Step 1: Route & Passengers)
 // ==========================================
 class TravelScreen extends StatefulWidget {
-  const TravelScreen({super.key});
+  final String? initialMode;
+  const TravelScreen({super.key, this.initialMode});
 
   @override
   State<TravelScreen> createState() => _TravelScreenState();
@@ -1158,6 +1181,10 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
   int _children = 0;
   bool _showPassengerDropdown = false;
 
+  String? _operator;
+  List<String> _operators = [];
+  bool _loadingOperators = false;
+
   List<String> _origins = [];
   List<String> _destinations = [];
   bool _loadingOrigins = false;
@@ -1171,8 +1198,21 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     super.initState();
     _tripTabController = TabController(length: 2, vsync: this);
     _tripTabController.addListener(() => setState(() {}));
-    _fetchOrigins();
+    _mode = widget.initialMode ?? 'ferry';
+    _fetchOperators();
     _fetchVehicleRates();
+  }
+
+  @override
+  void didUpdateWidget(TravelScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialMode != null && widget.initialMode != oldWidget.initialMode && widget.initialMode != _mode) {
+      setState(() {
+        _mode = widget.initialMode!;
+        _operator = null; _operators = []; _origin = null; _destination = null; _origins = []; _destinations = [];
+      });
+      _fetchOperators();
+    }
   }
 
   @override
@@ -1193,11 +1233,32 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     } catch (_) {}
   }
 
+  void _fetchOperators() async {
+    setState(() => _loadingOperators = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.get(Uri.parse('$baseUrl/api/operators?mode=$_mode'));
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _operators = List<String>.from(data['operators']);
+          _operator = _operators.isNotEmpty ? _operators.first : null;
+        });
+        _fetchOrigins();
+      }
+    } catch (e) {
+      debugPrint('Error fetching operators: $e');
+    } finally {
+      setState(() => _loadingOperators = false);
+    }
+  }
+
   void _fetchOrigins() async {
     setState(() => _loadingOrigins = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/origins?mode=$_mode'));
+      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
+      final res = await http.get(Uri.parse('$baseUrl/api/origins?mode=$_mode$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
@@ -1219,7 +1280,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     setState(() => _loadingDestinations = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(origin)}&mode=$_mode'));
+      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
+      final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(origin)}&mode=$_mode$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
@@ -1265,6 +1327,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     if (_origin == null || _destination == null) return;
     final booking = BookingData()
       ..mode = _mode
+      ..operator = _operator
       ..tripType = _tripTabController.index == 0 ? 'one_way' : 'round_trip'
       ..origin = _origin!
       ..destination = _destination!
@@ -1299,15 +1362,15 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
             children: [
               _ModeTab(label: 'Ferry', icon: Icons.directions_boat, selected: _mode == 'ferry', onTap: () {
                 if (_mode != 'ferry') {
-                  setState(() { _mode = 'ferry'; _origin = null; _destination = null; _origins = []; _destinations = []; });
-                  _fetchOrigins();
+                  setState(() { _mode = 'ferry'; _operator = null; _operators = []; _origin = null; _destination = null; _origins = []; _destinations = []; });
+                  _fetchOperators();
                 }
               }),
               const SizedBox(width: 10),
               _ModeTab(label: 'Airline', icon: Icons.flight, selected: _mode == 'airline', onTap: () {
                 if (_mode != 'airline') {
-                  setState(() { _mode = 'airline'; _origin = null; _destination = null; _origins = []; _destinations = []; });
-                  _fetchOrigins();
+                  setState(() { _mode = 'airline'; _operator = null; _operators = []; _origin = null; _destination = null; _origins = []; _destinations = []; });
+                  _fetchOperators();
                 }
               }),
             ],
@@ -1328,7 +1391,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
         ),
 
         Expanded(
-          child: _loadingOrigins
+          child: _loadingOrigins || _loadingOperators
               ? const Center(child: CircularProgressIndicator(color: kGreen))
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -1341,6 +1404,25 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Operator
+                          _label('Operator'),
+                          const SizedBox(height: 6),
+                          DropdownButtonFormField<String>(
+                            value: _operators.contains(_operator) ? _operator : null,
+                            hint: const Text('Select Operator'),
+                            items: _operators.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                _operator = val;
+                                _origin = null;
+                                _destination = null;
+                                _destinations = [];
+                              });
+                              if (val != null) _fetchOrigins();
+                            },
+                            decoration: _dropDecor(Icons.business),
+                          ),
+                          const SizedBox(height: 16),
                           // Origin
                           _label('Origin'),
                           const SizedBox(height: 6),
@@ -2164,6 +2246,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.username = data['user']['name'];
           UserSession.email = data['user']['email'];
           UserSession.token = data['token'];
+          UserSession.lookupToken = data['lookup_token'] ?? '';
           UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
         });
         await UserSession.save();
@@ -2449,6 +2532,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             '₱${b['total_price']}',
                             style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: kPink),
                           ),
+                          if (b['gracia_points'] != null && b['gracia_points'] > 0)
+                            Row(
+                              children: [
+                                const Icon(Icons.volunteer_activism, color: kPink, size: 14),
+                                const SizedBox(width: 4),
+                                Text('+${b['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                              ],
+                            ),
                           Text(
                             b['created_at'] != null ? 'Booked: ${b['created_at'].toString().split('T')[0]}' : '',
                             style: const TextStyle(fontSize: 11, color: kSlate400),
@@ -2970,6 +3061,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
           'destination': widget.booking.destination,
           'date': widget.booking.departureDate,
           'mode': widget.booking.mode,
+          if (widget.booking.operator != null) 'operator': widget.booking.operator,
         }),
       );
       final data = jsonDecode(res.body);
@@ -3250,7 +3342,18 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                                 ],
                                               ),
                                             ),
-                                            Text('₱${s['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.w900, fontSize: 18)),
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                Text('₱${s['price']}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kPink)),
+                                                if (s['gracia_points'] != null && s['gracia_points'] > 0) ...[
+                                                  const SizedBox(width: 8),
+                                                  const Icon(Icons.volunteer_activism, color: kPink, size: 14),
+                                                  const SizedBox(width: 4),
+                                                  Text('+${s['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                                ],
+                                              ],
+                                            ),
                                           ],
                                         ),
                                         const SizedBox(height: 12),
@@ -4863,32 +4966,46 @@ class ServicesScreen extends StatelessWidget {
       'tag': 'Available Online',
     },
     {
-      'title': 'Airline Ticketing',
-      'desc': 'Domestic & international flights powered by leading carriers including AirAsia, Cebu Pacific, and Philippine Airlines (PAL). Hassle-free check-ins and seat bookings.',
-      'icon': Icons.flight,
-      'color': Color(0xFF1565C0),
-      'tag': 'PAL, CebuPac, AirAsia',
+      'title': '2GO Onboarding Training',
+      'desc': 'Comprehensive onboarding and orientation programs for individuals joining 2GO operations.',
+      'icon': Icons.directions_boat,
+      'color': Color(0xFFD81B60),
+      'tag': 'For New Hires & Trainees',
     },
     {
-      'title': 'Tour Packages',
-      'desc': 'Curated itineraries for both local (Puerto Galera, El Nido, Boracay) and international (Thailand, Japan, Korea) travel hotspots. Complete with accommodations and guides.',
-      'icon': Icons.landscape,
-      'color': Color(0xFF7B1FA2),
-      'tag': 'Local & International',
-    },
-    {
-      'title': 'Apprenticeships & Training',
-      'desc': 'Custom-tailored hospitality training programs, onboard apprenticeship training options, and educational field trips in cooperation with 2GO.',
+      'title': 'Educ Tour',
+      'desc': 'Educational tours for students and academic groups, featuring visits to travel facilities and cultural sites.',
       'icon': Icons.school,
-      'color': Color(0xFFF57C00),
-      'tag': 'For Academe & Students',
+      'color': Color(0xFF00796B),
+      'tag': 'For Schools & Groups',
     },
     {
-      'title': 'Custom Group Packages',
-      'desc': 'Tailored travel packages for corporate retreats, family reunions, and large groups. We handle flight connections, hotel accommodation blocks, and group transport.',
-      'icon': Icons.groups,
+      'title': 'Stay and Learn',
+      'desc': 'Combined accommodation and learning packages, perfect for workshops, seminars, and training sessions.',
+      'icon': Icons.hotel,
+      'color': Color(0xFF1E88E5),
+      'tag': 'Workshops & Seminars',
+    },
+    {
+      'title': 'Marine Related Trainings',
+      'desc': 'Specialized training programs for maritime professionals, including safety, navigation, and vessel operations.',
+      'icon': Icons.anchor,
+      'color': Color(0xFF8E24AA),
+      'tag': 'For Mariners & Seafarers',
+    },
+    {
+      'title': 'Transport',
+      'desc': 'Reliable transport solutions including ferry, airline, and land transfers for individuals, groups, and corporate needs.',
+      'icon': Icons.emoji_transportation,
+      'color': Color(0xFFF4511E),
+      'tag': 'Multi-Modal Transport',
+    },
+    {
+      'title': 'Visa & Passport Assistance',
+      'desc': 'Complete assistance with visa applications and passport processing, helping you prepare required documents.',
+      'icon': Icons.article,
       'color': Color(0xFF00897B),
-      'tag': 'Tailored For Groups',
+      'tag': 'Document Processing',
     },
   ];
 
@@ -5049,14 +5166,35 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
             ),
           ),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _loadingTours ? Center(child: CircularProgressIndicator()) : _PackageList(packages: _domestic),
-                _loadingTours ? Center(child: CircularProgressIndicator()) : _PackageList(packages: _international),
-              ],
-            ),
+            child: _loadingTours 
+              ? const Center(child: CircularProgressIndicator())
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _domestic.isEmpty
+                      ? _buildEmptyState('No Domestic Packages')
+                      : _PackageList(packages: _domestic),
+                    _international.isEmpty
+                      ? _buildEmptyState('No International Packages')
+                      : _PackageList(packages: _international),
+                  ],
+                ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.landscape, size: 80, color: kSlate200),
+          const SizedBox(height: 16),
+          Text(message, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate400)),
+          const SizedBox(height: 8),
+          const Text('Packages will be available soon.', style: TextStyle(color: kSlate400)),
         ],
       ),
     );
@@ -5459,7 +5597,7 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.stars, size: 80, color: kSlate300),
+            const Icon(Icons.volunteer_activism, size: 80, color: kSlate300),
             const SizedBox(height: 16),
             const Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -5515,6 +5653,48 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      // Learn More
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Row(
+                                children: [
+                                  Icon(Icons.info_outline, color: kPink),
+                                  SizedBox(width: 8),
+                                  Text('Rules & Guidelines', style: TextStyle(fontSize: 18)),
+                                ],
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('• Earn points every time you book a ferry or flight.'),
+                                  const SizedBox(height: 8),
+                                  Text('• Currently, you earn ${_activeRule?['points_awarded'] ?? 0} points for every ₱${((_activeRule?['spend_threshold_centavos'] ?? 0) / 100).toStringAsFixed(0)} spent.'),
+                                  const SizedBox(height: 8),
+                                  const Text('• Points are awarded automatically once your booking is paid and verified.'),
+                                  const SizedBox(height: 8),
+                                  const Text('• Use your points to claim exciting rewards and discounts on your future travels!'),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+                              ],
+                            ),
+                          );
+                        },
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.help_outline, color: kSlate500, size: 16),
+                            SizedBox(width: 6),
+                            Text('Learn more about Gracia Points', style: TextStyle(color: kSlate500, decoration: TextDecoration.underline, fontSize: 13)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       const Text('RECENT ACTIVITY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
                       const SizedBox(height: 12),
@@ -5557,6 +5737,8 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
   bool _loading = true;
   List<dynamic> _routes = [];
   String _filterMode = 'all'; // all, ferry, airline
+  String? _originFilter;
+  String? _destinationFilter;
 
   @override
   void initState() {
@@ -5584,10 +5766,18 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
     if (_loading) return const Center(child: CircularProgressIndicator(color: kGreen));
 
     final filteredRoutes = _routes.where((r) {
-      if (_filterMode == 'all') return true;
-      final mode = r['mode'] ?? 'ferry';
-      return mode == _filterMode;
+      if (_filterMode != 'all') {
+        final mode = r['mode'] ?? 'ferry';
+        if (mode != _filterMode) return false;
+      }
+      if (_originFilter != null && r['origin'] != _originFilter) return false;
+      if (_destinationFilter != null && r['destination'] != _destinationFilter) return false;
+      return true;
     }).toList();
+
+    final allOrigins = _routes.map((r) => r['origin']?.toString() ?? '').where((s) => s.isNotEmpty).toSet().toList();
+    final allDestinations = _routes.map((r) => r['destination']?.toString() ?? '').where((s) => s.isNotEmpty).toSet().toList();
+
 
     return RefreshIndicator(
       onRefresh: _fetchSchedules,
@@ -5638,6 +5828,54 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
               ),
             ),
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: allOrigins.contains(_originFilter) ? _originFilter : null,
+                      hint: const Text('Origin', style: TextStyle(fontSize: 13)),
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kSlate200)),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      items: allOrigins.map((o) => DropdownMenuItem(value: o, child: Text(o, style: const TextStyle(fontSize: 13)))).toList(),
+                      onChanged: (val) => setState(() => _originFilter = val),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: allDestinations.contains(_destinationFilter) ? _destinationFilter : null,
+                      hint: const Text('Destination', style: TextStyle(fontSize: 13)),
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kSlate200)),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      items: allDestinations.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 13)))).toList(),
+                      onChanged: (val) => setState(() => _destinationFilter = val),
+                    ),
+                  ),
+                  if (_originFilter != null || _destinationFilter != null) ...[
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.red),
+                      onPressed: () => setState(() { _originFilter = null; _destinationFilter = null; }),
+                    )
+                  ]
+                ],
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
           if (filteredRoutes.isEmpty)
             const SliverToBoxAdapter(
               child: Padding(
