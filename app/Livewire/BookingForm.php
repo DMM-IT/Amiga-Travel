@@ -354,6 +354,16 @@ class BookingForm extends Component
             ->all();
     }
 
+    #[Computed]
+public function selectedSchedule(): ?array
+{
+    if (! $this->selected_schedule_id) {
+        return null;
+    }
+
+    return collect($this->availableSchedules)->firstWhere('id', $this->selected_schedule_id);
+}
+
     public function updatedTripType(string $value): void
     {
         // If it's a tour package, lock to round trip
@@ -1192,7 +1202,9 @@ class BookingForm extends Component
 
     public function render()
     {
-        return view('livewire.booking-form');
+        return view('livewire.booking-form', [
+        'selectedSchedule' => $this->selectedSchedule,
+    ]);
     }
 
     protected function saveDraft(): void
