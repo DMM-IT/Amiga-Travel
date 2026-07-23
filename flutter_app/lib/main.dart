@@ -14,6 +14,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final isFirstLaunch = prefs.getBool('first_launch') ?? true;
+  await UserSession.init();
   runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
 
@@ -46,6 +47,42 @@ class UserSession {
 
   // Match this with pubspec.yaml version
   static const String appVersion = '1.0.4+6';
+
+  static Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    isEmailVerified = prefs.getBool('isEmailVerified') ?? false;
+    username = prefs.getString('username') ?? 'Traveler';
+    email = prefs.getString('email') ?? 'user@amigagracia.com';
+    token = prefs.getString('token') ?? '';
+    lookupToken = prefs.getString('lookupToken') ?? '';
+  }
+
+  static Future<void> save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', isLoggedIn);
+    await prefs.setBool('isEmailVerified', isEmailVerified);
+    await prefs.setString('username', username);
+    await prefs.setString('email', email);
+    await prefs.setString('token', token);
+    await prefs.setString('lookupToken', lookupToken);
+  }
+
+  static Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('isLoggedIn');
+    await prefs.remove('isEmailVerified');
+    await prefs.remove('username');
+    await prefs.remove('email');
+    await prefs.remove('token');
+    await prefs.remove('lookupToken');
+    isLoggedIn = false;
+    isEmailVerified = false;
+    username = 'Traveler';
+    email = 'user@amigagracia.com';
+    token = '';
+    lookupToken = '';
+  }
 
   static String getBaseUrl() {
     const configuredUrl = String.fromEnvironment(
@@ -431,7 +468,8 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void _handleLogout() {
+  void _handleLogout() async {
+    await UserSession.clear();
     setState(() {
       UserSession.isLoggedIn = false;
       UserSession.isEmailVerified = false;
@@ -2772,23 +2810,6 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.person_outline, color: kGreen),
             title: const Text('My Profile'),
             onTap: () => Navigator.pop(context),
-          ),
-          if (UserSession.isLoggedIn)
-            ListTile(
-              leading: const Icon(Icons.star_outline, color: kPink),
-              title: const Text('Gracia Points'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const GraciaPointsScreen()));
-              },
-            ),
-          ListTile(
-            leading: const Icon(Icons.directions_boat_outlined, color: kGreen),
-            title: const Text('Schedules'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SchedulesScreen()));
-            },
           ),
           ListTile(
             leading: const Icon(Icons.info_outline, color: kGreen),
@@ -5437,6 +5458,12 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
       );
     }
 
+    if (_error == 'Please log in to view your Gracia Points.' && UserSession.isLoggedIn) {
+      _error = '';
+      _isLoading = true;
+      Future.microtask(() => _fetchPoints());
+    }
+
     return _isLoading
         ? const Center(child: CircularProgressIndicator(color: kPink))
         : _error.isNotEmpty
@@ -5518,6 +5545,7 @@ class SchedulesScreen extends StatefulWidget {
 class _SchedulesScreenState extends State<SchedulesScreen> {
   bool _loading = true;
   List<dynamic> _routes = [];
+  String _filterMode = 'all'; // all, ferry, airline
 
   @override
   void initState() {
@@ -5543,60 +5571,227 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator(color: kGreen));
-    if (_routes.isEmpty) return const Center(child: Text('No active schedules found for the next 7 days.', style: TextStyle(color: kSlate500)));
+
+    final filteredRoutes = _routes.where((r) {
+      if (_filterMode == 'all') return true;
+      final mode = r['mode'] ?? 'ferry';
+      return mode == _filterMode;
+    }).toList();
 
     return RefreshIndicator(
       onRefresh: _fetchSchedules,
       color: kGreen,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _routes.length,
-        itemBuilder: (context, i) {
-          final route = _routes[i];
-          final schedules = route['schedules'] as List<dynamic>;
-          return Card(
-            elevation: 2,
-            margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              color: kGreen,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.directions_boat, color: kPink, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text('${route['origin']} to ${route['destination']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kGreen)),
-                      ),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bolt, color: Colors.greenAccent, size: 16),
+                        SizedBox(width: 4),
+                        Text('Real-time schedules', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
                   ),
-                  const Divider(height: 24),
-                  ...schedules.map((s) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.access_time, size: 16, color: kSlate400),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '${s['departure_time']} - ${s['arrival_time']}',
-                              style: const TextStyle(fontSize: 13, color: kSlate700),
-                            ),
-                          ),
-                          Text(s['vessel_name'] ?? 'Ferry', style: const TextStyle(fontSize: 12, color: kSlate500)),
-                        ],
-                      ),
-                    );
-                  }),
+                  const SizedBox(height: 16),
+                  const Text('Schedule and Routes', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
+                  const SizedBox(height: 8),
+                  const Text('Browse available ferry and airline routes with live pricing, departure times, and accommodation options.', style: TextStyle(color: Colors.white70, fontSize: 14)),
                 ],
               ),
             ),
-          );
-        },
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  _buildFilterBtn('All Routes', 'all', Icons.map),
+                  const SizedBox(width: 8),
+                  _buildFilterBtn('Ferry', 'ferry', Icons.directions_boat),
+                  const SizedBox(width: 8),
+                  _buildFilterBtn('Airline', 'airline', Icons.flight),
+                ],
+              ),
+            ),
+          ),
+          if (filteredRoutes.isEmpty)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(
+                  child: Text('No active schedules found.', style: TextStyle(color: kSlate500)),
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final route = filteredRoutes[index];
+                    final schedules = route['schedules'] as List<dynamic>;
+                    final isFerry = (route['mode'] ?? 'ferry') == 'ferry';
+                    
+                    return Card(
+                      elevation: 3,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: kSlate200)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: kSlate50,
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                              border: const Border(bottom: BorderSide(color: kSlate200)),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: isFerry ? Colors.blue.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+                                  child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(route['origin'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 8),
+                                            child: Icon(Icons.arrow_forward, size: 16, color: kSlate400),
+                                          ),
+                                          Text(route['destination'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(route['vehicle']?['full_name'] ?? route['operator'] ?? 'Amiga Gracia', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 200,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.all(16),
+                              itemCount: schedules.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 16),
+                              itemBuilder: (context, sIndex) {
+                                final s = schedules[sIndex];
+                                final price = s['price'] ?? 0;
+                                return Container(
+                                  width: 260,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(color: kSlate200),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(child: Text(s['service_name'] ?? 'Economy', style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                            child: Text('₱$price', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+                                          ),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(s['formatted_departure'] ?? s['departure_time'].toString().substring(11, 16), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                              const Text('DEPART', style: TextStyle(fontSize: 10, color: kSlate400, fontWeight: FontWeight.bold)),
+                                            ],
+                                          ),
+                                          const Icon(Icons.arrow_right_alt, color: kGreen),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            children: [
+                                              Text(s['formatted_arrival'] ?? s['arrival_time'].toString().substring(11, 16), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                              const Text('ARRIVE', style: TextStyle(fontSize: 10, color: kSlate400, fontWeight: FontWeight.bold)),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.event, size: 14, color: kSlate400),
+                                          const SizedBox(width: 4),
+                                          Text(s['departure_time'].toString().substring(0, 10), style: const TextStyle(fontSize: 12, color: kSlate600)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  childCount: filteredRoutes.length,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterBtn(String label, String value, IconData icon) {
+    final isActive = _filterMode == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _filterMode = value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isActive ? kGreen : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isActive ? kGreen : kSlate200),
+            boxShadow: isActive ? [const BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))] : [],
+          ),
+          child: Column(
+            children: [
+              Icon(icon, size: 20, color: isActive ? Colors.white : kSlate600),
+              const SizedBox(height: 4),
+              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isActive ? Colors.white : kSlate600)),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+
