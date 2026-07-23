@@ -83,7 +83,7 @@ NOCAPTCHA_SECRET="$NOCAPTCHA_SECRET"
 
 FILESYSTEM_DISK="local"
 BROADCAST_CONNECTION="log"
-EOF 
+EOF
 
 # Run migrations and setup
 # Skip migrations if they timeout (database might not be fully ready)
