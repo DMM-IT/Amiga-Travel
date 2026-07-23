@@ -10,11 +10,16 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
+import 'notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final isFirstLaunch = prefs.getBool('first_launch') ?? true;
   await UserSession.init();
+  await NotificationService.initialize();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
 
