@@ -165,7 +165,14 @@
                                 <label class="relative block">
                                     <span class="text-slate-700 font-semibold text-sm">Mode</span>
                                     <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
-                                        <span>{{ $mode ? ucfirst($mode) : 'Select mode' }}</span>
+                                        <div class="flex items-center gap-2">
+                                            @if($mode === 'ferry')
+                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
+                                            @elseif($mode === 'airline')
+                                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                            @endif
+                                            <span>{{ $mode ? ucfirst($mode) : 'Select mode' }}</span>
+                                        </div>
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                         </svg>
@@ -182,7 +189,14 @@
                                                 @foreach($modeOptions as $key => $label)
                                                     <button type="button" wire:click.prevent="selectMode('{{ $key }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $mode === $key ? 'bg-slate-50 font-semibold' : '' }}">
                                                         <div class="flex items-center justify-between gap-3">
-                                                            <span>{{ $label }}</span>
+                                                            <div class="flex items-center gap-2">
+                                                                @if($key === 'ferry')
+                                                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
+                                                                @elseif($key === 'airline')
+                                                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                                                @endif
+                                                                <span>{{ $label }}</span>
+                                                            </div>
                                                             @if($mode === $key)
                                                                 <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
                                                             @endif
@@ -197,7 +211,24 @@
                                 <label class="relative block">
                                     <span class="text-slate-700 font-semibold text-sm">Operator</span>
                                     <button type="button" wire:click.prevent="toggleOperatorDropdown" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
-                                        <span>{{ $operator ?: 'All operators' }}</span>
+                                        <div class="flex items-center gap-2">
+                                            @php
+                                                $selectedOpLogo = null;
+                                                if ($operator) {
+                                                    if (stripos($operator, '2GO') !== false) $selectedOpLogo = '2GO-Logo.png';
+                                                    elseif (stripos($operator, 'Starlite') !== false) $selectedOpLogo = 'starlite-Logo.jfif';
+                                                    elseif (stripos($operator, 'Cebu') !== false) $selectedOpLogo = 'CebuPecific-Logo.png';
+                                                    elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $selectedOpLogo = 'Pal-Logo.jfif';
+                                                    elseif (stripos($operator, 'AirAsia') !== false) $selectedOpLogo = 'AirAsia-Logo.png';
+                                                }
+                                            @endphp
+                                            @if($selectedOpLogo)
+                                                <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
+                                                    <img src="{{ asset('images/' . $selectedOpLogo) }}" alt="{{ $operator }}" class="w-full h-full object-contain">
+                                                </div>
+                                            @endif
+                                            <span>{{ $operator ?: 'All operators' }}</span>
+                                        </div>
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                         </svg>
@@ -216,7 +247,22 @@
                                                 @foreach($this->operators as $op)
                                                     <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $operator === $op ? 'bg-slate-50 font-semibold' : '' }}">
                                                         <div class="flex items-center justify-between gap-3">
-                                                            <span>{{ $op }}</span>
+                                                            <div class="flex items-center gap-2">
+                                                                @php
+                                                                    $opLogo = null;
+                                                                    if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
+                                                                    elseif (stripos($op, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
+                                                                    elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
+                                                                    elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+                                                                    elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+                                                                @endphp
+                                                                @if($opLogo)
+                                                                    <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
+                                                                        <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $op }}" class="w-full h-full object-contain">
+                                                                    </div>
+                                                                @endif
+                                                                <span>{{ $op }}</span>
+                                                            </div>
                                                             @if($operator === $op)
                                                                 <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
                                                             @endif
