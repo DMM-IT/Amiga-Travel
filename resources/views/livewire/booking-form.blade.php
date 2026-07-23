@@ -704,6 +704,29 @@
                                                 </div>
                                             @endif
                                         @endif
+
+                                        {{-- Promo Ticket toggle --}}
+                                        @php
+                                            $activePromo = $this->getActivePromoTicket();
+                                        @endphp
+                                        @if($activePromo)
+                                            <div class="mt-6 border-t border-slate-200 pt-6">
+                                                <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-[#db2777] bg-[#db2777]/5 p-5 shadow-sm">
+                                                    <div>
+                                                        <p class="text-slate-900 font-bold text-lg">Promotional Ticket Available!</p>
+                                                        <p class="mt-1 text-sm text-slate-600">
+                                                            Promo price: <span class="font-bold text-[#db2777]">₱{{ number_format($activePromo->promo_price, 2) }}</span>
+                                                            &nbsp;|&nbsp; Remaining: {{ $activePromo->remaining_quantity }} of {{ $activePromo->quantity_available }}
+                                                        </p>
+                                                    </div>
+                                                    <label class="relative inline-flex cursor-pointer items-center gap-3">
+                                                        <input type="checkbox" wire:model.live="use_promo_ticket" class="peer sr-only">
+                                                        <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#db2777] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#db2777]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+                                                        <span class="text-sm font-semibold text-slate-700">{{ $use_promo_ticket ? 'Use Promo Ticket' : 'Regular Ticket' }}</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endif
                                     @endif
                                 </div>
 

@@ -19,6 +19,7 @@ use App\Models\VehicleBrand;
 use App\Models\VehicleModel;
 use App\Models\VehicleRate;
 use App\Models\Transaction;
+use App\Models\PromotionalTicket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -107,6 +108,7 @@ class BookingForm extends Component
     public ?string $driver_birthday = null;
     public bool $showBaggageRules = false;
     public bool $hasExtraBaggage = false;
+    public bool $use_promo_ticket = false;
     public \Illuminate\Support\Collection $vehicleBrandCatalog;
     public \Illuminate\Support\Collection $vehicleModelCatalog;
 
@@ -999,6 +1001,11 @@ public function selectedSchedule(): ?array
         $this->saveDraft();
     }
 
+    public function updatedUsePromoTicket(bool $value): void
+    {
+        $this->saveDraft();
+    }
+
     public function updatedVehicleBookingMethod(string $value): void
     {
         if ($value === 'category') {
@@ -1212,6 +1219,25 @@ public function selectedSchedule(): ?array
         $transaction = null;
 
         DB::transaction(function () use (&$transaction, $schedule, $scheduleAccommodation) {
+            // If using promo ticket, increment quantity_sold with row lock
+            $usedPromoTicket = null;
+            if ($this->use_promo_ticket && $schedule) {
+                $usedPromoTicket = $schedule->promotionalTickets()
+                    ->activeAndAvailable()
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($usedPromoTicket && $usedPromoTicket->quantity_sold < $usedPromoTicket->quantity_available) {
+                    $usedPromoTicket->increment('quantity_sold');
+                } else {
+                    // If no available promo, disable use_promo_ticket (safety net)
+                    $this->use_promo_ticket = false;
+                }
+            }
+
+            // Calculate the schedule price to use (promo if applicable)
+            $usedSchedulePrice = $this->getSelectedSchedulePrice();
+
             $booking = Booking::create([
                 'transaction_number' => $this->generateTransactionNumber(),
                 'origin' => $this->origin,
@@ -1222,7 +1248,7 @@ public function selectedSchedule(): ?array
                 'schedule_service' => $schedule?->service_name,
                 'schedule_departure_time' => $schedule?->formatted_departure,
                 'schedule_arrival_time' => $schedule?->formatted_arrival,
-                'schedule_price' => $schedule?->price,
+                'schedule_price' => $usedSchedulePrice,
                 'schedule_accommodation_id' => $scheduleAccommodation?->id,
                 'schedule_accommodation_name' => $scheduleAccommodation?->name,
                 'schedule_accommodation_price' => $scheduleAccommodation?->price,
@@ -1239,6 +1265,7 @@ public function selectedSchedule(): ?array
                 'vehicle_price' => $this->vehicle_price,
                 'driver_name' => $this->driver_name,
                 'driver_birthday' => $this->driver_birthday,
+                'promotional_ticket_id' => $usedPromoTicket?->id,
             ]);
 
             foreach ($this->passengers as $passenger) {
@@ -1324,6 +1351,7 @@ public function selectedSchedule(): ?array
             'vehicle_plate_number' => $this->vehicle_plate_number,
             'vehicle_price' => $this->vehicle_price,
             'has_extra_baggage' => $this->hasExtraBaggage,
+            'use_promo_ticket' => $this->use_promo_ticket,
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
             'selected_hotel_id' => $this->selected_hotel_id,
@@ -1688,6 +1716,17 @@ public function selectedSchedule(): ?array
             return 0;
         }
 
+        // Check if using promo ticket
+        if ($this->use_promo_ticket) {
+            $schedule = Schedule::query()->find($this->selected_schedule_id);
+            if ($schedule) {
+                $promoTicket = $schedule->activePromotionalTicket();
+                if ($promoTicket) {
+                    return floatval($promoTicket->promo_price);
+                }
+            }
+        }
+
         $schedule = collect($this->availableSchedules)
             ->firstWhere('id', $this->selected_schedule_id);
 
@@ -1696,6 +1735,15 @@ public function selectedSchedule(): ?array
         }
 
         return floatval(Schedule::query()->whereKey($this->selected_schedule_id)->value('price') ?? 0);
+    }
+
+    public function getActivePromoTicket(): ?PromotionalTicket
+    {
+        if (! $this->selected_schedule_id) {
+            return null;
+        }
+        $schedule = Schedule::query()->find($this->selected_schedule_id);
+        return $schedule ? $schedule->activePromotionalTicket() : null;
     }
 
     protected function recaptchaRule(): string

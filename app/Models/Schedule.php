@@ -62,6 +62,16 @@ class Schedule extends Model
         return $this->scheduleAccommodations()->where('is_active', true);
     }
 
+    public function promotionalTickets(): HasMany
+    {
+        return $this->hasMany(PromotionalTicket::class);
+    }
+
+    public function activePromotionalTicket(): ?PromotionalTicket
+    {
+        return $this->promotionalTickets()->activeAndAvailable()->first();
+    }
+
     public function getSeatColumnLettersAttribute(): array
     {
         return $this->seat_columns ?? ['A', 'B', 'C', 'D', 'E', 'F'];

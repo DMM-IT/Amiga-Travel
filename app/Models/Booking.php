@@ -49,6 +49,7 @@ class Booking extends Model
         'rebooking_return_date',
         'verified_by_user_id',
         'verified_at',
+        'promotional_ticket_id',
     ];
 
     protected $casts = [
@@ -117,6 +118,11 @@ class Booking extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function promotionalTicket(): BelongsTo
+    {
+        return $this->belongsTo(PromotionalTicket::class);
     }
 
     public function getScheduleSummaryAttribute(): ?string
