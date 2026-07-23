@@ -511,9 +511,6 @@
                                         @endphp
 
                                         @php
-    $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
-@endphp
-<pre style="background:#000;color:#0f0;padding:1rem;font-size:11px;overflow:auto;max-height:400px;">{{ json_encode(['mode'=>$mode,'selected_schedule_id'=>$selected_schedule_id,'available_ids'=>collect($availableSchedules)->pluck('id'),'selectedSchedule'=>$selectedSchedule], JSON_PRETTY_PRINT) }}</pre>
 
                                         {{-- Ferry: Show accommodations --}}
                                         @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']))
