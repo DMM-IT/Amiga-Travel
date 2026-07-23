@@ -93,16 +93,20 @@ class Schedule extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeForRouteAndDate(Builder $query, string $origin, string $destination, string $date, ?string $mode = null): Builder
+    public function scopeForRouteAndDate(Builder $query, string $origin, string $destination, string $date, ?string $mode = null, ?string $operator = null): Builder
     {
         return $query->active()
-            ->whereHas('ferryRoute', function (Builder $routeQuery) use ($origin, $destination, $mode) {
+            ->whereHas('ferryRoute', function (Builder $routeQuery) use ($origin, $destination, $mode, $operator) {
                 $routeQuery->where('origin', $origin)
                     ->where('destination', $destination)
                     ->where('is_active', true);
 
                 if (! empty($mode)) {
                     $routeQuery->where('mode', $mode);
+                }
+                
+                if (! empty($operator)) {
+                    $routeQuery->where('operator', $operator);
                 }
             })
             ->whereDate('departure_time', $date)

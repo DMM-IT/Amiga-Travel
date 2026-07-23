@@ -55,6 +55,7 @@ class BookingForm extends Component
     public string $destinationSearch = '';
     public ?int $pwdTypeModalPassengerIndex = null;
     public string $pwd_disability_other_tmp = '';
+    public ?string $operator = null;
 
     // Each entry: ['type' => 'adult'|'child', 'name' => '', 'discount_id' => null]
     public array $passengers = [];
@@ -103,6 +104,7 @@ class BookingForm extends Component
     public ?float $vehicle_price = null;
     public string $driver_name = '';
     public ?string $driver_birthday = null;
+    public bool $showBaggageRules = false;
     public \Illuminate\Support\Collection $vehicleBrandCatalog;
     public \Illuminate\Support\Collection $vehicleModelCatalog;
 
@@ -136,7 +138,7 @@ class BookingForm extends Component
 
         // Check if we have tour/package query params first
         $allowed = [
-            'trip_type','mode','origin','destination','departure_date','return_date','duration_days','adults','children',
+            'trip_type','mode','operator','origin','destination','departure_date','return_date','duration_days','adults','children',
             'client_name','client_email','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id'
         ];
         $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $allowed));
@@ -355,6 +357,47 @@ class BookingForm extends Component
     }
 
     #[Computed]
+    public function operators(): array
+    {
+        if (blank($this->mode)) {
+            return [];
+        }
+
+        return FerryRoute::activeOperatorsFor($this->mode);
+    }
+    
+    #[Computed]
+    public function baggageRules(): ?array
+    {
+        if (blank($this->operator)) {
+            return null;
+        }
+        
+        $filePath = base_path('baggage-rules.json');
+        if (!file_exists($filePath)) {
+            return null;
+        }
+        
+        $json = json_decode(file_get_contents($filePath), true);
+        $carriers = $json['carriers'] ?? [];
+        $meta = $json['meta'] ?? [];
+        
+        // Normalize operator name to match with possible keys
+        $normalizedOperator = strtolower(trim($this->operator));
+        
+        foreach ($carriers as $carrier) {
+            $carrierName = strtolower(trim($carrier['name'] ?? ''));
+            $carrierId = strtolower(trim($carrier['id'] ?? ''));
+            
+            if (str_contains($carrierName, $normalizedOperator) || str_contains($normalizedOperator, $carrierName) || $carrierId === $normalizedOperator) {
+                return array_merge($carrier, ['meta' => $meta]);
+            }
+        }
+        
+        return null;
+    }
+
+    #[Computed]
 public function selectedSchedule(): ?array
 {
     if (! $this->selected_schedule_id) {
@@ -521,6 +564,7 @@ public function selectedSchedule(): ?array
         }
 
         $this->mode = $mode;
+        $this->operator = null;
         $this->origin = '';
         $this->destination = '';
         $this->selected_schedule_id = null;
@@ -610,6 +654,10 @@ public function selectedSchedule(): ?array
                       ->where('destination', $this->destination)
                       ->where('mode', $this->mode)
                       ->where('is_active', true);
+                
+                if (! empty($this->operator)) {
+                    $query->where('operator', $this->operator);
+                }
             })
             ->select('departure_time')
             ->get();
@@ -647,6 +695,14 @@ public function selectedSchedule(): ?array
         $this->showModeDropdown = false;
         $this->showOriginDropdown = false;
         $this->dispatch('dropdownOpened', 'destination');
+    }
+    
+    public function updatedOperator(): void
+    {
+        $this->selected_schedule_id = null;
+        $this->availableSchedules = [];
+        $this->updateAvailableScheduleDates();
+        $this->saveDraft();
     }
 
     public function datePickerUpdated(string $field, ?string $value): void
@@ -800,7 +856,7 @@ public function selectedSchedule(): ?array
     {
         return Schedule::query()
             ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
-            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
             ->get()
             ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date))
             ->values()
@@ -1211,6 +1267,7 @@ public function selectedSchedule(): ?array
             'step' => $this->step,
             'trip_type' => $this->trip_type,
             'mode' => $this->mode,
+            'operator' => $this->operator,
             'origin' => $this->origin,
             'destination' => $this->destination,
             'departure_date' => $this->departure_date,

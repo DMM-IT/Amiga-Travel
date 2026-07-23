@@ -79,4 +79,21 @@ class FerryRoute extends Model
             ->values()
             ->all();
     }
+
+    public static function activeOperatorsFor(?string $mode = null): array
+    {
+        return static::query()
+            ->where('is_active', true)
+            ->when($mode, function ($query, $mode) {
+                $query->where('mode', $mode);
+            })
+            ->whereNotNull('operator')
+            ->where('operator', '!=', '')
+            ->select('operator')
+            ->distinct()
+            ->orderBy('operator')
+            ->pluck('operator')
+            ->values()
+            ->all();
+    }
 }

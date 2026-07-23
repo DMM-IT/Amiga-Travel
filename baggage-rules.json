@@ -1,0 +1,164 @@
+{
+  "meta": {
+    "title": "Philippine Carrier Baggage Rules",
+    "currency": "PHP",
+    "last_verified": "2026-07-23",
+    "disclaimer": "Fees and allowances change frequently and vary by fare type, route, and promo period. Verify against each carrier's official page before displaying to end users, and refresh this file periodically.",
+    "note_on_2go_source": "An older 2017 2GO tariff (75kg free, PHP 10-15/kg) circulates online and is OUTDATED. Figures below reflect 2GO's current official site (50kg free, PHP 30/kg general excess)."
+  },
+  "carriers": [
+    {
+      "id": "cebu_pacific",
+      "name": "Cebu Pacific",
+      "type": "airline",
+      "code": "5J",
+      "carry_on": {
+        "pieces": 2,
+        "description": "1 hand-carry item (overhead bin) + 1 personal item (under seat)",
+        "combined_weight_kg": 7,
+        "hand_carry_size_cm": "56 x 36 x 23",
+        "personal_item_size_cm": "20 x 20 x 36",
+        "note": "Overweight hand-carry may be forced into checked baggage at standard checked rates; no separate carry-on excess fee."
+      },
+      "checked_baggage": {
+        "included_in_base_fare": false,
+        "fare_bundles": [
+          {"name": "Go Basic", "free_checked_kg": 0},
+          {"name": "Go Easy", "free_checked_kg": 20},
+          {"name": "Go Flexi", "free_checked_kg": 20}
+        ],
+        "max_pieces_purchasable": 3,
+        "base_piece_weight_kg": 20,
+        "upgradeable_to_kg": [32, 40],
+        "max_single_bag_weight_kg": 32,
+        "max_dimensions_cm": "99 x 99 x 99",
+        "prepaid_online": {
+          "domestic_20kg_php": "340-700 (varies by booking timing/route)",
+          "international_notes": "Higher than domestic; varies by destination"
+        },
+        "airport_counter_domestic": {
+          "first_20kg_php": "2000-2500 (raised effective 2026-05-15)",
+          "excess_per_kg_php": 250
+        },
+        "airport_counter_international_asia": {
+          "first_20kg_php": 1700,
+          "excess_per_kg_php": 550
+        },
+        "airport_counter_international_australia_dubai": {
+          "first_20kg_php": 4300,
+          "excess_per_kg_php": 1200
+        },
+        "purchase_deadline": "Manage Booking online up to 2 hours before departure; cheapest when bought at initial booking",
+        "rate_change_note": "Baggage rates increased effective 2026-02-19; domestic airport rates increased further 2026-05-15"
+      }
+    },
+    {
+      "id": "airasia_ph",
+      "name": "AirAsia Philippines",
+      "type": "airline",
+      "code": "Z2",
+      "carry_on": {
+        "pieces": 2,
+        "description": "1 cabin bag + 1 small personal item (laptop bag/handbag)",
+        "combined_weight_kg": 7,
+        "cabin_bag_size_cm": "56 x 36 x 23",
+        "personal_item_size_cm": "40 x 30 x 10",
+        "upgrade_options": ["Xtra Carry-On (up to 14kg combined, max 10kg/bag)", "FAST Pass (up to 14kg combined, max 10kg/bag)"]
+      },
+      "checked_baggage": {
+        "included_in_base_fare": false,
+        "purchasable_range_kg": [20, 60],
+        "max_single_bag_weight_kg": 32,
+        "max_dimensions_cm": "119 x 119 x 81",
+        "bags_per_purchase": "1 checked baggage allowance per guest per flight; no limit on number of physical bags as long as total weight stays within purchased allowance",
+        "prepaid_online_20kg_php": "507 (best case, early booking) up to 780-1100 (domestic, later booking)",
+        "international_20kg_php": "1900-2380",
+        "purchase_channels": ["Initial booking (cheapest)", "Manage My Booking", "Ask Bo chatbot up to 2 hours before departure", "Airport counter (most expensive, applicable airport rates)"],
+        "sports_equipment": "Accepted as checked baggage within weight guidelines (bicycles, surfboards, golf, skis, diving gear, etc.)"
+      }
+    },
+    {
+      "id": "philippine_airlines",
+      "name": "Philippine Airlines (PAL)",
+      "type": "airline",
+      "code": "PR",
+      "carry_on": {
+        "pieces": 2,
+        "description": "1 carry-on bag + 1 personal item, all classes",
+        "combined_weight_kg": 7,
+        "carry_on_size_cm": "56 x 36 x 23",
+        "personal_item_size_cm": "45 x 35 x 20"
+      },
+      "checked_baggage": {
+        "system": "Hybrid: Weight Concept (domestic & most Asia routes) and Piece Concept (North America, Guam, Canada)",
+        "weight_concept": {
+          "applies_to": "Domestic and most Asian international routes",
+          "typical_allowance_kg": "0-30 depending on fare family (e.g. Economy Supersaver often 0kg)",
+          "max_single_bag_weight_kg": 32,
+          "excess_rate_domestic_per_kg_php": 400,
+          "excess_rate_note": "Rate has risen over time (PHP 350/kg in 2024 to PHP 400/kg in 2026); always confirm current rate",
+          "airport_counter_per_kg_php": "300-600"
+        },
+        "piece_concept": {
+          "applies_to": "USA, Canada, Guam and other Area 2/3 long-haul routes",
+          "example_allowances": [
+            {"fare": "Economy Supersaver", "pieces": 2, "kg_per_piece": 23},
+            {"fare": "Economy Saver", "pieces": 2, "kg_per_piece": 25},
+            {"fare": "Business Value/Flex", "pieces": 2, "kg_per_piece": 32}
+          ],
+          "extra_piece_fee_usd": "150-200",
+          "overweight_23_32kg_fee_usd": "50-100",
+          "oversized_over_158cm_fee_usd": "50-150"
+        },
+        "prepaid_baggage": {
+          "channel": "myPAL Baggage Plus portal, up to 4 hours before departure",
+          "max_prepaid_kg_per_person_per_sector": 50,
+          "note": "Significantly cheaper than paying excess at the airport; rates per sector, updated effective 2026-02-26"
+        },
+        "mabuhay_miles_redemption": "Elite/Premier Elite members get extra 10-30kg (or 1 extra piece) free; Million Miler gets extra 40kg (or 2 pieces) free. Miles can also be redeemed to pay for excess (e.g. ~1900 miles per 10kg domestic)",
+        "max_single_bag_weight_kg": 32,
+        "max_dimensions_cm": "158 (linear, L+W+H)"
+      }
+    },
+    {
+      "id": "2go_travel",
+      "name": "2GO Travel",
+      "type": "ferry",
+      "carry_on": null,
+      "checked_baggage": {
+        "free_allowance_kg": 50,
+        "free_allowance_basis": "Per full paying passenger; hand-carried/personal items only",
+        "max_piece_size_inches": "20 (height) x 30 (width)",
+        "infant_note": "Infants who paid Child Rate get the 50kg free allowance; infants who did not are not entitled to free baggage",
+        "excess_and_special_baggage_rates_from_to_manila": {
+          "goods_commercial_quantity_php_per_kg": 30,
+          "electronic_appliances_php_per_piece": {"visayas": 250, "mindanao": 300, "interport": 100},
+          "sports_equipment_php_per_piece": {"visayas": 200, "mindanao": 250, "interport": 100},
+          "firearms_handling_fee_php_per_piece": "500 (inclusive of 3 extra magazines)",
+          "excess_magazine_php_per_piece": 100,
+          "plants_cut_flowers_handling_fee_php_per_piece": "75 (beyond 1ft diameter, up to 4ft height)"
+        },
+        "excess_conditions": [
+          "Baggage exceeding 50kg free allowance",
+          "Baggage exceeding 20in height x 30in width (obstructs passageways / won't fit passenger accommodation)",
+          "Baggage in commercial quantity or bulk packaging beyond normal personal use",
+          "Note: boxes/cargo shipments are generally billed as cargo, separate from the passenger's personal 50kg allowance"
+        ],
+        "source_note": "Rates as published on 2go.com.ph as of 2026; supersedes an outdated 2017 tariff sheet (75kg free, PHP 10-15/kg) still found on some third-party sites"
+      }
+    },
+    {
+      "id": "starlite_ferries",
+      "name": "Starlite Ferries",
+      "type": "ferry",
+      "carry_on": null,
+      "checked_baggage": {
+        "free_allowance_kg": 50,
+        "free_allowance_basis": "Per paying passenger, generally ages 12 and up (children 11 and below typically excluded per official guidelines)",
+        "excess_rate_php_per_kg": 10,
+        "commercial_goods_note": "May be subject to additional fees beyond the standard per-kg excess rate",
+        "requirements": "All baggage must be properly tagged and secured"
+      }
+    }
+  ]
+}

@@ -161,7 +161,7 @@
                                 @endif
                             </div>
 
-                            <div class="grid gap-6 lg:grid-cols-3 mt-4">
+                            <div class="grid gap-6 lg:grid-cols-4 mt-4">
                                 <label class="relative block">
                                     <span class="text-slate-700 font-semibold text-sm">Mode</span>
                                     <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
@@ -192,6 +192,16 @@
                                             </div>
                                         </div>
                                     @endif
+                                </label>
+
+                                <label class="relative block">
+                                    <span class="text-slate-700 font-semibold text-sm">Operator</span>
+                                    <select wire:model.live="operator" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
+                                        <option value="">All operators</option>
+                                        @foreach($this->operators as $op)
+                                            <option value="{{ $op }}">{{ $op }}</option>
+                                        @endforeach
+                                    </select>
                                 </label>
 
                             <div class="lg:col-span-2">
@@ -476,6 +486,87 @@
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
                                 <div class="space-y-6">
                                     <p class="text-slate-700 font-semibold">Choose the schedule that works best for your trip.</p>
+                                    @if($this->baggageRules)
+                                        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                            <button type="button" wire:click.prevent="$toggle('showBaggageRules')" class="flex items-center justify-between w-full text-left">
+                                                <div class="flex items-center gap-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#216417]" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M8 21h8v1a1 1 0 01-1 1H9a1 1 0 01-1-1v-1zm3-2h2v1h-2v-1zM4 7a3 3 0 013-3h10a3 3 0 013 3v8a3 3 0 01-3 3H7a3 3 0 01-3-3V7zm3-1a1 1 0 00-1 1v8a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1H7z"/>
+                                                    </svg>
+                                                    <div>
+                                                        <p class="font-semibold text-slate-900">Baggage Rules</p>
+                                                        <p class="text-sm text-slate-600">{{ $this->baggageRules['name'] ?? 'View baggage allowances and fees' }}</p>
+                                                    </div>
+                                                </div>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform {{ $showBaggageRules ? 'rotate-180' : '' }}" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 011.06-1.06L12 14.44l3.97-3.97a.75.75 0 111.06 1.06l-4.5 4.5z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </button>
+                                            @if($showBaggageRules)
+                                                <div class="mt-4 border-t border-slate-200 pt-4">
+                                                    <p class="text-xs text-slate-500 mb-3">Last verified: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'meta.last_verified', 'July 23, 2026') }}</p>
+                                                    @if($this->baggageRules['carry_on'])
+                                                        <div class="mb-4">
+                                                            <h4 class="font-semibold text-slate-900 mb-2">Carry-on Baggage</h4>
+                                                            <p class="text-sm text-slate-600 mb-2">{{ $this->baggageRules['carry_on']['description'] ?? '' }}</p>
+                                                            <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                                                @if($this->baggageRules['carry_on']['combined_weight_kg'])
+                                                                    <li>Combined weight: {{ $this->baggageRules['carry_on']['combined_weight_kg'] }}kg</li>
+                                                                @endif
+                                                                @if($this->baggageRules['carry_on']['hand_carry_size_cm'])
+                                                                    <li>Hand-carry size: {{ $this->baggageRules['carry_on']['hand_carry_size_cm'] }}</li>
+                                                                @endif
+                                                                @if($this->baggageRules['carry_on']['personal_item_size_cm'])
+                                                                    <li>Personal item size: {{ $this->baggageRules['carry_on']['personal_item_size_cm'] }}</li>
+                                                                @endif
+                                                                @if($this->baggageRules['carry_on']['note'])
+                                                                    <li>{{ $this->baggageRules['carry_on']['note'] }}</li>
+                                                                @endif
+                                                            </ul>
+                                                        </div>
+                                                    @endif
+                                                    @if($this->baggageRules['checked_baggage'])
+                                                        <div>
+                                                            <h4 class="font-semibold text-slate-900 mb-2">Checked Baggage</h4>
+                                                            @if($this->baggageRules['checked_baggage']['free_allowance_kg'])
+                                                                <p class="text-sm text-slate-600 mb-2">Free allowance: {{ $this->baggageRules['checked_baggage']['free_allowance_kg'] }}kg</p>
+                                                            @endif
+                                                            @if($this->baggageRules['checked_baggage']['max_single_bag_weight_kg'])
+                                                                <p class="text-sm text-slate-600 mb-2">Max single bag weight: {{ $this->baggageRules['checked_baggage']['max_single_bag_weight_kg'] }}kg</p>
+                                                            @endif
+                                                            @if($this->baggageRules['checked_baggage']['fare_bundles'])
+                                                                <div class="overflow-x-auto">
+                                                                    <table class="w-full text-sm text-slate-600">
+                                                                        <thead class="text-slate-900 font-semibold">
+                                                                            <tr>
+                                                                                <th class="px-2 py-2 text-left">Fare Bundle</th>
+                                                                                <th class="px-2 py-2 text-right">Free Checked</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            @foreach($this->baggageRules['checked_baggage']['fare_bundles'] as $bundle)
+                                                                                <tr class="border-t border-slate-200">
+                                                                                    <td class="px-2 py-2">{{ $bundle['name'] }}</td>
+                                                                                    <td class="px-2 py-2 text-right">{{ $bundle['free_checked_kg'] }}kg</td>
+                                                                                </tr>
+                                                                            @endforeach
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            @endif
+                                                            @if($this->baggageRules['checked_baggage']['prepaid_online'])
+                                                                <p class="text-sm text-slate-600 mt-2">Prepaid online (domestic 20kg): {{ $this->baggageRules['checked_baggage']['prepaid_online']['domestic_20kg_php'] ?? '' }}</p>
+                                                            @endif
+                                                            @if($this->baggageRules['checked_baggage']['excess_rate_php_per_kg'])
+                                                                <p class="text-sm text-slate-600 mt-2">Excess rate: ₱{{ $this->baggageRules['checked_baggage']['excess_rate_php_per_kg'] }}/kg</p>
+                                                            @endif
+                                                            <p class="text-xs text-slate-500 mt-3">Rates subject to change - confirm at booking</p>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                     <div class="grid gap-4 lg:grid-cols-2">
                                         @forelse($availableSchedules as $schedule)
                                             <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-2xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-[#db2777] bg-[#db2777] text-white shadow-md' : 'border-slate-200 bg-white text-slate-900 hover:border-[#db2777]/50 hover:shadow-sm' }}">
