@@ -65,6 +65,7 @@ class BookingController extends Controller
             DB::beginTransaction();
 
             $booking = Booking::create([
+                'user_id' => auth()->guard('api')->user()?->id,
                 'transaction_number' => 'AGT-' . now()->format('Ymd') . '-' . rand(1000, 9999),
                 'origin' => $request->input('origin'),
                 'destination' => $request->input('destination'),
@@ -378,6 +379,8 @@ class BookingController extends Controller
             'refund_destination' => $request->input('refund_destination'),
             'cancellation_window_expires_at' => null,
         ]);
+
+        app(\App\Services\GraciaPointsService::class)->reversePointsForBooking($booking);
 
         if ($booking->transaction) {
             $booking->transaction->update(['payment_status' => 'cancelled']);

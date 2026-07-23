@@ -253,6 +253,8 @@ class TransactionResource extends Resource
                             'verified_at' => $now,
                         ]);
 
+                        app(\App\Services\GraciaPointsService::class)->awardPointsForBooking($record->booking, Auth::user());
+
                         Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath, $receiptDisk));
                     })
                     ->requiresConfirmation()

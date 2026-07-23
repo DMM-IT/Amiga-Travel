@@ -185,6 +185,7 @@ class BookingResource extends Resource
                                 'verified_by_user_id' => Auth::id(),
                                 'verified_at' => now(),
                             ]);
+                            app(\App\Services\GraciaPointsService::class)->awardPointsForBooking($record, auth()->user());
                         }
                      })
                      ->color('success'),
