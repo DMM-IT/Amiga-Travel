@@ -1180,8 +1180,8 @@
     "semantic_hash": "d29a8eda414f510f77aa1dd070ede818"
   },
   "resources/views/download.blade.php": {
-    "mtime": 1784731275.195198,
-    "ast_hash": "64e8c4aac887ca6ba846358397db774a",
+    "mtime": 1784827142.6440387,
+    "ast_hash": "193dda7265bb0811a4c8e3088645c32b",
     "semantic_hash": ""
   },
   "resources/views/emails/booking-cancellation.blade.php": {
