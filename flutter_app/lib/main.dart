@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
 void main() async {
@@ -43,7 +45,7 @@ class UserSession {
   static String lookupToken = '';
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.3+4';
+  static const String appVersion = '1.0.4+5';
 
   static String getBaseUrl() {
     const configuredUrl = String.fromEnvironment(
@@ -164,22 +166,84 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
             showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Update Required'),
-                content: Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
-                actions: [
-                  FilledButton(
-                    onPressed: () async {
-                      final url = Uri.parse('${UserSession.getBaseUrl()}/download');
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url, mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    style: FilledButton.styleFrom(backgroundColor: kGreen),
-                    child: const Text('Update Now'),
-                  ),
-                ],
-              ),
+              builder: (ctx) {
+                bool isDownloading = false;
+                double progress = 0.0;
+                String dlError = '';
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    return AlertDialog(
+                      title: const Text('Update Required'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
+                          if (isDownloading) ...[
+                            const SizedBox(height: 20),
+                            LinearProgressIndicator(value: progress, color: kGreen),
+                            const SizedBox(height: 8),
+                            Text('${(progress * 100).toStringAsFixed(0)}% downloaded'),
+                          ],
+                          if (dlError.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text(dlError, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                          ]
+                        ],
+                      ),
+                      actions: [
+                        if (!isDownloading)
+                          FilledButton(
+                            onPressed: () async {
+                              setState(() {
+                                isDownloading = true;
+                                dlError = '';
+                              });
+                              try {
+                                final apkUrl = '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
+                                final request = http.Request('GET', Uri.parse(apkUrl));
+                                final response = await http.Client().send(request);
+                                
+                                if (response.statusCode != 200) {
+                                  throw Exception('Server returned ${response.statusCode}');
+                                }
+                                
+                                final contentLength = response.contentLength ?? 1;
+                                
+                                final dir = await getExternalStorageDirectory();
+                                final file = File('${dir!.path}/update_$latestVersion.apk');
+                                final sink = file.openWrite();
+                                
+                                int bytes = 0;
+                                await response.stream.listen((List<int> chunk) {
+                                  bytes += chunk.length;
+                                  setState(() => progress = bytes / contentLength);
+                                  sink.add(chunk);
+                                }).asFuture();
+                                await sink.close();
+                                
+                                final result = await OpenFilex.open(file.path);
+                                if (result.type != ResultType.done) {
+                                  throw Exception(result.message);
+                                }
+                                
+                                setState(() => isDownloading = false);
+                              } catch (e) {
+                                debugPrint('Download error: $e');
+                                setState(() {
+                                  isDownloading = false;
+                                  progress = 0;
+                                  dlError = 'Download failed. Please try again or visit the website.';
+                                });
+                              }
+                            },
+                            style: FilledButton.styleFrom(backgroundColor: kGreen),
+                            child: const Text('Update Now'),
+                          ),
+                      ],
+                    );
+                  }
+                );
+              },
             );
           }
           return; // Stop initialization, wait for update
