@@ -54,4 +54,29 @@ class ScheduleController extends Controller
             'schedules' => $schedules
         ]);
     }
+    public function allSchedules(Request $request)
+    {
+        $startDate = $request->query('start_date', \Carbon\Carbon::today()->format('Y-m-d'));
+        $endDate = $request->query('end_date', \Carbon\Carbon::today()->addDays(6)->format('Y-m-d'));
+
+        $routes = FerryRoute::with([
+            'schedules' => function ($query) use ($startDate, $endDate) {
+                $query->where('is_active', true)
+                      ->whereBetween('departure_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                      ->orderBy('departure_time');
+            },
+            'schedules.scheduleAccommodations',
+            'schedules.transportClasses',
+        ])->where('is_active', true)->orderBy('origin')->orderBy('destination')->get();
+        
+        // Filter out routes that have no schedules in this date range
+        $routes = $routes->filter(fn ($route) => $route->schedules->isNotEmpty())->values();
+
+        return response()->json([
+            'status' => 'success',
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'routes' => $routes
+        ]);
+    }
 }

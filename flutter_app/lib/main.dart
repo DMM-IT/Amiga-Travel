@@ -45,7 +45,7 @@ class UserSession {
   static String lookupToken = '';
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.4+5';
+  static const String appVersion = '1.0.4+6';
 
   static String getBaseUrl() {
     const configuredUrl = String.fromEnvironment(
@@ -476,10 +476,12 @@ class _MainScreenState extends State<MainScreen> {
         index: _selectedIndex,
         children: [
           HomeScreen(
-            onBookFerry: () => setState(() => _selectedIndex = 1),
-            onBookAirline: () => setState(() => _selectedIndex = 1),
+            onBookFerry: () => setState(() => _selectedIndex = 2),
+            onBookAirline: () => setState(() => _selectedIndex = 2),
           ),
+          const SchedulesScreen(),
           const TravelScreen(),
+          const GraciaPointsScreen(),
           ActivityScreen(onLoginSuccess: () => setState(() {})),
         ],
       ),
@@ -499,9 +501,19 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Schedules',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.explore_outlined),
             activeIcon: Icon(Icons.explore),
             label: 'Travel',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.stars_outlined),
+            activeIcon: Icon(Icons.stars),
+            label: 'Gracia',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long_outlined),
@@ -1104,18 +1116,34 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
   bool _loadingOrigins = false;
   bool _loadingDestinations = false;
 
+  List<Map<String, dynamic>> _vehicleRates = [];
+  final _plateCtrl = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _tripTabController = TabController(length: 2, vsync: this);
     _tripTabController.addListener(() => setState(() {}));
     _fetchOrigins();
+    _fetchVehicleRates();
   }
 
   @override
   void dispose() {
     _tripTabController.dispose();
+    _plateCtrl.dispose();
     super.dispose();
+  }
+
+  void _fetchVehicleRates() async {
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.get(Uri.parse('$baseUrl/api/vehicle-rates'));
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        if (mounted) setState(() => _vehicleRates = List<Map<String, dynamic>>.from(data['vehicle_rates']));
+      }
+    } catch (_) {}
   }
 
   void _fetchOrigins() async {
@@ -1197,6 +1225,17 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       ..returnDate = _tripTabController.index == 1 ? _fmt(_returnDate) : null
       ..adults = _adults
       ..children = _children;
+
+    if (_mode == 'ferry' && (_plateCtrl.text.isNotEmpty || _vehicleRates.any((r) => r['selected'] == true))) {
+       booking.hasVehicle = true;
+       booking.vehiclePlateNumber = _plateCtrl.text;
+       final selected = _vehicleRates.where((r) => r['selected'] == true).toList();
+       if (selected.isNotEmpty) {
+           booking.selectedVehicleRateId = selected.first['id'];
+           booking.vehicleType = selected.first['name'];
+           booking.vehiclePrice = double.tryParse(selected.first['price'].toString()) ?? 0;
+       }
+    }
 
     Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: booking)));
   }
@@ -1409,6 +1448,109 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                             ),
                           ],
                           const SizedBox(height: 24),
+
+                          // Vehicle / Car Booking (Ferry only)
+                          if (_mode == 'ferry') ...[
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: kSlate200),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Vehicle / Car Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                                          Text('Bring your vehicle on the ferry', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                        ],
+                                      ),
+                                      Switch(
+                                        value: _plateCtrl.text.isNotEmpty || _vehicleRates.any((r) => r['selected'] == true),
+                                        activeColor: kGreen,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            if (!val) {
+                                              _plateCtrl.clear();
+                                              for (var r in _vehicleRates) { r['selected'] = false; }
+                                            } else {
+                                              if (_vehicleRates.isNotEmpty) _vehicleRates.first['selected'] = true;
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  if (_plateCtrl.text.isNotEmpty || _vehicleRates.any((r) => r['selected'] == true)) ...[
+                                    const SizedBox(height: 16),
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.amber.shade50,
+                                        border: Border.all(color: Colors.amber.shade200),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.info_outline, color: Colors.amber, size: 18),
+                                          SizedBox(width: 8),
+                                          Expanded(child: Text('Vehicle bookings are subject to availability.', style: TextStyle(color: Colors.amber, fontSize: 12))),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    const Text('Vehicle Type', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const SizedBox(height: 8),
+                                    if (_vehicleRates.isNotEmpty)
+                                      Column(
+                                        children: _vehicleRates.map((rate) {
+                                          final selected = rate['selected'] == true;
+                                          return GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                for (var r in _vehicleRates) { r['selected'] = false; }
+                                                rate['selected'] = true;
+                                              });
+                                            },
+                                            child: Container(
+                                              margin: const EdgeInsets.only(bottom: 8),
+                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                              decoration: BoxDecoration(
+                                                color: selected ? kGreen.withOpacity(0.05) : kSlate50,
+                                                border: Border.all(color: selected ? kGreen : kSlate200, width: selected ? 2 : 1),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.directions_car, color: selected ? kGreen : kSlate400, size: 20),
+                                                  const SizedBox(width: 10),
+                                                  Expanded(child: Text(rate['name'], style: TextStyle(fontWeight: FontWeight.w600, color: selected ? kGreen : kSlate800))),
+                                                  Text('₱${rate['price']}', style: TextStyle(color: selected ? kGreen : kPink, fontWeight: FontWeight.bold)),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    const SizedBox(height: 14),
+                                    const Text('Plate Number', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: _plateCtrl,
+                                      decoration: InputDecoration(hintText: 'e.g., ABC 1234', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
 
                           // Next Button
                           SizedBox(
@@ -2706,6 +2848,17 @@ class _StepProgress extends StatelessWidget {
 
   const _StepProgress({required this.currentStep, required this.steps});
 
+  IconData _getStepIcon(String stepName) {
+    switch (stepName.toLowerCase()) {
+      case 'route': return Icons.directions_boat;
+      case 'schedule': return Icons.calendar_month;
+      case 'discount': return Icons.local_offer;
+      case 'add-ons': return Icons.extension;
+      case 'submit': return Icons.fact_check;
+      default: return Icons.circle;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -2736,7 +2889,7 @@ class _StepProgress extends StatelessWidget {
                 child: Center(
                   child: done
                       ? const Icon(Icons.check, color: Colors.white, size: 14)
-                      : Text('$step', style: TextStyle(color: active ? Colors.white : kSlate500, fontSize: 12, fontWeight: FontWeight.bold)),
+                      : Icon(_getStepIcon(steps[i ~/ 2]), color: active ? Colors.white : kSlate500, size: 14),
                 ),
               ),
               const SizedBox(height: 4),
@@ -3641,7 +3794,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
 }
 
 // ==========================================
-// STEP 4: STAY (Accommodations)
+// STEP 4: STAY
 // ==========================================
 class StayScreen extends StatefulWidget {
   final BookingData booking;
@@ -3653,42 +3806,23 @@ class StayScreen extends StatefulWidget {
 
 class _StayScreenState extends State<StayScreen> {
   List<Map<String, dynamic>> _accommodations = [];
-  List<Map<String, dynamic>> _vehicleRates = [];
   bool _isLoading = true;
 
   static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
 
-  final _plateCtrl = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-    _plateCtrl.text = widget.booking.vehiclePlateNumber;
     _fetchData();
-  }
-
-  @override
-  void dispose() {
-    _plateCtrl.dispose();
-    super.dispose();
   }
 
   void _fetchData() async {
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final results = await Future.wait([
-        http.get(Uri.parse('$baseUrl/api/accommodations')),
-        http.get(Uri.parse('$baseUrl/api/vehicle-rates')),
-      ]);
-
-      final accData = jsonDecode(results[0].body);
-      if (results[0].statusCode == 200 && accData['status'] == 'success') {
+      final res = await http.get(Uri.parse('$baseUrl/api/accommodations'));
+      final accData = jsonDecode(res.body);
+      if (res.statusCode == 200 && accData['status'] == 'success') {
         _accommodations = List<Map<String, dynamic>>.from(accData['accommodations']);
-      }
-
-      final vData = jsonDecode(results[1].body);
-      if (results[1].statusCode == 200 && vData['status'] == 'success') {
-        _vehicleRates = List<Map<String, dynamic>>.from(vData['vehicle_rates']);
       }
     } catch (_) {}
     finally {
@@ -3698,8 +3832,6 @@ class _StayScreenState extends State<StayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isFerry = widget.booking.mode == 'ferry';
-
     return Scaffold(
       appBar: AppBar(title: const Text('Add-ons')),
       body: Column(
@@ -3711,145 +3843,6 @@ class _StayScreenState extends State<StayScreen> {
                 : ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      // ── Vehicle / Car Booking (Ferry only) ──
-                      if (isFerry) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: kSlate200),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Vehicle / Car Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
-                                      Text('Bring your vehicle on the ferry', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                    ],
-                                  ),
-                                  Switch(
-                                    value: widget.booking.hasVehicle,
-                                    activeColor: kGreen,
-                                    onChanged: (val) => setState(() {
-                                      widget.booking.hasVehicle = val;
-                                      if (!val) {
-                                        widget.booking.vehicleType = '';
-                                        widget.booking.vehiclePlateNumber = '';
-                                        widget.booking.vehiclePrice = 0;
-                                        widget.booking.selectedVehicleRateId = null;
-                                        _plateCtrl.clear();
-                                      }
-                                    }),
-                                  ),
-                                ],
-                              ),
-
-                              if (widget.booking.hasVehicle) ...[
-                                const SizedBox(height: 16),
-                                // Warning
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.shade50,
-                                    border: Border.all(color: Colors.amber.shade200),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.info_outline, color: Colors.amber, size: 18),
-                                      SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'Vehicle bookings are subject to availability. Ensure your vehicle dimensions comply with ferry requirements.',
-                                          style: TextStyle(color: Colors.amber, fontSize: 12),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-
-                                // Vehicle type selector
-                                const Text('Vehicle Type', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
-                                const SizedBox(height: 8),
-                                if (_vehicleRates.isEmpty)
-                                  TextField(
-                                    decoration: InputDecoration(
-                                      hintText: 'e.g., Sedan, SUV, Motorcycle',
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                    ),
-                                    onChanged: (v) => widget.booking.vehicleType = v,
-                                  )
-                                else
-                                  Column(
-                                    children: _vehicleRates.map((rate) {
-                                      final selected = widget.booking.selectedVehicleRateId == rate['id'];
-                                      return GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            widget.booking.selectedVehicleRateId = rate['id'];
-                                            widget.booking.vehicleType = rate['name'];
-                                            widget.booking.vehiclePrice = double.tryParse(rate['price'].toString()) ?? 0;
-                                          });
-                                        },
-                                        child: Container(
-                                          margin: const EdgeInsets.only(bottom: 8),
-                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                          decoration: BoxDecoration(
-                                            color: selected ? kGreen.withOpacity(0.05) : kSlate50,
-                                            border: Border.all(color: selected ? kGreen : kSlate200, width: selected ? 2 : 1),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.directions_car, color: selected ? kGreen : kSlate400, size: 20),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Text(rate['name'], style: TextStyle(fontWeight: FontWeight.w600, color: selected ? kGreen : kSlate800)),
-                                              ),
-                                              Text('₱${rate['price']}', style: TextStyle(color: selected ? kGreen : kPink, fontWeight: FontWeight.bold)),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-
-                                const SizedBox(height: 14),
-                                const Text('Plate Number', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
-                                const SizedBox(height: 8),
-                                TextField(
-                                  controller: _plateCtrl,
-                                  decoration: InputDecoration(
-                                    hintText: 'e.g., ABC 1234',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  onChanged: (v) => widget.booking.vehiclePlateNumber = v,
-                                ),
-
-                                if (widget.booking.vehiclePrice > 0) ...[
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Vehicle Fee', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700)),
-                                      Text('₱${widget.booking.vehiclePrice.toStringAsFixed(2)}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 16)),
-                                    ],
-                                  ),
-                                ],
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
                       // ── Hotel / Accommodation Add-ons ──
                       const Text(
                         'Hotel & Accommodation Add-ons',
@@ -5496,38 +5489,100 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                         }),
                     ],
                   ),
-                ),
-    );
+                );
   }
 }
 
 // ==========================================
 // SCHEDULES SCREEN
 // ==========================================
-class SchedulesScreen extends StatelessWidget {
+class SchedulesScreen extends StatefulWidget {
   const SchedulesScreen({super.key});
+  @override
+  State<SchedulesScreen> createState() => _SchedulesScreenState();
+}
+
+class _SchedulesScreenState extends State<SchedulesScreen> {
+  bool _loading = true;
+  List<dynamic> _routes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSchedules();
+  }
+
+  Future<void> _fetchSchedules() async {
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.get(Uri.parse('$baseUrl/api/all-schedules'));
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        if (mounted) setState(() { _routes = data['routes']; _loading = false; });
+      } else {
+        if (mounted) setState(() => _loading = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Schedules'), backgroundColor: kGreen, foregroundColor: Colors.white),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.directions_boat, size: 80, color: kGreen),
-            const SizedBox(height: 16),
-            const Text('Search Schedules', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('To view active schedules, please use the\nTravel search on the Home screen.', textAlign: TextAlign.center, style: TextStyle(color: kSlate500)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(backgroundColor: kGreen),
-              child: const Text('Go to Home', style: TextStyle(color: Colors.white)),
+    if (_loading) return const Center(child: CircularProgressIndicator(color: kGreen));
+    if (_routes.isEmpty) return const Center(child: Text('No active schedules found for the next 7 days.', style: TextStyle(color: kSlate500)));
+
+    return RefreshIndicator(
+      onRefresh: _fetchSchedules,
+      color: kGreen,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _routes.length,
+        itemBuilder: (context, i) {
+          final route = _routes[i];
+          final schedules = route['schedules'] as List<dynamic>;
+          return Card(
+            elevation: 2,
+            margin: const EdgeInsets.only(bottom: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.directions_boat, color: kPink, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text('${route['origin']} to ${route['destination']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kGreen)),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 24),
+                  ...schedules.map((s) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time, size: 16, color: kSlate400),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${s['departure_time']} - ${s['arrival_time']}',
+                              style: const TextStyle(fontSize: 13, color: kSlate700),
+                            ),
+                          ),
+                          Text(s['vessel_name'] ?? 'Ferry', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
