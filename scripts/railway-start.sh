@@ -28,6 +28,9 @@ export MAIL_USERNAME="${MAIL_USERNAME}"
 export MAIL_PASSWORD="${MAIL_PASSWORD}"
 export MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS}"
 
+export NOCAPTCHA_SITEKEY="${NOCAPTCHA_SITEKEY}"
+export NOCAPTCHA_SECRET="${NOCAPTCHA_SECRET}"
+
 # Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force 2>&1 || true
@@ -73,6 +76,9 @@ MAIL_PASSWORD="$MAIL_PASSWORD"
 MAIL_ENCRYPTION="$MAIL_ENCRYPTION"
 MAIL_FROM_ADDRESS="$MAIL_FROM_ADDRESS"
 
+NOCAPTCHA_SITEKEY="$NOCAPTCHA_SITEKEY"
+NOCAPTCHA_SECRET="$NOCAPTCHA_SECRET"
+
 FILESYSTEM_DISK="local"
 BROADCAST_CONNECTION="log"
 EOF
@@ -83,4 +89,6 @@ timeout 15 php artisan migrate --force --no-interaction 2>/dev/null || echo "Mig
 php artisan storage:link --quiet 2>/dev/null || true
 
 # Start Laravel server
+php artisan config:clear
+php artisan config:cache
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"
