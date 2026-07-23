@@ -528,7 +528,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SchedulesScreen(),
           const TravelScreen(),
-          const GraciaPointsScreen(),
+          GraciaPointsScreen(), // Removed const to allow rebuild on login state change
           ActivityScreen(onLoginSuccess: () => setState(() {})),
         ],
       ),
@@ -1814,6 +1814,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       UserSession.lookupToken = lookupToken;
       UserSession.isEmailVerified = true;
     });
+    await UserSession.save();
     _fetchBookings();
   }
 
@@ -2115,6 +2116,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
           _pendingRegisterEmail = null;
         });
+        await UserSession.save();
         widget.onLoginSuccess();
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2162,9 +2164,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.username = data['user']['name'];
           UserSession.email = data['user']['email'];
           UserSession.token = data['token'];
-          UserSession.lookupToken = data['lookup_token'] ?? '';
           UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
         });
+        await UserSession.save();
         widget.onLoginSuccess();
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
