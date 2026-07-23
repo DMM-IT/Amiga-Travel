@@ -783,8 +783,6 @@ public function selectedSchedule(): ?array
 
     public function selectSchedule(int $scheduleId): void
     {
-        $this->availableSchedules = $this->getAvailableSchedules();
-
         $this->selected_schedule_id = $scheduleId;
         $this->selected_transport_class_id = null;
         $this->selectingSeatForPassengerIndex = null;
@@ -794,12 +792,6 @@ public function selectedSchedule(): ?array
             $this->passengers[$index]['seat_row'] = null;
             $this->passengers[$index]['seat_section'] = null;
         }
-
-        dd([
-    'database' => DB::connection()->getDatabaseName(),
-    'host' => config('database.connections.mysql.host'),
-    'schedule_911' => Schedule::find(911)?->toArray(),
-]);
 
         $this->saveDraft();
     }
