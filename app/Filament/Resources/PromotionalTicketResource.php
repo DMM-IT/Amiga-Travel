@@ -27,7 +27,7 @@ class PromotionalTicketResource extends Resource
                 Forms\Components\Select::make('schedule_id')
                     ->label('Schedule')
                     ->options(fn () => Schedule::with('ferryRoute')->get()->mapWithKeys(fn ($schedule) => [
-                        $schedule->id => "{$schedule->ferryRoute?->origin} → {$schedule->ferryRoute?->destination} ({$schedule->formatted_departure})",
+                        $schedule->id => "{$schedule->ferryRoute?->mode} - {$schedule->ferryRoute?->operator} | {$schedule->ferryRoute?->origin} → {$schedule->ferryRoute?->destination} ({$schedule->formatted_departure})",
                     ]))
                     ->required()
                     ->searchable(),
@@ -69,6 +69,12 @@ class PromotionalTicketResource extends Resource
                 Tables\Columns\TextColumn::make('schedule.id')
                     ->label('Schedule ID')
                     ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('schedule.ferryRoute.mode')
+                    ->label('Mode')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('schedule.ferryRoute.operator')
+                    ->label('Operator')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('schedule.ferryRoute.origin')
                     ->label('Origin')
