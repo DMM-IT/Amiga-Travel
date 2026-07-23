@@ -46,9 +46,9 @@
 
             {{-- Origin / Destination Search Box (Horizontal) --}}
             <div class="w-full relative z-10 max-w-md shrink-0">
-                <div class="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-md sm:rounded-full rounded-2xl border border-white/20 sm:h-14 shadow-lg shadow-black/10">
+                <div class="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-md sm:rounded-full rounded-2xl border border-white/20 sm:h-14 shadow-lg shadow-black/10 relative">
                     {{-- Origin --}}
-                    <div class="w-full sm:flex-1 h-14 sm:h-full relative group">
+                    <div class="w-full sm:flex-1 h-14 sm:h-full relative group border-b sm:border-b-0 sm:border-r border-white/20">
                         <label class="absolute top-1.5 left-4 text-[10px] font-semibold uppercase tracking-wider text-emerald-100/70">Origin</label>
                         <select x-model="selectedOrigin" class="w-full h-full pt-4 pb-1 px-4 text-sm font-bold text-white bg-transparent border-0 focus:ring-0 focus:outline-none appearance-none cursor-pointer [&>option]:text-slate-800">
                             <option value="">All Origins</option>
@@ -62,14 +62,14 @@
                     </div>
 
                     {{-- Swap Button --}}
-                    <div class="relative sm:h-full flex justify-center items-center py-1 sm:py-0 px-1 z-10">
-                        <button @click="swapRoute()" type="button" class="group flex items-center justify-center w-8 h-8 rounded-full bg-white/20 border border-white/30 text-white hover:bg-[#ee018d] hover:border-[#ee018d] hover:shadow-[0_0_15px_rgba(238,1,141,0.5)] transition-all duration-300" title="Swap origin and destination">
-                            <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex justify-center items-center">
+                        <button @click="swapRoute()" type="button" class="group flex items-center justify-center w-8 h-8 rounded-full bg-[#216417] border border-white/30 text-white hover:bg-[#ee018d] hover:border-[#ee018d] hover:shadow-[0_0_15px_rgba(238,1,141,0.5)] transition-all duration-300 shadow-md" title="Swap origin and destination">
+                            <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                         </button>
                     </div>
 
                     {{-- Destination --}}
-                    <div class="w-full sm:flex-1 h-14 sm:h-full relative group sm:border-l border-t sm:border-t-0 border-white/20">
+                    <div class="w-full sm:flex-1 h-14 sm:h-full relative group">
                         <label class="absolute top-1.5 left-4 text-[10px] font-semibold uppercase tracking-wider text-emerald-100/70">Destination</label>
                         <select x-model="selectedDestination" class="w-full h-full pt-4 pb-1 px-4 text-sm font-bold text-white bg-transparent border-0 focus:ring-0 focus:outline-none appearance-none cursor-pointer [&>option]:text-slate-800">
                             <option value="">Where Are You Headed?</option>
@@ -184,16 +184,16 @@
                                 </div>
 
                                 <div>
-                                    <div class="flex items-center gap-3">
-                                        <h2 class="text-xl font-bold text-slate-900">{{ $route->origin }}</h2>
-                                        <div class="flex items-center gap-1 text-slate-400">
-                                            <div class="w-2 h-2 rounded-full bg-slate-300"></div>
-                                            <div class="w-8 h-px bg-slate-300"></div>
+                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                        <h2 class="text-xl font-bold text-slate-900 break-words">{{ $route->origin }}</h2>
+                                        <div class="flex items-center gap-1 text-slate-400 shrink-0">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-slate-300 hidden sm:block"></div>
+                                            <div class="w-4 sm:w-8 h-px bg-slate-300"></div>
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                                            <div class="w-8 h-px bg-slate-300"></div>
-                                            <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                                            <div class="w-4 sm:w-8 h-px bg-slate-300"></div>
+                                            <div class="w-1.5 h-1.5 rounded-full bg-slate-300 hidden sm:block"></div>
                                         </div>
-                                        <h2 class="text-xl font-bold text-slate-900">{{ $route->destination }}</h2>
+                                        <h2 class="text-xl font-bold text-slate-900 break-words">{{ $route->destination }}</h2>
                                     </div>
                                     <div class="flex items-center gap-2 mt-1">
                                         <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $isFerry ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700' }}">
@@ -207,9 +207,6 @@
                             <div class="flex items-center gap-3">
                                 <div class="text-right">
                                     <p class="text-xs text-slate-500 font-medium">{{ $route->schedules->count() }} {{ Str::plural('departure', $route->schedules->count()) }}</p>
-                                    @if($route->schedules->count() > 0)
-                                        <p class="text-sm font-semibold text-[#216417]">From ₱{{ number_format($route->schedules->min('price'), 0) }}</p>
-                                    @endif
                                 </div>
                                 <a href="{{ url('/book/new') }}" class="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-[#216417] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1a5212] hover:shadow-md">
                                     Book Now
@@ -265,15 +262,28 @@
                                             <div class="h-full group relative rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:border-[#216417]/30 hover:shadow-md">
                                                 {{-- Service Name & Time --}}
                                                 <div class="flex items-start justify-between mb-3">
-                                                    <div>
-                                                        <h3 class="font-bold text-slate-900 text-sm leading-tight">{{ $schedule->service_name }}</h3>
-                                                        @if($schedule->vehicle_name)
-                                                            <p class="text-xs text-slate-500 mt-0.5">{{ $schedule->vehicle_name }}</p>
+                                                    <div class="flex items-center gap-3">
+                                                        @php
+                                                            $opName = $schedule->vehicle->operator ?? $route->operator ?? '';
+                                                            $opLogo = null;
+                                                            if (stripos($opName, '2GO') !== false) $opLogo = '2GO-Logo.png';
+                                                            elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
+                                                            elseif (stripos($opName, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
+                                                            elseif (stripos($opName, 'Pal') !== false || stripos($opName, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+                                                            elseif (stripos($opName, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+                                                        @endphp
+                                                        @if($opLogo)
+                                                            <div class="w-10 h-10 shrink-0 bg-slate-50 rounded border border-slate-100 flex items-center justify-center p-1 overflow-hidden">
+                                                                <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $opName }}" class="w-full h-full object-contain">
+                                                            </div>
                                                         @endif
+                                                        <div>
+                                                            <h3 class="font-bold text-slate-900 text-sm leading-tight">{{ $schedule->service_name }}</h3>
+                                                            @if($schedule->vehicle_name)
+                                                                <p class="text-xs text-slate-500 mt-0.5">{{ $schedule->vehicle_name }}</p>
+                                                            @endif
+                                                        </div>
                                                     </div>
-                                                    <span class="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-sm font-bold text-emerald-700">
-                                                        ₱{{ number_format($schedule->price, 0) }}
-                                                    </span>
                                                 </div>
 
                                                 {{-- Time Bar --}}

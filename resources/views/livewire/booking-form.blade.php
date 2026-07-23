@@ -595,17 +595,33 @@
                                         @forelse($availableSchedules as $schedule)
                                             <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-2xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-[#db2777] bg-[#db2777] text-white shadow-md' : 'border-slate-200 bg-white text-slate-900 hover:border-[#db2777]/50 hover:shadow-sm' }}">
                                                 <div class="flex items-center justify-between gap-4">
-                                                    <div>
-                                                        <h3 class="text-lg font-bold">{{ $schedule['service'] }}</h3>
-                                                        @if ($schedule['operator'])
-                                                            <p class="mt-1 text-sm font-medium {{ $selected_schedule_id === $schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">
-                                                                {{ $schedule['operator'] }}
-                                                            </p>
+                                                    <div class="flex items-start gap-4">
+                                                        @php
+                                                            $opName = $schedule['operator'] ?? '';
+                                                            $opLogo = null;
+                                                            if (stripos($opName, '2GO') !== false) $opLogo = '2GO-Logo.png';
+                                                            elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
+                                                            elseif (stripos($opName, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
+                                                            elseif (stripos($opName, 'Pal') !== false || stripos($opName, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+                                                            elseif (stripos($opName, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+                                                        @endphp
+                                                        @if($opLogo)
+                                                            <div class="w-12 h-12 shrink-0 bg-white rounded border {{ $selected_schedule_id === $schedule['id'] ? 'border-white/30 shadow' : 'border-slate-200' }} flex items-center justify-center p-1 overflow-hidden mt-1">
+                                                                <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $opName }}" class="w-full h-full object-contain">
+                                                            </div>
                                                         @endif
-                                                        @if ($schedule['vehicle_name'])
-                                                            <p class="mt-1 text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">{{ $schedule['vehicle_name'] }}</p>
-                                                        @endif
-                                                        <p class="mt-2 text-sm font-semibold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-slate-900' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
+                                                        <div>
+                                                            <h3 class="text-lg font-bold">{{ $schedule['service'] }}</h3>
+                                                            @if ($schedule['operator'])
+                                                                <p class="mt-1 text-sm font-medium {{ $selected_schedule_id === $schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">
+                                                                    {{ $schedule['operator'] }}
+                                                                </p>
+                                                            @endif
+                                                            @if ($schedule['vehicle_name'])
+                                                                <p class="mt-1 text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">{{ $schedule['vehicle_name'] }}</p>
+                                                            @endif
+                                                            <p class="mt-2 text-sm font-semibold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-slate-900' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
+                                                        </div>
                                                     </div>
                                                     <span class="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider {{ $selected_schedule_id === $schedule['id'] ? 'border-white/30 bg-white/20 text-white' : 'border-slate-200 bg-slate-50 text-slate-600' }}">{{ $schedule['availability'] }}</span>
                                                 </div>
