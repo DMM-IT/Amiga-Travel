@@ -255,9 +255,12 @@ class Schedule extends Model
         $operatorAliases = [
             'pal' => 'Philippine Airlines',
             'philippine airlines' => 'Philippine Airlines',
-            'philippine airasia' => 'Philippine AirAsia',
-            'airasia' => 'Philippine AirAsia',
+            'philippine airlines (pal)' => 'Philippine Airlines',   // <-- ADD
             'cebu pacific' => 'Cebu Pacific',
+            'cebu pacific air' => 'Cebu Pacific',                   // <-- ADD
+            'philippine airasia' => 'Philippine AirAsia',
+            'philippines airasia' => 'Philippine AirAsia',          // <-- ADD
+            'airasia' => 'Philippine AirAsia',
             'cebpac' => 'Cebu Pacific',
             'cebgo' => 'Cebu Pacific',
         ];
