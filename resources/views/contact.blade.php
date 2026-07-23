@@ -80,7 +80,7 @@
                     <div>
                         <h3 class="font-bold text-slate-900">Email Addresses</h3>
                         <p class="mt-2 text-sm text-slate-500 font-semibold truncate hover:text-emerald-700">
-                            <a href="mailto:agt.salesmarketing1103@gmail.com">agt.salesmarketing1103@gmail.com</a>
+                            <a href="mailto:agtsreservation@amigagracia.com">agtsreservation@amigagracia.com</a>
                         </p>
                         <p class="text-sm text-slate-500 font-semibold truncate hover:text-emerald-700">
                             <a href="mailto:amigagracia.travelservices@gmail.com">amigagracia.travelservices@gmail.com</a>

@@ -127,7 +127,7 @@
             }
         </style>
         @php
-            $slidingText = data_get($pageContent, 'sliding_text', 'Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours.');
+            $slidingText = data_get($pageContent, 'sliding_text', 'Welcome to Amiga Gracia Travel Services. Your Journey Deserves More Than A Destination - It Deserves An Exceptional Experience.');
         @endphp
         <div class="overflow-hidden rounded-[1.5rem] bg-[#ee018d] shadow-lg relative flex items-center py-10">
             <div class="absolute top-0 bottom-0 left-0 w-12 bg-gradient-to-r from-[#ee018d] to-transparent z-10 pointer-events-none"></div>
@@ -136,7 +136,7 @@
             <div class="animate-marquee-infinite whitespace-nowrap flex text-2xl sm:text-3xl font-black text-white tracking-wide">
                 @for($i = 0; $i < 4; $i++)
                 <span class="px-8 flex items-center gap-4">
-                    <svg class="w-8 h-8 text-[#216417] shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <img src="{{ asset('images/amiga-logo-transparent.png') }}" alt="Amiga Gracia" class="w-10 h-10 shrink-0 bg-white rounded-full p-1">
                     {{ $slidingText }}
                 </span>
                 @endfor
@@ -150,79 +150,29 @@
             </div>
  
             <div class="p-5 sm:p-7 grid gap-5 sm:grid-cols-2 flex-grow">
-                <a href="{{ url('/book/new') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="--hover-border: #216417;" onmouseover="this.style.borderColor='#216417'" onmouseout="this.style.borderColor=''">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#eaf5e8;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color:#216417;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <a href="{{ url('/book/new') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="background: linear-gradient(135deg, #eaf5e8 0%, #d8eed2 100%); --hover-border: #216417;" onmouseover="this.style.borderColor='#216417'" onmouseout="this.style.borderColor=''">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#216417;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                     </div>
                     <h2 class="mt-3 text-base font-semibold text-slate-900">Book a Trip</h2>
-                    <p class="mt-1 text-xs text-slate-500 flex-grow">Start a new booking — choose your route, schedule, passengers, and accommodations.</p>
+                    <p class="mt-1 text-xs text-slate-600 flex-grow">Start a new booking — choose your route, schedule, passengers, and accommodations.</p>
                     <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#216417;">Get started →</span>
                 </a>
  
-                <a href="{{ url('/book/status') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" onmouseover="this.style.borderColor='#ee018d'" onmouseout="this.style.borderColor=''">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#fde6f3;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color:#ee018d;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <a href="{{ url('/book/status') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="background: linear-gradient(135deg, #fde6f3 0%, #f9cce6 100%);" onmouseover="this.style.borderColor='#ee018d'" onmouseout="this.style.borderColor=''">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#ee018d;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.2 4.2a7.5 7.5 0 0012.45 12.45z" />
                         </svg>
                     </div>
                     <h2 class="mt-3 text-base font-semibold text-slate-900">Check My Booking</h2>
-                    <p class="mt-1 text-xs text-slate-500 flex-grow">Already booked? Enter your transaction number to view your booking details and status.</p>
+                    <p class="mt-1 text-xs text-slate-600 flex-grow">Already booked? Enter your transaction number to view your booking details and status.</p>
                     <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#ee018d;">Check status →</span>
                 </a>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Booking Request Cards -->
-<div class="max-w-7xl mx-auto px-4 pb-12 mt-10">
-    <div class="text-center mb-10">
-        <h2 class="text-2xl font-black text-[#216417]">{{ data_get($pageContent, 'booking_section_title', 'Request Travel Bookings') }}</h2>
-        <p class="text-xs text-slate-500 mt-2">{{ data_get($pageContent, 'booking_section_description', 'Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.') }}</p>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        @php
-            $displayCards = collect($bookingCards ?? []);
-            while ($displayCards->count() < 6) {
-                $displayCards->push([
-                    'title' => 'Travel Booking',
-                    'description' => 'Kasiyahan po namin ang paglingkuran kayo.',
-                    'image' => null,
-                ]);
-            }
-        @endphp
-        @foreach($displayCards->take(6) as $card)
-            @php
-                $rawCardImage = data_get($card, 'image');
-                if (is_array($rawCardImage)) { $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null; }
-                $cardImage = $rawCardImage ? asset('storage/' . $rawCardImage) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
-                $cardTitle = data_get($card, 'title', 'Travel Booking');
-                $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
-                $buttonText = data_get($pageContent, 'booking_button_text', 'Book Now');
-            @endphp
-            <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-200 flex flex-col hover:shadow-lg transition duration-200">
-                <div class="aspect-video w-full overflow-hidden bg-slate-100">
-                    <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="w-full h-full object-cover">
-                </div>
-                <div class="p-6 flex-grow flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">{{ $cardTitle }}</h3>
-                        <p class="mt-2 text-xs text-slate-500 leading-relaxed font-medium">
-                            {{ $cardDescription }}
-                        </p>
-                        <p class="text-xs text-slate-400 font-semibold mt-1">Amiga - Best Travel Buddy</p>
-                    </div>
-                    <div class="mt-6">
-                        <a href="{{ url('/book/new') }}"
-                           class="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#ee018d] hover:bg-pink-700 text-white text-xs font-bold rounded-full transition shadow-sm cursor-pointer">
-                            {{ $buttonText }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-        @endforeach
     </div>
 </div>
 @endsection

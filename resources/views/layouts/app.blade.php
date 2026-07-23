@@ -41,8 +41,7 @@
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center gap-2">
                         <a href="{{ url('/') }}" class="flex items-center gap-2">
-                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo.jpg') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-12 w-auto rounded bg-white p-1">
-                            <span class="font-bold text-xl uppercase tracking-wider">{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}</span>
+                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo.jpg') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-16 w-auto rounded bg-white p-1">
                         </a>
                     </div>
                     <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
@@ -50,13 +49,12 @@
                         <a href="{{ url('/about') }}" class="border-b-2 {{ request()->is('about') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">About</a>
                         <a href="{{ url('/schedules') }}" class="border-b-2 {{ request()->is('schedules') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Schedules</a>
                         <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                            <button class="border-b-2 {{ request()->is('gallery') || request()->is('services') || request()->is('tour-package') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition flex items-center gap-1">
+                            <button class="border-b-2 {{ request()->is('services') || request()->is('tour-package') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition flex items-center gap-1">
                                 Discover
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
                             <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
-                                    <a href="{{ url('/gallery') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('gallery') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Gallery</a>
                                     <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Services</a>
                                     <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Tour Package</a>
                                 </div>
@@ -74,7 +72,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="{{ url('/download') }}" class="border-b-2 {{ request()->is('download') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Download</a>
+                        <a href="{{ url('/download') }}" class="border-b-2 {{ request()->is('download') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Download App</a>
                     </nav>
 
                     <div class="flex items-center gap-4">
@@ -104,12 +102,11 @@
                     <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">About</a>
                     <a href="{{ url('/schedules') }}" class="block rounded-xl px-4 py-3 {{ request()->is('schedules') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Schedules</a>
                     <div x-data="{ open: false }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('gallery') || request()->is('services') || request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">
+                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('services') || request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">
                             Discover
                             <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1">
-                            <a href="{{ url('/gallery') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('gallery') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Gallery</a>
                             <a href="{{ url('/services') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('services') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Services</a>
                             <a href="{{ url('/tour-package') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Tour Package</a>
                         </div>
@@ -124,7 +121,7 @@
                             <a href="{{ url('/faqs') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">FAQs</a>
                         </div>
                     </div>
-                    <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Download</a>
+                    <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Download App</a>
                     <div class="border-t border-white/10 pt-3">
                         @if(!empty($headerData['phone']))
                             <a href="tel:{{ $headerData['phone'] }}" class="block text-sm text-white/90 hover:text-white">Call us: {{ $headerData['phone'] }}</a>
@@ -148,12 +145,9 @@
                     <div class="space-y-4">
                         <div class="flex items-center gap-3">
                             <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-14 w-auto">
-                            <div>
-                                <h4 class="font-extrabold text-xl tracking-wider text-emerald-400">{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}</h4>
-                                <p class="text-xs text-emerald-100/70">{{ data_get($footerData, 'website', 'Travel Services') }}</p>
-                            </div>
                         </div>
-                        <p class="text-sm text-slate-300 leading-relaxed max-w-sm">
+                        <p class="text-sm text-slate-300 leading-relaxed max-w-sm flex items-center gap-2">
+                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="Amiga" class="w-6 h-6 bg-white rounded-full p-0.5">
                             {{ $footerData['about'] ?? 'Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours.' }}
                         </p>
                         <!-- Social Icons -->
@@ -184,12 +178,11 @@
                             <li><a href="{{ url('/') }}" class="hover:text-emerald-300 transition">Home</a></li>
                             <li><a href="{{ url('/about') }}" class="hover:text-emerald-300 transition">About</a></li>
                             <li><a href="{{ url('/schedules') }}" class="hover:text-emerald-300 transition">Schedules</a></li>
-                            <li><a href="{{ url('/gallery') }}" class="hover:text-emerald-300 transition">Gallery</a></li>
                             <li><a href="{{ url('/services') }}" class="hover:text-emerald-300 transition">Services</a></li>
                             <li><a href="{{ url('/tour-package') }}" class="hover:text-emerald-300 transition">Tour Packages</a></li>
                             <li><a href="{{ url('/faqs') }}" class="hover:text-emerald-300 transition">Frequently Asked Questions</a></li>
                             <li><a href="{{ url('/contact-us') }}" class="hover:text-emerald-300 transition">Contact Us</a></li>
-                            <li><a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Download</a></li>
+                            <li><a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Download App</a></li>
                         </ul>
                     </div>
 
@@ -201,7 +194,7 @@
                                 <li><a href="{{ $transit['url'] }}" class="hover:text-emerald-300 transition">{{ $transit['label'] }}</a></li>
                             @empty
                                 <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">2GO Travel</a></li>
-                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Starlite Ferry</a></li>
+                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Starlite Ferries Inc.</a></li>
                                 <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Airline Ticketing</a></li>
                             @endforelse
                         </ul>
@@ -230,7 +223,7 @@
                             </li>
                             <li class="flex flex-wrap gap-1 items-center">
                                 <span class="font-semibold text-emerald-400">Email:</span>
-                                <span class="hover:text-emerald-300 break-all"><a href="mailto:{{ data_get($footerData, 'email', 'agt.salesmarketing1103@gmail.com') }}">{{ data_get($footerData, 'email', 'agt.salesmarketing1103@gmail.com') }}</a></span>
+                                <span class="hover:text-emerald-300 break-all"><a href="mailto:{{ data_get($footerData, 'email', 'agtsreservation@amigagracia.com') }}">{{ data_get($footerData, 'email', 'agtsreservation@amigagracia.com') }}</a></span>
                             </li>
                             <li class="text-sm leading-relaxed pt-2 text-slate-400 font-medium">
                                 {{ data_get($footerData, 'address', 'Roxas Drive, Libis, Calapan City, Oriental Mindoro, 5200') }}
@@ -246,7 +239,7 @@
                         <p class="text-slate-500">Developed by Aries King N. Nieto and Drew M. Macaraig</p>
                     </div>
                     <div class="flex flex-wrap gap-6 items-center justify-center md:justify-end">
-                        <a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Downloads</a>
+                        <a href="{{ url('/download') }}" class="hover:text-emerald-300 transition">Download App</a>
                         <a href="{{ url('/contact-us') }}" class="hover:text-emerald-300 transition">Support</a>
                         @if(!empty($footerData['app_version']))
                             <span class="text-slate-500">App version {{ $footerData['app_version'] }}</span>

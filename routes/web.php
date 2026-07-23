@@ -40,9 +40,7 @@ Route::get('/about', function () use ($renderWebsitePage) {
     return $renderWebsitePage('about', 'about');
 })->name('about');
 
-Route::get('/gallery', function () use ($renderWebsitePage) {
-    return $renderWebsitePage('gallery', 'gallery');
-})->name('gallery');
+
 
 Route::get('/services', function () use ($renderWebsitePage) {
     return $renderWebsitePage('services', 'services');

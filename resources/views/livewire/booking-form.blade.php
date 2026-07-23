@@ -1137,7 +1137,7 @@
 
                             @if ($step < 5)
                                 <button type="button" wire:click.prevent="nextStep" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg">
-                                    Continue to Step {{ $step + 1 }}
+                                    Next
                                     <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                 </button>
                             @else

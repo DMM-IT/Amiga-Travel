@@ -7,7 +7,7 @@
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">About Us</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
-                {{ $pageContent['title'] ?? 'Our Journey & Mission' }}
+                {{ $pageContent['title'] ?? 'Our Journey' }}
             </h1>
             <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
                 {{ $pageContent['description'] ?? 'Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free and memorable.' }}
@@ -55,7 +55,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-slate-900">Key Partnerships</h4>
-                                <p class="text-sm text-slate-500">2GO and Starlite Ferries</p>
+                                <p class="text-sm text-slate-500">2GO and Starlite Ferries Inc.</p>
                             </div>
                         </div>
 
@@ -81,20 +81,20 @@
                     We maintain strong, direct partnerships with major sea transit, cargo, and airline networks to bring you reliable service at competitive rates.
                 </p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 items-stretch justify-items-center">
-                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
-                        <span class="font-black tracking-widest text-sm text-[#ee018d]">2GO TRAVEL</span>
+                    <div class="bg-white backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-50 transition shadow-sm">
+                        <img src="{{ asset('images/2GO-Logo.png') }}" alt="2GO Travel" class="max-h-full max-w-full object-contain">
                     </div>
-                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
-                        <span class="font-black tracking-widest text-sm text-[#ee018d]">STARLITE</span>
+                    <div class="bg-white backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-50 transition shadow-sm">
+                        <img src="{{ asset('images/starlite-Logo.jfif') }}" alt="Starlite Ferries Inc." class="max-h-full max-w-full object-contain">
                     </div>
-                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
-                        <span class="font-black tracking-widest text-sm text-[#ee018d]">PHILIPPINE AIRLINES</span>
+                    <div class="bg-white backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-50 transition shadow-sm">
+                        <img src="{{ asset('images/Pal-Logo.jfif') }}" alt="Philippine Airlines" class="max-h-full max-w-full object-contain">
                     </div>
-                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
-                        <span class="font-black tracking-widest text-sm text-[#ee018d]">CEBU PACIFIC</span>
+                    <div class="bg-white backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-50 transition shadow-sm">
+                        <img src="{{ asset('images/CebuPecific-Logo.png') }}" alt="Cebu Pacific" class="max-h-full max-w-full object-contain">
                     </div>
-                    <div class="bg-pink-100 backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-200 transition shadow-sm">
-                        <span class="font-black tracking-widest text-sm text-[#ee018d]">PHILIPPINES AIRASIA</span>
+                    <div class="bg-white backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-50 transition shadow-sm">
+                        <img src="{{ asset('images/AirAsia-Logo.png') }}" alt="Philippines AirAsia" class="max-h-full max-w-full object-contain">
                     </div>
                 </div>
             </div>

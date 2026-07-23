@@ -16,7 +16,7 @@
             $serviceCta = $pageContent['service_cta'] ?? [
                 'badge' => 'New Booking System',
                 'title' => 'Book Ferry Tickets Directly Online',
-                'description' => 'Quickly check available schedules, fares, and cabins for 2GO Travel and Starlite Ferries. Complete your passenger credentials and print tickets instantly.',
+                'description' => 'Quickly check available schedules, fares, and cabins for 2GO Travel and Starlite Ferries Inc. Complete your passenger credentials and print tickets instantly.',
                 'button_text' => 'Start Direct Booking',
             ];
             $serviceCards = $pageContent['service_cards'] ?? [
@@ -30,7 +30,7 @@
                 ],
                 [
                     'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
-                    'title' => 'Starlite Ferries',
+                    'title' => 'Starlite Ferries Inc.',
                     'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings and roll-on/roll-off (RoRo) cargo slots.',
                     'note' => 'Available Online',
                     'link' => url('/book/new'),
