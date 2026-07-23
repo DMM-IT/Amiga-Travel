@@ -1202,9 +1202,7 @@ public function selectedSchedule(): ?array
 
     public function render()
     {
-        return view('livewire.booking-form', [
-        'selectedSchedule' => $this->selectedSchedule,
-    ]);
+        return view('livewire.booking-form');
     }
 
     protected function saveDraft(): void
