@@ -5422,11 +5422,24 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Gracia Points'), backgroundColor: kPink, foregroundColor: Colors.white),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: kPink))
-          : _error.isNotEmpty
+    if (!UserSession.isLoggedIn) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.stars, size: 80, color: kSlate300),
+            const SizedBox(height: 16),
+            const Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Sign in to view and use your Gracia Points.', style: TextStyle(color: kSlate500)),
+          ],
+        ),
+      );
+    }
+
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator(color: kPink))
+        : _error.isNotEmpty
               ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
               : RefreshIndicator(
                   onRefresh: _fetchPoints,
