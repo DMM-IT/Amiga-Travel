@@ -510,8 +510,6 @@
                                             $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
                                         @endphp
 
-                                        @php
-
                                         {{-- Ferry: Show accommodations --}}
                                         @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']))
                                             <div class="mt-6 border-t border-slate-200 pt-6">
