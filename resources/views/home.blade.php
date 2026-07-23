@@ -145,7 +145,7 @@
 
         <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden flex-grow flex flex-col">
             <div class="px-6 py-8 sm:px-10 sm:py-10 text-center flex-shrink-0" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
-                <h1 class="text-xl sm:text-2xl font-semibold text-white">{{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia Travel Services' }}</h1>
+                <h1 class="text-xl sm:text-2xl font-semibold text-white">{{ $pageContent['welcome_title'] ?? 'Ready To Explore? Let\'s Connect and Start Planning Your Next Adventure' }}</h1>
                 <p class="mt-3 text-sm sm:text-base text-white/85 max-w-lg mx-auto">{{ $pageContent['welcome_subtitle'] ?? 'Ferry bookings, accommodations, and everything in between — made easy. What would you like to do today?' }}</p>
             </div>
  

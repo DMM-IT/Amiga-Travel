@@ -146,10 +146,7 @@
                         <div class="flex items-center gap-3">
                             <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-14 w-auto">
                         </div>
-                        <p class="text-sm text-slate-300 leading-relaxed max-w-sm flex items-center gap-2">
-                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="Amiga" class="w-6 h-6 bg-white rounded-full p-0.5">
-                            {{ $footerData['about'] ?? 'Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours.' }}
-                        </p>
+
                         <!-- Social Icons -->
                         <div class="flex gap-4 pt-2">
                             @forelse($footerData['social_links'] ?? [] as $social)
