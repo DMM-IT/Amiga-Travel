@@ -18,8 +18,12 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final isFirstLaunch = prefs.getBool('first_launch') ?? true;
   await UserSession.init();
-  await NotificationService.initialize();
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  try {
+    await NotificationService.initialize();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('Failed to initialize notifications: $e');
+  }
   runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
 

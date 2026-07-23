@@ -40,7 +40,10 @@ Once the build is complete, you need to replace the old APK file in your Laravel
 
 **Terminal Command (Run from the root `Amiga-Travel` folder):**
 ```powershell
-   
+   Copy-Item `
+  "build\app\outputs\flutter-apk\app-release.apk" `
+  -Destination "..\public\downloads\amiga-travel.apk" `
+  -Force
 ```
 
 *(Alternatively, you can just manually copy/paste the file using Windows File Explorer from `flutter_app\build\app\outputs\flutter-apk\app-release.apk` and rename/replace it in `public\downloads\amiga-travel.apk`)*.
