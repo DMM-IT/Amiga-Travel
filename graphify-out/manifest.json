@@ -20,8 +20,8 @@
     "semantic_hash": "5d79009753c3660beb376e2aa06e64ff"
   },
   "app/Filament/Pages/ManageWebsiteSettings.php": {
-    "mtime": 1784710940.537267,
-    "ast_hash": "5b68b40ab15096e569531f702e9c298b",
+    "mtime": 1784822350.7233846,
+    "ast_hash": "39486cbd126a5cfe03fc92c9a0039cf9",
     "semantic_hash": ""
   },
   "app/Filament/Pages/OverallReports.php": {
@@ -335,8 +335,8 @@
     "semantic_hash": "9ed4235bde82dc1bd2edd82b80316dcb"
   },
   "app/Http/Controllers/Api/ScheduleController.php": {
-    "mtime": 1784794141.9094455,
-    "ast_hash": "02d06ff0df5e9410f0712db06842a8e3",
+    "mtime": 1784822566.2679505,
+    "ast_hash": "024152f109714f43621c18acb1737b06",
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/TourController.php": {
@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1784819313.5266302,
-    "ast_hash": "a9f5b19c6d59eaa12e31936cffc2baf9",
+    "mtime": 1784822350.893541,
+    "ast_hash": "90f5e4551fe29ee1277bef0762976298",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -430,8 +430,8 @@
     "semantic_hash": "632bdd8126b3e0f8220ddd54f8bbe6b1"
   },
   "app/Models/Booking.php": {
-    "mtime": 1784791481.2558484,
-    "ast_hash": "99af837d2f4c35044629e572247cd053",
+    "mtime": 1784822350.893541,
+    "ast_hash": "e54683815ea6afb0887b1e3dc6190519",
     "semantic_hash": ""
   },
   "app/Models/Discount.php": {
@@ -460,8 +460,8 @@
     "semantic_hash": "5ba8e17f265eea5b8d5331f898f7d125"
   },
   "app/Models/Schedule.php": {
-    "mtime": 1784819313.5276432,
-    "ast_hash": "7e30dc912409de423e4222fa61592ccc",
+    "mtime": 1784822350.893541,
+    "ast_hash": "045a5237c23db4ad009deffd96cf870b",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -930,17 +930,17 @@
     "semantic_hash": "e07862ac930ed4d8479185d52c6cc66d"
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1784819919.0245056,
-    "ast_hash": "2c56192fc2c3f9c315caa6a7b3f4430c",
+    "mtime": 1784823415.8506942,
+    "ast_hash": "6d7c39904580be1b2e2286ddf8028b6f",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784819933.0427206,
+    "mtime": 1784823424.9146576,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": "c74f5e1a5f32575a4b26f639876ee827"
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784819933.0427206,
+    "mtime": 1784823424.9122374,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
   },
@@ -960,7 +960,7 @@
     "semantic_hash": "7bd839b67ebee22174be9f4da4521b6f"
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1784819933.0427206,
+    "mtime": 1784823424.9146576,
     "ast_hash": "7a4226f9f26cf589d8edb01fea66c9f7",
     "semantic_hash": ""
   },
@@ -995,12 +995,12 @@
     "semantic_hash": "8e66e1314dbabf0aa13062137d7bf013"
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784819933.049933,
+    "mtime": 1784823424.9146576,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784819933.049933,
+    "mtime": 1784823424.9146576,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
   },
@@ -1155,8 +1155,8 @@
     "semantic_hash": "70aff70b48a4be6a9bca27f8a6c92beb"
   },
   "resources/views/about.blade.php": {
-    "mtime": 1784814564.9072473,
-    "ast_hash": "a15f5cdd55556c8ce1cc6a676cbd333b",
+    "mtime": 1784822350.893541,
+    "ast_hash": "fb528cc820fc491290dda2f361028d94",
     "semantic_hash": ""
   },
   "resources/views/book-status.blade.php": {
@@ -1270,8 +1270,8 @@
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1784819313.5281565,
-    "ast_hash": "9ac07610194eee161a38ede3c5093e04",
+    "mtime": 1784822350.893541,
+    "ast_hash": "0ac4150265cb1bdbf3ebe39862ec0dda",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
@@ -1345,8 +1345,8 @@
     "semantic_hash": "1a03818ea91deb4f3989c6c994e5867c"
   },
   "routes/api.php": {
-    "mtime": 1784794126.2751863,
-    "ast_hash": "1b6f32a334a12dd44159d2a244e99b5a",
+    "mtime": 1784821831.872913,
+    "ast_hash": "453acb66245a76c16a4f1452514c2aff",
     "semantic_hash": ""
   },
   "routes/console.php": {
@@ -1590,8 +1590,8 @@
     "semantic_hash": "46690fb8ffaf7d227d8bc4713f31140d"
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1784819917.0052924,
-    "ast_hash": "5d55200c83b49dbb64bee05d375ec0ec",
+    "mtime": 1784823065.2696025,
+    "ast_hash": "940413389bfd5f521663f46489d44502",
     "semantic_hash": ""
   },
   "flutter_app/web/index.html": {
@@ -2322,6 +2322,41 @@
   "baggage-rules.json": {
     "mtime": 1784819313.5281565,
     "ast_hash": "21e21901a92ce552943c8016102b2ebb",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/PromotionalTicketResource.php": {
+    "mtime": 1784822350.7233846,
+    "ast_hash": "9a1ad77237aedeebb95e6c55c9235208",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/PromotionalTicketResource/Pages/CreatePromotionalTicket.php": {
+    "mtime": 1784822350.7835257,
+    "ast_hash": "605753591a28f9e751a94d03df0be7f0",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/PromotionalTicketResource/Pages/EditPromotionalTicket.php": {
+    "mtime": 1784822350.7835257,
+    "ast_hash": "d77073317b3b27dc3e9be99986bfec2c",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/PromotionalTicketResource/Pages/ListPromotionalTickets.php": {
+    "mtime": 1784822350.8855267,
+    "ast_hash": "484a27e1f1cbcb985e32cba238e9a669",
+    "semantic_hash": ""
+  },
+  "app/Models/PromotionalTicket.php": {
+    "mtime": 1784822350.893541,
+    "ast_hash": "6403467889fc104ed3519807a1e82445",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_23_234718_create_promotional_tickets_table.php": {
+    "mtime": 1784822350.893541,
+    "ast_hash": "8a556518e67ebd208f9dbdc76250eb19",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_23_235219_add_promotional_ticket_id_to_bookings_table.php": {
+    "mtime": 1784822350.893541,
+    "ast_hash": "645892b3b6cc2b67bb89ced83558cc84",
     "semantic_hash": ""
   }
 }
