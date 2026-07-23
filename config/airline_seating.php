@@ -141,6 +141,11 @@ return [
                     'class_order' => ['business', 'premium-economy', 'economy'],
                     'seat_counts' => ['business' => 42, 'premium-economy' => 24, 'economy' => 327],
                 ],
+                'De Havilland Dash 8-Q400' => [
+                    'capacity' => 78, // <-- confirm actual seat count
+                    'class_order' => ['premium-economy', 'economy'],
+                    'seat_counts' => ['premium-economy' => 8, 'economy' => 70], // <-- confirm actual split
+                ],
             ],
         ],
     ],

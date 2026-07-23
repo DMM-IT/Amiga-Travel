@@ -11,16 +11,12 @@ class TransportClassSeeder extends Seeder
     public function run(): void
     {
         $operatorConfigs = config('airline_seating.operators', []);
+        $classIdsByCode = [];
 
         foreach ($operatorConfigs as $operator => $operatorConfig) {
-            $classIdsByCode = [];
-
             foreach ($operatorConfig['classes'] ?? [] as $code => $classConfig) {
                 $class = TransportClass::updateOrCreate(
-                    [
-                        'operator' => $operator,
-                        'code' => $code,
-                    ],
+                    ['operator' => $operator, 'code' => $code],
                     [
                         'name' => $classConfig['name'],
                         'description' => $classConfig['description'],
@@ -29,33 +25,35 @@ class TransportClassSeeder extends Seeder
                         'is_active' => true,
                     ],
                 );
+                $classIdsByCode[$operator][$code] = $class->id;
+            }
+        }
 
-                $classIdsByCode[$code] = $class->id;
+        $airlineSchedules = Schedule::query()
+            ->with('ferryRoute')
+            ->whereHas('ferryRoute', fn ($q) => $q->where('mode', 'airline'))
+            ->get();
+
+        foreach ($airlineSchedules as $schedule) {
+            $resolvedOperator = $schedule->resolveOperatorConfigKey($schedule->ferryRoute->operator);
+            $operatorConfig = $operatorConfigs[$resolvedOperator] ?? null;
+            if (! $operatorConfig) {
+                continue;
             }
 
-            $airlineSchedules = Schedule::query()
-                ->with('ferryRoute')
-                ->whereHas('ferryRoute', function ($query) use ($operator) {
-                    $query->where('mode', 'airline')
-                        ->where('operator', $operator);
-                })
-                ->get();
-
-            foreach ($airlineSchedules as $schedule) {
-                $aircraftConfig = $operatorConfig['aircraft'][$schedule->vehicle_name] ?? null;
-
-                if (! $aircraftConfig) {
-                    continue;
-                }
-
-                $attachedClassIds = collect($aircraftConfig['class_order'] ?? [])
-                    ->map(fn (string $code) => $classIdsByCode[$code] ?? null)
-                    ->filter()
-                    ->values()
-                    ->all();
-
-                $schedule->transportClasses()->sync($attachedClassIds);
+            $resolvedType = $schedule->resolveAircraftConfigKey($schedule->service_name);
+            $aircraftConfig = $operatorConfig['aircraft'][$resolvedType] ?? null;
+            if (! $aircraftConfig) {
+                continue;
             }
+
+            $attachedClassIds = collect($aircraftConfig['class_order'] ?? [])
+                ->map(fn (string $code) => $classIdsByCode[$resolvedOperator][$code] ?? null)
+                ->filter()
+                ->values()
+                ->all();
+
+            $schedule->transportClasses()->sync($attachedClassIds);
         }
     }
 }

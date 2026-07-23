@@ -172,29 +172,28 @@ class Schedule extends Model
     }
 
     public function getAirlineSeatingProfile(): ?array
-    {
-        $operator = $this->ferryRoute?->operator;
-        $aircraftType = $this->vehicle_name;
+{
+    $operator = $this->ferryRoute?->operator;
+    $resolvedAircraftType = $this->resolveAircraftConfigKey($this->service_name);
 
-        if (blank($operator)) {
-            return null;
-        }
-
-        $resolvedOperator = $this->resolveOperatorConfigKey($operator);
-        if (blank($resolvedOperator)) {
-            return null;
-        }
-
-        $resolvedAircraftType = $this->resolveAircraftConfigKey($aircraftType);
-        if (! blank($resolvedAircraftType)) {
-            $profile = config("airline_seating.operators.{$resolvedOperator}.aircraft.{$resolvedAircraftType}");
-            if (! blank($profile)) {
-                return $profile;
-            }
-        }
-
-        return $this->getFallbackAirlineSeatingProfile($resolvedOperator);
+    if (blank($operator)) {
+        return null;
     }
+
+    $resolvedOperator = $this->resolveOperatorConfigKey($operator);
+    if (blank($resolvedOperator)) {
+        return null;
+    }
+
+    if (! blank($resolvedAircraftType)) {
+        $profile = config("airline_seating.operators.{$resolvedOperator}.aircraft.{$resolvedAircraftType}");
+        if (! blank($profile)) {
+            return $profile;
+        }
+    }
+
+    return $this->getFallbackAirlineSeatingProfile($resolvedOperator);
+}
 
     protected function getFallbackAirlineSeatingProfile(string $resolvedOperator): ?array
     {
@@ -245,7 +244,7 @@ class Schedule extends Model
         return empty(array_diff($classCodes, $classOrder));
     }
 
-    protected function resolveOperatorConfigKey(?string $operator): ?string
+    public function resolveOperatorConfigKey(?string $operator): ?string
     {
         if (blank($operator)) {
             return null;
@@ -268,35 +267,40 @@ class Schedule extends Model
         return $operatorAliases[$normalizedOperator] ?? null;
     }
 
-    protected function resolveAircraftConfigKey(?string $aircraftType): ?string
+    public function resolveAircraftConfigKey(?string $aircraftType): ?string
     {
         if (blank($aircraftType)) {
             return null;
         }
 
         $normalizedAircraft = strtolower(trim($aircraftType));
-        $aircraftAliases = [
-            'a320' => 'Airbus A320',
-            'airbus a320' => 'Airbus A320',
-            'a321' => 'Airbus A321',
-            'airbus a321' => 'Airbus A321',
-            'a321neo' => 'Airbus A321neo',
-            'airbus a321neo' => 'Airbus A321neo',
-            'a330' => 'Airbus A330',
-            'airbus a330' => 'Airbus A330',
-            'a330-300' => 'Airbus A330-300',
-            'airbus a330-300' => 'Airbus A330-300',
-            'a330neo' => 'Airbus A330neo',
-            'airbus a330neo' => 'Airbus A330neo',
-            'a350' => 'Airbus A350',
-            'airbus a350' => 'Airbus A350',
-            'b777' => 'Boeing 777-300ER',
-            'b777-300er' => 'Boeing 777-300ER',
-            'boeing 777-300er' => 'Boeing 777-300ER',
-            'atr72-600' => 'ATR 72-600',
-            'atr 72-600' => 'ATR 72-600',
-            'atr 72 600' => 'ATR 72-600',
-        ];
+    $aircraftAliases = [
+        'a320' => 'Airbus A320',
+        'airbus a320' => 'Airbus A320',
+        'airbus a320-200' => 'Airbus A320',
+        'airbus a320neo' => 'Airbus A320',
+        'a321' => 'Airbus A321',
+        'airbus a321' => 'Airbus A321',
+        'airbus a321-200' => 'Airbus A321',
+        'airbus a321neo' => 'Airbus A321',
+        'airbus a321ceo' => 'Airbus A321',
+        'a330' => 'Airbus A330',
+        'airbus a330' => 'Airbus A330',
+        'a330-300' => 'Airbus A330-300',
+        'airbus a330-300' => 'Airbus A330-300',
+        'a330neo' => 'Airbus A330neo',
+        'airbus a330neo' => 'Airbus A330neo',
+        'a350' => 'Airbus A350',
+        'airbus a350' => 'Airbus A350',
+        'b777' => 'Boeing 777-300ER',
+        'b777-300er' => 'Boeing 777-300ER',
+        'boeing 777-300er' => 'Boeing 777-300ER',
+        'atr72-600' => 'ATR 72-600',
+        'atr 72-600' => 'ATR 72-600',
+        'atr 72 600' => 'ATR 72-600',
+        'de havilland dash 8-q400' => 'De Havilland Dash 8-Q400',
+    ];
+
 
         return $aircraftAliases[$normalizedAircraft] ?? null;
     }
