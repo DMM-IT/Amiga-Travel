@@ -87,10 +87,11 @@ EOF
 
 # Run migrations and setup
 # Skip migrations if they timeout (database might not be fully ready)
-timeout 15 php artisan migrate --force --no-interaction 2>/dev/null || echo "Migrations skipped or timed out"
-php artisan storage:link --quiet 2>/dev/null || true
+timeout 15 php artisan migrate --force --no-interaction || echo "Migrations skipped or timed out"
+php artisan storage:link || true
 
-# Start Laravel server
+echo "=== Reached config cache step ==="
 php artisan config:clear
 php artisan config:cache
+echo "=== Starting server ==="
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"
