@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1784794846.030319,
-    "ast_hash": "43e3968ab649631d3da833872e54e04e",
+    "mtime": 1784819313.5266302,
+    "ast_hash": "a9f5b19c6d59eaa12e31936cffc2baf9",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -440,8 +440,8 @@
     "semantic_hash": "9345b5ee4bd911eeb790ad99e667656c"
   },
   "app/Models/FerryRoute.php": {
-    "mtime": 1784645837.6022968,
-    "ast_hash": "0dab7ae7bdfad1bffbaff52db273d78e",
+    "mtime": 1784819313.5271366,
+    "ast_hash": "367a23a59b41bfc2eefb356f63a3ece2",
     "semantic_hash": ""
   },
   "app/Models/Inquiry.php": {
@@ -460,8 +460,8 @@
     "semantic_hash": "5ba8e17f265eea5b8d5331f898f7d125"
   },
   "app/Models/Schedule.php": {
-    "mtime": 1784790919.5005612,
-    "ast_hash": "0c4fb2b2f41648a5a86a4a0c419c4ded",
+    "mtime": 1784819313.5276432,
+    "ast_hash": "7e30dc912409de423e4222fa61592ccc",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -930,17 +930,17 @@
     "semantic_hash": "e07862ac930ed4d8479185d52c6cc66d"
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1784818687.7713287,
-    "ast_hash": "8eeb641ac1d5405c169c1952dfbbc4cd",
+    "mtime": 1784819919.0245056,
+    "ast_hash": "2c56192fc2c3f9c315caa6a7b3f4430c",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784818707.9440005,
+    "mtime": 1784819933.0427206,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": "c74f5e1a5f32575a4b26f639876ee827"
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784818707.9440005,
+    "mtime": 1784819933.0427206,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
   },
@@ -960,7 +960,7 @@
     "semantic_hash": "7bd839b67ebee22174be9f4da4521b6f"
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1784818707.9457405,
+    "mtime": 1784819933.0427206,
     "ast_hash": "7a4226f9f26cf589d8edb01fea66c9f7",
     "semantic_hash": ""
   },
@@ -995,12 +995,12 @@
     "semantic_hash": "8e66e1314dbabf0aa13062137d7bf013"
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784818707.9457405,
+    "mtime": 1784819933.049933,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784818707.9457405,
+    "mtime": 1784819933.049933,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
   },
@@ -1270,8 +1270,8 @@
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1784814564.9183652,
-    "ast_hash": "bd71869461ab69eaee6a315236ad39bc",
+    "mtime": 1784819313.5281565,
+    "ast_hash": "9ac07610194eee161a38ede3c5093e04",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
@@ -1590,8 +1590,8 @@
     "semantic_hash": "46690fb8ffaf7d227d8bc4713f31140d"
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1784815443.3253736,
-    "ast_hash": "5e248c3ce55361d4ba43f5ac5b4a5b05",
+    "mtime": 1784819917.0052924,
+    "ast_hash": "5d55200c83b49dbb64bee05d375ec0ec",
     "semantic_hash": ""
   },
   "flutter_app/web/index.html": {
@@ -2317,6 +2317,11 @@
   "config/firebase.php": {
     "mtime": 1784817444.094315,
     "ast_hash": "ae138a31b3aaea84564f6850ebc71679",
+    "semantic_hash": ""
+  },
+  "baggage-rules.json": {
+    "mtime": 1784819313.5281565,
+    "ast_hash": "21e21901a92ce552943c8016102b2ebb",
     "semantic_hash": ""
   }
 }
