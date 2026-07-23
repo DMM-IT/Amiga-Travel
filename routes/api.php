@@ -44,6 +44,10 @@ Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/tours', [\App\Http\Controllers\Api\TourController::class, 'index']);
 Route::get('/vehicle-rates', [BookingController::class, 'vehicleRates']);
 
+Route::middleware('auth:api')->group(function () {
+    Route::get('/gracia-points', [\App\Http\Controllers\Api\GraciaPointsController::class, 'index']);
+});
+
 Route::get('/app-version', function () {
     $pubspecPath = base_path('flutter_app/pubspec.yaml');
     $version = '1.0.0+1';

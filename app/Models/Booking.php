@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 class Booking extends Model
 {
     protected $fillable = [
+        'user_id',
         'transaction_number',
         'origin',
         'destination',
@@ -113,6 +114,11 @@ class Booking extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function getScheduleSummaryAttribute(): ?string
     {
         if (! $this->schedule_service) {
@@ -164,6 +170,8 @@ class Booking extends Model
             'verified_by_user_id' => $staffId,
             'verified_at' => $now,
         ]);
+
+        app(\App\Services\GraciaPointsService::class)->awardPointsForBooking($this, \App\Models\User::find($staffId));
 
         if ($this->transaction) {
             $this->transaction->update([

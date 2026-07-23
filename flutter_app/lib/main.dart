@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
 void main() async {
@@ -43,7 +45,7 @@ class UserSession {
   static String lookupToken = '';
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.2+3';
+  static const String appVersion = '1.0.4+5';
 
   static String getBaseUrl() {
     const configuredUrl = String.fromEnvironment(
@@ -164,22 +166,84 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
             showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Update Required'),
-                content: Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
-                actions: [
-                  FilledButton(
-                    onPressed: () async {
-                      final url = Uri.parse('${UserSession.getBaseUrl()}/download');
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url, mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    style: FilledButton.styleFrom(backgroundColor: kGreen),
-                    child: const Text('Update Now'),
-                  ),
-                ],
-              ),
+              builder: (ctx) {
+                bool isDownloading = false;
+                double progress = 0.0;
+                String dlError = '';
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    return AlertDialog(
+                      title: const Text('Update Required'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
+                          if (isDownloading) ...[
+                            const SizedBox(height: 20),
+                            LinearProgressIndicator(value: progress, color: kGreen),
+                            const SizedBox(height: 8),
+                            Text('${(progress * 100).toStringAsFixed(0)}% downloaded'),
+                          ],
+                          if (dlError.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text(dlError, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                          ]
+                        ],
+                      ),
+                      actions: [
+                        if (!isDownloading)
+                          FilledButton(
+                            onPressed: () async {
+                              setState(() {
+                                isDownloading = true;
+                                dlError = '';
+                              });
+                              try {
+                                final apkUrl = '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
+                                final request = http.Request('GET', Uri.parse(apkUrl));
+                                final response = await http.Client().send(request);
+                                
+                                if (response.statusCode != 200) {
+                                  throw Exception('Server returned ${response.statusCode}');
+                                }
+                                
+                                final contentLength = response.contentLength ?? 1;
+                                
+                                final dir = await getExternalStorageDirectory();
+                                final file = File('${dir!.path}/update_$latestVersion.apk');
+                                final sink = file.openWrite();
+                                
+                                int bytes = 0;
+                                await response.stream.listen((List<int> chunk) {
+                                  bytes += chunk.length;
+                                  setState(() => progress = bytes / contentLength);
+                                  sink.add(chunk);
+                                }).asFuture();
+                                await sink.close();
+                                
+                                final result = await OpenFilex.open(file.path);
+                                if (result.type != ResultType.done) {
+                                  throw Exception(result.message);
+                                }
+                                
+                                setState(() => isDownloading = false);
+                              } catch (e) {
+                                debugPrint('Download error: $e');
+                                setState(() {
+                                  isDownloading = false;
+                                  progress = 0;
+                                  dlError = 'Download failed. Please try again or visit the website.';
+                                });
+                              }
+                            },
+                            style: FilledButton.styleFrom(backgroundColor: kGreen),
+                            child: const Text('Update Now'),
+                          ),
+                      ],
+                    );
+                  }
+                );
+              },
             );
           }
           return; // Stop initialization, wait for update
@@ -2567,6 +2631,23 @@ class AppDrawer extends StatelessWidget {
             title: const Text('My Profile'),
             onTap: () => Navigator.pop(context),
           ),
+          if (UserSession.isLoggedIn)
+            ListTile(
+              leading: const Icon(Icons.star_outline, color: kPink),
+              title: const Text('Gracia Points'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const GraciaPointsScreen()));
+              },
+            ),
+          ListTile(
+            leading: const Icon(Icons.directions_boat_outlined, color: kGreen),
+            title: const Text('Schedules'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SchedulesScreen()));
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.info_outline, color: kGreen),
             title: const Text('About'),
@@ -3941,7 +4022,11 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       final baseUrl = UserSession.getBaseUrl();
       final res = await http.post(
         Uri.parse('$baseUrl/api/bookings'),
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (UserSession.isLoggedIn && UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+        },
         body: jsonEncode({
           'schedule_id': widget.booking.selectedSchedule!['id'],
           'origin': widget.booking.origin,
@@ -5271,6 +5356,177 @@ class _Field extends StatelessWidget {
           labelText: label,
           prefixIcon: Icon(icon, color: kGreen),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// GRACIA POINTS SCREEN
+// ==========================================
+class GraciaPointsScreen extends StatefulWidget {
+  const GraciaPointsScreen({super.key});
+
+  @override
+  State<GraciaPointsScreen> createState() => _GraciaPointsScreenState();
+}
+
+class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
+  bool _isLoading = true;
+  String _error = '';
+  int _currentPoints = 0;
+  int _unconvertedSpend = 0;
+  Map<String, dynamic>? _activeRule;
+  List<dynamic> _history = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPoints();
+  }
+
+  Future<void> _fetchPoints() async {
+    if (!UserSession.isLoggedIn || UserSession.token.isEmpty) {
+      setState(() {
+        _error = 'Please log in to view your Gracia Points.';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final res = await http.get(
+        Uri.parse('${UserSession.getBaseUrl()}/api/gracia-points'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${UserSession.token}',
+        },
+      );
+      
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _currentPoints = data['current_points'] ?? 0;
+          _unconvertedSpend = data['unconverted_spend_centavos'] ?? 0;
+          _activeRule = data['active_rule'];
+          _history = data['history'] ?? [];
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = 'Failed to load points data.';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Network error occurred.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Gracia Points'), backgroundColor: kPink, foregroundColor: Colors.white),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: kPink))
+          : _error.isNotEmpty
+              ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
+              : RefreshIndicator(
+                  onRefresh: _fetchPoints,
+                  color: kPink,
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      // Balance Card
+                      Card(
+                        color: kPink,
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              const Text('CURRENT BALANCE', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                              const SizedBox(height: 8),
+                              Text('$_currentPoints pts', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w900)),
+                              const SizedBox(height: 16),
+                              if (_activeRule != null) ...[
+                                Text('Unconverted Spend: ₱${(_unconvertedSpend / 100).toStringAsFixed(2)}', style: const TextStyle(color: Colors.white)),
+                                const SizedBox(height: 4),
+                                Text('Earn ${_activeRule!['points_awarded']} pts for every ₱${(_activeRule!['spend_threshold_centavos'] / 100).toStringAsFixed(0)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                const SizedBox(height: 12),
+                                LinearProgressIndicator(
+                                  value: _unconvertedSpend / _activeRule!['spend_threshold_centavos'],
+                                  backgroundColor: Colors.white24,
+                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              ] else ...[
+                                const Text('No active earning rule.', style: TextStyle(color: Colors.white70)),
+                              ]
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text('RECENT ACTIVITY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      if (_history.isEmpty)
+                        const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('No points activity yet.', style: TextStyle(color: kSlate400))))
+                      else
+                        ..._history.map((entry) {
+                          final isEarned = entry['entry_type'] == 'earned';
+                          final isReversed = entry['entry_type'] == 'reversed';
+                          final points = entry['points'];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: Icon(
+                                isEarned ? Icons.add_circle : isReversed ? Icons.remove_circle : Icons.admin_panel_settings,
+                                color: isEarned ? Colors.green : isReversed ? Colors.red : Colors.orange,
+                              ),
+                              title: Text(entry['reason'] ?? 'Point adjustment', style: const TextStyle(fontSize: 14)),
+                              subtitle: Text(entry['created_at'] != null ? entry['created_at'].toString().substring(0, 10) : ''),
+                              trailing: Text('${points > 0 ? '+' : ''}$points', style: TextStyle(fontWeight: FontWeight.bold, color: points > 0 ? Colors.green : Colors.red, fontSize: 16)),
+                            ),
+                          );
+                        }),
+                    ],
+                  ),
+                ),
+    );
+  }
+}
+
+// ==========================================
+// SCHEDULES SCREEN
+// ==========================================
+class SchedulesScreen extends StatelessWidget {
+  const SchedulesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Schedules'), backgroundColor: kGreen, foregroundColor: Colors.white),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.directions_boat, size: 80, color: kGreen),
+            const SizedBox(height: 16),
+            const Text('Search Schedules', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('To view active schedules, please use the\nTravel search on the Home screen.', textAlign: TextAlign.center, style: TextStyle(color: kSlate500)),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: kGreen),
+              child: const Text('Go to Home', style: TextStyle(color: Colors.white)),
+            ),
+          ],
         ),
       ),
     );

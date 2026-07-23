@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\GraciaUserBalance;
+use App\Models\GraciaPointLedger;
 use App\Models\Booking;
 use App\Models\UserLoginHistory;
 use Database\Factories\UserFactory;
@@ -87,5 +89,15 @@ class User extends Authenticatable implements FilamentUser
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'client_email', 'email');
+    }
+
+    public function graciaBalance(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(GraciaUserBalance::class);
+    }
+
+    public function graciaPointLedgers(): HasMany
+    {
+        return $this->hasMany(GraciaPointLedger::class);
     }
 }

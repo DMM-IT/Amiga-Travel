@@ -62,6 +62,10 @@ class ApkUserResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('graciaBalance.current_points')
+                    ->label('Gracia Points')
+                    ->default(0)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Full Name')
                     ->searchable()
@@ -94,6 +98,26 @@ class ApkUserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('adjust_points')
+                    ->label('Adjust Points')
+                    ->icon('heroicon-o-plus-circle')
+                    ->form([
+                        Forms\Components\TextInput::make('points')
+                            ->label('Points (use negative to deduct)')
+                            ->numeric()
+                            ->required(),
+                        Forms\Components\TextInput::make('reason')
+                            ->required()
+                            ->maxLength(255),
+                    ])
+                    ->action(function (User $record, array $data) {
+                        app(\App\Services\GraciaPointsService::class)->addManualAdjustment(
+                            $record,
+                            (int) $data['points'],
+                            $data['reason'],
+                            auth()->user()
+                        );
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -107,6 +131,7 @@ class ApkUserResource extends Resource
     {
         return [
             RelationManagers\BookingsRelationManager::class,
+            RelationManagers\GraciaPointLedgersRelationManager::class,
         ];
     }
 
