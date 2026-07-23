@@ -783,6 +783,8 @@ public function selectedSchedule(): ?array
 
     public function selectSchedule(int $scheduleId): void
     {
+        $this->availableSchedules = $this->getAvailableSchedules();
+
         $this->selected_schedule_id = $scheduleId;
         $this->selected_transport_class_id = null;
         $this->selectingSeatForPassengerIndex = null;
