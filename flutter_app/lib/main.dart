@@ -55,7 +55,7 @@ class UserSession {
   static String lookupToken = '';
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.4+7';
+  static const String appVersion = '1.0.4+8';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
