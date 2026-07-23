@@ -321,8 +321,14 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->maxLength(255),
                                 ])
                                 ->columns(1),
+                            TextInput::make('content.apk_benefits_label')
+                                ->label('Benefits Section Label')
+                                ->maxLength(80),
+                            TextInput::make('content.apk_benefits_title')
+                                ->label('Benefits Section Title')
+                                ->maxLength(255),
                             Repeater::make('content.download_features')
-                                ->label('Download Features')
+                                ->label('App Benefits (Features)')
                                 ->schema([
                                     TextInput::make('title')
                                         ->label('Feature Title')
@@ -332,6 +338,15 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->label('Feature Description')
                                         ->rows(3)
                                         ->maxLength(255),
+                                    TextInput::make('icon')
+                                        ->label('SVG Icon Path')
+                                        ->maxLength(1000),
+                                    TextInput::make('icon_color')
+                                        ->label('Icon Color (Hex)')
+                                        ->maxLength(20),
+                                    TextInput::make('bg_color')
+                                        ->label('Background Color (Hex)')
+                                        ->maxLength(20),
                                 ])
                                 ->columns(1),
                             TextInput::make('content.how_it_works_label')

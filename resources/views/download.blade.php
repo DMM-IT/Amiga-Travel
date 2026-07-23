@@ -195,34 +195,47 @@
     </div>
 
     <!-- APK Benefits Section -->
+    @php
+        $downloadFeatures = $pageContent['download_features'] ?? [
+            [
+                'title' => 'Gracia Point System',
+                'description' => 'Earn points on every booking made through the app. Redeem them for discounts on your future trips!',
+                'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                'icon_color' => '#216417',
+                'bg_color' => '#eaf5e8',
+            ],
+            [
+                'title' => 'Exclusive Vouchers',
+                'description' => 'Get access to app-only promotions, seasonal vouchers, and special partner discounts.',
+                'icon' => 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
+                'icon_color' => '#ee018d',
+                'bg_color' => '#fce7f3',
+            ]
+        ];
+    @endphp
+    @if(!empty($downloadFeatures))
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8 sm:p-12">
             <div class="text-center mb-10">
-                <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #ee018d; background: #fce7f3;">Exclusive App Benefits</span>
-                <h2 class="mt-4 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Why download the app?</h2>
+                <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #ee018d; background: #fce7f3;">{{ data_get($pageContent, 'apk_benefits_label', 'Exclusive App Benefits') }}</span>
+                <h2 class="mt-4 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'apk_benefits_title', 'Why download the app?') }}</h2>
             </div>
             <div class="grid sm:grid-cols-2 gap-8 lg:gap-12">
+                @foreach($downloadFeatures as $feature)
                 <div class="flex gap-4">
-                    <div class="h-14 w-14 shrink-0 rounded-2xl bg-[#eaf5e8] text-[#216417] flex items-center justify-center shadow-sm">
-                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div class="h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center shadow-sm" style="background: {{ data_get($feature, 'bg_color', '#eaf5e8') }}; color: {{ data_get($feature, 'icon_color', '#216417') }};">
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="{{ data_get($feature, 'icon', 'M13 10V3L4 14h7v7l9-11h-7z') }}" /></svg>
                     </div>
                     <div>
-                        <h3 class="font-bold text-slate-900 text-lg">Gracia Point System</h3>
-                        <p class="text-sm text-slate-500 mt-2 leading-relaxed">Earn points on every booking made through the app. Redeem them for discounts on your future trips!</p>
+                        <h3 class="font-bold text-slate-900 text-lg">{{ data_get($feature, 'title') }}</h3>
+                        <p class="text-sm text-slate-500 mt-2 leading-relaxed">{{ data_get($feature, 'description') }}</p>
                     </div>
                 </div>
-                <div class="flex gap-4">
-                    <div class="h-14 w-14 shrink-0 rounded-2xl bg-[#fce7f3] text-[#ee018d] flex items-center justify-center shadow-sm">
-                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-900 text-lg">Exclusive Vouchers</h3>
-                        <p class="text-sm text-slate-500 mt-2 leading-relaxed">Get access to app-only promotions, seasonal vouchers, and special partner discounts.</p>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </div>
+    @endif
 
     <!-- How to Install Section -->
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
