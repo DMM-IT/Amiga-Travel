@@ -256,6 +256,7 @@
   "254": "graphify reference: commit hook and native CLAUDE.md integration",
   "255": "graphify reference: incremental update and cluster-only",
   "256": "qo",
+  "257": "PurgeExpiredProofs.php",
   "258": "graphify reference: GitHub clone and cross-repo merge",
   "259": "graphify reference: transcribe video and audio",
   "260": "graphify reference: GitHub clone and cross-repo merge",
@@ -286,7 +287,6 @@
   "287": "BookingResource.php",
   "289": "InquiryResource.php",
   "290": "TransportClassResource.php",
-  "291": "VehicleRateResource.php",
   "292": "BookingExportController",
   "293": "How to Update the Android App (APK)"
 }

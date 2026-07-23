@@ -335,9 +335,9 @@
     "semantic_hash": "9ed4235bde82dc1bd2edd82b80316dcb"
   },
   "app/Http/Controllers/Api/ScheduleController.php": {
-    "mtime": 1784467577.1300967,
-    "ast_hash": "7c753bba58147e87a0f6a4d536a49567",
-    "semantic_hash": "7c753bba58147e87a0f6a4d536a49567"
+    "mtime": 1784794141.9094455,
+    "ast_hash": "02d06ff0df5e9410f0712db06842a8e3",
+    "semantic_hash": ""
   },
   "app/Http/Controllers/Api/TourController.php": {
     "mtime": 1784467577.1300967,
@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1784792345.6149874,
-    "ast_hash": "605ab899a5150eda750c4f9b20bf7869",
+    "mtime": 1784794846.030319,
+    "ast_hash": "43e3968ab649631d3da833872e54e04e",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -550,8 +550,8 @@
     "semantic_hash": "607aa0bfa40bdaba26371d1dbc4d3219"
   },
   "composer.json": {
-    "mtime": 1784785065.7224176,
-    "ast_hash": "145b853c0fc38ab0a5ad6b98ac6e483d",
+    "mtime": 1784814565.1151457,
+    "ast_hash": "1528ed2d7062e73663a89a50b8368323",
     "semantic_hash": ""
   },
   "config/airline_seating.php": {
@@ -885,9 +885,9 @@
     "semantic_hash": "af607c5babd4b02d0be01ca6114aa461"
   },
   "flutter_app/android/app/build.gradle": {
-    "mtime": 1784467577.186481,
-    "ast_hash": "fc2818e65e7a26f3cca0ee41baf198b7",
-    "semantic_hash": "fc2818e65e7a26f3cca0ee41baf198b7"
+    "mtime": 1784815443.3198113,
+    "ast_hash": "dab5ce5d292f5c520e567e35ccb507ab",
+    "semantic_hash": ""
   },
   "flutter_app/android/app/src/main/kotlin/com/amiga/travel/flutter_app/MainActivity.kt": {
     "mtime": 1784467577.1887186,
@@ -895,9 +895,9 @@
     "semantic_hash": "da2be5876d3d404177f3566e163e47c8"
   },
   "flutter_app/android/build.gradle": {
-    "mtime": 1784467577.200597,
-    "ast_hash": "8fea88f0221dc81c23b0e4c55c169ccc",
-    "semantic_hash": "8fea88f0221dc81c23b0e4c55c169ccc"
+    "mtime": 1784814565.1222496,
+    "ast_hash": "1d650e9757d085e00de5cc0bc76d73e2",
+    "semantic_hash": ""
   },
   "flutter_app/android/settings.gradle": {
     "mtime": 1784467577.204852,
@@ -930,17 +930,17 @@
     "semantic_hash": "e07862ac930ed4d8479185d52c6cc66d"
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1784792737.0046587,
-    "ast_hash": "c9a657fbd2d86a92ca1343215332fc80",
+    "mtime": 1784817063.4251497,
+    "ast_hash": "7137be11b717c7f877b8df1cedb0744d",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784792761.1012654,
+    "mtime": 1784817082.8004818,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": "c74f5e1a5f32575a4b26f639876ee827"
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784792761.0993476,
+    "mtime": 1784817082.8004818,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
   },
@@ -960,8 +960,8 @@
     "semantic_hash": "7bd839b67ebee22174be9f4da4521b6f"
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1784792761.1056297,
-    "ast_hash": "4890f3b175e4995d5d822870287e7677",
+    "mtime": 1784817082.8004818,
+    "ast_hash": "7a4226f9f26cf589d8edb01fea66c9f7",
     "semantic_hash": ""
   },
   "flutter_app/macos/RunnerTests/RunnerTests.swift": {
@@ -995,12 +995,12 @@
     "semantic_hash": "8e66e1314dbabf0aa13062137d7bf013"
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784792761.1102054,
-    "ast_hash": "6a8d554194ff53c03568d096220bb8d7",
-    "semantic_hash": "6a8d554194ff53c03568d096220bb8d7"
+    "mtime": 1784817082.8004818,
+    "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
+    "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784792761.1081674,
+    "mtime": 1784817082.8004818,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
   },
@@ -1060,82 +1060,82 @@
     "semantic_hash": "d8eda274115af5fd2aaa8230af329ef7"
   },
   "public/js/filament/filament/app.js": {
-    "mtime": 1784467766.4453936,
+    "mtime": 1784814602.7172668,
     "ast_hash": "055af451d117e11009c5600efa7e0247",
     "semantic_hash": "055af451d117e11009c5600efa7e0247"
   },
   "public/js/filament/filament/echo.js": {
-    "mtime": 1784467766.4468918,
+    "mtime": 1784814602.9193747,
     "ast_hash": "9a7993fa9a704f0e97d5c701b08e6bce",
     "semantic_hash": "9a7993fa9a704f0e97d5c701b08e6bce"
   },
   "public/js/filament/forms/components/color-picker.js": {
-    "mtime": 1784467766.4353673,
+    "mtime": 1784814601.5472484,
     "ast_hash": "4393c422493e0e6143a80d58647ff2b7",
     "semantic_hash": "4393c422493e0e6143a80d58647ff2b7"
   },
   "public/js/filament/forms/components/date-time-picker.js": {
-    "mtime": 1784467766.4353673,
+    "mtime": 1784814601.7682223,
     "ast_hash": "81dde65996cea522022e7e01f12aa195",
     "semantic_hash": "81dde65996cea522022e7e01f12aa195"
   },
   "public/js/filament/forms/components/file-upload.js": {
-    "mtime": 1784467766.4363644,
+    "mtime": 1784814601.8472567,
     "ast_hash": "e6b4d840b25668da2a477ea8b2cdf026",
     "semantic_hash": "e6b4d840b25668da2a477ea8b2cdf026"
   },
   "public/js/filament/forms/components/key-value.js": {
-    "mtime": 1784467766.4363644,
+    "mtime": 1784814601.8672814,
     "ast_hash": "b23b4554a7073f7911cb39a35b88f4e9",
     "semantic_hash": "b23b4554a7073f7911cb39a35b88f4e9"
   },
   "public/js/filament/forms/components/markdown-editor.js": {
-    "mtime": 1784467766.4374163,
+    "mtime": 1784814602.2792566,
     "ast_hash": "69b95c6980262efcf7a49aa01859a7c2",
     "semantic_hash": "69b95c6980262efcf7a49aa01859a7c2"
   },
   "public/js/filament/forms/components/rich-editor.js": {
-    "mtime": 1784467766.438414,
+    "mtime": 1784814602.3349404,
     "ast_hash": "3c0f7f9d1c1c13febc0e4d0a5c3698b5",
     "semantic_hash": "3c0f7f9d1c1c13febc0e4d0a5c3698b5"
   },
   "public/js/filament/forms/components/select.js": {
-    "mtime": 1784467766.4394145,
+    "mtime": 1784814602.4528327,
     "ast_hash": "c51957de2de3f9c1553ddf8c40ffcbf1",
     "semantic_hash": "c51957de2de3f9c1553ddf8c40ffcbf1"
   },
   "public/js/filament/forms/components/tags-input.js": {
-    "mtime": 1784467766.4404104,
+    "mtime": 1784814602.4673755,
     "ast_hash": "0c2de9797b4b240e4c0f706863491e03",
     "semantic_hash": "0c2de9797b4b240e4c0f706863491e03"
   },
   "public/js/filament/forms/components/textarea.js": {
-    "mtime": 1784467766.441407,
+    "mtime": 1784814602.4796493,
     "ast_hash": "abb98c0edb3e7228142c14a8422ef7c6",
     "semantic_hash": "abb98c0edb3e7228142c14a8422ef7c6"
   },
   "public/js/filament/notifications/notifications.js": {
-    "mtime": 1784467766.4468918,
+    "mtime": 1784814602.9273238,
     "ast_hash": "f873fe0caab22e4a8740d51d4f31a6da",
     "semantic_hash": "f873fe0caab22e4a8740d51d4f31a6da"
   },
   "public/js/filament/support/support.js": {
-    "mtime": 1784467766.4478908,
+    "mtime": 1784814603.0875278,
     "ast_hash": "7a114a87d2fcdefefc3e4f9012dbdbbb",
     "semantic_hash": "7a114a87d2fcdefefc3e4f9012dbdbbb"
   },
   "public/js/filament/tables/components/table.js": {
-    "mtime": 1784467766.4424033,
+    "mtime": 1784814602.4973001,
     "ast_hash": "414ff611c888683f502c4f14f7191def",
     "semantic_hash": "414ff611c888683f502c4f14f7191def"
   },
   "public/js/filament/widgets/components/chart.js": {
-    "mtime": 1784467766.4434004,
+    "mtime": 1784814602.612966,
     "ast_hash": "f214520fae0f668a51d73056581cd884",
     "semantic_hash": "f214520fae0f668a51d73056581cd884"
   },
   "public/js/filament/widgets/components/stats-overview/stat/chart.js": {
-    "mtime": 1784467766.444397,
+    "mtime": 1784814602.6890547,
     "ast_hash": "42945d911451ca2ed6a66f6380dcfce0",
     "semantic_hash": "42945d911451ca2ed6a66f6380dcfce0"
   },
@@ -1155,8 +1155,8 @@
     "semantic_hash": "70aff70b48a4be6a9bca27f8a6c92beb"
   },
   "resources/views/about.blade.php": {
-    "mtime": 1784711077.4510736,
-    "ast_hash": "305e71a297865a38c7d68c93f5c5be31",
+    "mtime": 1784814564.9072473,
+    "ast_hash": "a15f5cdd55556c8ce1cc6a676cbd333b",
     "semantic_hash": ""
   },
   "resources/views/book-status.blade.php": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": "9d6a0059dc14aa657f3619d211104351"
   },
   "resources/views/contact.blade.php": {
-    "mtime": 1784553592.9881816,
-    "ast_hash": "eaa32bf29bf9384972ce03a4521f9789",
-    "semantic_hash": "eaa32bf29bf9384972ce03a4521f9789"
+    "mtime": 1784815442.9705958,
+    "ast_hash": "e85f3461de79e06db12b5ca3e0317fde",
+    "semantic_hash": ""
   },
   "resources/views/dashboard.blade.php": {
     "mtime": 1784467577.4336116,
@@ -1259,24 +1259,19 @@
     "ast_hash": "dcdf8aa21ea94ebba44c212d839c2f92",
     "semantic_hash": "dcdf8aa21ea94ebba44c212d839c2f92"
   },
-  "resources/views/gallery.blade.php": {
-    "mtime": 1784467577.439171,
-    "ast_hash": "f151df442d534a4955508c82d1b65606",
-    "semantic_hash": "f151df442d534a4955508c82d1b65606"
-  },
   "resources/views/home.blade.php": {
-    "mtime": 1784710652.6248915,
-    "ast_hash": "57ebe5e10fe623e60b6b97b2aa1e999c",
+    "mtime": 1784815442.9705958,
+    "ast_hash": "252696d1bbcb3a7fff46286cd6f2c9e9",
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1784710305.8241363,
-    "ast_hash": "514ef049e81b58423bf910324140dab5",
+    "mtime": 1784815442.9719632,
+    "ast_hash": "a30e0759818a0a6c9249990316553625",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1784790919.5029204,
-    "ast_hash": "72647e77bdf651db22fc8b2defdb70be",
+    "mtime": 1784814564.9183652,
+    "ast_hash": "bd71869461ab69eaee6a315236ad39bc",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
@@ -1325,9 +1320,9 @@
     "semantic_hash": ""
   },
   "resources/views/services.blade.php": {
-    "mtime": 1784467577.4443855,
-    "ast_hash": "7be314704d2670e789eb246124df613a",
-    "semantic_hash": "7be314704d2670e789eb246124df613a"
+    "mtime": 1784815442.9719632,
+    "ast_hash": "bec373cdf11ba92c07b6e41a690887ff",
+    "semantic_hash": ""
   },
   "resources/views/tour-details.blade.php": {
     "mtime": 1784467577.4454658,
@@ -1350,8 +1345,8 @@
     "semantic_hash": "1a03818ea91deb4f3989c6c994e5867c"
   },
   "routes/api.php": {
-    "mtime": 1784791530.3549848,
-    "ast_hash": "1add616a485e57833d5dfbbfd709d8fd",
+    "mtime": 1784794126.2751863,
+    "ast_hash": "1b6f32a334a12dd44159d2a244e99b5a",
     "semantic_hash": ""
   },
   "routes/console.php": {
@@ -1360,8 +1355,8 @@
     "semantic_hash": "d19cb1ace9496f38da74cee24f35b369"
   },
   "routes/web.php": {
-    "mtime": 1784708245.9252317,
-    "ast_hash": "fa981b5b1293fc48890ab2c6067e73b5",
+    "mtime": 1784814564.9183652,
+    "ast_hash": "37ebadb6db4e9b66ff38648a65a2a1c4",
     "semantic_hash": ""
   },
   "scripts/count_routes.php": {
@@ -1595,8 +1590,8 @@
     "semantic_hash": "46690fb8ffaf7d227d8bc4713f31140d"
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1784792734.7919128,
-    "ast_hash": "1ccd5e646bddf14754fccc0bee152b09",
+    "mtime": 1784815443.3253736,
+    "ast_hash": "5e248c3ce55361d4ba43f5ac5b4a5b05",
     "semantic_hash": ""
   },
   "flutter_app/web/index.html": {
@@ -2175,13 +2170,13 @@
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/ephemeral/flutter_export_environment.sh": {
-    "mtime": 1784792760.8770728,
-    "ast_hash": "e128c2e9d1c22ee86ffa54399cb8c95a",
+    "mtime": 1784794749.584626,
+    "ast_hash": "c04d51698f155a93d56b629972d8599d",
     "semantic_hash": ""
   },
   "APK_UPDATE_GUIDE.md": {
-    "mtime": 1784785058.824658,
-    "ast_hash": "06e04ef6c3e12553051e2b024aa047a5",
+    "mtime": 1784815721.3520336,
+    "ast_hash": "6c3ff6113bc34df186fe5ae45ae6db84",
     "semantic_hash": ""
   },
   "app/Filament/Resources/ApkUserResource/RelationManagers/GraciaPointLedgersRelationManager.php": {
@@ -2190,8 +2185,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/GraciaEarningRuleResource.php": {
-    "mtime": 1784791596.9758093,
-    "ast_hash": "faf7b40bedc5aceb7a8dda7ca9c77b0f",
+    "mtime": 1784794539.115133,
+    "ast_hash": "4e404d7bb9807dd384a50e5d60aaafb0",
     "semantic_hash": ""
   },
   "app/Filament/Resources/GraciaEarningRuleResource/Pages/CreateGraciaEarningRule.php": {
@@ -2262,6 +2257,61 @@
   "tests/Feature/GraciaPointsServiceTest.php": {
     "mtime": 1784791851.240008,
     "ast_hash": "65a4f9b941cd37dada2fb3886aacabfe",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AppNotificationResource.php": {
+    "mtime": 1784814565.1051364,
+    "ast_hash": "90c2d2cfd61f3aa93a070d7fbab9f405",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AppNotificationResource/Pages/CreateAppNotification.php": {
+    "mtime": 1784814565.1076486,
+    "ast_hash": "cb40d1c45478a2a1fa167cf2b1b7b1ab",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AppNotificationResource/Pages/EditAppNotification.php": {
+    "mtime": 1784814565.1086762,
+    "ast_hash": "ce12a9827a212695a3afb998276183d5",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AppNotificationResource/Pages/ListAppNotifications.php": {
+    "mtime": 1784814565.1135724,
+    "ast_hash": "78c60d1752ec07252c725b7b898eec81",
+    "semantic_hash": ""
+  },
+  "app/Models/AppNotification.php": {
+    "mtime": 1784814565.1146317,
+    "ast_hash": "e7dd7556ef65dc79b06bcae2a8c40842",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_23_000000_create_app_notifications_table.php": {
+    "mtime": 1784814565.120198,
+    "ast_hash": "0d50f692d5fc7082fe422d66bda6825f",
+    "semantic_hash": ""
+  },
+  "flutter_app/android/app/google-services.json": {
+    "mtime": 1784814565.1217344,
+    "ast_hash": "c6e4c4fc4bf994868a5b62ff16c23414",
+    "semantic_hash": ""
+  },
+  "flutter_app/lib/notification_service.dart": {
+    "mtime": 1784815443.322445,
+    "ast_hash": "159b06a8a9c8ace20a7d9b020dbb48d1",
+    "semantic_hash": ""
+  },
+  "public/images/2GO-Logo.png": {
+    "mtime": 1784814564.9072473,
+    "ast_hash": "ad6583e711d7b1f0d1cf488e621665c2",
+    "semantic_hash": ""
+  },
+  "public/images/AirAsia-Logo.png": {
+    "mtime": 1784814564.9072473,
+    "ast_hash": "d2dc21951918235cf9ee2d21cd42fdf2",
+    "semantic_hash": ""
+  },
+  "public/images/CebuPecific-Logo.png": {
+    "mtime": 1784814564.9072473,
+    "ast_hash": "f2372f0d5e19af187d8955930b6163dd",
     "semantic_hash": ""
   }
 }
