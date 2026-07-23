@@ -19,7 +19,7 @@ void main() async {
   final isFirstLaunch = prefs.getBool('first_launch') ?? true;
   await UserSession.init();
   await NotificationService.initialize();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   runApp(MyApp(isFirstLaunch: isFirstLaunch));
 }
 
@@ -51,7 +51,7 @@ class UserSession {
   static String lookupToken = '';
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.4+6';
+  static const String appVersion = '1.0.4+7';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
