@@ -2313,5 +2313,10 @@
     "mtime": 1784814564.9072473,
     "ast_hash": "f2372f0d5e19af187d8955930b6163dd",
     "semantic_hash": ""
+  },
+  "config/firebase.php": {
+    "mtime": 1784817444.094315,
+    "ast_hash": "ae138a31b3aaea84564f6850ebc71679",
+    "semantic_hash": ""
   }
 }

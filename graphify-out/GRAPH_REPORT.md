@@ -1,16 +1,16 @@
 # Graph Report - Amiga-Travel  (2026-07-23)
 
 ## Corpus Check
-- 391 files · ~241,494 words
+- 392 files · ~242,195 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5129 nodes · 12359 edges · 290 communities (260 shown, 30 thin omitted)
+- 5130 nodes · 12359 edges · 291 communities (261 shown, 30 thin omitted)
 - Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 1160 edges (avg confidence: 0.67)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9c3a4188`
+- Built from commit: `46ba0d9a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -212,7 +212,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (290 total, 30 thin omitted)
+## Communities (291 total, 30 thin omitted)
 
 ### Community 0 - "HTTP Controllers & Routing (C0)"
 Cohesion: 0.01
@@ -779,11 +779,11 @@ Nodes (5): How to Update the Android App (APK), Step 1: Bump the Version Number,
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `A()` connect `Core Module 69` to `HTTP Controllers & Routing (C2)`, `Core Module 3`, `Core Module 6`, `Core Module 8`, `Core Module 59`, `Core Module 14`, `Core Module 15`, `HTTP Controllers & Routing (C18)`, `Core Module 20`, `Core Module 56`, `Data Models & Domain (C57)`, `Core Module 27`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **Why does `draw()` connect `Core Module 8` to `HTTP Controllers & Routing (C0)`, `Core Module 32`, `Database Schema (C68)`, `Core Module 69`, `Core Module 6`, `Data Models & Domain (C7)`, `Database Schema (C9)`, `Core Module 47`, `Core Module 56`, `Data Models & Domain (C25)`?**
   _High betweenness centrality (0.038) - this node is a cross-community bridge._
+- **Why does `draw()` connect `Core Module 8` to `HTTP Controllers & Routing (C0)`, `Core Module 32`, `Database Schema (C68)`, `Core Module 69`, `Core Module 6`, `Data Models & Domain (C7)`, `Database Schema (C9)`, `Core Module 47`, `Core Module 56`, `Data Models & Domain (C25)`?**
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
 - **Why does `F()` connect `Core Module 6` to `HTTP Controllers & Routing (C2)`, `Core Module 4`, `Core Module 8`, `HTTP Controllers & Routing (C40)`, `Core Module 45`, `Core Module 14`, `Core Module 15`, `Core Module 23`, `Core Module 56`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+  _High betweenness centrality (0.031) - this node is a cross-community bridge._
 - **Are the 16 inferred relationships involving `x()` (e.g. with `g()` and `_i()`) actually correct?**
   _`x()` has 16 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 20 inferred relationships involving `te()` (e.g. with `je()` and `Pr()`) actually correct?**
