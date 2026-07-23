@@ -27,6 +27,10 @@ export MAIL_ENCRYPTION="${MAIL_ENCRYPTION:-tls}"
 export MAIL_USERNAME="${MAIL_USERNAME}"
 export MAIL_PASSWORD="${MAIL_PASSWORD}"
 export MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS}"
+export RESEND_API_KEY="${RESEND_API_KEY}"
+
+export NOCAPTCHA_SITEKEY="${NOCAPTCHA_SITEKEY}"
+export NOCAPTCHA_SECRET="${NOCAPTCHA_SECRET}"
 
 # Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
@@ -72,6 +76,10 @@ MAIL_USERNAME="$MAIL_USERNAME"
 MAIL_PASSWORD="$MAIL_PASSWORD"
 MAIL_ENCRYPTION="$MAIL_ENCRYPTION"
 MAIL_FROM_ADDRESS="$MAIL_FROM_ADDRESS"
+RESEND_API_KEY="$RESEND_API_KEY"
+
+NOCAPTCHA_SITEKEY="$NOCAPTCHA_SITEKEY"
+NOCAPTCHA_SECRET="$NOCAPTCHA_SECRET"
 
 FILESYSTEM_DISK="local"
 BROADCAST_CONNECTION="log"
@@ -79,8 +87,11 @@ EOF
 
 # Run migrations and setup
 # Skip migrations if they timeout (database might not be fully ready)
-timeout 15 php artisan migrate --force --no-interaction 2>/dev/null || echo "Migrations skipped or timed out"
-php artisan storage:link --quiet 2>/dev/null || true
+timeout 15 php artisan migrate --force --no-interaction || echo "Migrations skipped or timed out"
+php artisan storage:link || true
 
-# Start Laravel server
+echo "=== Reached config cache step ==="
+php artisan config:clear
+php artisan config:cache
+echo "=== Starting server ==="
 exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"

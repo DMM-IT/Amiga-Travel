@@ -16,6 +16,7 @@
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^3.8",
         "predis/predis": "^3.5",
+        "resend/resend-laravel": "^1.4",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/browsershot": "^5.4",
         "spatie/laravel-pdf": "^2.12"
