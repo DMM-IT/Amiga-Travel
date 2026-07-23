@@ -49,6 +49,7 @@ class BookingForm extends Component
     public bool $showPassengerInfoModal = false;
     public bool $showPwdTypeModal = false;
     public bool $showModeDropdown = false;
+    public bool $showOperatorDropdown = false;
     public bool $showOriginDropdown = false;
     public bool $showDestinationDropdown = false;
     public string $originSearch = '';
@@ -105,6 +106,7 @@ class BookingForm extends Component
     public string $driver_name = '';
     public ?string $driver_birthday = null;
     public bool $showBaggageRules = false;
+    public bool $hasExtraBaggage = false;
     public \Illuminate\Support\Collection $vehicleBrandCatalog;
     public \Illuminate\Support\Collection $vehicleModelCatalog;
 
@@ -151,6 +153,10 @@ class BookingForm extends Component
                 if (property_exists($this, $key)) {
                     $this->{$key} = $value;
                 }
+            }
+            // Manually map hasExtraBaggage since it's camelCase but stored as snake_case in draft
+            if (isset($draft['has_extra_baggage'])) {
+                $this->hasExtraBaggage = $draft['has_extra_baggage'];
             }
         } else {
             // If we have package params, clear the draft to avoid conflicts
@@ -530,9 +536,21 @@ public function selectedSchedule(): ?array
     {
         $this->showModeDropdown = ! $this->showModeDropdown;
         if ($this->showModeDropdown) {
+            $this->showOperatorDropdown = false;
             $this->showOriginDropdown = false;
             $this->showDestinationDropdown = false;
             $this->dispatch('dropdownOpened', 'mode');
+        }
+    }
+
+    public function toggleOperatorDropdown(): void
+    {
+        $this->showOperatorDropdown = ! $this->showOperatorDropdown;
+        if ($this->showOperatorDropdown) {
+            $this->showModeDropdown = false;
+            $this->showOriginDropdown = false;
+            $this->showDestinationDropdown = false;
+            $this->dispatch('dropdownOpened', 'operator');
         }
     }
 
@@ -541,6 +559,7 @@ public function selectedSchedule(): ?array
         // If another dropdown opened and it's not one of BookingForm's, close ours.
         if ($name === null) {
             $this->showModeDropdown = false;
+            $this->showOperatorDropdown = false;
             $this->showOriginDropdown = false;
             $this->showDestinationDropdown = false;
             return;
@@ -548,6 +567,9 @@ public function selectedSchedule(): ?array
 
         if ($name !== 'mode') {
             $this->showModeDropdown = false;
+        }
+        if ($name !== 'operator') {
+            $this->showOperatorDropdown = false;
         }
         if ($name !== 'origin') {
             $this->showOriginDropdown = false;
@@ -571,6 +593,16 @@ public function selectedSchedule(): ?array
         $this->availableSchedules = [];
         $this->resetVehicleData();
         $this->showModeDropdown = false;
+    }
+
+    public function selectOperator(?string $operator): void
+    {
+        $this->operator = $operator;
+        $this->selected_schedule_id = null;
+        $this->availableSchedules = [];
+        $this->showOperatorDropdown = false;
+        $this->updateAvailableScheduleDates();
+        $this->saveDraft();
     }
 
     protected function resetVehicleData(): void
@@ -962,6 +994,11 @@ public function selectedSchedule(): ?array
         $this->saveDraft();
     }
 
+    public function updatedHasExtraBaggage(bool $value): void
+    {
+        $this->saveDraft();
+    }
+
     public function updatedVehicleBookingMethod(string $value): void
     {
         if ($value === 'category') {
@@ -1286,6 +1323,7 @@ public function selectedSchedule(): ?array
             'vehicle_type' => $this->vehicle_type,
             'vehicle_plate_number' => $this->vehicle_plate_number,
             'vehicle_price' => $this->vehicle_price,
+            'has_extra_baggage' => $this->hasExtraBaggage,
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
             'selected_hotel_id' => $this->selected_hotel_id,

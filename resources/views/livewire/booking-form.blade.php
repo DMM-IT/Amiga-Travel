@@ -196,12 +196,36 @@
 
                                 <label class="relative block">
                                     <span class="text-slate-700 font-semibold text-sm">Operator</span>
-                                    <select wire:model.live="operator" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 h-12 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
-                                        <option value="">All operators</option>
-                                        @foreach($this->operators as $op)
-                                            <option value="{{ $op }}">{{ $op }}</option>
-                                        @endforeach
-                                    </select>
+                                    <button type="button" wire:click.prevent="toggleOperatorDropdown" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
+                                        <span>{{ $operator ?: 'All operators' }}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    @if ($showOperatorDropdown)
+                                        <div class="absolute left-0 right-0 top-full mt-1 z-20 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+                                            <div class="max-h-64 overflow-y-auto px-2 py-2 space-y-1">
+                                                <button type="button" wire:click.prevent="selectOperator(null)" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ blank($operator) ? 'bg-slate-50 font-semibold' : '' }}">
+                                                    <div class="flex items-center justify-between gap-3">
+                                                        <span>All operators</span>
+                                                        @if(blank($operator))
+                                                            <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
+                                                        @endif
+                                                    </div>
+                                                </button>
+                                                @foreach($this->operators as $op)
+                                                    <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $operator === $op ? 'bg-slate-50 font-semibold' : '' }}">
+                                                        <div class="flex items-center justify-between gap-3">
+                                                            <span>{{ $op }}</span>
+                                                            @if($operator === $op)
+                                                                <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
+                                                            @endif
+                                                        </div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 </label>
 
                             <div class="lg:col-span-2">
@@ -495,7 +519,7 @@
                                                     </svg>
                                                     <div>
                                                         <p class="font-semibold text-slate-900">Baggage Rules</p>
-                                                        <p class="text-sm text-slate-600">{{ $this->baggageRules['name'] ?? 'View baggage allowances and fees' }}</p>
+                                                        <p class="text-sm text-slate-600">{{ \Illuminate\Support\Arr::get($this->baggageRules, 'name', 'View baggage allowances and fees') }}</p>
                                                     </div>
                                                 </div>
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform {{ $showBaggageRules ? 'rotate-180' : '' }}" viewBox="0 0 24 24" fill="currentColor">
@@ -505,36 +529,36 @@
                                             @if($showBaggageRules)
                                                 <div class="mt-4 border-t border-slate-200 pt-4">
                                                     <p class="text-xs text-slate-500 mb-3">Last verified: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'meta.last_verified', 'July 23, 2026') }}</p>
-                                                    @if($this->baggageRules['carry_on'])
+                                                    @if(\Illuminate\Support\Arr::get($this->baggageRules, 'carry_on'))
                                                         <div class="mb-4">
                                                             <h4 class="font-semibold text-slate-900 mb-2">Carry-on Baggage</h4>
-                                                            <p class="text-sm text-slate-600 mb-2">{{ $this->baggageRules['carry_on']['description'] ?? '' }}</p>
+                                                            <p class="text-sm text-slate-600 mb-2">{{ \Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.description', '') }}</p>
                                                             <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
-                                                                @if($this->baggageRules['carry_on']['combined_weight_kg'])
-                                                                    <li>Combined weight: {{ $this->baggageRules['carry_on']['combined_weight_kg'] }}kg</li>
+                                                                @if(\Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.combined_weight_kg'))
+                                                                    <li>Combined weight: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.combined_weight_kg') }}kg</li>
                                                                 @endif
-                                                                @if($this->baggageRules['carry_on']['hand_carry_size_cm'])
-                                                                    <li>Hand-carry size: {{ $this->baggageRules['carry_on']['hand_carry_size_cm'] }}</li>
+                                                                @if(\Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.hand_carry_size_cm'))
+                                                                    <li>Hand-carry size: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.hand_carry_size_cm') }}</li>
                                                                 @endif
-                                                                @if($this->baggageRules['carry_on']['personal_item_size_cm'])
-                                                                    <li>Personal item size: {{ $this->baggageRules['carry_on']['personal_item_size_cm'] }}</li>
+                                                                @if(\Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.personal_item_size_cm'))
+                                                                    <li>Personal item size: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.personal_item_size_cm') }}</li>
                                                                 @endif
-                                                                @if($this->baggageRules['carry_on']['note'])
-                                                                    <li>{{ $this->baggageRules['carry_on']['note'] }}</li>
+                                                                @if(\Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.note'))
+                                                                    <li>{{ \Illuminate\Support\Arr::get($this->baggageRules, 'carry_on.note') }}</li>
                                                                 @endif
                                                             </ul>
                                                         </div>
                                                     @endif
-                                                    @if($this->baggageRules['checked_baggage'])
+                                                    @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage'))
                                                         <div>
                                                             <h4 class="font-semibold text-slate-900 mb-2">Checked Baggage</h4>
-                                                            @if($this->baggageRules['checked_baggage']['free_allowance_kg'])
-                                                                <p class="text-sm text-slate-600 mb-2">Free allowance: {{ $this->baggageRules['checked_baggage']['free_allowance_kg'] }}kg</p>
+                                                            @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.free_allowance_kg'))
+                                                                <p class="text-sm text-slate-600 mb-2">Free allowance: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.free_allowance_kg') }}kg</p>
                                                             @endif
-                                                            @if($this->baggageRules['checked_baggage']['max_single_bag_weight_kg'])
-                                                                <p class="text-sm text-slate-600 mb-2">Max single bag weight: {{ $this->baggageRules['checked_baggage']['max_single_bag_weight_kg'] }}kg</p>
+                                                            @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.max_single_bag_weight_kg'))
+                                                                <p class="text-sm text-slate-600 mb-2">Max single bag weight: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.max_single_bag_weight_kg') }}kg</p>
                                                             @endif
-                                                            @if($this->baggageRules['checked_baggage']['fare_bundles'])
+                                                            @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.fare_bundles'))
                                                                 <div class="overflow-x-auto">
                                                                     <table class="w-full text-sm text-slate-600">
                                                                         <thead class="text-slate-900 font-semibold">
@@ -544,21 +568,21 @@
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            @foreach($this->baggageRules['checked_baggage']['fare_bundles'] as $bundle)
+                                                                            @foreach(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.fare_bundles', []) as $bundle)
                                                                                 <tr class="border-t border-slate-200">
-                                                                                    <td class="px-2 py-2">{{ $bundle['name'] }}</td>
-                                                                                    <td class="px-2 py-2 text-right">{{ $bundle['free_checked_kg'] }}kg</td>
+                                                                                    <td class="px-2 py-2">{{ \Illuminate\Support\Arr::get($bundle, 'name') }}</td>
+                                                                                    <td class="px-2 py-2 text-right">{{ \Illuminate\Support\Arr::get($bundle, 'free_checked_kg') }}kg</td>
                                                                                 </tr>
                                                                             @endforeach
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
                                                             @endif
-                                                            @if($this->baggageRules['checked_baggage']['prepaid_online'])
-                                                                <p class="text-sm text-slate-600 mt-2">Prepaid online (domestic 20kg): {{ $this->baggageRules['checked_baggage']['prepaid_online']['domestic_20kg_php'] ?? '' }}</p>
+                                                            @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.prepaid_online'))
+                                                                <p class="text-sm text-slate-600 mt-2">Prepaid online (domestic 20kg): {{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.prepaid_online.domestic_20kg_php', '') }}</p>
                                                             @endif
-                                                            @if($this->baggageRules['checked_baggage']['excess_rate_php_per_kg'])
-                                                                <p class="text-sm text-slate-600 mt-2">Excess rate: ₱{{ $this->baggageRules['checked_baggage']['excess_rate_php_per_kg'] }}/kg</p>
+                                                            @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.excess_rate_php_per_kg'))
+                                                                <p class="text-sm text-slate-600 mt-2">Excess rate: ₱{{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.excess_rate_php_per_kg') }}/kg</p>
                                                             @endif
                                                             <p class="text-xs text-slate-500 mt-3">Rates subject to change - confirm at booking</p>
                                                         </div>
@@ -657,6 +681,28 @@
                                                     @endforeach
                                                 </div>
                                             </div>
+                                        @endif
+
+                                        {{-- Baggage toggle --}}
+                                        @if($this->baggageRules)
+                                            @php
+                                                $freeAllowance = \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.free_allowance_kg');
+                                            @endphp
+                                            @if($freeAllowance)
+                                                <div class="mt-6 border-t border-slate-200 pt-6">
+                                                    <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                                                        <div>
+                                                            <p class="text-slate-900 font-bold text-lg">Baggage Allowance</p>
+                                                            <p class="mt-1 text-sm text-slate-600">Free baggage allowance: {{ $freeAllowance }}kg</p>
+                                                        </div>
+                                                        <label class="relative inline-flex cursor-pointer items-center gap-3">
+                                                            <input type="checkbox" wire:model.live="hasExtraBaggage" class="peer sr-only">
+                                                            <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#db2777] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#db2777]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+                                                            <span class="text-sm font-semibold text-slate-700">{{ $hasExtraBaggage ? 'Add Extra Baggage' : 'No Extra Baggage' }}</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         @endif
                                     @endif
                                 </div>
