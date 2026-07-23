@@ -47,11 +47,11 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->rows(5)
                                 ->columnSpanFull(),
                         ]),
-                    Section::make('Quick Facts')
-                        ->description('Update the quick facts shown on the about page')
+                    Section::make('Did you know?')
+                        ->description('Update the did you know facts shown on the about page')
                         ->schema([
                             Repeater::make('content.quick_facts')
-                                ->label('Quick Facts')
+                                ->label('Did you know?')
                                 ->schema([
                                     TextInput::make('label')
                                         ->label('Fact Label')

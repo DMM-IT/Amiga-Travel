@@ -35,7 +35,7 @@
                 <div class="absolute top-0 right-0 h-40 w-40 bg-emerald-50 rounded-full -mr-16 -mt-16 z-0"></div>
                 <div class="relative z-10 space-y-6">
                     <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <span class="h-2 w-2 rounded-full bg-emerald-600"></span> Quick Facts
+                        <span class="h-2 w-2 rounded-full bg-emerald-600"></span> Did you know?
                     </h3>
                     
                     <div class="space-y-4">
