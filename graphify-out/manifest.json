@@ -55,8 +55,8 @@
     "semantic_hash": "fe3e01f993f03ee84d2272b3e7ffb402"
   },
   "app/Filament/Resources/BookingResource.php": {
-    "mtime": 1784728053.3608897,
-    "ast_hash": "2276037060c5c8159c906ebf3f7346d6",
+    "mtime": 1784791489.1373794,
+    "ast_hash": "8762eeb542220d81e9326d181f83382f",
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource/Pages/CreateBooking.php": {
@@ -210,9 +210,9 @@
     "semantic_hash": "818834da93cf540bbfb6ef31643469ee"
   },
   "app/Filament/Resources/TransactionResource.php": {
-    "mtime": 1784620036.7940817,
-    "ast_hash": "0ce02309c84ff99c1f26164674e4ffcd",
-    "semantic_hash": "0ce02309c84ff99c1f26164674e4ffcd"
+    "mtime": 1784791479.1472938,
+    "ast_hash": "a7c289d3ef69081ad9491de31be74642",
+    "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource/Pages/ListTransactions.php": {
     "mtime": 1784467577.1205118,
@@ -320,8 +320,8 @@
     "semantic_hash": "fb5e9bce529d142b86858fb63e215af1"
   },
   "app/Http/Controllers/Api/BookingController.php": {
-    "mtime": 1784728053.3608897,
-    "ast_hash": "16eb8a87fd1f7a672bea98eba0d2154b",
+    "mtime": 1784791532.381687,
+    "ast_hash": "7a0562d425f6ecd7677bc34fe9ad0f68",
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/DiscountController.php": {
@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1784645810.9159384,
-    "ast_hash": "0b8425c340939a6954885221d11d10fc",
+    "mtime": 1784792345.6149874,
+    "ast_hash": "605ab899a5150eda750c4f9b20bf7869",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -430,8 +430,8 @@
     "semantic_hash": "632bdd8126b3e0f8220ddd54f8bbe6b1"
   },
   "app/Models/Booking.php": {
-    "mtime": 1784728053.3608897,
-    "ast_hash": "702ca98e46ac6e38fcb955cd34d1bea9",
+    "mtime": 1784791481.2558484,
+    "ast_hash": "99af837d2f4c35044629e572247cd053",
     "semantic_hash": ""
   },
   "app/Models/Discount.php": {
@@ -460,8 +460,8 @@
     "semantic_hash": "5ba8e17f265eea5b8d5331f898f7d125"
   },
   "app/Models/Schedule.php": {
-    "mtime": 1784645823.2709284,
-    "ast_hash": "a4c1dea894c7789b8f0dec5ff8f1bd4a",
+    "mtime": 1784790919.5005612,
+    "ast_hash": "0c4fb2b2f41648a5a86a4a0c419c4ded",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -490,8 +490,8 @@
     "semantic_hash": "d9665732ad95eb15048f6fcd8180355d"
   },
   "app/Models/User.php": {
-    "mtime": 1784721175.1477401,
-    "ast_hash": "a998e38a58bd6557cec11f9c7d30a235",
+    "mtime": 1784791406.0132434,
+    "ast_hash": "0efe49df80cbe9fdf7672f8891296020",
     "semantic_hash": ""
   },
   "app/Models/UserLoginHistory.php": {
@@ -555,9 +555,9 @@
     "semantic_hash": ""
   },
   "config/airline_seating.php": {
-    "mtime": 1784467577.154904,
-    "ast_hash": "149904c8c9caa24aa312e6ac79a70de4",
-    "semantic_hash": "149904c8c9caa24aa312e6ac79a70de4"
+    "mtime": 1784790919.5005612,
+    "ast_hash": "23b8b1645d5906a4660e6ec29d8ccba0",
+    "semantic_hash": ""
   },
   "config/app.php": {
     "mtime": 1784467577.154904,
@@ -565,9 +565,9 @@
     "semantic_hash": "c4104085ebdc31af8b213275b86a5df9"
   },
   "config/auth.php": {
-    "mtime": 1784467577.154904,
-    "ast_hash": "26354511ab860b301f2a3554bc388b91",
-    "semantic_hash": "26354511ab860b301f2a3554bc388b91"
+    "mtime": 1784791527.3943305,
+    "ast_hash": "69bf8cc826319851eea8d2b35efa2189",
+    "semantic_hash": ""
   },
   "config/cache.php": {
     "mtime": 1784467577.1564066,
@@ -870,9 +870,9 @@
     "semantic_hash": "7c839b3f8e4e82ef1a1398d1b86f2b8c"
   },
   "database/seeders/TransportClassSeeder.php": {
-    "mtime": 1784467577.1832314,
-    "ast_hash": "15b5ae8785e8e5b9b768747cd48c5d99",
-    "semantic_hash": "15b5ae8785e8e5b9b768747cd48c5d99"
+    "mtime": 1784790919.5029204,
+    "ast_hash": "c42b6db2e38a50f8ef89a583cd7bc5a1",
+    "semantic_hash": ""
   },
   "database/seeders/VehicleRateSeeder.php": {
     "mtime": 1784560942.409107,
@@ -930,17 +930,17 @@
     "semantic_hash": "e07862ac930ed4d8479185d52c6cc66d"
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1784785065.7224176,
-    "ast_hash": "8e43732da82432e4dc6ac42d26ffbcea",
+    "mtime": 1784792737.0046587,
+    "ast_hash": "c9a657fbd2d86a92ca1343215332fc80",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784733458.9859645,
+    "mtime": 1784792761.1012654,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": "c74f5e1a5f32575a4b26f639876ee827"
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784733458.9809463,
+    "mtime": 1784792761.0993476,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
   },
@@ -960,9 +960,9 @@
     "semantic_hash": "7bd839b67ebee22174be9f4da4521b6f"
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1784733458.9859645,
-    "ast_hash": "267317c7b6c7c1c5e9a4ea52839d3ddd",
-    "semantic_hash": "267317c7b6c7c1c5e9a4ea52839d3ddd"
+    "mtime": 1784792761.1056297,
+    "ast_hash": "4890f3b175e4995d5d822870287e7677",
+    "semantic_hash": ""
   },
   "flutter_app/macos/RunnerTests/RunnerTests.swift": {
     "mtime": 1784467577.299418,
@@ -995,12 +995,12 @@
     "semantic_hash": "8e66e1314dbabf0aa13062137d7bf013"
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784733458.9859645,
+    "mtime": 1784792761.1102054,
     "ast_hash": "6a8d554194ff53c03568d096220bb8d7",
     "semantic_hash": "6a8d554194ff53c03568d096220bb8d7"
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784733458.9859645,
+    "mtime": 1784792761.1081674,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
   },
@@ -1275,8 +1275,8 @@
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1784646203.7309117,
-    "ast_hash": "737228a2426715e9db9449406eab6c5a",
+    "mtime": 1784790919.5029204,
+    "ast_hash": "72647e77bdf651db22fc8b2defdb70be",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
@@ -1350,8 +1350,8 @@
     "semantic_hash": "1a03818ea91deb4f3989c6c994e5867c"
   },
   "routes/api.php": {
-    "mtime": 1784731262.6917858,
-    "ast_hash": "60edf833d6b3877334d17c9fa07ce452",
+    "mtime": 1784791530.3549848,
+    "ast_hash": "1add616a485e57833d5dfbbfd709d8fd",
     "semantic_hash": ""
   },
   "routes/console.php": {
@@ -1595,8 +1595,8 @@
     "semantic_hash": "46690fb8ffaf7d227d8bc4713f31140d"
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1784785065.7224176,
-    "ast_hash": "79cace88bb8ffb8311b29e43fa9e53a4",
+    "mtime": 1784792734.7919128,
+    "ast_hash": "1ccd5e646bddf14754fccc0bee152b09",
     "semantic_hash": ""
   },
   "flutter_app/web/index.html": {
@@ -2025,8 +2025,8 @@
     "semantic_hash": "3e52c616f2e62b3784a82b4b609b98c3"
   },
   "app/Filament/Resources/ApkUserResource.php": {
-    "mtime": 1784706674.9178414,
-    "ast_hash": "5d0d84ccc332c874b909161d7f964f06",
+    "mtime": 1784791621.3751225,
+    "ast_hash": "ac11b340f568b00de3f4da6237b1c943",
     "semantic_hash": ""
   },
   "app/Filament/Resources/ApkUserResource/Pages/ListApkUsers.php": {
@@ -2175,13 +2175,93 @@
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/ephemeral/flutter_export_environment.sh": {
-    "mtime": 1784468099.9121797,
-    "ast_hash": "cf1d4c8c98618e85492e8b89d1204f41",
+    "mtime": 1784792760.8770728,
+    "ast_hash": "e128c2e9d1c22ee86ffa54399cb8c95a",
     "semantic_hash": ""
   },
   "APK_UPDATE_GUIDE.md": {
     "mtime": 1784785058.824658,
     "ast_hash": "06e04ef6c3e12553051e2b024aa047a5",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/ApkUserResource/RelationManagers/GraciaPointLedgersRelationManager.php": {
+    "mtime": 1784791623.500078,
+    "ast_hash": "74c74d2dbccec052895945c53e416b9c",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/GraciaEarningRuleResource.php": {
+    "mtime": 1784791596.9758093,
+    "ast_hash": "faf7b40bedc5aceb7a8dda7ca9c77b0f",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/GraciaEarningRuleResource/Pages/CreateGraciaEarningRule.php": {
+    "mtime": 1784791581.3782368,
+    "ast_hash": "bbeaa2a3c379550e84bda1d785793acf",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/GraciaEarningRuleResource/Pages/EditGraciaEarningRule.php": {
+    "mtime": 1784791581.3925605,
+    "ast_hash": "ede73f53d46651fba872f317122ee061",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/GraciaEarningRuleResource/Pages/ListGraciaEarningRules.php": {
+    "mtime": 1784791581.3612742,
+    "ast_hash": "debb1915f586f55e625a6b5c53d455eb",
+    "semantic_hash": ""
+  },
+  "app/Http/Controllers/Api/GraciaPointsController.php": {
+    "mtime": 1784791534.446195,
+    "ast_hash": "8ab61964381ec46e70357c5de01adca5",
+    "semantic_hash": ""
+  },
+  "app/Models/GraciaEarningRule.php": {
+    "mtime": 1784791384.818002,
+    "ast_hash": "7ee6e44479aacaf67232472e8ef02e5a",
+    "semantic_hash": ""
+  },
+  "app/Models/GraciaPointLedger.php": {
+    "mtime": 1784791388.878931,
+    "ast_hash": "4a1b3ae67dfc0b9c4d6eda95690796f6",
+    "semantic_hash": ""
+  },
+  "app/Models/GraciaUserBalance.php": {
+    "mtime": 1784791386.8608253,
+    "ast_hash": "0cf5c370fc0a0fb49c5243b1d2b19dc2",
+    "semantic_hash": ""
+  },
+  "app/Services/GraciaPointsService.php": {
+    "mtime": 1784791443.070902,
+    "ast_hash": "e2781fa6bcf45e89f912d8d44168796e",
+    "semantic_hash": ""
+  },
+  "config/captcha.php": {
+    "mtime": 1784785065.7224176,
+    "ast_hash": "82c155da581b679d9ff2efeb20b1ca8b",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_23_152147_create_gracia_earning_rules_table.php": {
+    "mtime": 1784791354.0480385,
+    "ast_hash": "d49d230731f6161c418b5e3ca5545b2c",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_23_152155_create_gracia_user_balances_table.php": {
+    "mtime": 1784791356.263435,
+    "ast_hash": "f51d3465ec35d4340dc408e93e5cc6a0",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_23_152203_create_gracia_point_ledgers_table.php": {
+    "mtime": 1784791358.3262808,
+    "ast_hash": "35b36375611bfafafd621237cc84fb2b",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_23_152205_add_user_id_to_bookings_table.php": {
+    "mtime": 1784791360.342575,
+    "ast_hash": "4c9fa886d8b14faedf242f0e239817f4",
+    "semantic_hash": ""
+  },
+  "tests/Feature/GraciaPointsServiceTest.php": {
+    "mtime": 1784791851.240008,
+    "ast_hash": "65a4f9b941cd37dada2fb3886aacabfe",
     "semantic_hash": ""
   }
 }
