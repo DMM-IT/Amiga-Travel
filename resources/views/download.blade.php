@@ -7,25 +7,25 @@
         $downloadSteps = $pageContent['download_steps'] ?? [
             [
                 'number' => '1',
-                'title' => 'Open in Browser',
-                'description' => 'Visit this website using Chrome, Edge, or Safari on your phone or computer.',
-                'icon' => 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9',
+                'title' => 'Download APK',
+                'description' => 'Tap the "Download Android APK" button to download the installation file to your device.',
+                'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
                 'icon_color' => '#216417',
                 'bg_color' => '#eaf5e8',
             ],
             [
                 'number' => '2',
-                'title' => 'Tap Install',
-                'description' => 'Click the "Install App" button above, or use your browser\'s "Add to Home Screen" option.',
-                'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
+                'title' => 'Allow Install',
+                'description' => 'Open the downloaded file and allow installation from unknown sources if your device prompts you.',
+                'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
                 'icon_color' => '#ee018d',
                 'bg_color' => '#fce7f3',
             ],
             [
                 'number' => '3',
                 'title' => 'You\'re All Set!',
-                'description' => 'The app icon appears on your home screen. Open it anytime for instant access to bookings.',
-                'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                'description' => 'The app icon appears on your home screen. Open it to start booking trips and earning points!',
+                'icon' => 'M13 10V3L4 14h7v7l9-11h-7z',
                 'icon_color' => '#216417',
                 'bg_color' => '#eaf5e8',
             ],
@@ -91,7 +91,7 @@
                         <div class="flex flex-col items-center lg:items-start">
                             <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 mb-3">
                                 <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-3.598 1.543A3.002 3.002 0 007 13a3 3 0 00-2 5.236V18a1 1 0 001 1h8a1 1 0 001-1v-.764A3.001 3.001 0 0013 13a3.002 3.002 0 00-.244-1.18l2.85-1.22a1 1 0 000-1.84l-5.212-2.68zM7 14a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z"/></svg>
-                                Android APK & Web App
+                                Android APK
                             </span>
                             <h1 class="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
                                 {!! $pageContent['title'] ?? 'Get the <span class="text-emerald-400">Amiga Gracia</span> App' !!}
@@ -99,51 +99,21 @@
                         </div>
                     </div>
                     <p class="mt-6 text-base sm:text-lg text-white/80 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                        {{ $pageContent['description'] ?? 'Book ferry tickets, flights, and tour packages right from your phone. Download our compiled Android APK or run the web app for a fast, hassle-free booking experience.' }}
+                        {{ $pageContent['description'] ?? 'Book ferry tickets, flights, and tour packages right from your phone. Download our compiled Android APK for a fast, hassle-free booking experience.' }}
                     </p>
 
                     <!-- Install Button (PWA) & APK Download -->
-                    <div class="mt-8 flex flex-col sm:flex-row items-center gap-4 lg:justify-start justify-center" x-data="pwaInstall()">
-                        <button
-                            x-show="canInstall"
-                            x-cloak
-                            @click="install()"
-                            class="group inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-900/30 hover:shadow-xl hover:shadow-emerald-900/40 transition-all duration-300 hover:-translate-y-0.5"
-                        >
-                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Install Web App
-                        </button>
-
-                        <!-- Fallback: Manual Instructions -->
-                        <div x-show="!canInstall" x-cloak class="flex flex-col sm:flex-row items-center gap-4">
-                            <a href="/"
-                               class="group inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-900/30 hover:shadow-xl hover:shadow-emerald-900/40 transition-all duration-300 hover:-translate-y-0.5"
-                            >
-                                <svg class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                                Open Web App
-                            </a>
-                        </div>
-
+                    <div class="mt-8 flex flex-col sm:flex-row items-center gap-4 lg:justify-start justify-center">
                         <!-- Direct Flutter APK Download Link -->
                         <a href="{{ asset('downloads/amiga-travel.apk') }}"
-                           class="group inline-flex items-center gap-3 px-8 py-4 bg-white text-emerald-950 hover:bg-slate-100 font-bold text-base rounded-2xl shadow-lg shadow-black/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 border border-white/20"
+                           class="group inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-900/30 hover:shadow-xl hover:shadow-emerald-900/40 transition-all duration-300 hover:-translate-y-0.5 border border-transparent"
                            download
                         >
-                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current text-emerald-600" viewBox="0 0 24 24">
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current text-white" viewBox="0 0 24 24">
                                 <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM11.1 5.6a.49.49 0 00-.23-.65l-1.3-.75a.51.51 0 00-.69.18.49.49 0 00.18.69l1.3.75c.08.05.17.08.26.08.17 0 .34-.09.43-.25zM12.9 5.6a.49.49 0 00.43.25c.09 0 .18-.03.26-.08l1.3-.75a.49.49 0 00.18-.69.51.51 0 00-.69-.18l-1.3.75a.49.49 0 00-.23.65zM12 5a3 3 0 013 3H9a3 3 0 013-3zM19.5 8c-.83 0-1.5.67-1.5 1.5v6c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-6c0-.83-.67-1.5-1.5-1.5zM4.5 8C3.67 8 3 8.67 3 9.5v6c0 .83.67 1.5 1.5 1.5S6 16.33 6 15.5v-6C6 8.67 5.33 8 4.5 8z"/>
                             </svg>
                             Download Android APK
                         </a>
-
-                        <!-- Already installed indicator -->
-                        <div x-show="isInstalled" x-cloak class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-sm text-emerald-300 font-semibold text-sm rounded-full border border-emerald-400/30">
-                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                            App Installed
-                        </div>
                     </div>
 
                     <!-- App Info Grid -->
@@ -224,12 +194,42 @@
         </div>
     </div>
 
+    <!-- APK Benefits Section -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8 sm:p-12">
+            <div class="text-center mb-10">
+                <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #ee018d; background: #fce7f3;">Exclusive App Benefits</span>
+                <h2 class="mt-4 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Why download the app?</h2>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-8 lg:gap-12">
+                <div class="flex gap-4">
+                    <div class="h-14 w-14 shrink-0 rounded-2xl bg-[#eaf5e8] text-[#216417] flex items-center justify-center shadow-sm">
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg">Gracia Point System</h3>
+                        <p class="text-sm text-slate-500 mt-2 leading-relaxed">Earn points on every booking made through the app. Redeem them for discounts on your future trips!</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="h-14 w-14 shrink-0 rounded-2xl bg-[#fce7f3] text-[#ee018d] flex items-center justify-center shadow-sm">
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg">Exclusive Vouchers</h3>
+                        <p class="text-sm text-slate-500 mt-2 leading-relaxed">Get access to app-only promotions, seasonal vouchers, and special partner discounts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- How to Install Section -->
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="text-center mb-12">
-            <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #216417; background: #eaf5e8;">{{ data_get($pageContent, 'how_it_works_label', 'How It Works') }}</span>
+            <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #216417; background: #eaf5e8;">{{ data_get($pageContent, 'how_it_works_label', 'Installation Guide') }}</span>
             <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'how_it_works_title', 'Install in 3 Easy Steps') }}</h2>
-            <p class="mt-3 text-slate-500 max-w-lg mx-auto">{{ data_get($pageContent, 'how_it_works_description', 'No app store required. Install directly from your browser for a fast, lightweight experience.') }}</p>
+            <p class="mt-3 text-slate-500 max-w-lg mx-auto">{{ data_get($pageContent, 'how_it_works_description', 'Follow these simple steps to install the APK on your Android device.') }}</p>
         </div>
 
         <div class="grid sm:grid-cols-3 gap-8">
