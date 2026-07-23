@@ -93,4 +93,4 @@ php artisan storage:link --quiet 2>/dev/null || true
 # Start Laravel server
 php artisan config:clear
 php artisan config:cache
-exec vendor/bin/heroku-php-apache2 -p "${PORT:-10000}" public/
+exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"
