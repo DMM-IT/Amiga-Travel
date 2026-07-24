@@ -58,7 +58,15 @@ class ScheduleController extends Controller
         $mode = $request->input('mode', null);
         $operator = $request->input('operator', null);
 
-        $activeRule = \App\Models\GraciaPointRule::where('is_active', true)->first();
+        $activeRule = \App\Models\GraciaEarningRule::where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($query) {
+                $query->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+            })
+            ->latest('id')
+            ->first();
 
         $schedules = Schedule::forRouteAndDate($origin, $destination, $date, $mode, $operator)
             ->get()

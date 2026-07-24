@@ -8,6 +8,23 @@ use App\Services\VoucherService;
 
 class VoucherController extends Controller
 {
+    public function index()
+    {
+        $vouchers = \App\Models\Voucher::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('start_at')->orWhere('start_at', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('end_at')->orWhere('end_at', '>=', now());
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'vouchers' => $vouchers,
+        ]);
+    }
     public function validateVoucher(Request $request, VoucherService $voucherService)
     {
         $request->validate([
