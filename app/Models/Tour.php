@@ -26,11 +26,14 @@ class Tour extends Model
 
     protected static function booted()
     {
-        static::addGlobalScope('order', function ($query) {
-            $query->orderBy('country', 'asc')
-                  ->orderBy('sort_order', 'asc')
-                  ->orderBy('tour_name', 'asc');
-        });
+        // No global ordering scope, use local scope ordered() when needed
+    }
+
+    public function scopeOrdered($query)
+    {
+        $query->orderBy('country', 'asc')
+              ->orderBy('sort_order', 'asc')
+              ->orderBy('tour_name', 'asc');
     }
 
     public function dates(): HasMany

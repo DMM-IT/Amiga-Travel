@@ -212,7 +212,7 @@ class TourResource extends Resource
                         'ferry' => 'Ferry',
                     ]),
                 Tables\Filters\SelectFilter::make('country')
-                    ->options(fn() => Tour::distinct()->pluck('country', 'country')),
+                    ->options(fn() => Tour::reorder()->whereNotNull('country')->where('country', '!=', '')->distinct()->orderBy('country')->pluck('country', 'country')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -231,6 +231,11 @@ class TourResource extends Resource
         return [
             DatesRelationManager::class,
         ];
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->ordered();
     }
 
     public static function getPages(): array
