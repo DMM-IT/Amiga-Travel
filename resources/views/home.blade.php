@@ -175,4 +175,75 @@
         </div>
     </div>
 </div>
+
+{{-- Booking Request Cards --}}
+<div class="max-w-7xl mx-auto px-4 pb-12 mt-10">
+    <div class="text-center mb-10">
+        <h2 class="text-2xl font-black text-[#216417]">
+            {{ data_get($pageContent, 'booking_section_title', 'Request Travel Bookings') }}
+        </h2>
+
+        <p class="text-xs text-slate-500 mt-2">
+            {{ data_get($pageContent, 'booking_section_description', 'Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.') }}
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        @php
+            $bookingCards = data_get($pageContent, 'content.booking_cards', data_get($pageContent, 'booking_cards', []));
+            $totalCardsNeeded = 6;
+            $cards = [];
+            
+            // Add existing cards
+            foreach ($bookingCards as $card) {
+                if (count($cards) >= $totalCardsNeeded) {
+                    break;
+                }
+                $cards[] = $card;
+            }
+            
+            // Add placeholder cards if needed
+            while (count($cards) < $totalCardsNeeded) {
+                $cards[] = [
+                    'title' => 'Travel Booking',
+                    'description' => 'Kasiyahan po namin ang paglingkuran kayo.',
+                    'image' => null,
+                ];
+            }
+        @endphp
+
+        @foreach($cards as $card)
+            @php
+                $rawCardImage = data_get($card, 'image');
+                
+                if (is_array($rawCardImage)) {
+                    $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null;
+                }
+                
+                $cardImage = $rawCardImage
+                    ? asset('storage/' . $rawCardImage)
+                    : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                
+                $cardTitle = data_get($card, 'title', 'Travel Booking');
+                $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
+            @endphp
+            <a href="{{ url('/book/new') }}" class="group rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col overflow-hidden">
+                <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="w-full aspect-video object-cover">
+                <div class="p-6 flex flex-col flex-grow">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-7v4h4l-5 7z"/>
+                        </svg>
+                        Amiga - Best Travel Buddy
+                    </span>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">{{ $cardTitle }}</h3>
+                    <p class="text-sm text-slate-600 mb-4 flex-grow">{{ $cardDescription }}</p>
+                    <button class="w-full bg-[#ee018d] text-white text-sm font-bold py-3 px-6 rounded-full hover:bg-pink-700 transition-colors">
+                        {{ data_get($card, 'booking_button_text', 'Book Now') }}
+                    </button>
+                </div>
+            </a>
+        @endforeach
+    </div>
+</div>
 @endsection

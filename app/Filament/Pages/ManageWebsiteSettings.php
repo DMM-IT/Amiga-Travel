@@ -150,6 +150,72 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->label('CTA Button Text')
                                         ->maxLength(50),
                                 ]),
+                            Repeater::make('content.travel_service_cards')
+                                ->label('Travel & Booking Services Cards')
+                                ->schema([
+                                    TextInput::make('title')
+                                        ->label('Card Title')
+                                        ->required()
+                                        ->maxLength(120),
+                                    Textarea::make('description')
+                                        ->label('Card Description')
+                                        ->rows(3)
+                                        ->maxLength(255),
+                                    TextInput::make('note')
+                                        ->label('Note Text')
+                                        ->maxLength(80),
+                                    TextInput::make('link')
+                                        ->label('Card Link')
+                                        ->maxLength(255),
+                                    TextInput::make('color')
+                                        ->label('Color Class')
+                                        ->helperText('Add a Tailwind text color class such as text-pink-600 or text-emerald-700'),
+                                ])
+                                ->default([
+                                    [
+                                        'title' => '2GO Travel Booking',
+                                        'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel. Ideal for family retreats, business logistics, and leisure trips.',
+                                        'note' => 'Available Online',
+                                        'link' => '/book/new',
+                                        'color' => 'text-pink-600',
+                                    ],
+                                    [
+                                        'title' => 'Starlite Ferries Inc.',
+                                        'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings and roll-on/roll-off (RoRo) cargo slots.',
+                                        'note' => 'Available Online',
+                                        'link' => '/book/new',
+                                        'color' => 'text-emerald-700',
+                                    ],
+                                    [
+                                        'title' => 'Airline Ticketing',
+                                        'description' => 'Domestic and international flights powered by leading carriers including AirAsia, Cebu Pacific, and Philippine Airlines (PAL). Hassle-free check-ins and seat bookings.',
+                                        'note' => 'PAL, CebuPac, AirAsia',
+                                        'link' => '/book/new',
+                                        'color' => 'text-blue-600',
+                                    ],
+                                    [
+                                        'title' => 'Tour Packages',
+                                        'description' => 'Curated itineraries for local and international travel destinations, complete with accommodations and guides.',
+                                        'note' => 'Local & International',
+                                        'link' => '/tour-package',
+                                        'color' => 'text-purple-600',
+                                    ],
+                                    [
+                                        'title' => 'Apprenticeships & Training',
+                                        'description' => 'Custom-tailored hospitality training programs, onboard apprenticeship training options, and educational field trips in cooperation with 2GO.',
+                                        'note' => 'For Academe & Students',
+                                        'link' => '/contact-us',
+                                        'color' => 'text-orange-600',
+                                    ],
+                                    [
+                                        'title' => 'Custom Travel Arrangements',
+                                        'description' => 'Tailored travel packages for corporate retreats, family reunions, and large groups. We handle flight connections, hotel accommodation blocks, and group transport.',
+                                        'note' => 'Tailored For Groups',
+                                        'link' => '/contact-us',
+                                        'color' => 'text-teal-700',
+                                    ],
+                                ])
+                                ->columns(1),
                             Repeater::make('content.service_cards')
                                 ->label('Service Cards')
                                 ->schema([
@@ -743,6 +809,44 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->label('Secondary Card Button Text')
                                                 ->default('Check status →')
                                                 ->maxLength(50),
+                                        ]),
+                                    Section::make('Booking Cards Section')
+                                        ->description('Customize the booking cards section shown on home page')
+                                        ->schema([
+                                            TextInput::make('content.booking_section_title')
+                                                ->label('Section Title')
+                                                ->default('Request Travel Bookings')
+                                                ->maxLength(255),
+                                            Textarea::make('content.booking_section_description')
+                                                ->label('Section Description')
+                                                ->default('Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.')
+                                                ->rows(2)
+                                                ->maxLength(255),
+                                            Repeater::make('content.booking_cards')
+                                                ->label('Booking Cards')
+                                                ->addable(false)
+                                                ->deletable(false)
+                                                ->collapsible()
+                                                ->collapsed(false)
+                                                ->schema([
+                                                    TextInput::make('title')
+                                                        ->label('Card Title')
+                                                        ->required()
+                                                        ->maxLength(100),
+                                                    Textarea::make('description')
+                                                        ->label('Card Description')
+                                                        ->rows(2)
+                                                        ->maxLength(255),
+                                                    FileUpload::make('image')
+                                                        ->label('Card Image')
+                                                        ->image()
+                                                        ->directory('website-settings/booking-cards'),
+                                                    TextInput::make('booking_button_text')
+                                                        ->label('Button Text')
+                                                        ->default('Book Now')
+                                                        ->maxLength(50),
+                                                ])
+                                                ->columns(1),
                                         ]),
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),

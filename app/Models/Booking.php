@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Mail;
 
 class Booking extends Model
@@ -54,6 +55,10 @@ class Booking extends Model
         'voucher_code',
         'voucher_discount_amount',
         'subtotal_before_voucher',
+        'terms_accepted_at',
+        'terms_version',
+        'terms_accepted_ip',
+        'terms_accepted_user_agent',
     ];
 
     protected $casts = [
@@ -74,6 +79,7 @@ class Booking extends Model
         'is_rebooked' => 'boolean',
         'voucher_discount_amount' => 'decimal:2',
         'subtotal_before_voucher' => 'decimal:2',
+        'terms_accepted_at' => 'datetime',
     ];
 
     public function passengers(): HasMany
@@ -105,7 +111,7 @@ class Booking extends Model
         return $this->belongsTo(ScheduleAccommodation::class);
     }
 
-    public function transaction()
+    public function transaction(): HasOne
     {
         return $this->hasOne(Transaction::class);
     }
@@ -139,7 +145,7 @@ class Booking extends Model
     public function voucherRedemption(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(VoucherRedemption::class);
-    }
+    }     
 
     public function getScheduleSummaryAttribute(): ?string
     {
