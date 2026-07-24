@@ -252,7 +252,6 @@
             </div>
         </footer>
         @livewireScripts
-        <!-- Global Livewire Validation Error Auto-Scroll -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 let shouldScrollOnNextUpdate = false;
@@ -263,7 +262,7 @@
                     if (scrollTimeout) clearTimeout(scrollTimeout);
                     scrollTimeout = setTimeout(() => {
                         shouldScrollOnNextUpdate = false;
-                    }, 4000);
+                    }, 5000);
                 }
 
                 document.addEventListener('submit', () => {
@@ -275,9 +274,15 @@
                     if (button) {
                         const isSubmitType = button.getAttribute('type') === 'submit';
                         const hasWireClick = button.hasAttribute('wire:click');
-                        const isPrimaryAction = button.classList.contains('bg-blue-600') || button.classList.contains('bg-[#ee018d]') || button.classList.contains('bg-emerald-600');
-                        
-                        if (isSubmitType || hasWireClick || isPrimaryAction) {
+                        const hasWireSubmit = button.closest('form[wire\\:submit], form[wire\\:submit\\.prevent]') !== null;
+                        const isPrimaryAction =
+                            button.classList.contains('bg-blue-600') ||
+                            button.classList.contains('bg-[#ee018d]') ||
+                            button.classList.contains('bg-emerald-600') ||
+                            button.classList.contains('bg-[#db2777]') ||
+                            button.classList.contains('bg-[#216417]');
+
+                        if (isSubmitType || hasWireClick || hasWireSubmit || isPrimaryAction) {
                             setScrollTrigger();
                         }
                     }
@@ -286,46 +291,53 @@
                 document.addEventListener('livewire:init', () => {
                     Livewire.hook('commit', ({ succeed }) => {
                         succeed(() => {
+                            // Small delay to let Livewire update the DOM with error messages
                             setTimeout(() => {
                                 if (shouldScrollOnNextUpdate) {
                                     const selectors = [
                                         '[aria-invalid="true"]',
+                                        'p.text-rose-600',
+                                        'p.text-red-600',
+                                        'p.text-red-500',
+                                        '.invalid-feedback',
+                                        '.error-message',
                                         '.text-rose-600',
                                         '.text-red-600',
-                                        '.text-red-500',
-                                        '.invalid-feedback',
-                                        '.error-message'
                                     ];
 
                                     let firstErrorElement = null;
                                     for (const selector of selectors) {
-                                        firstErrorElement = document.querySelector(selector);
-                                        if (firstErrorElement) break;
+                                        const el = document.querySelector(selector);
+                                        if (el && el.offsetParent !== null) { // make sure it's visible
+                                            firstErrorElement = el;
+                                            break;
+                                        }
                                     }
 
                                     if (firstErrorElement) {
-                                        firstErrorElement.scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'center'
-                                        });
+                                        // Scroll to slightly above the error so users see context
+                                        const yOffset = -120;
+                                        const y = firstErrorElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                        window.scrollTo({ top: y, behavior: 'smooth' });
 
                                         shouldScrollOnNextUpdate = false;
 
+                                        // Try to focus the associated input
                                         let input = null;
                                         if (['INPUT', 'SELECT', 'TEXTAREA'].includes(firstErrorElement.tagName)) {
                                             input = firstErrorElement;
                                         } else {
-                                            const container = firstErrorElement.closest('.mb-4, .space-y-2, .grid, div');
+                                            const container = firstErrorElement.closest('label, .space-y-2, .grid, div');
                                             if (container) {
-                                                input = container.querySelector('input, select, textarea');
+                                                input = container.querySelector('input:not([type="hidden"]), select, textarea');
                                             }
                                         }
-                                        if (input) {
-                                            input.focus();
+                                        if (input && input.offsetParent !== null) {
+                                            input.focus({ preventScroll: true });
                                         }
                                     }
                                 }
-                            }, 100);
+                            }, 150);
                         });
                     });
                 });

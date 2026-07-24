@@ -20,6 +20,8 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Table;
@@ -198,6 +200,37 @@ class ScheduleResource extends Resource
             ])
             ->defaultSort('departure_time')
             ->filters([
+                Filter::make('search')
+                    ->form([
+                        TextInput::make('origin')
+                            ->label('')
+                            ->placeholder('search origin')
+                            ->live(),
+                        TextInput::make('destination')
+                            ->label('')
+                            ->placeholder('search destination')
+                            ->live(),
+                        TextInput::make('service_name')
+                            ->label('')
+                            ->placeholder('search name/model')
+                            ->live(),
+                    ])
+                    ->columns(3)
+                    ->query(function (Builder $query, array $data): void {
+                        if (filled($data['origin'])) {
+                            $query->whereHas('ferryRoute', function (Builder $query) use ($data): void {
+                                $query->where('origin', 'like', '%' . $data['origin'] . '%');
+                            });
+                        }
+                        if (filled($data['destination'])) {
+                            $query->whereHas('ferryRoute', function (Builder $query) use ($data): void {
+                                $query->where('destination', 'like', '%' . $data['destination'] . '%');
+                            });
+                        }
+                        if (filled($data['service_name'])) {
+                            $query->where('service_name', 'like', '%' . $data['service_name'] . '%');
+                        }
+                    }),
                 SelectFilter::make('mode')
                     ->label('Travel mode')
                     ->options([
@@ -215,7 +248,8 @@ class ScheduleResource extends Resource
                     ->label('Operator')
                     ->relationship('ferryRoute', 'operator')
                     ->searchable(),
-            ])
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormColumns(2)
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
