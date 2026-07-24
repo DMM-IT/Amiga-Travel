@@ -287,9 +287,15 @@
   "285": "TransportClassResource.php",
   "286": "UserResource.php",
   "287": "VehicleRateResource.php",
+  "288": "schedules.blade.php",
   "289": "Form",
+  "290": "tour-details.blade.php",
   "291": "AdminPanelProvider.php",
   "292": "oe",
   "293": "How to Update the Android App (APK)",
-  "294": "FerryRoute.php"
+  "294": "FerryRoute.php",
+  "295": "install_flutter.ps1",
+  "296": "mark_migration.php",
+  "297": "test-mail.php",
+  "298": "vite.config.js"
 }
