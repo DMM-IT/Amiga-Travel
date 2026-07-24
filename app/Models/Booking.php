@@ -50,6 +50,10 @@ class Booking extends Model
         'verified_by_user_id',
         'verified_at',
         'promotional_ticket_id',
+        'voucher_id',
+        'voucher_code',
+        'voucher_discount_amount',
+        'subtotal_before_voucher',
     ];
 
     protected $casts = [
@@ -68,6 +72,8 @@ class Booking extends Model
         'refund_amount' => 'decimal:2',
         'cancellation_window_expires_at' => 'datetime',
         'is_rebooked' => 'boolean',
+        'voucher_discount_amount' => 'decimal:2',
+        'subtotal_before_voucher' => 'decimal:2',
     ];
 
     public function passengers(): HasMany
@@ -123,6 +129,16 @@ class Booking extends Model
     public function promotionalTicket(): BelongsTo
     {
         return $this->belongsTo(PromotionalTicket::class);
+    }
+
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(Voucher::class);
+    }
+
+    public function voucherRedemption(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(VoucherRedemption::class);
     }
 
     public function getScheduleSummaryAttribute(): ?string

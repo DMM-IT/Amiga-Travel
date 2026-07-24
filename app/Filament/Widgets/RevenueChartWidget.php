@@ -5,7 +5,7 @@ namespace App\Filament\Widgets;
 use App\Support\ReportingService;
 use Filament\Widgets\Widget;
 
-class RevenueChart extends Widget
+class RevenueChartWidget extends Widget
 {
     protected static string $view = 'filament.widgets.revenue-chart';
 

@@ -202,7 +202,7 @@ class TourResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('sort_order', 'asc')
+            ->defaultSort('country', 'asc')
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active'),

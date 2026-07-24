@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-<div wire:poll.3s="refreshData" class="space-y-6">
+<div wire:poll.3s="refreshData" class="space-y-6 w-full">
 
     {{-- ═══ Header: Period Selector + Custom Dates + Export ═══ --}}
     <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
@@ -36,7 +36,7 @@
         {{-- Custom Date Range --}}
         @if($period === 'custom')
             <div class="mt-4 flex flex-wrap gap-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-                <div class="w-48">
+                <div class="flex-1 min-w-[200px] max-w-sm">
                     {{ $this->form }}
                 </div>
             </div>
@@ -52,9 +52,9 @@
             ? round((($stats['total_revenue'] - $stats['prev_total_revenue']) / $stats['prev_total_revenue']) * 100, 1)
             : ($stats['total_revenue'] > 0 ? 100 : 0);
     @endphp
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div class="grid w-full gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6">
         {{-- Total Bookings --}}
-        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col h-full">
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-ticket class="h-4 w-4 text-blue-500" />
                 Total Bookings
@@ -71,7 +71,7 @@
         </div>
 
         {{-- Total Revenue --}}
-        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col h-full">
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-banknotes class="h-4 w-4 text-emerald-500" />
                 Total Revenue
@@ -88,7 +88,7 @@
         </div>
 
         {{-- Avg Booking Value --}}
-        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col h-full">
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-calculator class="h-4 w-4 text-violet-500" />
                 Avg Booking Value
@@ -98,7 +98,7 @@
         </div>
 
         {{-- Completion Rate --}}
-        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col h-full">
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-check-circle class="h-4 w-4 text-emerald-500" />
                 Completion Rate
@@ -108,7 +108,7 @@
         </div>
 
         {{-- Cancellation Rate --}}
-        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col h-full">
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-x-circle class="h-4 w-4 text-red-500" />
                 Cancellation Rate
@@ -118,7 +118,7 @@
         </div>
 
         {{-- Rebookings --}}
-        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+        <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col h-full">
             <div class="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-arrow-path class="h-4 w-4 text-amber-500" />
                 Rebookings
@@ -129,43 +129,43 @@
     </div>
 
     {{-- ═══ Charts Row 1: Revenue + Booking Volume ═══ --}}
-    <div class="grid gap-6 lg:grid-cols-2">
+    <div class="grid w-full gap-6 grid-cols-1 lg:grid-cols-2">
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-1">Revenue Trend</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Revenue over time for the selected period</p>
-            <div wire:ignore id="report-revenue-chart" style="height: 320px;"></div>
+            <div wire:ignore id="report-revenue-chart" style="height: 320px; width: 100%;"></div>
         </div>
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-1">Booking Volume</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Number of bookings over time</p>
-            <div wire:ignore id="report-booking-volume-chart" style="height: 320px;"></div>
+            <div wire:ignore id="report-booking-volume-chart" style="height: 320px; width: 100%;"></div>
         </div>
     </div>
 
     {{-- ═══ Charts Row 2: Status Distribution + Transport Mode + Top Routes ═══ --}}
-    <div class="grid gap-6 lg:grid-cols-3">
+    <div class="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-4">Status Distribution</h3>
-            <div wire:ignore id="report-status-chart" style="height: 280px;"></div>
+            <div wire:ignore id="report-status-chart" style="height: 280px; width: 100%;"></div>
         </div>
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-4">Transport Mode</h3>
-            <div wire:ignore id="report-mode-chart" style="height: 280px;"></div>
+            <div wire:ignore id="report-mode-chart" style="height: 280px; width: 100%;"></div>
         </div>
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-4">Top Routes by Revenue</h3>
-            <div wire:ignore id="report-routes-chart" style="height: 280px;"></div>
+            <div wire:ignore id="report-routes-chart" style="height: 280px; width: 100%;"></div>
         </div>
     </div>
 
     {{-- ═══ Tables Row: Recent Bookings + Transactions ═══ --}}
-    <div class="grid gap-6 xl:grid-cols-2">
+    <div class="grid w-full gap-6 grid-cols-1 xl:grid-cols-2">
         {{-- Recent Bookings --}}
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-1">Recent Bookings</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Latest bookings for the selected period</p>
-            <div class="overflow-x-auto rounded-lg ring-1 ring-gray-200 dark:ring-white/10">
-                <table class="min-w-full text-sm">
+            <div class="overflow-x-auto rounded-lg ring-1 ring-gray-200 dark:ring-white/10 w-full">
+                <table class="min-w-full text-sm w-full">
                     <thead class="bg-gray-50 dark:bg-white/5">
                         <tr>
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Transaction</th>
@@ -210,8 +210,8 @@
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-1">Recent Transactions</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Latest payments and rebooking transactions</p>
-            <div class="overflow-x-auto rounded-lg ring-1 ring-gray-200 dark:ring-white/10">
-                <table class="min-w-full text-sm">
+            <div class="overflow-x-auto rounded-lg ring-1 ring-gray-200 dark:ring-white/10 w-full">
+                <table class="min-w-full text-sm w-full">
                     <thead class="bg-gray-50 dark:bg-white/5">
                         <tr>
                             <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Transaction</th>
@@ -261,11 +261,11 @@
     </div>
 
     {{-- ═══ Insights Row: Passengers + Staff + Tours ═══ --}}
-    <div class="grid gap-6 lg:grid-cols-3">
+    <div class="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {{-- Passenger Demographics --}}
         <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-4">Passenger Demographics</h3>
-            <div wire:ignore id="report-passenger-chart" style="height: 250px;"></div>
+            <div wire:ignore id="report-passenger-chart" style="height: 250px; width: 100%;"></div>
         </div>
 
         {{-- Staff Leaderboard --}}
@@ -323,9 +323,9 @@
     </div>
 
     {{-- ═══ Payment Analytics Row ═══ --}}
-    <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+    <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 w-full">
         <h3 class="text-base font-semibold text-gray-950 dark:text-white mb-4">Payment Analytics</h3>
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        <div class="grid w-full gap-6 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             <div class="text-center">
                 <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ $paymentAnalytics['paid'] ?? 0 }}</p>
                 <p class="text-xs text-gray-500 mt-1">Paid</p>
@@ -342,7 +342,7 @@
                 <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $paymentAnalytics['total'] ?? 0 }}</p>
                 <p class="text-xs text-gray-500 mt-1">Total Transactions</p>
             </div>
-            <div class="text-center">
+            <div class="text-center col-span-2 sm:col-span-1">
                 <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $paymentAnalytics['proof_upload_rate'] ?? 0 }}%</p>
                 <p class="text-xs text-gray-500 mt-1">Proof Upload Rate</p>
             </div>
@@ -366,7 +366,7 @@ function baseTheme() {
         chart: { background: 'transparent', fontFamily: 'inherit', toolbar: { show: false } },
         grid: { borderColor: dark ? '#374151' : '#e5e7eb', strokeDashArray: 4 },
         tooltip: { theme: dark ? 'dark' : 'light' },
-        xaxis: { labels: { style: { colors: dark ? '#9ca3af' : '#6b7280', fontSize: '11px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+        xaxis: { labels: { style: { colors: dark ? '#9ca3af' : '#6b7280', fontSize: '11px' }, axisBorder: { show: false }, axisTicks: { show: false } },
         yaxis: { labels: { style: { colors: dark ? '#9ca3af' : '#6b7280', fontSize: '11px' } } },
     };
 }

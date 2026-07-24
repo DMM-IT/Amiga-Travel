@@ -24,6 +24,15 @@ class Tour extends Model
         'sort_order' => 'integer',
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('order', function ($query) {
+            $query->orderBy('country', 'asc')
+                  ->orderBy('sort_order', 'asc')
+                  ->orderBy('tour_name', 'asc');
+        });
+    }
+
     public function dates(): HasMany
     {
         return $this->hasMany(TourDate::class)->orderBy('date');

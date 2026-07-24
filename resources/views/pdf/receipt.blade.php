@@ -105,6 +105,15 @@
         <div class="section">
             <div class="section-title">Summary</div>
             <div class="info-box">
+                @if($booking->voucher_code)
+                    <div style="margin-bottom: 8px;">
+                        <strong>Voucher:</strong> {{ $booking->voucher_code }}<br>
+                        <strong>Discount:</strong> -₱{{ number_format($booking->voucher_discount_amount, 2) }}
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong>Subtotal before voucher:</strong> ₱{{ number_format($booking->subtotal_before_voucher, 2) }}
+                    </div>
+                @endif
                 <strong>Total Price</strong>
                 <div>₱{{ number_format($booking->total_price, 2) }}</div>
             </div>

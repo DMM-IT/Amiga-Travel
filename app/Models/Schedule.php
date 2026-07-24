@@ -72,6 +72,11 @@ class Schedule extends Model
         return $this->promotionalTickets()->activeAndAvailable()->first();
     }
 
+    public function vehicle(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
+    {
+        return $this->hasOneThrough(Vehicle::class, FerryRoute::class, 'id', 'id', 'ferry_route_id', 'vehicle_id');
+    }
+
     public function getSeatColumnLettersAttribute(): array
     {
         return $this->seat_columns ?? ['A', 'B', 'C', 'D', 'E', 'F'];

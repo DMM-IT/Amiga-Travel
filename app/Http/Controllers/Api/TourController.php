@@ -12,8 +12,6 @@ class TourController extends Controller
     {
         $tours = Tour::with(['dates' => fn($q) => $q->where('is_active', true)])
             ->where('is_active', true)
-            ->orderBy('sort_order', 'asc')
-            ->orderBy('tour_name', 'asc')
             ->get();
 
         $rows = $tours->map(function (Tour $tour) {

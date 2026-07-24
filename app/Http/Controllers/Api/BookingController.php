@@ -13,6 +13,8 @@ use App\Models\Accommodation;
 use App\Models\Transaction;
 use App\Models\PaymentSetting;
 use App\Models\Discount;
+use App\Models\Voucher;
+use App\Services\VoucherService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -24,7 +26,7 @@ use Spatie\LaravelPdf\Facades\Pdf;
 
 class BookingController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, VoucherService $voucherService)
     {
         $request->validate([
             'schedule_id' => 'required|integer|exists:schedules,id',
@@ -52,6 +54,7 @@ class BookingController extends Controller
             'passengers.*.seat_section' => 'nullable|string|max:255',
             'accommodation_ids' => 'nullable|array',
             'accommodation_ids.*' => 'integer|exists:accommodations,id',
+            'voucher_code' => 'nullable|string|max:50',
         ]);
 
         $schedule = Schedule::findOrFail($request->input('schedule_id'));
@@ -60,9 +63,44 @@ class BookingController extends Controller
             : null;
 
         $transaction = null;
+        $voucher = null;
+        $voucherCalculation = null;
+
+        // Handle voucher if provided
+        if ($request->has('voucher_code') && $request->voucher_code) {
+            $voucherResult = $voucherService->validateAndCalculate($request->voucher_code, $request->all());
+            if (!$voucherResult['valid']) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $voucherResult['message'],
+                ], 422);
+            }
+            $voucher = Voucher::where('code', strtoupper($request->voucher_code))->first();
+            $voucherCalculation = $voucherResult;
+        }
 
         try {
             DB::beginTransaction();
+
+            // Calculate subtotal without voucher
+            $subtotalBeforeVoucher = $this->calculatePrice(
+                $schedule,
+                $request->input('passengers'),
+                $request->input('trip_type'),
+                $request->input('accommodation_ids', []),
+                $scheduleAccommodation,
+                $request->input('selected_transport_class_id'),
+                $request->input('has_vehicle', false),
+                $request->input('vehicle_price', 0)
+            );
+
+            // Calculate final total with voucher
+            $totalPrice = $subtotalBeforeVoucher;
+            $discountAmount = 0;
+            if ($voucher && $voucherCalculation) {
+                $discountAmount = $voucherCalculation['discount_amount'];
+                $totalPrice = $subtotalBeforeVoucher - $discountAmount;
+            }
 
             $booking = Booking::create([
                 'user_id' => auth()->guard('api')->user()?->id,
@@ -81,21 +119,16 @@ class BookingController extends Controller
                 'schedule_accommodation_price' => $scheduleAccommodation?->price,
                 'client_name' => $request->input('client_name'),
                 'client_email' => $request->input('client_email'),
-                'total_price' => $this->calculatePrice(
-                    $schedule,
-                    $request->input('passengers'),
-                    $request->input('trip_type'),
-                    $request->input('accommodation_ids', []),
-                    $scheduleAccommodation,
-                    $request->input('selected_transport_class_id'),
-                    $request->input('has_vehicle', false),
-                    $request->input('vehicle_price', 0)
-                ),
+                'total_price' => max(0, $totalPrice),
                 'status' => 'pending',
                 'has_vehicle' => $request->input('has_vehicle', false),
                 'vehicle_type' => $request->input('vehicle_type'),
                 'vehicle_plate_number' => $request->input('vehicle_plate_number'),
                 'vehicle_price' => $request->input('vehicle_price'),
+                'voucher_id' => $voucher?->id,
+                'voucher_code' => $voucher?->code,
+                'voucher_discount_amount' => $discountAmount,
+                'subtotal_before_voucher' => $subtotalBeforeVoucher,
             ]);
 
             foreach ($request->input('passengers') as $passengerData) {
@@ -136,11 +169,19 @@ class BookingController extends Controller
                 'payment_status' => 'unpaid',
             ]);
 
+            // Redeem voucher if applicable
+            if ($voucher && $voucherCalculation) {
+                $voucherService->redeemVoucher($voucher, $booking, [
+                    'discount_amount' => $discountAmount,
+                    'base_amount' => $voucherCalculation['original_subtotal'],
+                ]);
+            }
+
             DB::commit();
 
             // Try sending email receipt (optional)
             try {
-                $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses', 'scheduleAccommodation');
+                $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses', 'scheduleAccommodation', 'voucher');
                 $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
                 if (! file_exists(dirname($receiptPath))) {
                     mkdir(dirname($receiptPath), 0755, true);
@@ -166,6 +207,9 @@ class BookingController extends Controller
                 'message' => 'Booking created successfully!',
                 'booking_id' => $booking->id,
                 'transaction_number' => $booking->transaction_number,
+                'subtotal_before_voucher' => floatval($booking->subtotal_before_voucher),
+                'voucher_code' => $booking->voucher_code,
+                'voucher_discount_amount' => floatval($booking->voucher_discount_amount),
                 'total_price' => floatval($booking->total_price),
             ]);
 
