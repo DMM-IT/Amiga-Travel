@@ -157,11 +157,11 @@ class ScheduleResource extends Resource
                 TextColumn::make('ferryRoute.origin')
                     ->label('Origin')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(isIndividual: true),
                 TextColumn::make('ferryRoute.destination')
                     ->label('Destination')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(isIndividual: true),
                 TextColumn::make('ferryRoute.mode')
                     ->label('Mode')
                     ->sortable()
@@ -169,7 +169,7 @@ class ScheduleResource extends Resource
 
                 TextColumn::make('service_name')
                     ->label('Name/Model')
-                    ->searchable()
+                    ->searchable(isIndividual: true)
                     ->sortable(),
                 TextColumn::make('vehicle_name')
                     ->label('IMO/Tail No.')
