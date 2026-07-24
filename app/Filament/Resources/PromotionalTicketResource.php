@@ -74,11 +74,11 @@ class PromotionalTicketResource extends Resource
                         ? Vehicle::query()
                             ->where('type', $get('mode'))
                             ->where('operator', $get('operator'))
-                            ->where('is_active', true)
+                            ->active()
                             ->whereHas('ferryRoutes', function (Builder $q) use ($get): void {
                                 $q->where('mode', $get('mode'))
                                     ->where('operator', $get('operator'))
-                                    ->where('is_active', true)
+                                    ->active()
                                     ->has('schedules');
                             })
                             ->get()
@@ -179,9 +179,9 @@ class PromotionalTicketResource extends Resource
                     ->formatStateUsing(fn(mixed $state): string => ucfirst((string) $state)),
                 Infolists\Components\TextEntry::make('schedule.ferryRoute.operator')
                     ->label('Operator'),
-                Infolists\Components\TextEntry::make('schedule.vehicle.name')
+                Infolists\Components\TextEntry::make('schedule.ferryRoute.vehicle.name')
                     ->label('Vehicle Name'),
-                Infolists\Components\TextEntry::make('schedule.vehicle.vehicle_id')
+                Infolists\Components\TextEntry::make('schedule.ferryRoute.vehicle.vehicle_id')
                     ->label('Vehicle ID'),
                 Infolists\Components\TextEntry::make('schedule.ferryRoute.origin')
                     ->label('Origin'),
@@ -236,16 +236,21 @@ class PromotionalTicketResource extends Resource
                     ->label('Operator')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('schedule.vehicle.name')
+                Tables\Columns\TextColumn::make('schedule.ferryRoute.vehicle.name')
                     ->label('Vehicle Name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('schedule.vehicle.vehicle_id')
+                Tables\Columns\TextColumn::make('schedule.ferryRoute.vehicle.vehicle_id')
                     ->label('Vehicle ID')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('route')
                     ->label('Route')
                     ->getStateUsing(fn(PromotionalTicket $record): string => "{$record->schedule?->ferryRoute?->origin} → {$record->schedule?->ferryRoute?->destination}")
-                    ->searchable(['schedule.ferryRoute.origin', 'schedule.ferryRoute.destination']),
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('schedule.ferryRoute', function (Builder $routeQuery) use ($search) {
+                            $routeQuery->where('origin', 'like', "%{$search}%")
+                                ->orWhere('destination', 'like', "%{$search}%");
+                        });
+                    }),
                 Tables\Columns\TextColumn::make('schedule.departure_time')
                     ->label('Departure Date & Time')
                     ->dateTime('M j, Y H:i')
@@ -300,11 +305,45 @@ class PromotionalTicketResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('mode')
                     ->label('Mode')
-                    ->relationship('schedule.ferryRoute', 'mode', fn(Builder $q): Builder => $q->distinct())
-                    ->options(fn(): array => FerryRoute::query()->active()->distinct()->pluck('mode', 'mode')->map(fn(string $m): string => ucfirst($m))->toArray()),
+                    ->options(
+                        FerryRoute::query()
+                            ->active()
+                            ->distinct()
+                            ->orderBy('mode')
+                            ->pluck('mode', 'mode')
+                            ->map(fn (string $mode): string => ucfirst($mode))
+                            ->toArray()
+                    )
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['value'] ?? null,
+                            fn (Builder $query, string $mode): Builder => $query->whereHas(
+                                'schedule.ferryRoute',
+                                fn (Builder $routeQuery): Builder => $routeQuery->where('mode', $mode)
+                            )
+                        );
+                    }),
                 Tables\Filters\SelectFilter::make('operator')
                     ->label('Operator')
-                    ->relationship('schedule.ferryRoute', 'operator', fn(Builder $q): Builder => $q->distinct()->whereNotNull('operator')),
+                    ->options(
+                        FerryRoute::query()
+                            ->active()
+                            ->whereNotNull('operator')
+                            ->where('operator', '!=', '')
+                            ->distinct()
+                            ->orderBy('operator')
+                            ->pluck('operator', 'operator')
+                            ->toArray()
+                    )
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['value'] ?? null,
+                            fn (Builder $query, string $operator): Builder => $query->whereHas(
+                                'schedule.ferryRoute',
+                                fn (Builder $routeQuery): Builder => $routeQuery->where('operator', $operator)
+                            )
+                        );
+                    }),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Active Status'),
                 Tables\Filters\Filter::make('upcoming')
@@ -326,6 +365,12 @@ class PromotionalTicketResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['schedule.ferryRoute.vehicle']);
     }
 
     public static function getRelations(): array
