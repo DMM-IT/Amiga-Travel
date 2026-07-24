@@ -89,17 +89,37 @@
                         {{ data_get($pageContent, 'booking_section_description') ?? 'Kay Amiga, Hassle Free Ka! Select a booking category to start your travel request.' }}
                     </p>
                 </div>
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($aboutBookingCards as $card)
-                        <div class="rounded-[1.75rem] border border-slate-200 p-6 shadow-sm hover:shadow-lg transition bg-slate-50 min-h-[180px]">
-                            <h3 class="text-lg sm:text-xl font-semibold text-slate-900 mb-2">{{ $card['title'] ?? '' }}</h3>
-                            <p class="text-sm sm:text-base text-slate-600 mb-4 leading-snug">{{ $card['description'] ?? '' }}</p>
-                            @if(!empty($card['link']))
-                                <a href="{{ $card['link'] }}" class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow hover:bg-green-800 transition">
-                                    {{ $card['button_text'] ?? 'Book Now' }}
-                                </a>
-                            @endif
-                        </div>
+                        @php
+                            $rawCardImage = data_get($card, 'image');
+                            $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                            $cardTitle = data_get($card, 'title', 'Travel Booking');
+                            $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
+                            $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
+                        @endphp
+
+                        <a href="{{ data_get($card, 'link', '/about') }}" class="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg">
+                            <div class="aspect-[4/3] overflow-hidden">
+                                <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                            </div>
+                            <div class="p-6 flex flex-col gap-4">
+                                <div>
+                                    <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d]">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-[#ee018d]"></span>
+                                        About this booking
+                                    </span>
+                                    <h3 class="mt-4 text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                </div>
+                                <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                <p class="text-sm text-slate-500 leading-relaxed">{{ $cardDetail }}</p>
+                                <div class="mt-auto">
+                                    <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-green-800">
+                                        {{ data_get($card, 'button_text', 'View Details') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
                     @endforeach
                 </div>
             </div>
