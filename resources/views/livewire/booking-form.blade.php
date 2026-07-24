@@ -1328,23 +1328,7 @@
                             @endif
                         </div>
 
-                        <div wire:ignore class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm flex justify-center">
-                            {!! app('captcha')->renderJs() !!}
-                            {!! app('captcha')->display(['data-callback' => 'recaptchaCallback']) !!}
-                        </div>
-                        <input type="hidden" id="recaptchaTokenHidden" wire:model="recaptchaToken" name="recaptchaToken" />
-                        @error('recaptchaToken')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
 
-                        <script>
-                            function recaptchaCallback(token) {
-                                var input = document.getElementById('recaptchaTokenHidden');
-                                if (! input) {
-                                    return;
-                                }
-                                input.value = token;
-                                input.dispatchEvent(new Event('input', { bubbles: true }));
-                            }
-                        </script>
                         @endif
 
                         <div class="flex flex-col gap-4 sm:flex-row sm:justify-between mt-8 pt-6 border-t border-slate-200">
@@ -1373,5 +1357,232 @@
                 </div>
             </div>
         </div>
-    </div>
+    <!-- Terms and Conditions Modal -->
+    @if ($showTermsModal)
+        <div x-data x-init="
+            $nextTick(() => {
+                const modal = $el;
+                const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])');
+                const firstFocusable = focusableElements[0];
+                const lastFocusable = focusableElements[focusableElements.length - 1];
+                
+                modal.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                    } else if (e.key === 'Tab') {
+                        if (e.shiftKey) {
+                            if (document.activeElement === firstFocusable) {
+                                e.preventDefault();
+                                lastFocusable.focus();
+                            }
+                        } else {
+                            if (document.activeElement === lastFocusable) {
+                                e.preventDefault();
+                                firstFocusable.focus();
+                            }
+                        }
+                    }
+                });
+                
+                firstFocusable.focus();
+            });
+        " class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-900">Amiga Travel Agency Services Terms and Conditions</h2>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto px-6 py-4">
+                    <p class="text-sm text-slate-700 mb-6">
+                        Please go through these Terms and Conditions carefully. Your acceptance is required before continuing with your booking.
+                    </p>
+                    
+                    <div class="space-y-6 text-sm text-slate-700">
+                        <!-- Boarding Requirements -->
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Boarding Requirements</h3>
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li>One printed copy of the eTicket Itinerary Receipt.</li>
+                                <li>Presentation of each passenger's valid ID.</li>
+                                <li>Passengers must arrive at the terminal 3–4 hours before departure. Boarding gates close 1 hour before departure.</li>
+                                <li>The operating ferry carrier reserves the right to refuse boarding if a passenger cannot present the required documents upon request.</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- eTicket Itinerary Receipt -->
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">eTicket Itinerary Receipt</h3>
+                            <p>The eTicket Itinerary Receipt is non-transferable. It is valid only until the date and time of departure printed on the ticket. Unused or expired eTickets are non-refundable and cannot be revalidated, subject to the Return Policy below.</p>
+                        </div>
+                        
+                        <!-- Government-Mandated Discounts -->
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Government-Mandated Discounts</h3>
+                            
+                            <div class="mt-4">
+                                <h4 class="text-sm font-bold text-slate-900 mb-1">Senior Citizens</h4>
+                                <p class="mb-2">Senior Citizen discounts apply to passengers aged 60 or above once a valid ID number has been entered. The 20% Senior Citizen discount applies to the base rate only.</p>
+                                <p class="mb-2">If a promotional rate is available, the lowest applicable eligible fare may be used instead of the Senior Citizen discount. VAT treatment is subject to applicable law and carrier policy.</p>
+                                <p class="mb-2">Passengers must present a valid Senior Citizen ID issued by the Office for Senior Citizens Affairs (OSCA), or another valid Philippine government-issued ID showing their date of birth, during inspection and boarding. Failure to present the required ID may result in forfeiture of the discount, revalidation requirements, applicable surcharges, and fare differences.</p>
+                                <p class="mb-2">Senior Citizen discounts are applicable to Filipino nationals only.</p>
+                                <p>Senior citizens are encouraged to travel with a legal-aged companion and bring a medical certificate confirming fitness to travel. They may be subject to assessment by the vessel doctor or nurse on the departure date. Boarding remains subject to the operating carrier's safety assessment.</p>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h4 class="text-sm font-bold text-slate-900 mb-1">Infants</h4>
+                                <p class="mb-2">Infants below 2 years old and below 1 meter in height may be allowed to board. A medical certificate and documentation proving the infant's relationship to the accompanying passenger may be required.</p>
+                                <p class="mb-2">A fixed rate of ₱500.00 applies per infant regardless of destination or accommodation, subject to carrier policy.</p>
+                                <p class="mb-2">A separate ticket may be issued for each infant, and the infant may share the parent's or guardian's bunk or room.</p>
+                                <p class="mb-2">No more than two infants are allowed per adult passenger. Additional infants may be charged the applicable promotional fare or 75% off the base rate, plus auxiliary charges.</p>
+                                <p>Infants must be accompanied by an adult parent or guardian.</p>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h4 class="text-sm font-bold text-slate-900 mb-1">Pregnant Passengers</h4>
+                                <p class="mb-2">Pregnant passengers who are 24 weeks or more into their pregnancy may not be allowed to board.</p>
+                                <p>Pregnant passengers may be required to present a medical certificate confirming that gestation is below 24 weeks and are encouraged to travel with a legal-aged companion. The vessel doctor or nurse may assess fitness to travel on the departure date. Final boarding approval remains at the discretion of the operating carrier's medical and safety personnel.</p>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h4 class="text-sm font-bold text-slate-900 mb-1">Unaccompanied Minor Passengers</h4>
+                                <p class="mb-2">An unaccompanied minor is a passenger aged 11 to 17 who travels alone.</p>
+                                <p class="mb-2">Children must be accompanied by a parent or legal guardian at the port and endorsed to the boarding officers. The parent or guardian may be required to sign a waiver.</p>
+                                <p>Unaccompanied minors must be collected by their declared representative at the destination port. If no representative is present, the passenger may be held for release and endorsed to the Department of Social Welfare and Development (DSWD), as applicable.</p>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h4 class="text-sm font-bold text-slate-900 mb-1">Other Discounts: PWDs, Students, and Medal of Valor Awardees</h4>
+                                <p class="mb-2">Persons with Disabilities (PWDs), students, and Medal of Valor awardees may need to visit Amiga Travel Agency Services corporate ticketing outlets or authorized retail outlets to request special discounts.</p>
+                                <p>These discounts apply to the base rate only and generally do not apply to discounted or promotional fares.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Return, Refund, and Revalidation Policy -->
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Return, Refund, and Revalidation Policy</h3>
+                            <p class="mb-2">Customers may send refund requests to the official Amiga Travel Agency Services support email using the registered transaction email address. The support email should be configurable via the application settings.</p>
+                            <p class="mb-2">Only original eTickets that have not been boarded, remain within ticket validity, and have not undergone rebooking may be eligible for processing.</p>
+                            <p class="mb-2">For wallet and credit-card paid transactions, refund requests may be accommodated by email from Monday to Friday, regular business days only, between 8:00 AM and 4:00 PM. Requests must be sent at least two regular days before ticket expiry.</p>
+                            <p class="mb-2">For cash and ATM-paid bookings, refunds must be processed through Amiga Travel Agency Services corporate ticketing outlets.</p>
+                            <p class="mb-2">For direct refund requests at a corporate ticketing outlet, the account holder or passenger must submit the complete itinerary and present a valid government-issued ID.</p>
+                            <p class="mb-2">If an account holder or passenger authorizes a representative, the representative must present:</p>
+                            <ul class="list-disc pl-5 space-y-1 mb-2">
+                                <li>An original signed authorization letter.</li>
+                                <li>The actual valid government-issued ID of the account holder or passenger.</li>
+                                <li>The representative's own valid government-issued ID.</li>
+                            </ul>
+                            <p class="mb-2">Refunds are subject to the following surcharge:</p>
+                            <ul class="list-disc pl-5 space-y-1 mb-2">
+                                <li>Before vessel departure: ₱600.00 plus the applicable Web Admin Fee per ticket.</li>
+                            </ul>
+                            <p class="mb-2">No partial refunds are available for tickets purchased under room rates. Refunds are released only after surrendering all tickets issued for the relevant room.</p>
+                            <p class="mb-2">Unused and unscanned eTickets may be revalidated during the ticket-validity period. Revalidation means changing ticket details other than the passenger name or age, and the trip origin or destination. Revalidation is processed only through corporate ticketing outlets. Passengers must present the eTicket Itinerary Receipt and a valid ID.</p>
+                            <p class="mb-2">Revalidation is subject to the following surcharge:</p>
+                            <ul class="list-disc pl-5 space-y-1 mb-2">
+                                <li>Before vessel departure: ₱600.00 + ₱36.00 revalidation fee + fare difference.</li>
+                            </ul>
+                            <p class="mb-2">Refund and revalidation surcharges may be waived if a trip is affected by typhoon, force majeure, technical problems, emergency or extended dry-docking, preventive maintenance, or carrier-initiated trip changes.</p>
+                            <p class="mb-2">The Web Admin Fee is non-refundable.</p>
+                            <p>Ticket validity ends on the date and time of departure printed on the ticket.</p>
+                        </div>
+                        
+                        <!-- Final Notice -->
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <p class="text-sm text-slate-700 font-medium">These terms may be updated by Amiga Travel Agency Services. Please review the current version before each booking.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-3 px-6 py-4 border-t border-slate-200">
+                    <label class="flex items-start gap-3">
+                        <input type="checkbox" wire:model="hasAcceptedTerms" id="acceptTerms" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777]">
+                        <span class="text-sm text-slate-700">I have read and agree to the Amiga Travel Agency Services Terms and Conditions.</span>
+                    </label>
+                    @error('hasAcceptedTerms')
+                        <p class="text-sm text-rose-600">{{ $message }}</p>
+                    @enderror
+                    
+                    <div class="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+                        <button type="button" wire:click.prevent="cancelTermsModal" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">
+                            Cancel
+                        </button>
+                        <button type="button" wire:click.prevent="confirmTermsAndContinue" @disabled($isSubmittingBooking || !$hasAcceptedTerms) class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            @if ($isSubmittingBooking)
+                                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                            @else
+                                Done & Continue
+                            @endif
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+    
+    <!-- Auto-scroll to first invalid field on validation error -->
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('validation-error', () => {
+                // Wait for DOM updates
+                setTimeout(() => {
+                    // Find the first element with an error
+                    let firstErrorElement = document.querySelector('[aria-invalid="true"]');
+                    
+                    if (!firstErrorElement) {
+                        // Try to find elements with error messages nearby
+                        const errorMessages = document.querySelectorAll('.text-rose-600');
+                        if (errorMessages.length > 0) {
+                            // Check previous siblings for inputs
+                            for (let error of errorMessages) {
+                                let input = error.previousElementSibling;
+                                while (input && !['INPUT', 'SELECT', 'TEXTAREA'].includes(input.tagName)) {
+                                    input = input.previousElementSibling;
+                                }
+                                
+                                if (input) {
+                                    firstErrorElement = input;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!firstErrorElement) {
+                        // Fallback: check wire:model errors
+                        const inputs = document.querySelectorAll('[wire\\:model]');
+                        for (let input of inputs) {
+                            const model = input.getAttribute('wire:model');
+                            if (model && document.querySelector(`[for="${model}"] ~ .text-rose-600, [wire\\:model="${model}"] ~ .text-rose-600`)) {
+                                firstErrorElement = input;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (firstErrorElement) {
+                        // Scroll the element into view
+                        firstErrorElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        
+                        // Focus the element if it's focusable
+                        if (!['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(firstErrorElement.tagName)) {
+                            // Try to find a focusable element inside
+                            const focusableChild = firstErrorElement.querySelector('input, select, textarea, button');
+                            if (focusableChild) {
+                                focusableChild.focus();
+                            }
+                        } else {
+                            firstErrorElement.focus();
+                        }
+                    }
+                }, 100);
+            });
+        });
+    </script>
 </div>

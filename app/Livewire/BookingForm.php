@@ -34,6 +34,12 @@ use Spatie\LaravelPdf\Facades\Pdf;
 class BookingForm extends Component
 {
     use WithFileUploads;
+    
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        $this->dispatch('validation-error');
+        parent::failedValidation($validator);
+    }
     public int $step = 1;
     public string $trip_type = 'one_way';
     public string $mode = '';
@@ -114,7 +120,9 @@ class BookingForm extends Component
 
     public string $client_name = '';
     public string $client_email = '';
-    public string $recaptchaToken = '';
+    public bool $showTermsModal = false;
+    public bool $hasAcceptedTerms = false;
+    public bool $isSubmittingBooking = false;
     public \Illuminate\Support\Collection $discounts;
     public \Illuminate\Support\Collection $transportClassCatalog;
     public \Illuminate\Support\Collection $vehicleRateCatalog;
@@ -1193,15 +1201,18 @@ public function selectedSchedule(): ?array
         $this->validate($this->allRules());
         $this->validatePassengerExtras();
         $this->assertSelectedScheduleIsValid();
-        session()->forget('booking_draft');
+        $this->hasAcceptedTerms = false;
+        $this->showTermsModal = true;
+    }
 
-        if (! app()->environment('local')) {
-            Validator::make([
-                'recaptchaToken' => $this->recaptchaToken,
-            ], [
-                'recaptchaToken' => 'required|captcha',
-            ])->validate();
-        }
+    public function confirmTermsAndContinue()
+    {
+        $this->validate([
+            'hasAcceptedTerms' => 'required|accepted'
+        ]);
+        
+        $this->isSubmittingBooking = true;
+        session()->forget('booking_draft');
 
         if ($this->tour_id && $this->tour) {
             $schedule = null;
@@ -1238,6 +1249,11 @@ public function selectedSchedule(): ?array
             // Calculate the schedule price to use (promo if applicable)
             $usedSchedulePrice = $this->getSelectedSchedulePrice();
 
+            $termsVersion = 'amiga-terms-2026-07-24';
+            $termsAcceptedAt = now();
+            $termsAcceptedIp = request()->ip();
+            $termsAcceptedUserAgent = request()->userAgent();
+
             $booking = Booking::create([
                 'transaction_number' => $this->generateTransactionNumber(),
                 'origin' => $this->origin,
@@ -1266,6 +1282,10 @@ public function selectedSchedule(): ?array
                 'driver_name' => $this->driver_name,
                 'driver_birthday' => $this->driver_birthday,
                 'promotional_ticket_id' => $usedPromoTicket?->id,
+                'terms_accepted_at' => $termsAcceptedAt,
+                'terms_version' => $termsVersion,
+                'terms_accepted_ip' => $termsAcceptedIp,
+                'terms_accepted_user_agent' => $termsAcceptedUserAgent,
             ]);
 
             foreach ($this->passengers as $passenger) {
@@ -1318,6 +1338,12 @@ public function selectedSchedule(): ?array
         });
 
         return redirect()->route('payment.show', $transaction);
+    }
+
+    public function cancelTermsModal()
+    {
+        $this->showTermsModal = false;
+        $this->hasAcceptedTerms = false;
     }
 
     public function render()
@@ -1418,7 +1444,6 @@ public function selectedSchedule(): ?array
             5 => [
                 'client_name' => 'required|string|max:255',
                 'client_email' => 'required|email',
-                'recaptchaToken' => 'required|string',
             ],
             default => [],
         };
@@ -1465,7 +1490,6 @@ public function selectedSchedule(): ?array
             'studentIdProofs.*' => 'nullable|image|max:2048',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
-            'recaptchaToken' => $this->recaptchaRule(),
             'has_vehicle' => 'boolean',
             'vehicle_booking_method' => 'required|string|in:category,brand_model',
             'driver_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
@@ -1744,10 +1768,5 @@ public function selectedSchedule(): ?array
         }
         $schedule = Schedule::query()->find($this->selected_schedule_id);
         return $schedule ? $schedule->activePromotionalTicket() : null;
-    }
-
-    protected function recaptchaRule(): string
-    {
-        return app()->environment('local') ? 'nullable|string' : 'required|string';
     }
 }

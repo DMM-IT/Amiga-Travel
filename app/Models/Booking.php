@@ -54,6 +54,10 @@ class Booking extends Model
         'voucher_code',
         'voucher_discount_amount',
         'subtotal_before_voucher',
+        'terms_accepted_at',
+        'terms_version',
+        'terms_accepted_ip',
+        'terms_accepted_user_agent',
     ];
 
     protected $casts = [
@@ -74,6 +78,7 @@ class Booking extends Model
         'is_rebooked' => 'boolean',
         'voucher_discount_amount' => 'decimal:2',
         'subtotal_before_voucher' => 'decimal:2',
+        'terms_accepted_at' => 'datetime',
     ];
 
     public function passengers(): HasMany
