@@ -25,7 +25,10 @@ class Vehicle extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where(
+            $query->getModel()->qualifyColumn('is_active'),
+            true,
+        );
     }
 
     public function ferryRoutes(): HasMany
@@ -49,11 +52,11 @@ class Vehicle extends Model
 
     public static function ferries()
     {
-        return static::where('type', 'ferry')->where('is_active', true);
+        return static::where('type', 'ferry')->active();
     }
 
     public static function airlines()
     {
-        return static::where('type', 'airline')->where('is_active', true);
+        return static::where('type', 'airline')->active();
     }
 }

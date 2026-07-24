@@ -24,7 +24,10 @@ class FerryRoute extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where(
+            $query->getModel()->qualifyColumn('is_active'),
+            true,
+        );
     }
 
     public function vehicle(): BelongsTo
@@ -58,7 +61,7 @@ class FerryRoute extends Model
     public static function activeOrigins(?string $mode = null): array
     {
         return static::query()
-            ->where('is_active', true)
+            ->active()
             ->when($mode, function ($query, $mode) {
                 $query->where('mode', $mode);
             })
@@ -73,7 +76,7 @@ class FerryRoute extends Model
     public static function activeDestinationsFor(string $origin, ?string $mode = null): array
     {
         return static::query()
-            ->where('is_active', true)
+            ->active()
             ->where('origin', $origin)
             ->when($mode, function ($query, $mode) {
                 $query->where('mode', $mode);
@@ -89,7 +92,7 @@ class FerryRoute extends Model
     public static function activeOperatorsFor(?string $mode = null): array
     {
         return static::query()
-            ->where('is_active', true)
+            ->active()
             ->when($mode, function ($query, $mode) {
                 $query->where('mode', $mode);
             })
