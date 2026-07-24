@@ -216,6 +216,7 @@ class ScheduleResource extends Resource
                             ->live(),
                     ])
                     ->columns(3)
+                    ->columnSpan(['default' => 4, 'md' => 2])
                     ->query(function (Builder $query, array $data): void {
                         if (filled($data['origin'])) {
                             $query->whereHas('ferryRoute', function (Builder $query) use ($data): void {
@@ -237,6 +238,7 @@ class ScheduleResource extends Resource
                         'ferry' => 'Ferry',
                         'airline' => 'Airline',
                     ])
+                    ->columnSpan(['default' => 2, 'md' => 1])
                     ->query(function (Builder $query, array $data): void {
                         if (filled($data['value'] ?? null)) {
                             $query->whereHas('ferryRoute', function (Builder $query) use ($data): void {
@@ -247,7 +249,8 @@ class ScheduleResource extends Resource
                 SelectFilter::make('ferry_route_id')
                     ->label('Operator')
                     ->relationship('ferryRoute', 'operator')
-                    ->searchable(),
+                    ->searchable()
+                    ->columnSpan(['default' => 2, 'md' => 1]),
             ], layout: FiltersLayout::AboveContent)
             ->filtersFormColumns(2)
             ->actions([

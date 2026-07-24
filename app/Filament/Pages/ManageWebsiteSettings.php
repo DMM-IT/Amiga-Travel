@@ -40,7 +40,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                         ->schema([
                             TextInput::make('content.title')
                                 ->label('Page Title')
-                                ->required()
                                 ->maxLength(255),
                             Textarea::make('content.description')
                                 ->label('Page Description')
@@ -152,7 +151,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->maxLength(100),
                             TextInput::make('content.title')
                                 ->label('Page Title')
-                                ->required()
                                 ->maxLength(255),
                             Textarea::make('content.description')
                                 ->label('Page Description')
@@ -197,7 +195,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->maxLength(100),
                             TextInput::make('content.title')
                                 ->label('Page Title')
-                                ->required()
                                 ->maxLength(255),
                             Textarea::make('content.description')
                                 ->label('Page Description')
@@ -324,7 +321,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->maxLength(100),
                             TextInput::make('content.title')
                                 ->label('Page Title')
-                                ->required()
                                 ->maxLength(255),
                             Textarea::make('content.description')
                                 ->label('Page Description')
@@ -437,7 +433,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                         ->schema([
                             TextInput::make('content.title')
                                 ->label('Page Title')
-                                ->required()
                                 ->maxLength(255),
                             Textarea::make('content.description')
                                 ->label('Page Description')

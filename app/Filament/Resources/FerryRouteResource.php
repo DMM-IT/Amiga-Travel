@@ -6,6 +6,10 @@ use App\Filament\Resources\FerryRouteResource\Pages;
 use App\Models\FerryRoute;
 use App\Models\User;
 use App\Models\Vehicle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
@@ -119,8 +123,89 @@ class FerryRouteResource extends Resource
                 Toggle::make('is_active')
                     ->label('Available for booking')
                     ->default(true),
+
+                Section::make('Schedules for this Route')
+                    ->description('Manage the schedules that belong to this route here. Changes are saved with the route.')
+                    ->schema([
+                        Repeater::make('schedules')
+                            ->relationship('schedules')
+                            ->label('')
+                            ->schema(static::scheduleFormSchema())
+                            ->defaultItems(0)
+                            ->cloneable()
+                            ->deletable()
+                            ->collapsible()
+                            ->collapsed()
+                            ->itemLabel(fn (array $state): ?string => $state['service_name'] ?? 'New schedule')
+                            ->createItemButtonLabel('Add schedule')
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
             ])
             ->columns(2);
+    }
+
+    protected static function scheduleFormSchema(): array
+    {
+        return [
+            TextInput::make('service_name')
+                ->label('Name/Model')
+                ->placeholder('e.g. Fast Ferry')
+                ->required()
+                ->maxLength(255),
+
+            TextInput::make('vehicle_name')
+                ->label('IMO/Tail No.')
+                ->placeholder('e.g. MV Amiga, Flight 123')
+                ->nullable()
+                ->maxLength(255),
+
+            DateTimePicker::make('departure_time')
+                ->label('Departure time')
+                ->seconds(false)
+                ->required(),
+
+            DateTimePicker::make('arrival_time')
+                ->label('Arrival time')
+                ->seconds(false)
+                ->required(),
+
+            TextInput::make('duration_minutes')
+                ->label('Duration (minutes)')
+                ->helperText('Optional — calculated from times if left blank.')
+                ->numeric()
+                ->minValue(1),
+
+            TextInput::make('price')
+                ->label('Reseller price per passenger (₱)')
+                ->numeric()
+                ->prefix('₱')
+                ->minValue(0)
+                ->required(),
+
+            TextInput::make('availability_label')
+                ->label('Availability note')
+                ->placeholder('e.g. Available, Limited availability')
+                ->maxLength(255),
+
+            TextInput::make('seat_rows')
+                ->label('Seat rows (airline)')
+                ->helperText('Number of seat rows for the seat map. Leave blank for default (30).')
+                ->numeric()
+                ->minValue(1)
+                ->maxValue(60)
+                ->visible(fn (callable $get): bool => $get('../../mode') === 'airline'),
+
+            TagsInput::make('seat_columns')
+                ->label('Seat columns (airline)')
+                ->helperText('Column letters left to right, e.g. A, B, C, D, E, F. Leave blank for default.')
+                ->placeholder('A')
+                ->visible(fn (callable $get): bool => $get('../../mode') === 'airline'),
+
+            Toggle::make('is_active')
+                ->label('Visible to clients when booking')
+                ->default(true),
+        ];
     }
 
     public static function table(Table $table): Table
