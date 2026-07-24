@@ -930,17 +930,17 @@
     "semantic_hash": "e07862ac930ed4d8479185d52c6cc66d"
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1784883854.3738358,
-    "ast_hash": "f5c323912dff2325210455babe972e21",
+    "mtime": 1784885794.209869,
+    "ast_hash": "6f55f6fd349af080e2c8c71384a2be4e",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784883867.3080895,
+    "mtime": 1784885804.7055805,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": "c74f5e1a5f32575a4b26f639876ee827"
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784883867.297168,
+    "mtime": 1784885804.689841,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
   },
@@ -960,7 +960,7 @@
     "semantic_hash": "7bd839b67ebee22174be9f4da4521b6f"
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1784883867.3080895,
+    "mtime": 1784885804.7055805,
     "ast_hash": "7a4226f9f26cf589d8edb01fea66c9f7",
     "semantic_hash": ""
   },
@@ -995,12 +995,12 @@
     "semantic_hash": "8e66e1314dbabf0aa13062137d7bf013"
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1784883867.3128195,
+    "mtime": 1784885804.7055805,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1784883867.3128195,
+    "mtime": 1784885804.7055805,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
   },
@@ -1590,8 +1590,8 @@
     "semantic_hash": "46690fb8ffaf7d227d8bc4713f31140d"
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1784883805.2388246,
-    "ast_hash": "2a4ba4b200b38010ead52e8b17cae0c7",
+    "mtime": 1784885777.383811,
+    "ast_hash": "2fc608f0577a65bb400e13d281253669",
     "semantic_hash": ""
   },
   "flutter_app/web/index.html": {
@@ -2432,6 +2432,16 @@
   "database/migrations/2026_07_24_144720_add_terms_acceptance_fields_to_bookings_table.php": {
     "mtime": 1784878614.0216331,
     "ast_hash": "5805a541441784655380cfa0a7a44c18",
+    "semantic_hash": ""
+  },
+  "resources/js/filament-charts.js": {
+    "mtime": 1784883961.34443,
+    "ast_hash": "f5d242e9b597c7d20fd77687ee61768a",
+    "semantic_hash": ""
+  },
+  "resources/views/filament/partials/chart-assets.blade.php": {
+    "mtime": 1784883961.3470976,
+    "ast_hash": "218af1b29047ac8948d997564e5b2cd6",
     "semantic_hash": ""
   }
 }
