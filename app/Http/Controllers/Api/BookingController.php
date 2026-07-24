@@ -55,11 +55,20 @@ class BookingController extends Controller
             'accommodation_ids' => 'nullable|array',
             'accommodation_ids.*' => 'integer|exists:accommodations,id',
             'voucher_code' => 'nullable|string|max:50',
+            'return_schedule_id' => 'nullable|integer|exists:schedules,id',
+            'selected_return_schedule_accommodation_id' => 'nullable|integer|exists:schedule_accommodations,id',
         ]);
 
         $schedule = Schedule::findOrFail($request->input('schedule_id'));
         $scheduleAccommodation = $request->input('selected_schedule_accommodation_id')
             ? \App\Models\ScheduleAccommodation::find($request->input('selected_schedule_accommodation_id'))
+            : null;
+
+        $returnSchedule = $request->input('return_schedule_id')
+            ? Schedule::find($request->input('return_schedule_id'))
+            : null;
+        $returnScheduleAccommodation = $request->input('selected_return_schedule_accommodation_id')
+            ? \App\Models\ScheduleAccommodation::find($request->input('selected_return_schedule_accommodation_id'))
             : null;
 
         $transaction = null;
@@ -82,7 +91,6 @@ class BookingController extends Controller
         try {
             DB::beginTransaction();
 
-            // Calculate subtotal without voucher
             $subtotalBeforeVoucher = $this->calculatePrice(
                 $schedule,
                 $request->input('passengers'),
@@ -91,7 +99,9 @@ class BookingController extends Controller
                 $scheduleAccommodation,
                 $request->input('selected_transport_class_id'),
                 $request->input('has_vehicle', false),
-                $request->input('vehicle_price', 0)
+                $request->input('vehicle_price', 0),
+                $returnSchedule,
+                $returnScheduleAccommodation
             );
 
             // Calculate final total with voucher
@@ -117,6 +127,14 @@ class BookingController extends Controller
                 'schedule_accommodation_id' => $scheduleAccommodation?->id,
                 'schedule_accommodation_name' => $scheduleAccommodation?->name,
                 'schedule_accommodation_price' => $scheduleAccommodation?->price,
+                'return_schedule_id' => $returnSchedule?->id,
+                'return_schedule_service' => $returnSchedule?->service_name,
+                'return_schedule_departure_time' => $returnSchedule?->formatted_departure,
+                'return_schedule_arrival_time' => $returnSchedule?->formatted_arrival,
+                'return_schedule_price' => $returnSchedule?->price,
+                'return_schedule_accommodation_id' => $returnScheduleAccommodation?->id,
+                'return_schedule_accommodation_name' => $returnScheduleAccommodation?->name,
+                'return_schedule_accommodation_price' => $returnScheduleAccommodation?->price,
                 'client_name' => $request->input('client_name'),
                 'client_email' => $request->input('client_email'),
                 'total_price' => max(0, $totalPrice),
@@ -230,15 +248,29 @@ class BookingController extends Controller
         $scheduleAccommodation = null,
         $selectedTransportClassId = null,
         $hasVehicle = false,
-        $vehiclePrice = 0
+        $vehiclePrice = 0,
+        $returnSchedule = null,
+        $returnScheduleAccommodation = null
     ): float {
         $schedulePrice = floatval($schedule->price);
         $scheduleAccommodationPrice = $scheduleAccommodation ? floatval($scheduleAccommodation->price) : 0;
-        $tripMultiplier = $tripType === 'round_trip' ? 2 : 1;
+        
+        $returnSchedulePrice = $returnSchedule ? floatval($returnSchedule->price) : 0;
+        $returnScheduleAccommodationPrice = $returnScheduleAccommodation ? floatval($returnScheduleAccommodation->price) : 0;
+        
+        // Removed tripMultiplier since we explicitly add the return leg now
         $discounts = Discount::all()->keyBy('id');
 
-        $ferryTotal = collect($passengers)->sum(function (array $passenger) use ($schedulePrice, $scheduleAccommodationPrice, $tripMultiplier, $discounts) {
-            $fare = ($schedulePrice + $scheduleAccommodationPrice) * $tripMultiplier;
+        $ferryTotal = collect($passengers)->sum(function (array $passenger) use (
+            $schedulePrice, 
+            $scheduleAccommodationPrice, 
+            $returnSchedulePrice, 
+            $returnScheduleAccommodationPrice, 
+            $discounts
+        ) {
+            $departureFare = $schedulePrice + $scheduleAccommodationPrice;
+            $returnFare = $returnSchedulePrice + $returnScheduleAccommodationPrice;
+            $fare = $departureFare + $returnFare;
 
             if (! empty($passenger['discount_id'])) {
                 $discount = $discounts->get($passenger['discount_id']);

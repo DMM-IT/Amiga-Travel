@@ -135,8 +135,8 @@ class FerryRouteResource extends Resource
                     ->sortable(),
                 TextColumn::make('vehicle.full_name')
                     ->label('Vehicle')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(['name', 'vehicle_id'])
+                    ->sortable(['name', 'vehicle_id']),
                 TextColumn::make('operator')
                     ->label('Operator')
                     ->getStateUsing(fn (FerryRoute $record): ?string => $record->vehicle?->operator ?: $record->operator)

@@ -97,8 +97,13 @@ class VoucherService
         }
         
         // Check eligible schedule
-        if ($voucher->eligible_schedule_id && (empty($bookingData['schedule_id']) || $bookingData['schedule_id'] != $voucher->eligible_schedule_id)) {
-            return $this->error('This voucher is not valid for this schedule');
+        if ($voucher->eligible_schedule_id) {
+            $isDepartureEligible = !empty($bookingData['schedule_id']) && $bookingData['schedule_id'] == $voucher->eligible_schedule_id;
+            $isReturnEligible = !empty($bookingData['return_schedule_id']) && $bookingData['return_schedule_id'] == $voucher->eligible_schedule_id;
+            
+            if (!$isDepartureEligible && !$isReturnEligible) {
+                return $this->error('This voucher is not valid for the selected schedules');
+            }
         }
         
         // Check minimum booking amount (we'll calculate base amount first)
@@ -148,13 +153,25 @@ class VoucherService
         $scheduleAccommodationPrice = isset($bookingData['selected_schedule_accommodation_id'])
             ? (ScheduleAccommodation::query()->where('id', $bookingData['selected_schedule_accommodation_id'])->first()?->price ?? 0)
             : 0;
-        $tripMultiplier = $bookingData['trip_type'] === 'round_trip' ? 2 : 1;
+            
+        $returnSchedule = !empty($bookingData['return_schedule_id']) ? Schedule::query()->where('id', $bookingData['return_schedule_id'])->first() : null;
+        $returnScheduleAccommodationPrice = isset($bookingData['selected_return_schedule_accommodation_id'])
+            ? (ScheduleAccommodation::query()->where('id', $bookingData['selected_return_schedule_accommodation_id'])->first()?->price ?? 0)
+            : 0;
         
         $discounts = Discount::all()->keyBy('id');
         
-        $fareTotal = collect($bookingData['passengers'] ?? [])->sum(function (array $passenger) use ($schedule, $scheduleAccommodationPrice, $tripMultiplier, $discounts) {
+        $fareTotal = collect($bookingData['passengers'] ?? [])->sum(function (array $passenger) use (
+            $schedule, $scheduleAccommodationPrice, 
+            $returnSchedule, $returnScheduleAccommodationPrice,
+            $discounts
+        ) {
             $basePrice = $schedule ? $schedule->price : 0;
-            $fare = ($basePrice + $scheduleAccommodationPrice) * $tripMultiplier;
+            $returnBasePrice = $returnSchedule ? $returnSchedule->price : 0;
+            
+            $departureFare = $basePrice + $scheduleAccommodationPrice;
+            $returnFare = $returnBasePrice + $returnScheduleAccommodationPrice;
+            $fare = $departureFare + $returnFare;
             
             if (!empty($passenger['discount_id'])) {
                 $discount = $discounts->get($passenger['discount_id']);
