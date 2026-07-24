@@ -50,6 +50,7 @@ class BookingForm extends Component
     public ?int $duration_days = null;
     public array $available_package_dates = [];
     public array $available_schedule_dates = [];
+    public array $available_return_schedule_dates = [];
     public array $availableReturnSchedules = [];
     public int $adults = 1;
     public int $children = 0;
@@ -698,6 +699,7 @@ public function selectedSchedule(): ?array
 
         if (empty($this->mode) || empty($this->origin) || empty($this->destination)) {
             $this->available_schedule_dates = [];
+            $this->available_return_schedule_dates = [];
             return;
         }
 
@@ -731,6 +733,36 @@ public function selectedSchedule(): ?array
         
         if ($this->departure_date && !in_array($this->departure_date, $this->available_schedule_dates)) {
             $this->departure_date = null;
+        }
+
+        // Now calculate return schedule dates (reverse origin/destination)
+        $returnSchedules = Schedule::active()
+            ->whereHas('ferryRoute', function ($query) {
+                $query->where('origin', $this->destination)
+                      ->where('destination', $this->origin)
+                      ->where('mode', $this->mode)
+                      ->where('is_active', true);
+                
+                if (! empty($this->operator)) {
+                    $query->where('operator', $this->operator);
+                }
+            })
+            ->select('departure_time')
+            ->get();
+
+        if ($returnSchedules->isEmpty()) {
+            $this->available_return_schedule_dates = [];
+        } else {
+            $this->available_return_schedule_dates = $returnSchedules->pluck('departure_time')
+                ->filter()
+                ->map(fn ($date) => Carbon::parse($date)->format('Y-m-d'))
+                ->unique()
+                ->values()
+                ->all();
+        }
+
+        if ($this->return_date && !in_array($this->return_date, $this->available_return_schedule_dates)) {
+            $this->return_date = null;
         }
     }
 

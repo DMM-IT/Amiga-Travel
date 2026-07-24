@@ -817,7 +817,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SchedulesScreen(),
           TravelScreen(initialMode: _travelMode),
-          VouchersScreen(onUseVoucher: () => setState(() => _selectedIndex = 1)),
+          VouchersScreen(onUseVoucher: () => setState(() => _selectedIndex = 2)),
           ActivityScreen(onLoginSuccess: () => setState(() {})),
         ],
       ),
@@ -1152,7 +1152,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VouchersScreen())),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VouchersScreen(onUseVoucher: () {
+                      Navigator.pop(context);
+                      widget.onBookFerry();
+                    }))),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
@@ -1512,6 +1515,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
 
   List<String> _origins = [];
   List<String> _destinations = [];
+  List<String> _availableDepartureDates = [];
+  List<String> _availableReturnDates = [];
   bool _loadingOrigins = false;
   bool _loadingDestinations = false;
 
@@ -1535,6 +1540,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       setState(() {
         _mode = widget.initialMode!;
         _operator = null; _operators = []; _origin = null; _destination = null; _origins = []; _destinations = [];
+        _availableDepartureDates = []; _availableReturnDates = [];
       });
       _fetchOperators();
     }
@@ -1591,6 +1597,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
           _origin = _origins.isNotEmpty ? _origins.first : null;
           _destination = null;
           _destinations = [];
+          _availableDepartureDates = [];
+          _availableReturnDates = [];
           if (_origin != null) _fetchDestinations(_origin!);
         });
       }
@@ -1612,6 +1620,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
         setState(() {
           _destinations = List<String>.from(data['destinations']);
           _destination = _destinations.isNotEmpty ? _destinations.first : null;
+          if (_destination != null) _fetchAvailableDates();
         });
       }
     } catch (e) {
@@ -1621,12 +1630,48 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     }
   }
 
+  void _fetchAvailableDates() async {
+    if (_origin == null || _destination == null) return;
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
+      
+      final res = await http.get(Uri.parse('$baseUrl/api/available-dates?origin=${Uri.encodeComponent(_origin!)}&destination=${Uri.encodeComponent(_destination!)}&mode=$_mode$operatorQuery'));
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _availableDepartureDates = List<String>.from(data['available_dates']);
+        });
+      }
+
+      final resRet = await http.get(Uri.parse('$baseUrl/api/available-dates?origin=${Uri.encodeComponent(_destination!)}&destination=${Uri.encodeComponent(_origin!)}&mode=$_mode$operatorQuery'));
+      final dataRet = jsonDecode(resRet.body);
+      if (resRet.statusCode == 200 && dataRet['status'] == 'success') {
+        setState(() {
+          _availableReturnDates = List<String>.from(dataRet['available_dates']);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching available dates: $e');
+    }
+  }
+
   Future<void> _selectDate(BuildContext context, bool isDeparture) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: isDeparture ? _departureDate : _returnDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      selectableDayPredicate: (DateTime day) {
+        if (_origin == null || _destination == null) return false;
+        if (isDeparture) {
+          if (_availableDepartureDates.isEmpty) return false;
+          return _availableDepartureDates.contains(_fmt(day));
+        } else {
+          if (_availableReturnDates.isEmpty) return false;
+          return _availableReturnDates.contains(_fmt(day));
+        }
+      },
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: kGreen, secondary: kPink)),
         child: child!,
@@ -1761,7 +1806,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                             items: _origins.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                             onChanged: (v) {
                               if (v != null) {
-                                setState(() { _origin = v; _destination = null; _destinations = []; });
+                                setState(() { _origin = v; _destination = null; _destinations = []; _availableDepartureDates = []; _availableReturnDates = []; });
                                 _fetchDestinations(v);
                               }
                             },
@@ -1778,7 +1823,10 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                   value: _destinations.contains(_destination) ? _destination : null,
                                   hint: const Text('Select Destination'),
                                   items: _destinations.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                                  onChanged: (v) => setState(() => _destination = v),
+                                  onChanged: (v) {
+                                    setState(() { _destination = v; _availableDepartureDates = []; _availableReturnDates = []; });
+                                    if (v != null) _fetchAvailableDates();
+                                  },
                                   decoration: _dropDecor(Icons.navigation),
                                 ),
                           const SizedBox(height: 16),
@@ -3686,14 +3734,36 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (widget.booking.tripType == 'round_trip') ...[
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: Text('Departure Trip', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Departure Trip', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(color: const Color(0xFFE0EFFF), borderRadius: BorderRadius.circular(8)),
+                                      child: Text('From ${widget.booking.origin} • To ${widget.booking.destination}', style: const TextStyle(color: Color(0xFF5C1C85), fontWeight: FontWeight.bold, fontSize: 13)),
+                                    ),
+                                  ],
+                                ),
                               ),
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: Text('Returning Trip', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Returning Trip', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(color: const Color(0xFFE0EFFF), borderRadius: BorderRadius.circular(8)),
+                                      child: Text('From ${widget.booking.destination} • To ${widget.booking.origin}', style: const TextStyle(color: Color(0xFF5C1C85), fontWeight: FontWeight.bold, fontSize: 13)),
+                                    ),
+                                  ],
+                                ),
                               ),
                               _buildHorizontalScheduleList(_returnSchedules, isReturn: true),
                               
@@ -3717,9 +3787,20 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 ),
                               ),
                             ] else ...[
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: Text('Available Schedules', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Available Schedules', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(color: const Color(0xFFE0EFFF), borderRadius: BorderRadius.circular(8)),
+                                      child: Text('From ${widget.booking.origin} • To ${widget.booking.destination}', style: const TextStyle(color: Color(0xFF5C1C85), fontWeight: FontWeight.bold, fontSize: 13)),
+                                    ),
+                                  ],
+                                ),
                               ),
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
                             ],
@@ -4590,6 +4671,11 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   bool _isUploadingProof = false;
   bool _proofUploaded = false;
 
+  // Points
+  bool _usePoints = false;
+  double _availablePoints = 0.0;
+  bool _fetchingPoints = false;
+
   static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
 
   @override
@@ -4598,6 +4684,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     _clientNameCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.username : widget.booking.clientName);
     _clientEmailCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.email : widget.booking.clientEmail);
     _fetchPaymentSettings();
+    _fetchPoints();
   }
 
   @override
@@ -4605,6 +4692,24 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     _clientNameCtrl.dispose();
     _clientEmailCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchPoints() async {
+    if (!UserSession.isLoggedIn || UserSession.token.isEmpty) return;
+    setState(() => _fetchingPoints = true);
+    try {
+      final res = await http.get(
+        Uri.parse('${UserSession.getBaseUrl()}/api/gracia-points'),
+        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() => _availablePoints = double.parse(data['current_points'].toString()));
+      }
+    } catch (_) {}
+    finally {
+      if (mounted) setState(() => _fetchingPoints = false);
+    }
   }
 
   void _fetchPaymentSettings() async {
@@ -4662,6 +4767,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
           if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnScheduleAccommodationId != null)
             'selected_return_schedule_accommodation_id': widget.booking.selectedReturnScheduleAccommodationId,
           if (widget.booking.voucherCode != null) 'voucher_code': widget.booking.voucherCode,
+          if (_usePoints) 'use_points': true,
         }),
       );
       final data = jsonDecode(res.body);
@@ -4967,8 +5073,6 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       pax[i]['name'] as String? ?? '',
                     )),
                   ]),
-                  const SizedBox(height: 8),
-                  _VoucherSection(booking: widget.booking, scopeFilter: 'ticket_fare', onVoucherChanged: () => setState(() {})),
                   const SizedBox(height: 16),
 
                   // Add-ons
@@ -4984,8 +5088,6 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                         return _SummaryRow(acc['name'] as String, valStr);
                       }),
                     ]),
-                    const SizedBox(height: 8),
-                    _VoucherSection(booking: widget.booking, scopeFilter: 'accommodation', onVoucherChanged: () => setState(() {})),
                     const SizedBox(height: 16),
                   ],
 
@@ -5000,8 +5102,6 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                          return pts > 0 ? '₱${p.toStringAsFixed(2)}  (+${pts}pts)' : '₱${p.toStringAsFixed(2)}';
                       }()),
                     ]),
-                    const SizedBox(height: 8),
-                    _VoucherSection(booking: widget.booking, scopeFilter: 'vehicle', onVoucherChanged: () => setState(() {})),
                     const SizedBox(height: 16),
                   ],
 
@@ -5037,38 +5137,56 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   const Text('Total Booking Voucher (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
                   const SizedBox(height: 8),
                   _VoucherSection(booking: widget.booking, scopeFilter: null, onVoucherChanged: () => setState(() {})),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  
+                  if (UserSession.isLoggedIn) ...[
+                    const Text('Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: kSlate200),
+                      ),
+                      child: SwitchListTile(
+                        title: const Text('Use Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        subtitle: _fetchingPoints ? const Text('Loading...', style: TextStyle(fontSize: 12)) : Text('Available: ${_availablePoints.toInt()} pts', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                        value: _usePoints,
+                        onChanged: _availablePoints > 0 ? (val) => setState(() => _usePoints = val) : null,
+                        activeColor: kGreen,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
 
                   Builder(builder: (ctx) {
                     final subtotal = widget.booking.totalPrice;
                     final discount = widget.booking.voucherData != null ? (widget.booking.voucherData!['discount_amount'] as num).toDouble() : 0.0;
-                    final finalTotal = (subtotal - discount).clamp(0.0, double.infinity);
+                    double totalBeforePoints = subtotal - discount;
+                    if (totalBeforePoints < 0) totalBeforePoints = 0.0;
+                    
+                    double pointsDiscount = 0.0;
+                    if (_usePoints) {
+                        pointsDiscount = _availablePoints > totalBeforePoints ? totalBeforePoints.ceilToDouble() : _availablePoints;
+                    }
+                    
+                    final finalTotal = (totalBeforePoints - pointsDiscount) > 0 ? (totalBeforePoints - pointsDiscount) : 0.0;
                     
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _SummarySection(title: 'Payment Summary', children: [
                           _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
-                          if (discount > 0) ...[
-                            _SummaryRow('Voucher Discount', '- ₱${discount.toStringAsFixed(2)}'),
-                            const Divider(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
-                                Text('₱${finalTotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, color: kPink, fontSize: 18)),
-                              ],
-                            ),
-                          ] else ...[
-                            const Divider(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
-                                Text('₱${subtotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, color: kPink, fontSize: 18)),
-                              ],
-                            ),
-                          ],
+                          if (discount > 0) _SummaryRow('Voucher Discount', '-₱${discount.toStringAsFixed(2)}'),
+                          if (pointsDiscount > 0) _SummaryRow('Points Discount (${pointsDiscount.toInt()} pts)', '-₱${pointsDiscount.toStringAsFixed(2)}'),
+                          const Divider(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                              Text('₱${finalTotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, color: kPink, fontSize: 18)),
+                            ],
+                          ),
                         ]),
                         const SizedBox(height: 16),
                         Builder(builder: (ctx) {
@@ -5166,10 +5284,12 @@ class _SummaryRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: kSlate500, fontSize: 13)),
-          Flexible(child: Text(value, style: const TextStyle(color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.end)),
+          Expanded(child: Text(label, style: const TextStyle(color: kSlate500, fontSize: 13))),
+          const SizedBox(width: 16),
+          Text(value, style: const TextStyle(color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.end),
         ],
       ),
     );
@@ -7141,8 +7261,10 @@ class VouchersScreen extends StatefulWidget {
 
 class _VouchersScreenState extends State<VouchersScreen> {
   bool _isLoading = true;
+  bool _isClaiming = false;
   String _error = '';
   List<dynamic> _vouchers = [];
+  final TextEditingController _promoCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -7153,6 +7275,12 @@ class _VouchersScreenState extends State<VouchersScreen> {
       setState(() => _isLoading = false);
     }
   }
+  @override
+  void dispose() {
+    _promoCtrl.dispose();
+    super.dispose();
+  }
+
 
   Future<void> _fetchVouchers() async {
     try {
@@ -7252,6 +7380,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                 const SizedBox(width: 12),
                                 const Expanded(
                                   child: TextField(
+                                    controller: _promoCtrl,
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
                                       hintText: 'Input promo code',
@@ -7260,10 +7389,31 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Voucher check is applied at checkout.')));
+                                  onPressed: _isClaiming ? null : () async {
+                                    final code = _promoCtrl.text.trim();
+                                    if (code.isEmpty) return;
+                                    setState(() => _isClaiming = true);
+                                    try {
+                                      final res = await http.post(
+                                        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
+                                        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+                                        body: jsonEncode({'code': code}),
+                                      );
+                                      final data = jsonDecode(res.body);
+                                      if (res.statusCode == 200 && data['status'] == 'success') {
+                                        _promoCtrl.clear();
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Voucher added!'), backgroundColor: kGreen));
+                                        _fetchVouchers();
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid code.'), backgroundColor: Colors.red));
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
+                                    } finally {
+                                      if (mounted) setState(() => _isClaiming = false);
+                                    }
                                   },
-                                  child: const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                  child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),

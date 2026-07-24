@@ -344,12 +344,20 @@
                                     <label class="block text-slate-700 font-semibold text-sm">Departure Date</label>
                                         <div class="mt-2">
                                             @php
-                                                $enabledDepartureDates = !empty($available_package_dates) ? $available_package_dates : (!empty($available_schedule_dates) ? $available_schedule_dates : []);
+                                                $restrictDepartureDates = false;
+                                                $enabledDepartureDates = [];
+                                                if (!empty($available_package_dates) || !empty($available_schedule_dates)) {
+                                                    $restrictDepartureDates = true;
+                                                    $enabledDepartureDates = !empty($available_package_dates) ? $available_package_dates : $available_schedule_dates;
+                                                } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
+                                                    $restrictDepartureDates = true;
+                                                    $enabledDepartureDates = [];
+                                                }
                                             @endphp
-                                            @if(!empty($enabledDepartureDates))
-                                                <livewire:date-picker wire:model="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
+                                            @if($restrictDepartureDates)
+                                                <livewire:date-picker wire:key="departure-restricted-{{ md5(json_encode($enabledDepartureDates)) }}" wire:model="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
                                             @else
-                                                <livewire:date-picker wire:model="departure_date" field="departure_date" label="" min="{{ date('Y-m-d') }}" />
+                                                <livewire:date-picker wire:key="departure-unrestricted" wire:model="departure_date" field="departure_date" label="" min="{{ date('Y-m-d') }}" />
                                             @endif
                                         </div>
                                     @error('departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -360,12 +368,20 @@
                                         <label class="block text-slate-700 font-semibold text-sm">Return Date</label>
                                         <div class="mt-2">
                                             @php
-                                                $enabledReturnDates = !empty($available_package_dates) ? $available_package_dates : (!empty($available_schedule_dates) ? $available_schedule_dates : []);
+                                                $restrictReturnDates = false;
+                                                $enabledReturnDates = [];
+                                                if (!empty($available_package_dates) || !empty($available_return_schedule_dates)) {
+                                                    $restrictReturnDates = true;
+                                                    $enabledReturnDates = !empty($available_package_dates) ? $available_package_dates : $available_return_schedule_dates;
+                                                } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
+                                                    $restrictReturnDates = true;
+                                                    $enabledReturnDates = [];
+                                                }
                                             @endphp
-                                            @if(!empty($enabledReturnDates))
-                                                <livewire:date-picker wire:model="return_date" field="return_date" :enabled-dates="$enabledReturnDates" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
+                                            @if($restrictReturnDates)
+                                                <livewire:date-picker wire:key="return-restricted-{{ md5(json_encode($enabledReturnDates)) }}" wire:model="return_date" field="return_date" :enabled-dates="$enabledReturnDates" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
                                             @else
-                                                <livewire:date-picker wire:model="return_date" field="return_date" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
+                                                <livewire:date-picker wire:key="return-unrestricted" wire:model="return_date" field="return_date" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
                                             @endif
                                         </div>
                                         @error('return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -548,97 +564,7 @@
                                 </div>
                             @endif
 
-                    {{-- Live Booking Summary Card (Step 1) --}}
-                    @if($mode || $origin || $destination || $departure_date)
-                        <div class="mt-6 rounded-2xl border border-[#db2777]/20 bg-gradient-to-br from-[#db2777]/5 to-pink-50 p-5 shadow-sm">
-                            <div class="flex items-center gap-2 mb-4">
-                                <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[#db2777]/10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#db2777]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                </div>
-                                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Booking Summary</h3>
-                            </div>
 
-                            <div class="grid gap-3 sm:grid-cols-2">
-                                {{-- Trip Type --}}
-                                <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
-                                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Trip Type</p>
-                                    <p class="mt-1 text-sm font-semibold text-slate-900">
-                                        {{ $trip_type === 'round_trip' ? 'Round Trip' : 'One-way Trip' }}
-                                    </p>
-                                </div>
-
-                                {{-- Mode --}}
-                                <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
-                                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode</p>
-                                    <p class="mt-1 text-sm font-semibold text-slate-900">
-                                        @if($mode === 'ferry')
-                                            🚢 Ferry
-                                        @elseif($mode === 'airline')
-                                            ✈️ Airline
-                                        @else
-                                            <span class="text-slate-400 italic">Not selected</span>
-                                        @endif
-                                    </p>
-                                </div>
-
-                                {{-- Route --}}
-                                <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm sm:col-span-2">
-                                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Route</p>
-                                    <p class="mt-1 text-sm font-semibold text-slate-900">
-                                        @if($origin && $destination)
-                                            <span class="text-[#db2777]">{{ $origin }}</span>
-                                            <span class="mx-1 text-slate-400">→</span>
-                                            <span class="text-[#db2777]">{{ $destination }}</span>
-                                        @elseif($origin)
-                                            <span class="text-[#db2777]">{{ $origin }}</span>
-                                            <span class="mx-1 text-slate-400">→</span>
-                                            <span class="text-slate-400 italic">Destination not set</span>
-                                        @else
-                                            <span class="text-slate-400 italic">Select origin &amp; destination</span>
-                                        @endif
-                                    </p>
-                                </div>
-
-                                {{-- Departure Date --}}
-                                <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
-                                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Departure</p>
-                                    <p class="mt-1 text-sm font-semibold text-slate-900">
-                                        @if($departure_date)
-                                            {{ \Carbon\Carbon::parse($departure_date)->format('M d, Y') }}
-                                        @else
-                                            <span class="text-slate-400 italic">Not set</span>
-                                        @endif
-                                    </p>
-                                </div>
-
-                                {{-- Return Date (if round trip) --}}
-                                @if($trip_type === 'round_trip')
-                                    <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
-                                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Return</p>
-                                        <p class="mt-1 text-sm font-semibold text-slate-900">
-                                            @if($return_date)
-                                                {{ \Carbon\Carbon::parse($return_date)->format('M d, Y') }}
-                                            @else
-                                                <span class="text-slate-400 italic">Not set</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                @endif
-
-                                {{-- Travelers --}}
-                                <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm {{ $trip_type !== 'round_trip' ? '' : '' }}">
-                                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Travelers</p>
-                                    <p class="mt-1 text-sm font-semibold text-slate-900">
-                                        {{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}
-                                        @if($children > 0)
-                                            , {{ $children }} child{{ $children !== 1 ? 'ren' : '' }}
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
                     @endif
 
                     @if ($step === 2 && !$tour_id && !$prefilled_from_package)
@@ -1690,4 +1616,27 @@
         </div>
     @endif
     
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('validation-error', () => {
+                setTimeout(() => {
+                    const firstError = document.querySelector('.text-rose-600');
+                    if (firstError) {
+                        // Find the closest parent section or container to scroll to
+                        const container = firstError.closest('.rounded-2xl') || firstError.closest('label') || firstError;
+                        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Add a brief highlight animation
+                        const input = container.querySelector('input, select, button');
+                        if (input) {
+                            input.classList.add('ring-2', 'ring-rose-500', 'ring-offset-2');
+                            setTimeout(() => {
+                                input.classList.remove('ring-2', 'ring-rose-500', 'ring-offset-2');
+                            }, 1500);
+                        }
+                    }
+                }, 100);
+            });
+        });
+    </script>
 </div>

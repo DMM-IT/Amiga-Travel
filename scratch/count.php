@@ -1,12 +1,26 @@
 <?php
-require 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
+$content = file_get_contents('c:/laragon/www/AMIGA/Amiga-Travel/resources/views/livewire/booking-form.blade.php');
+$content = str_replace("\r\n", "\n", $content);
+$lines = explode("\n", $content);
+$stack = [];
+foreach ($lines as $i => $line) {
+    if ($i >= 143 && $i <= 658) {
+        if (preg_match_all('/@(if|foreach|forelse)\b/', $line, $matches)) {
+            foreach ($matches[1] as $m) {
+                $stack[] = ($i + 1);
+                echo "PUSH " . ($i + 1) . " (Depth: " . count($stack) . ")\n";
+            }
+        }
+        if (preg_match_all('/@(endif|endforeach|endforelse)\b/', $line, $matches)) {
+            foreach ($matches[1] as $m) {
+                if (!empty($stack)) {
+                    $popped = array_pop($stack);
+                    echo "POP " . ($i + 1) . " matched with $popped (Depth: " . count($stack) . ")\n";
+                }
+            }
+        }
+    }
+}
 
-$route = App\Models\FerryRoute::where('origin', 'Batangas')->where('destination', 'Boracay')->first();
-$schedules = $route->schedules()->select('departure_time')->get();
-$grouped = $schedules->groupBy(function($s) {
-    return \Carbon\Carbon::parse($s->departure_time)->format('Y-m-d');
-})->map->count()->toArray();
-print_r($grouped);
+
+

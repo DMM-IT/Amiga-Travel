@@ -44,6 +44,50 @@ class ScheduleController extends Controller
         ]);
     }
 
+    public function availableDates(Request $request)
+    {
+        $request->validate([
+            'origin' => 'required|string',
+            'destination' => 'required|string',
+        ]);
+
+        $origin = $request->input('origin');
+        $destination = $request->input('destination');
+        $mode = $request->input('mode', null);
+        $operator = $request->input('operator', null);
+
+        $query = FerryRoute::where('is_active', true)
+            ->where('origin', $origin)
+            ->where('destination', $destination);
+            
+        if ($mode) {
+            $query->where('mode', $mode);
+        }
+        if ($operator) {
+            $query->where('operator', 'like', "%{$operator}%");
+        }
+
+        $routes = $query->with(['schedules' => function($q) {
+            $q->where('is_active', true)
+              ->where('departure_time', '>=', now()->startOfDay());
+        }])->get();
+
+        $dates = [];
+        foreach ($routes as $route) {
+            foreach ($route->schedules as $schedule) {
+                $dates[] = \Carbon\Carbon::parse($schedule->departure_time)->format('Y-m-d');
+            }
+        }
+
+        $dates = array_values(array_unique($dates));
+        sort($dates);
+
+        return response()->json([
+            'status' => 'success',
+            'available_dates' => $dates
+        ]);
+    }
+
     public function search(Request $request)
     {
         $request->validate([

@@ -17,6 +17,8 @@ class DatePicker extends Component
     public int $viewYear;
     public int $viewMonth;
     public array $enabledDates = [];
+    public bool $hasEnabledDatesRestriction = false;
+
     // Note: Avoid using Livewire helper methods that may not exist in this
     // project's Livewire version (emit/dispatchBrowserEvent). This component
     // relies on `wire:model` binding to update parent properties.
@@ -43,6 +45,7 @@ class DatePicker extends Component
 
         // Normalize enabledDates if provided (can be string or array)
         if ($enabledDates !== null) {
+            $this->hasEnabledDatesRestriction = true;
             if (is_string($enabledDates)) {
                 $parts = preg_split('/[;,|]+/', $enabledDates);
                 $this->enabledDates = array_values(array_filter(array_map('trim', $parts)));
@@ -115,8 +118,8 @@ class DatePicker extends Component
             $date = sprintf('%04d-%02d-%02d', $this->viewYear, $this->viewMonth, $day);
             $disabled = $minDate !== null && $date < $this->min;
 
-            // If enabledDates is provided, only those dates are selectable
-            if (! empty($this->enabledDates)) {
+            // If enabledDates restriction is active, only those dates are selectable
+            if ($this->hasEnabledDatesRestriction) {
                 $disabled = $disabled || ! in_array($date, $this->enabledDates, true);
             }
 

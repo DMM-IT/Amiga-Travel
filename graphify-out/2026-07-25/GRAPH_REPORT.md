@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Graph Report - amiga-gracia  (2026-07-25)
 
 ## Corpus Check
@@ -11,10 +12,26 @@
 
 ## Graph Freshness
 - Built from commit: `1dafff4d`
+=======
+# Graph Report - Amiga-Travel  (2026-07-25)
+
+## Corpus Check
+- 436 files · ~412,069 words
+- Verdict: corpus is large enough that graph structure adds value.
+
+## Summary
+- 20 nodes · 20 edges · 5 communities (2 shown, 3 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
+- Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `9cb61cd7`
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
+<<<<<<< HEAD
 - HTTP Controllers & Routing (C0)
 - Data Models & Domain (C1)
 - HTTP Controllers & Routing (C2)
@@ -203,10 +220,27 @@
   flutter_app/windows/runner/main.cpp → flutter_app/windows/runner/utils.cpp
 - `Win32Window::Win32Window()` --calls--> `Destroy`  [INFERRED]
   flutter_app/windows/runner/win32_window.cpp → flutter_app/windows/runner/win32_window.h
+=======
+- ScheduleResource
+- ScheduleResource.php
+- booking-form.blade.php
+- filament.admin.notification-scripts
+
+## God Nodes (most connected - your core abstractions)
+1. `ScheduleResource` - 11 edges
+2. `filament.admin.notification-scripts` - 1 edges
+3. `date-picker` - 1 edges
+4. `setTripType(` - 1 edges
+
+## Surprising Connections (you probably didn't know these)
+- `ScheduleResource` --inherits--> `Resource`  [EXTRACTED]
+  app/Filament/Resources/ScheduleResource.php →   _Bridges community 0 → community 1_
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 
 ## Import Cycles
 - None detected.
 
+<<<<<<< HEAD
 ## Communities (312 total, 35 thin omitted)
 
 ### Community 0 - "HTTP Controllers & Routing (C0)"
@@ -729,10 +763,23 @@ Nodes (7): ar(), ft(), kn(), sr(), wn(), Ye(), yn()
 - **594 isolated node(s):** `$schema`, `name`, `type`, `description`, `laravel` (+589 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+=======
+## Communities (5 total, 3 thin omitted)
+
+### Community 1 - "ScheduleResource.php"
+Cohesion: 0.40
+Nodes (3): Form, Resource, Table
+
+## Knowledge Gaps
+- **3 isolated node(s):** `filament.admin.notification-scripts`, `date-picker`, `setTripType(`
+  These have ≤1 connection - possible missing edges or undocumented components.
+- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+<<<<<<< HEAD
 - **Why does `A()` connect `Core Module 72` to `Core Module 65`, `HTTP Controllers & Routing (C2)`, `Core Module 33`, `Core Module 4`, `Database Seeders & Testing (C70)`, `HTTP Controllers & Routing (C40)`, `Core Module 10`, `Core Module 43`, `Data Models & Domain (C12)`, `Core Module 17`, `Core Module 56`?**
   _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **Why does `draw()` connect `Data Models & Domain (C12)` to `Data Models & Domain (C1)`, `Core Module 65`, `Core Module 36`, `Core Module 72`, `Core Module 10`, `Core Module 78`, `Core Module 14`, `Data Models & Domain (C52)`, `Core Module 20`, `Core Module 22`, `Filament Admin & UI (C24)`, `Core Module 30`?**
@@ -747,3 +794,9 @@ _Questions this graph is uniquely positioned to answer:_
   _594 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `HTTP Controllers & Routing (C0)` be split into smaller, more focused modules?**
   _Cohesion score 0.006329113924050633 - nodes in this community are weakly interconnected._
+=======
+- **Why does `ScheduleResource` connect `ScheduleResource` to `ScheduleResource.php`?**
+  _High betweenness centrality (0.386) - this node is a cross-community bridge._
+- **What connects `filament.admin.notification-scripts`, `date-picker`, `setTripType(` to the rest of the system?**
+  _3 weakly-connected nodes found - possible documentation gaps or missing edges._
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84

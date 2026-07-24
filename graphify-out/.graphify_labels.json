@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "0": "HTTP Controllers & Routing (C0)",
   "1": "Data Models & Domain (C1)",
   "2": "HTTP Controllers & Routing (C2)",
@@ -334,4 +335,18 @@
   "332": "views/booking-reschedule.blade.php",
   "333": "reschedule-approval-notification.blade.php",
   "334": "service-cancellation-notification.blade.php"
+=======
+  "0": "ScheduleResource",
+  "1": "ScheduleResource.php",
+  "2": "booking-form.blade.php",
+  "3": "filament.admin.notification-scripts",
+  "4": "app.blade.php",
+  "5": ".saveDraft",
+  "6": ".updateReturnDateFromDuration",
+  "7": ".nextStep",
+  "8": "BookingForm.php",
+  "9": ".calculateTotalPrice",
+  "10": ".resetVehicleData",
+  "11": "count.php"
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 }

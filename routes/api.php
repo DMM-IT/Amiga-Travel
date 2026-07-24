@@ -18,6 +18,7 @@ Route::post('/email-verification/verify', [AuthController::class, 'verifyEmail']
 
 Route::get('/origins', [ScheduleController::class, 'origins']);
 Route::get('/destinations', [ScheduleController::class, 'destinations']);
+Route::get('/available-dates', [ScheduleController::class, 'availableDates']);
 Route::get('/operators', [ScheduleController::class, 'operators']);
 Route::post('/schedules', [ScheduleController::class, 'search']);
 Route::get('/all-schedules', [ScheduleController::class, 'allSchedules']);

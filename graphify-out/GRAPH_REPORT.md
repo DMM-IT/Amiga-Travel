@@ -1,6 +1,7 @@
-# Graph Report - amiga-gracia  (2026-07-25)
+# Graph Report - Amiga-Travel  (2026-07-25)
 
 ## Corpus Check
+<<<<<<< HEAD
 - 449 files · ~417,297 words
 - Verdict: corpus is large enough that graph structure adds value.
 
@@ -11,10 +12,23 @@
 
 ## Graph Freshness
 - Built from commit: `8438a3ae`
+=======
+- 436 files · ~411,927 words
+- Verdict: corpus is large enough that graph structure adds value.
+
+## Summary
+- 108 nodes · 178 edges · 12 communities (8 shown, 4 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
+- Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `2b00ce70`
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
+<<<<<<< HEAD
 - HTTP Controllers & Routing (C0)
 - Data Models & Domain (C1)
 - HTTP Controllers & Routing (C2)
@@ -170,15 +184,14 @@
 - Core Module 217
 - Core Module 222
 - Core Module 223
+=======
+- ScheduleResource
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 - ScheduleResource.php
-- Core Module 225
-- Core Module 227
-- ManageProofs
-- graphify reference: add a URL and watch a folder
-- Filament\Resources\Pages\ViewRecord
-- getDataset
-- VoucherResource
+- booking-form.blade.php
+- filament.admin.notification-scripts
 - .nextStep
+<<<<<<< HEAD
 - livewire/booking-reschedule.blade.php
 - qt
 - ListAppNotifications.php
@@ -222,10 +235,25 @@
   public/js/filament/forms/components/file-upload.js → public/js/filament/forms/components/markdown-editor.js
 - `_getTestState()` --indirect_call--> `Ht()`  [INFERRED]
   public/js/filament/forms/components/file-upload.js → public/js/filament/forms/components/markdown-editor.js
+=======
+- BookingForm.php
+
+## God Nodes (most connected - your core abstractions)
+1. `BookingForm` - 84 edges
+2. `ScheduleResource` - 11 edges
+3. `date-picker` - 1 edges
+4. `setTripType(` - 1 edges
+5. `filament.admin.notification-scripts` - 1 edges
+
+## Surprising Connections (you probably didn't know these)
+- `BookingForm` --inherits--> `Component`  [EXTRACTED]
+  app/Livewire/BookingForm.php →   _Bridges community 1 → community 8_
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 
 ## Import Cycles
 - None detected.
 
+<<<<<<< HEAD
 ## Communities (335 total, 49 thin omitted)
 
 ### Community 0 - "HTTP Controllers & Routing (C0)"
@@ -585,9 +613,15 @@ Cohesion: 0.14
 Nodes (13): autoload-dev, psr-4, description, keywords, license, minimum-stability, name, prefer-stable (+5 more)
 
 ### Community 91 - "Core Module 91"
-Cohesion: 0.19
-Nodes (12): RegisterPlugins(), OnCreate, HWND, Win32Window, child_content_, GetClientArea, OnCreate, quit_on_close_ (+4 more)
+=======
+## Communities (12 total, 4 thin omitted)
 
+### Community 0 - "ScheduleResource"
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
+Cohesion: 0.19
+Nodes (4): ScheduleResource, Form, Resource, Table
+
+<<<<<<< HEAD
 ### Community 93 - "Core Module 93"
 Cohesion: 0.15
 Nodes (11): file_selector_macos, firebase_core, firebase_messaging, RegisterGeneratedPlugins(), flutter_local_notifications, FlutterPluginRegistry, FlutterViewController, Foundation (+3 more)
@@ -768,10 +802,21 @@ Nodes (7): ar(), ft(), kn(), sr(), wn(), Ye(), yn()
 - **597 isolated node(s):** `$schema`, `name`, `type`, `description`, `laravel` (+592 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **49 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+=======
+### Community 8 - "BookingForm.php"
+Cohesion: 0.25
+Nodes (5): Component, PromotionalTicket, Tour, TourDate, WithFileUploads
+
+## Knowledge Gaps
+- **3 isolated node(s):** `date-picker`, `setTripType(`, `filament.admin.notification-scripts`
+  These have ≤1 connection - possible missing edges or undocumented components.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+<<<<<<< HEAD
 - **Why does `A()` connect `Core Module 72` to `Core Module 65`, `HTTP Controllers & Routing (C2)`, `md`, `Core Module 4`, `Filament Admin & UI (C37)`, `Database Seeders & Testing (C70)`, `Core Module 33`, `HTTP Controllers & Routing (C40)`, `Core Module 10`, `Data Models & Domain (C12)`, `Core Module 47`, `Core Module 17`?**
   _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **Why does `draw()` connect `Data Models & Domain (C12)` to `Data Models & Domain (C64)`, `Data Models & Domain (C1)`, `Core Module 65`, `Core Module 33`, `Core Module 36`, `Core Module 72`, `Core Module 10`, `Core Module 43`, `Core Module 20`, `Data Models & Domain (C52)`, `Filament Admin & UI (C24)`, `Core Module 30`?**
@@ -786,3 +831,13 @@ _Questions this graph is uniquely positioned to answer:_
   _597 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `HTTP Controllers & Routing (C0)` be split into smaller, more focused modules?**
   _Cohesion score 0.006329113924050633 - nodes in this community are weakly interconnected._
+=======
+- **Why does `BookingForm` connect `ScheduleResource.php` to `.saveDraft`, `.updateReturnDateFromDuration`, `.nextStep`, `BookingForm.php`, `.calculateTotalPrice`, `.resetVehicleData`?**
+  _High betweenness centrality (0.598) - this node is a cross-community bridge._
+- **What connects `date-picker`, `setTripType(`, `filament.admin.notification-scripts` to the rest of the system?**
+  _3 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `ScheduleResource.php` be split into smaller, more focused modules?**
+  _Cohesion score 0.07407407407407407 - nodes in this community are weakly interconnected._
+- **Should `.saveDraft` be split into smaller, more focused modules?**
+  _Cohesion score 0.12280701754385964 - nodes in this community are weakly interconnected._
+>>>>>>> 9adb4dc65eeb8b8576a21baa966c74bbe0a1ff84
