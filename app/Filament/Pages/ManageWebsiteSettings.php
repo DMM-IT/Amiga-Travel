@@ -744,6 +744,44 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->default('Check status →')
                                                 ->maxLength(50),
                                         ]),
+                                    Section::make('Booking Cards Section')
+                                        ->description('Customize the booking cards section shown on home page')
+                                        ->schema([
+                                            TextInput::make('content.booking_section_title')
+                                                ->label('Section Title')
+                                                ->default('Request Travel Bookings')
+                                                ->maxLength(255),
+                                            Textarea::make('content.booking_section_description')
+                                                ->label('Section Description')
+                                                ->default('Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.')
+                                                ->rows(2)
+                                                ->maxLength(255),
+                                            Repeater::make('content.booking_cards')
+                                                ->label('Booking Cards')
+                                                ->addable(false)
+                                                ->deletable(false)
+                                                ->collapsible()
+                                                ->collapsed(false)
+                                                ->schema([
+                                                    TextInput::make('title')
+                                                        ->label('Card Title')
+                                                        ->required()
+                                                        ->maxLength(100),
+                                                    Textarea::make('description')
+                                                        ->label('Card Description')
+                                                        ->rows(2)
+                                                        ->maxLength(255),
+                                                    FileUpload::make('image')
+                                                        ->label('Card Image')
+                                                        ->image()
+                                                        ->directory('website-settings/booking-cards'),
+                                                    TextInput::make('booking_button_text')
+                                                        ->label('Button Text')
+                                                        ->default('Book Now')
+                                                        ->maxLength(50),
+                                                ])
+                                                ->columns(1),
+                                        ]),
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
