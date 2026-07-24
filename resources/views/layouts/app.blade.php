@@ -142,31 +142,32 @@
             <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-12 border-b border-white/10">
                     <!-- Column 1: Logo & Tagline -->
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3">
-                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-14 w-auto">
-                        </div>
+            <div class="space-y-4">
+                <div class="flex flex-col items-start gap-3">
+                    <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-20 sm:h-24 lg:h-28 w-auto">
+                    <p class="text-white/90 font-semibold text-sm sm:text-base">{{ $footerData['tagline'] ?? 'Kay Amiga Hassle Free Ka!' }}</p>
+                </div>
 
-                        <!-- Social Icons -->
-                        <div class="flex gap-4 pt-2">
-                            @forelse($footerData['social_links'] ?? [] as $social)
-                                <a href="{{ $social['url'] ?? '#' }}" target="_blank" class="h-10 w-10 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white" aria-label="{{ $social['platform'] ?? 'Social' }}">
-                                    <span class="text-sm font-bold">{{ strtoupper(substr($social['platform'] ?? 'SM', 0, 2)) }}</span>
-                                </a>
-                            @empty
-                                <a href="https://www.facebook.com/profile.php?id=100072122019511" target="_blank" class="h-10 w-10 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
-                                    <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                                        <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1V12h3v3h-3v6.8c4.56-.93 8-4.96 8-9.8z"/>
-                                    </svg>
-                                </a>
-                                <a href="https://www.tiktok.com/@amigagracia?_r=1" target="_blank" class="h-10 w-10 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
-                                    <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                                        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.74-3.94-1.74-.22-.2-.43-.42-.62-.65v7.17c.02 1.36-.26 2.74-.91 3.97-.8 1.48-2.2 2.63-3.82 3.1-1.61.47-3.36.33-4.9-.38-1.54-.7-2.79-2.02-3.38-3.63-.59-1.61-.53-3.44.18-5 1-2.2 3.32-3.75 5.75-3.64.09 0 .17.02.26.03V10.7c-1.43-.07-2.91.43-3.9 1.48-.99 1.05-1.41 2.58-1.15 4.02.26 1.44 1.22 2.68 2.53 3.3 1.31.62 2.87.58 4.14-.14 1.27-.72 2.05-2.09 2.08-3.56v-15.8z"/>
-                                    </svg>
-                                </a>
-                            @endforelse
-                        </div>
-                    </div>
+                <!-- Social Icons -->
+                <div class="flex gap-4 pt-2">
+                    @forelse($footerData['social_links'] ?? [] as $social)
+                        <a href="{{ $social['url'] ?? '#' }}" target="_blank" class="h-10 w-10 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white" aria-label="{{ $social['platform'] ?? 'Social' }}">
+                            <span class="text-sm font-bold">{{ strtoupper(substr($social['platform'] ?? 'SM', 0, 2)) }}</span>
+                        </a>
+                    @empty
+                        <a href="https://www.facebook.com/profile.php?id=100072122019511" target="_blank" class="h-10 w-10 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
+                            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1V12h3v3h-3v6.8c4.56-.93 8-4.96 8-9.8z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.tiktok.com/@amigagracia?_r=1" target="_blank" class="h-10 w-10 rounded-full bg-white/10 hover:bg-emerald-500 flex items-center justify-center transition text-white">
+                            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.74-3.94-1.74-.22-.2-.43-.42-.62-.65v7.17c.02 1.36-.26 2.74-.91 3.97-.8 1.48-2.2 2.63-3.82 3.1-1.61.47-3.36.33-4.9-.38-1.54-.7-2.79-2.02-3.38-3.63-.59-1.61-.53-3.44.18-5 1-2.2 3.32-3.75 5.75-3.64.09 0 .17.02.26.03V10.7c-1.43-.07-2.91.43-3.9 1.48-.99 1.05-1.41 2.58-1.15 4.02.26 1.44 1.22 2.68 2.53 3.3 1.31.62 2.87.58 4.14-.14 1.27-.72 2.05-2.09 2.08-3.56v-15.8z"/>
+                            </svg>
+                        </a>
+                    @endforelse
+                </div>
+            </div>
 
                     <!-- Column 2: Sitemap -->
                     <div class="space-y-4">

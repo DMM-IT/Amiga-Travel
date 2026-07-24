@@ -575,6 +575,10 @@ class ManageWebsiteSettings extends Page implements HasForms
                     Section::make('Footer Configuration')
                         ->description('Manage footer content visible on all pages')
                         ->schema([
+                            TextInput::make('footer_data.tagline')
+                                ->label('Footer Tagline')
+                                ->default('Kay Amiga Hassle Free Ka!')
+                                ->maxLength(255),
                             Textarea::make('footer_data.about')
                                 ->label('About Text')
                                 ->rows(3)
@@ -703,7 +707,11 @@ class ManageWebsiteSettings extends Page implements HasForms
                                             Textarea::make('content.welcome_subtitle')
                                                 ->label('Welcome Subtitle')
                                                 ->rows(2)
-                                                ->default('Ferry bookings, accommodations, and everything in between — made easy. What would you like to do today?')
+                                                ->default('Your Journey Deserves More Than A Destination — It Deserves An Exceptional Experience')
+                                                ->maxLength(255),
+                                            TextInput::make('content.sliding_text')
+                                                ->label('Sliding Banner Text')
+                                                ->default('Your Journey Deserves More Than A Destination — It Deserves An Exceptional Experience')
                                                 ->maxLength(255),
                                         ]),
                                     Section::make('Hero Cards')
