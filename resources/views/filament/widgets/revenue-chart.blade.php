@@ -66,36 +66,32 @@
             };
         }
 
+        function initRevenueChart(data) {
+            const el = document.getElementById('dashboard-revenue-chart');
+            if (el && window.ApexCharts) {
+                if (revenueChart) {
+                    revenueChart.destroy();
+                }
+                revenueChart = new ApexCharts(el, getRevenueOptions(data));
+                revenueChart.render();
+            }
+        }
+
         // Initialize
         const initData = @js($chartData);
-        const el = document.getElementById('dashboard-revenue-chart');
-        if (el) {
-            revenueChart = new ApexCharts(el, getRevenueOptions(initData));
-            revenueChart.render();
-        }
+        initRevenueChart(initData);
 
         // Listen for updates
         $wire.on('revenue-chart-updated', ({ chartData }) => {
-            if (revenueChart && chartData) {
-                revenueChart.updateOptions({
-                    series: chartData.series || [],
-                    xaxis: { categories: chartData.categories || [] },
-                }, false, true);
+            if (chartData) {
+                initRevenueChart(chartData);
             }
         });
 
         // Dark mode observer
         const observer = new MutationObserver(() => {
-            if (revenueChart) {
-                const isDark = document.documentElement.classList.contains('dark');
-                revenueChart.updateOptions({
-                    theme: { mode: isDark ? 'dark' : 'light' },
-                    grid: { borderColor: isDark ? '#374151' : '#e5e7eb' },
-                    tooltip: { theme: isDark ? 'dark' : 'light' },
-                    xaxis: { labels: { style: { colors: isDark ? '#9ca3af' : '#6b7280' } } },
-                    yaxis: { labels: { style: { colors: isDark ? '#9ca3af' : '#6b7280' } } },
-                }, false, false);
-            }
+            const currentData = @js($chartData);
+            initRevenueChart(currentData);
         });
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     </script>

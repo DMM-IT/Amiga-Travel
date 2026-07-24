@@ -68,30 +68,29 @@
             };
         }
 
-        const initData = @js($chartData);
-        const el = document.getElementById('dashboard-booking-status-chart');
-        if (el) {
-            bookingStatusChart = new ApexCharts(el, getStatusOptions(initData));
-            bookingStatusChart.render();
+        function initBookingStatusChart(data) {
+            const el = document.getElementById('dashboard-booking-status-chart');
+            if (el && window.ApexCharts) {
+                if (bookingStatusChart) {
+                    bookingStatusChart.destroy();
+                }
+                bookingStatusChart = new ApexCharts(el, getStatusOptions(data));
+                bookingStatusChart.render();
+            }
         }
 
+        const initData = @js($chartData);
+        initBookingStatusChart(initData);
+
         $wire.on('booking-status-chart-updated', ({ chartData }) => {
-            if (bookingStatusChart && chartData) {
-                bookingStatusChart.updateOptions({ labels: chartData.labels || [] }, false, false);
-                bookingStatusChart.updateSeries(chartData.series || []);
+            if (chartData) {
+                initBookingStatusChart(chartData);
             }
         });
 
         const statusObserver = new MutationObserver(() => {
-            if (bookingStatusChart) {
-                const isDark = document.documentElement.classList.contains('dark');
-                bookingStatusChart.updateOptions({
-                    theme: { mode: isDark ? 'dark' : 'light' },
-                    stroke: { colors: [isDark ? '#111827' : '#ffffff'] },
-                    legend: { labels: { colors: isDark ? '#d1d5db' : '#374151' } },
-                    tooltip: { theme: isDark ? 'dark' : 'light' },
-                }, false, false);
-            }
+            const currentData = @js($chartData);
+            initBookingStatusChart(currentData);
         });
         statusObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     </script>

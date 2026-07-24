@@ -372,12 +372,16 @@ function baseTheme() {
 }
 
 function initReportCharts(data) {
+    // Clean up existing charts first
+    Object.values(reportCharts).forEach(c => c?.destroy());
+    Object.keys(reportCharts).forEach(k => delete reportCharts[k]);
+    
     const bt = baseTheme();
     const dark = isDark();
 
     // Revenue Area Chart
     const revEl = document.getElementById('report-revenue-chart');
-    if (revEl) {
+    if (revEl && window.ApexCharts) {
         reportCharts.revenue = new ApexCharts(revEl, {
             ...bt,
             chart: { ...bt.chart, type: 'area', height: 320, animations: { enabled: true, easing: 'easeinout', speed: 500 } },
@@ -395,7 +399,7 @@ function initReportCharts(data) {
 
     // Booking Volume Bar Chart
     const volEl = document.getElementById('report-booking-volume-chart');
-    if (volEl) {
+    if (volEl && window.ApexCharts) {
         reportCharts.bookingVolume = new ApexCharts(volEl, {
             ...bt,
             chart: { ...bt.chart, type: 'bar', height: 320, animations: { enabled: true, easing: 'easeinout', speed: 500 } },
@@ -410,7 +414,7 @@ function initReportCharts(data) {
 
     // Status Donut
     const statEl = document.getElementById('report-status-chart');
-    if (statEl) {
+    if (statEl && window.ApexCharts) {
         reportCharts.status = new ApexCharts(statEl, {
             ...bt,
             chart: { ...bt.chart, type: 'donut', height: 280 },
@@ -427,7 +431,7 @@ function initReportCharts(data) {
 
     // Transport Mode Pie
     const modeEl = document.getElementById('report-mode-chart');
-    if (modeEl) {
+    if (modeEl && window.ApexCharts) {
         reportCharts.mode = new ApexCharts(modeEl, {
             ...bt,
             chart: { ...bt.chart, type: 'pie', height: 280 },
@@ -443,7 +447,7 @@ function initReportCharts(data) {
 
     // Top Routes Horizontal Bar
     const routeEl = document.getElementById('report-routes-chart');
-    if (routeEl) {
+    if (routeEl && window.ApexCharts) {
         reportCharts.routes = new ApexCharts(routeEl, {
             ...bt,
             chart: { ...bt.chart, type: 'bar', height: 280 },
@@ -460,7 +464,7 @@ function initReportCharts(data) {
 
     // Passenger Demographics Bar
     const passEl = document.getElementById('report-passenger-chart');
-    if (passEl) {
+    if (passEl && window.ApexCharts) {
         reportCharts.passengers = new ApexCharts(passEl, {
             ...bt,
             chart: { ...bt.chart, type: 'bar', height: 250 },
@@ -475,30 +479,7 @@ function initReportCharts(data) {
 }
 
 function updateReportCharts(data) {
-    if (reportCharts.revenue && data.revenue) {
-        reportCharts.revenue.updateOptions({ xaxis: { categories: data.revenue.categories } }, false, false);
-        reportCharts.revenue.updateSeries(data.revenue.series);
-    }
-    if (reportCharts.bookingVolume && data.bookingVolume) {
-        reportCharts.bookingVolume.updateOptions({ xaxis: { categories: data.bookingVolume.categories } }, false, false);
-        reportCharts.bookingVolume.updateSeries(data.bookingVolume.series);
-    }
-    if (reportCharts.status && data.statusDistribution) {
-        reportCharts.status.updateOptions({ labels: data.statusDistribution.labels }, false, false);
-        reportCharts.status.updateSeries(data.statusDistribution.series);
-    }
-    if (reportCharts.mode && data.transportMode) {
-        reportCharts.mode.updateOptions({ labels: data.transportMode.labels }, false, false);
-        reportCharts.mode.updateSeries(data.transportMode.series);
-    }
-    if (reportCharts.routes && data.topRoutes) {
-        reportCharts.routes.updateOptions({ xaxis: { categories: data.topRoutes.categories } }, false, false);
-        reportCharts.routes.updateSeries(data.topRoutes.series);
-    }
-    if (reportCharts.passengers && data.passengers) {
-        reportCharts.passengers.updateOptions({ xaxis: { categories: data.passengers.categories } }, false, false);
-        reportCharts.passengers.updateSeries(data.passengers.series);
-    }
+    initReportCharts(data);
 }
 
 // Initialize charts on load
