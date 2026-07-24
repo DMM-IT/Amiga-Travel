@@ -58,7 +58,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.6+10';
+  static const String appVersion = '1.0.7+11';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -2025,15 +2025,21 @@ class _ActivityScreenState extends State<ActivityScreen> {
     setState(() => _loadingBookings = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
+      final headers = <String, String>{'Accept': 'application/json'};
+      if (UserSession.isLoggedIn && UserSession.token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer ${UserSession.token}';
+      }
       final response = await http.get(
         Uri.parse('$baseUrl/api/bookings?email=${Uri.encodeComponent(UserSession.email)}&lookup_token=${Uri.encodeComponent(UserSession.lookupToken)}'),
-        headers: {'Accept': 'application/json'},
+        headers: headers,
       );
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _bookings = data['bookings'];
         });
+      } else {
+        debugPrint('Bookings error: ${response.statusCode} ${response.body}');
       }
     } catch (e) {
       debugPrint('Error fetching bookings: $e');
