@@ -353,153 +353,191 @@
 {{-- ═══ ApexCharts Initialization & Update Script ═══ --}}
 @script
 <script>
-const reportCharts = {};
+(function() {
+    const reportCharts = {};
+    let currentChartData = @js($chartData);
+    let initialized = false;
 
-function isDark() {
-    return document.documentElement.classList.contains('dark');
-}
-
-function baseTheme() {
-    const dark = isDark();
-    return {
-        theme: { mode: dark ? 'dark' : 'light' },
-        chart: { background: 'transparent', fontFamily: 'inherit', toolbar: { show: false } },
-        grid: { borderColor: dark ? '#374151' : '#e5e7eb', strokeDashArray: 4 },
-        tooltip: { theme: dark ? 'dark' : 'light' },
-        xaxis: { labels: { style: { colors: dark ? '#9ca3af' : '#6b7280', fontSize: '11px' }, axisBorder: { show: false }, axisTicks: { show: false } },
-        yaxis: { labels: { style: { colors: dark ? '#9ca3af' : '#6b7280', fontSize: '11px' } } },
-    };
-}
-
-function initReportCharts(data) {
-    // Clean up existing charts first
-    Object.values(reportCharts).forEach(c => c?.destroy());
-    Object.keys(reportCharts).forEach(k => delete reportCharts[k]);
-    
-    const bt = baseTheme();
-    const dark = isDark();
-
-    // Revenue Area Chart
-    const revEl = document.getElementById('report-revenue-chart');
-    if (revEl && window.ApexCharts) {
-        reportCharts.revenue = new ApexCharts(revEl, {
-            ...bt,
-            chart: { ...bt.chart, type: 'area', height: 320, animations: { enabled: true, easing: 'easeinout', speed: 500 } },
-            series: data.revenue?.series || [],
-            xaxis: { ...bt.xaxis, categories: data.revenue?.categories || [], tickAmount: 8 },
-            yaxis: { ...bt.yaxis, labels: { ...bt.yaxis.labels, formatter: (v) => '₱' + (v || 0).toLocaleString() } },
-            colors: ['#f59e0b'],
-            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
-            stroke: { curve: 'smooth', width: 2.5 },
-            dataLabels: { enabled: false },
-            tooltip: { ...bt.tooltip, y: { formatter: (v) => '₱' + (v || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) } },
-        });
-        reportCharts.revenue.render();
+    function isDark() {
+        return document.documentElement.classList.contains('dark');
     }
 
-    // Booking Volume Bar Chart
-    const volEl = document.getElementById('report-booking-volume-chart');
-    if (volEl && window.ApexCharts) {
-        reportCharts.bookingVolume = new ApexCharts(volEl, {
-            ...bt,
-            chart: { ...bt.chart, type: 'bar', height: 320, animations: { enabled: true, easing: 'easeinout', speed: 500 } },
-            series: data.bookingVolume?.series || [],
-            xaxis: { ...bt.xaxis, categories: data.bookingVolume?.categories || [], tickAmount: 8 },
-            colors: ['#3b82f6'],
-            plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
-            dataLabels: { enabled: false },
-        });
-        reportCharts.bookingVolume.render();
+    function baseTheme() {
+        const dark = isDark();
+        return {
+            theme: { mode: dark ? 'dark' : 'light' },
+            chart: { background: 'transparent', fontFamily: 'inherit', toolbar: { show: false } },
+            grid: { borderColor: dark ? '#374151' : '#e5e7eb', strokeDashArray: 4 },
+            tooltip: { theme: dark ? 'dark' : 'light' },
+            xaxis: {
+                labels: {
+                    style: {
+                        colors: dark ? '#9ca3af' : '#6b7280',
+                        fontSize: '11px',
+                    },
+                },
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: dark ? '#9ca3af' : '#6b7280',
+                        fontSize: '11px',
+                    },
+                },
+            },
+        };
     }
 
-    // Status Donut
-    const statEl = document.getElementById('report-status-chart');
-    if (statEl && window.ApexCharts) {
-        reportCharts.status = new ApexCharts(statEl, {
-            ...bt,
-            chart: { ...bt.chart, type: 'donut', height: 280 },
-            series: data.statusDistribution?.series || [0, 0, 0],
-            labels: data.statusDistribution?.labels || ['Confirmed', 'Pending', 'Cancelled'],
-            colors: ['#10b981', '#f59e0b', '#ef4444'],
-            plotOptions: { pie: { donut: { size: '70%', labels: { show: true, name: { color: dark ? '#fff' : '#1f2937' }, value: { color: dark ? '#fff' : '#1f2937', fontSize: '22px', fontWeight: 700 }, total: { show: true, label: 'Total', color: dark ? '#9ca3af' : '#6b7280', formatter: (w) => w.globals.seriesTotals.reduce((a, b) => a + b, 0) } } } } },
-            stroke: { width: 2, colors: [dark ? '#111827' : '#fff'] },
-            legend: { position: 'bottom', labels: { colors: dark ? '#d1d5db' : '#374151' }, fontSize: '12px', markers: { size: 8, shape: 'circle' }, itemMargin: { horizontal: 10, vertical: 4 } },
-            dataLabels: { enabled: false },
-        });
-        reportCharts.status.render();
+    function initReportCharts() {
+        const data = currentChartData;
+
+        // Clean up existing charts first
+        Object.values(reportCharts).forEach(c => c?.destroy());
+        Object.keys(reportCharts).forEach(k => delete reportCharts[k]);
+        
+        if (!window.ApexCharts) {
+            console.error('ApexCharts not available for overall reports');
+            return;
+        }
+
+        const bt = baseTheme();
+        const dark = isDark();
+
+        // Revenue Area Chart
+        const revEl = document.getElementById('report-revenue-chart');
+        if (revEl) {
+            reportCharts.revenue = new ApexCharts(revEl, {
+                ...bt,
+                chart: { ...bt.chart, type: 'area', height: 320, animations: { enabled: true, easing: 'easeinout', speed: 500 } },
+                series: data.revenue?.series || [],
+                xaxis: { ...bt.xaxis, categories: data.revenue?.categories || [], tickAmount: 8 },
+                yaxis: { ...bt.yaxis, labels: { ...bt.yaxis.labels, formatter: (v) => '₱' + (v || 0).toLocaleString() } },
+                colors: ['#f59e0b'],
+                fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
+                stroke: { curve: 'smooth', width: 2.5 },
+                dataLabels: { enabled: false },
+                tooltip: { ...bt.tooltip, y: { formatter: (v) => '₱' + (v || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) } },
+            });
+            reportCharts.revenue.render();
+        }
+
+        // Booking Volume Bar Chart
+        const volEl = document.getElementById('report-booking-volume-chart');
+        if (volEl) {
+            reportCharts.bookingVolume = new ApexCharts(volEl, {
+                ...bt,
+                chart: { ...bt.chart, type: 'bar', height: 320, animations: { enabled: true, easing: 'easeinout', speed: 500 } },
+                series: data.bookingVolume?.series || [],
+                xaxis: { ...bt.xaxis, categories: data.bookingVolume?.categories || [], tickAmount: 8 },
+                colors: ['#3b82f6'],
+                plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+                dataLabels: { enabled: false },
+            });
+            reportCharts.bookingVolume.render();
+        }
+
+        // Status Donut
+        const statEl = document.getElementById('report-status-chart');
+        if (statEl) {
+            reportCharts.status = new ApexCharts(statEl, {
+                ...bt,
+                chart: { ...bt.chart, type: 'donut', height: 280 },
+                series: data.statusDistribution?.series || [0, 0, 0],
+                labels: data.statusDistribution?.labels || ['Confirmed', 'Pending', 'Cancelled'],
+                colors: ['#10b981', '#f59e0b', '#ef4444'],
+                plotOptions: { pie: { donut: { size: '70%', labels: { show: true, name: { color: dark ? '#fff' : '#1f2937' }, value: { color: dark ? '#fff' : '#1f2937', fontSize: '22px', fontWeight: 700 }, total: { show: true, label: 'Total', color: dark ? '#9ca3af' : '#6b7280', formatter: (w) => w.globals.seriesTotals.reduce((a, b) => a + b, 0) } } } } },
+                stroke: { width: 2, colors: [dark ? '#111827' : '#fff'] },
+                legend: { position: 'bottom', labels: { colors: dark ? '#d1d5db' : '#374151' }, fontSize: '12px', markers: { size: 8, shape: 'circle' }, itemMargin: { horizontal: 10, vertical: 4 } },
+                dataLabels: { enabled: false },
+            });
+            reportCharts.status.render();
+        }
+
+        // Transport Mode Pie
+        const modeEl = document.getElementById('report-mode-chart');
+        if (modeEl) {
+            reportCharts.mode = new ApexCharts(modeEl, {
+                ...bt,
+                chart: { ...bt.chart, type: 'pie', height: 280 },
+                series: data.transportMode?.series || [0],
+                labels: data.transportMode?.labels || ['No Data'],
+                colors: ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b'],
+                stroke: { width: 2, colors: [dark ? '#111827' : '#fff'] },
+                legend: { position: 'bottom', labels: { colors: dark ? '#d1d5db' : '#374151' }, fontSize: '12px', markers: { size: 8, shape: 'circle' }, itemMargin: { horizontal: 10, vertical: 4 } },
+                dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: 600 }, dropShadow: { enabled: false } },
+            });
+            reportCharts.mode.render();
+        }
+
+        // Top Routes Horizontal Bar
+        const routeEl = document.getElementById('report-routes-chart');
+        if (routeEl) {
+            reportCharts.routes = new ApexCharts(routeEl, {
+                ...bt,
+                chart: { ...bt.chart, type: 'bar', height: 280 },
+                series: data.topRoutes?.series || [],
+                xaxis: { ...bt.xaxis, categories: data.topRoutes?.categories || [], labels: { ...bt.xaxis.labels, formatter: (v) => '₱' + (v || 0).toLocaleString() } },
+                yaxis: { ...bt.yaxis, labels: { ...bt.yaxis.labels, style: { ...bt.yaxis.labels.style, fontSize: '10px' }, maxWidth: 150 } },
+                colors: ['#f59e0b'],
+                plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '60%' } },
+                dataLabels: { enabled: false },
+                tooltip: { ...bt.tooltip, y: { formatter: (v) => '₱' + (v || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) } },
+            });
+            reportCharts.routes.render();
+        }
+
+        // Passenger Demographics Bar
+        const passEl = document.getElementById('report-passenger-chart');
+        if (passEl) {
+            reportCharts.passengers = new ApexCharts(passEl, {
+                ...bt,
+                chart: { ...bt.chart, type: 'bar', height: 250 },
+                series: data.passengers?.series || [],
+                xaxis: { ...bt.xaxis, categories: data.passengers?.categories || [] },
+                colors: ['#8b5cf6'],
+                plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
+                dataLabels: { enabled: false },
+            });
+            reportCharts.passengers.render();
+        }
+
+        initialized = true;
     }
 
-    // Transport Mode Pie
-    const modeEl = document.getElementById('report-mode-chart');
-    if (modeEl && window.ApexCharts) {
-        reportCharts.mode = new ApexCharts(modeEl, {
-            ...bt,
-            chart: { ...bt.chart, type: 'pie', height: 280 },
-            series: data.transportMode?.series || [0],
-            labels: data.transportMode?.labels || ['No Data'],
-            colors: ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b'],
-            stroke: { width: 2, colors: [dark ? '#111827' : '#fff'] },
-            legend: { position: 'bottom', labels: { colors: dark ? '#d1d5db' : '#374151' }, fontSize: '12px', markers: { size: 8, shape: 'circle' }, itemMargin: { horizontal: 10, vertical: 4 } },
-            dataLabels: { enabled: true, style: { fontSize: '12px', fontWeight: 600 }, dropShadow: { enabled: false } },
-        });
-        reportCharts.mode.render();
+    function waitForApexCharts() {
+        if (window.ApexCharts) {
+            initReportCharts();
+        } else {
+            window.addEventListener('amiga:apexcharts-ready', function() {
+                initReportCharts();
+            }, { once: true });
+
+            setTimeout(function() {
+                if (!initialized && !window.ApexCharts) {
+                    console.error('ApexCharts did not load after 10 seconds for overall reports');
+                }
+            }, 10000);
+        }
     }
 
-    // Top Routes Horizontal Bar
-    const routeEl = document.getElementById('report-routes-chart');
-    if (routeEl && window.ApexCharts) {
-        reportCharts.routes = new ApexCharts(routeEl, {
-            ...bt,
-            chart: { ...bt.chart, type: 'bar', height: 280 },
-            series: data.topRoutes?.series || [],
-            xaxis: { ...bt.xaxis, categories: data.topRoutes?.categories || [], labels: { ...bt.xaxis.labels, formatter: (v) => '₱' + (v || 0).toLocaleString() } },
-            yaxis: { ...bt.yaxis, labels: { ...bt.yaxis.labels, style: { ...bt.yaxis.labels.style, fontSize: '10px' }, maxWidth: 150 } },
-            colors: ['#f59e0b'],
-            plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '60%' } },
-            dataLabels: { enabled: false },
-            tooltip: { ...bt.tooltip, y: { formatter: (v) => '₱' + (v || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) } },
-        });
-        reportCharts.routes.render();
-    }
+    // Listen for Livewire updates
+    $wire.on('report-charts-updated', ({ chartData }) => {
+        if (chartData) {
+            currentChartData = chartData;
+            initReportCharts();
+        }
+    });
 
-    // Passenger Demographics Bar
-    const passEl = document.getElementById('report-passenger-chart');
-    if (passEl && window.ApexCharts) {
-        reportCharts.passengers = new ApexCharts(passEl, {
-            ...bt,
-            chart: { ...bt.chart, type: 'bar', height: 250 },
-            series: data.passengers?.series || [],
-            xaxis: { ...bt.xaxis, categories: data.passengers?.categories || [] },
-            colors: ['#8b5cf6'],
-            plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
-            dataLabels: { enabled: false },
-        });
-        reportCharts.passengers.render();
-    }
-}
+    // Dark mode observer
+    const darkObserver = new MutationObserver(() => {
+        initReportCharts();
+    });
+    darkObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-function updateReportCharts(data) {
-    initReportCharts(data);
-}
-
-// Initialize charts on load
-initReportCharts(@js($chartData));
-
-// Listen for Livewire updates
-$wire.on('report-charts-updated', ({ chartData }) => {
-    if (chartData) updateReportCharts(chartData);
-});
-
-// Dark mode observer
-const darkObserver = new MutationObserver(() => {
-    // Destroy and re-init all charts on theme change for clean re-render
-    Object.values(reportCharts).forEach(c => c?.destroy());
-    Object.keys(reportCharts).forEach(k => delete reportCharts[k]);
-    // Re-fetch current data from Livewire
-    const data = @js($chartData);
-    initReportCharts(data);
-});
-darkObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    waitForApexCharts();
+})();
 </script>
 @endscript
 </x-filament-panels::page>

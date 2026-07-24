@@ -75,6 +75,9 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_AFTER, function (): View {
                 return view('filament.admin.notification-bell');
             })
+            ->renderHook(PanelsRenderHook::SCRIPTS_AFTER, function (): View {
+                return view('filament.partials.chart-assets');
+            })
 
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
