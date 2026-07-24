@@ -5,12 +5,14 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TourResource\Pages;
 use App\Filament\Resources\TourResource\RelationManagers\DatesRelationManager;
 use App\Models\Tour;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class TourResource extends Resource
 {
@@ -20,6 +22,33 @@ class TourResource extends Resource
     protected static ?string $navigationLabel = 'Tour Packages';
     protected static ?string $pluralModelLabel = 'Tour Packages';
     protected static ?int $navigationSort = 10;
+
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasAdminPermission('tour_packages');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
+    }
 
     public static function form(Form $form): Form
     {

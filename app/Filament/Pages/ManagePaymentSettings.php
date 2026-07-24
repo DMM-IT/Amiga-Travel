@@ -20,7 +20,7 @@ class ManagePaymentSettings extends Page implements HasForms
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_payment_settings');
+        return $user instanceof User && $user->hasAdminPermission('payment_settings');
     }
     use InteractsWithForms;
 

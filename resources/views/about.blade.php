@@ -73,6 +73,31 @@
             </div>
         </div>
 
+        @if(!empty($bookingCards))
+            <div class="bg-white rounded-[2rem] p-8 shadow-xl mb-16">
+                <div class="max-w-3xl mx-auto text-center mb-8">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'booking_section_title') ? ucfirst(data_get($pageContent, 'booking_section_title')) : 'Request Travel Bookings' }}</p>
+                    <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'booking_section_title') ?? 'Request Travel Bookings' }}</h2>
+                    <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+                        {{ data_get($pageContent, 'booking_section_description') ?? 'Kay Amiga, Hassle Free Ka! Select a booking category to start your travel request.' }}
+                    </p>
+                </div>
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach($bookingCards as $card)
+                        <div class="rounded-[1.75rem] border border-slate-200 p-8 shadow-sm hover:shadow-lg transition bg-slate-50">
+                            <h3 class="text-xl font-bold text-slate-900 mb-3">{{ $card['title'] ?? '' }}</h3>
+                            <p class="text-slate-600 mb-6">{{ $card['description'] ?? '' }}</p>
+                            @if(!empty($card['link']))
+                                <a href="{{ $card['link'] }}" class="inline-flex items-center justify-center rounded-full bg-[#216417] px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-800 transition">
+                                    {{ $card['button_text'] ?? 'Book Now' }}
+                                </a>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <!-- Trusted Partners Section -->
         <div class="bg-gradient-to-br from-[#216417] to-[#14400e] text-white rounded-[2rem] p-8 sm:p-12 shadow-xl mb-16">
             <div class="max-w-3xl mx-auto text-center">

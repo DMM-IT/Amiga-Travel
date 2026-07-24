@@ -37,7 +37,27 @@ class ScheduleResource extends Resource
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_schedules');
+        return $user instanceof User && $user->hasAdminPermission('schedules');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
     }
 
     protected static ?string $navigationLabel = 'Schedules';

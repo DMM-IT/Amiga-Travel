@@ -32,7 +32,27 @@ class TransportClassResource extends Resource
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_transport_classes');
+        return $user instanceof User && $user->hasAdminPermission('airline_seats');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
     }
 
     public static function form(Form $form): Form

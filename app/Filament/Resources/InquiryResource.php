@@ -27,7 +27,27 @@ class InquiryResource extends Resource
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_inquiries');
+        return $user instanceof User && $user->hasAdminPermission('inquiries');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
     }
 
     public static function form(Form $form): Form

@@ -32,7 +32,27 @@ class VehicleBrandResource extends Resource
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_vehicle_rates');
+        return $user instanceof User && $user->hasAdminPermission('vehicle_rates');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
     }
 
     public static function form(Form $form): Form

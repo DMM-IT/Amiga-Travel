@@ -5,8 +5,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms\Get;
-use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
 use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\UserResource\RelationManagers\BookingsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\LoginHistoriesRelationManager;
@@ -30,7 +33,27 @@ class UserResource extends Resource
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_users');
+        return $user instanceof User && $user->hasAdminPermission('staff_accounts');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
     }
 
     protected static ?string $navigationLabel = 'Staff Accounts';
@@ -68,13 +91,42 @@ class UserResource extends Resource
                     ->default(false)
                     ->helperText('Administrator accounts bypass permission checks and can access every feature.')
                     ->reactive(),
-                CheckboxList::make('admin_permissions')
-                    ->label('Staff features')
-                    ->options(User::ADMIN_PERMISSIONS)
-                    ->columns(2)
-                    ->helperText('Choose which admin features this staff user can access.')
-                    ->disabled(fn (Get $get): bool => $get('is_admin')),
+                Placeholder::make('admin_permission_note')
+                    ->content('Administrators have access to every feature.')
+                    ->visible(fn (Get $get): bool => (bool) $get('is_admin')), 
+                Section::make('Staff features')
+                    ->schema([
+                        ...self::buildPermissionGroups(),
+                        Placeholder::make('staff_permissions_helper')
+                            ->content('Choose which admin features this staff user can access.'),
+                    ])
+                    ->columnSpanFull(),
             ]);
+    }
+
+    protected static function buildPermissionGroups(): array
+    {
+        $groups = [];
+
+        foreach (User::getPermissionGroups() as $groupLabel => $permissions) {
+            $checkboxes = [];
+
+            foreach ($permissions as $permissionKey => $label) {
+                $checkboxes[] = Checkbox::make("staff_permissions.{$permissionKey}")
+                    ->label($label)
+                    ->inline(false)
+                    ->disabled(fn (Get $get): bool => (bool) $get('is_admin'));
+            }
+
+            $groups[] = Section::make($groupLabel)
+                ->schema([
+                    Grid::make(['default' => 1, 'lg' => 2])
+                        ->schema($checkboxes),
+                ])
+                ->columnSpanFull();
+        }
+
+        return $groups;
     }
 
     public static function table(Table $table): Table

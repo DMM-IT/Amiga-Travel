@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustHosts(at: ['amiga-travel.up.railway.app', 'localhost']);
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'staff.permission' => \App\Http\Middleware\EnsureStaffPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -8,6 +8,8 @@ use App\Models\PromotionalTicket;
 use App\Models\Schedule;
 use App\Models\FerryRoute;
 use App\Models\Vehicle;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -24,6 +26,33 @@ class PromotionalTicketResource extends Resource
     protected static ?string $model = PromotionalTicket::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
+
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->hasAdminPermission('promotional_tickets');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
+    }
 
     public static function form(Form $form): Form
     {

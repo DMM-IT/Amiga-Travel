@@ -27,7 +27,7 @@ class ManageProofs extends Page implements HasActions, HasForms
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_proofs');
+        return $user instanceof User && $user->hasAdminPermission('proofs');
     }
     use InteractsWithActions;
     use InteractsWithForms;

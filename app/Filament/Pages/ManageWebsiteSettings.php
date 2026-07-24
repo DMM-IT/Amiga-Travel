@@ -26,7 +26,7 @@ class ManageWebsiteSettings extends Page implements HasForms
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasAdminPermission('manage_website_settings');
+        return $user instanceof User && $user->hasAdminPermission('website_settings');
     }
 
     private function getPageContentSchema(): array
@@ -68,6 +68,60 @@ class ManageWebsiteSettings extends Page implements HasForms
                                     ['label' => 'Established', 'value' => 'July 2017 in Oriental Mindoro'],
                                     ['label' => 'Key Partnerships', 'value' => '2GO, Starlite Ferries, and major airlines'],
                                     ['label' => 'Specialty', 'value' => 'Ferry bookings, Educational tours, Apprenticeship programs'],
+                                ]),
+                        ]),
+                    Section::make('Request Travel Bookings')
+                        ->description('Editable cards for the About page booking request section')
+                        ->schema([
+                            TextInput::make('content.booking_section_title')
+                                ->label('Section Title')
+                                ->default('Request Travel Bookings')
+                                ->maxLength(255),
+                            Textarea::make('content.booking_section_description')
+                                ->label('Section Description')
+                                ->default('Kay Amiga, Hassle Free Ka! Select a booking category to start your travel request.')
+                                ->rows(3)
+                                ->maxLength(255),
+                            Repeater::make('content.booking_cards')
+                                ->label('Booking Cards')
+                                ->schema([
+                                    TextInput::make('title')
+                                        ->label('Card Title')
+                                        ->required()
+                                        ->maxLength(120),
+                                    Textarea::make('description')
+                                        ->label('Card Description')
+                                        ->rows(2)
+                                        ->maxLength(255),
+                                    TextInput::make('button_text')
+                                        ->label('Button Text')
+                                        ->default('Book Now')
+                                        ->maxLength(50),
+                                    TextInput::make('link')
+                                        ->label('Button Link')
+                                        ->default('/book/new')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(1)
+                                ->default([
+                                    [
+                                        'title' => 'Book a 2GO Ferry',
+                                        'description' => 'Start your ferry ticket request with 2GO for safe and reliable travel across major sea routes.',
+                                        'button_text' => 'Book Now',
+                                        'link' => '/book/new',
+                                    ],
+                                    [
+                                        'title' => 'Book Airline Tickets',
+                                        'description' => 'Request airline seat bookings with Philippine Airlines, Cebu Pacific, AirAsia, and more.',
+                                        'button_text' => 'Book Now',
+                                        'link' => '/book/new',
+                                    ],
+                                    [
+                                        'title' => 'Request Custom Travel',
+                                        'description' => 'Plan special tours, group travel, or apprenticeship journeys with our experienced team.',
+                                        'button_text' => 'Book Now',
+                                        'link' => '/contact-us',
+                                    ],
                                 ]),
                         ]),
                 ];
@@ -581,15 +635,20 @@ class ManageWebsiteSettings extends Page implements HasForms
                 'is_active' => $setting->is_active ?? true,
             ]);
         } else {
-            $this->form->fill([
+            $formData = [
                 'page' => $setting->page,
                 'hero_images' => $setting->hero_images ?? [],
                 'content' => $setting->content ?? [],
-                'booking_cards' => $setting->booking_cards ?? $this->getDefaultBookingCards(),
                 'header_data' => $setting->header_data ?? [],
                 'footer_data' => $setting->footer_data ?? [],
                 'is_active' => $setting->is_active ?? true,
-            ]);
+            ];
+
+            if ($this->currentPage === 'home') {
+                $formData['booking_cards'] = $setting->booking_cards ?? $this->getDefaultBookingCards();
+            }
+
+            $this->form->fill($formData);
         }
     }
 
@@ -1151,15 +1210,22 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'label' => 'About Content',
                     'icon'  => '📝',
                     'color' => 'emerald',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:40%',
+                    'pos'   => 'top:8%;left:0%;width:100%;height:34%',
                     'description' => 'Page title and main description',
                 ],
                 'quick_facts' => [
                     'label' => 'Quick Facts',
                     'icon'  => '📋',
                     'color' => 'blue',
-                    'pos'   => 'top:49%;left:0%;width:100%;height:42%',
+                    'pos'   => 'top:44%;left:0%;width:100%;height:26%',
                     'description' => 'Fact cards shown on the About page',
+                ],
+                'booking_section' => [
+                    'label' => 'Booking Request Section',
+                    'icon'  => '✈️',
+                    'color' => 'purple',
+                    'pos'   => 'top:70%;left:0%;width:100%;height:26%',
+                    'description' => 'Booking request section title, description, and cards',
                 ],
             ],
             'gallery' => [

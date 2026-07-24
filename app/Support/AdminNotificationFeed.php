@@ -2,13 +2,108 @@
 
 namespace App\Support;
 
+use App\Models\AdminNotificationStatus;
 use App\Models\Booking;
 use App\Models\Inquiry;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 class AdminNotificationFeed
 {
-    public function getForUser(): Collection
+    public function getForUser(User $user): Collection
+    {
+        $notifications = $this->collectNotifications();
+        $statuses = AdminNotificationStatus::withTrashed()
+            ->where('user_id', $user->id)
+            ->get()
+            ->keyBy('notification_id');
+
+        return $notifications
+            ->map(function (array $notification) use ($statuses): array {
+                $status = $statuses->get($notification['id']);
+
+                return array_merge($notification, [
+                    'is_read' => $status?->read_at !== null,
+                    'read_at' => $status?->read_at,
+                ]);
+            })
+            ->filter(function (array $notification) use ($statuses): bool {
+                $status = $statuses->get($notification['id']);
+
+                return ! $status?->trashed();
+            })
+            ->sortByDesc('created_at')
+            ->values();
+    }
+
+    public function getUnreadCountForUser(User $user): int
+    {
+        return $this->getForUser($user)->where('is_read', false)->count();
+    }
+
+    public function getTotalCountForUser(User $user): int
+    {
+        return $this->getForUser($user)->count();
+    }
+
+    public function markAsRead(User $user, array $notificationIds): int
+    {
+        $updated = 0;
+
+        foreach ($notificationIds as $notificationId) {
+            $status = AdminNotificationStatus::withTrashed()
+                ->updateOrCreate(
+                    ['user_id' => $user->id, 'notification_id' => $notificationId],
+                    ['read_at' => now(), 'deleted_at' => null],
+                );
+
+            if ($status->wasRecentlyCreated || $status->wasChanged()) {
+                $updated++;
+            }
+        }
+
+        return $updated;
+    }
+
+    public function markAsUnread(User $user, array $notificationIds): int
+    {
+        $updated = 0;
+
+        foreach ($notificationIds as $notificationId) {
+            $status = AdminNotificationStatus::withTrashed()
+                ->updateOrCreate(
+                    ['user_id' => $user->id, 'notification_id' => $notificationId],
+                    ['read_at' => null, 'deleted_at' => null],
+                );
+
+            if ($status->wasRecentlyCreated || $status->wasChanged()) {
+                $updated++;
+            }
+        }
+
+        return $updated;
+    }
+
+    public function deleteForUser(User $user, array $notificationIds): int
+    {
+        $deleted = 0;
+
+        foreach ($notificationIds as $notificationId) {
+            $status = AdminNotificationStatus::withTrashed()
+                ->updateOrCreate(
+                    ['user_id' => $user->id, 'notification_id' => $notificationId],
+                    ['read_at' => null, 'deleted_at' => now()],
+                );
+
+            if ($status->wasRecentlyCreated || $status->wasChanged()) {
+                $deleted++;
+            }
+        }
+
+        return $deleted;
+    }
+
+    protected function collectNotifications(): Collection
     {
         $notifications = collect();
 
@@ -68,8 +163,6 @@ class AdminNotificationFeed
             ]);
         }
 
-        return $notifications
-            ->sortByDesc('created_at')
-            ->values();
+        return $notifications;
     }
 }

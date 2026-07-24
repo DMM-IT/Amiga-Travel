@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingExportController;
 use App\Models\Transaction;
@@ -15,7 +16,7 @@ $renderWebsitePage = function (string $page, string $view) {
         'pageSettings' => $settings,
         'pageContent' => $settings->content ?? [],
         'heroImages' => collect($settings->hero_images ?? []),
-        'bookingCards' => $settings->booking_cards ?? [],
+        'bookingCards' => $settings->booking_cards ?? $settings->content['booking_cards'] ?? [],
     ]);
 };
 
@@ -143,8 +144,13 @@ Route::get('/flutter-app', function () {
 
 // Booking Export Routes (Admin only)
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/bookings/export/pdf', [BookingExportController::class, 'exportPdf'])->name('bookings.export.pdf');
-    Route::get('/admin/bookings/export/csv', [BookingExportController::class, 'exportCsv'])->name('bookings.export.csv');
-    Route::get('/admin/bookings/export/print', [BookingExportController::class, 'exportPrint'])->name('bookings.export.print');
+    Route::get('/admin/bookings/export/pdf', [BookingExportController::class, 'exportPdf'])->name('bookings.export.pdf')->middleware('staff.permission:bookings');
+    Route::get('/admin/bookings/export/csv', [BookingExportController::class, 'exportCsv'])->name('bookings.export.csv')->middleware('staff.permission:bookings');
+    Route::get('/admin/bookings/export/print', [BookingExportController::class, 'exportPrint'])->name('bookings.export.print')->middleware('staff.permission:bookings');
+    Route::get('/admin/notifications/dropdown', [AdminNotificationController::class, 'dropdown']);
+    Route::get('/admin/notifications/api/list', [AdminNotificationController::class, 'list']);
+    Route::post('/admin/notifications/api/mark-read', [AdminNotificationController::class, 'markRead']);
+    Route::post('/admin/notifications/api/mark-unread', [AdminNotificationController::class, 'markUnread']);
+    Route::delete('/admin/notifications/api', [AdminNotificationController::class, 'destroy']);
 });
 

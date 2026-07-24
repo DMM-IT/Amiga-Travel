@@ -19,7 +19,7 @@ class OverallReports extends Page implements HasForms
     {
         $user = Auth::user();
 
-        return $user instanceof User && ($user->is_admin || $user->hasAdminPermission('manage_bookings'));
+        return $user instanceof User && $user->hasAdminPermission('overall_reports');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';

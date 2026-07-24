@@ -38,7 +38,27 @@ class VoucherResource extends Resource
     public static function canAccess(): bool
     {
         $user = Auth::user();
-        return $user instanceof User && $user->hasAdminPermission('manage_discounts');
+        return $user instanceof User && $user->hasAdminPermission('vouchers');
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return static::canAccess();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::canAccess();
     }
 
     public static function form(Form $form): Form

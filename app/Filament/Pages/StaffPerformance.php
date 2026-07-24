@@ -21,7 +21,7 @@ class StaffPerformance extends Page implements HasForms
     public static function canAccess(): bool
     {
         $user = Auth::user();
-        return $user instanceof User && $user->is_admin;
+        return $user instanceof User && $user->hasAdminPermission('staff_performance');
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
