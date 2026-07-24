@@ -74,11 +74,11 @@ class PromotionalTicketResource extends Resource
                         ? Vehicle::query()
                             ->where('type', $get('mode'))
                             ->where('operator', $get('operator'))
-                            ->where('is_active', true)
+                            ->active()
                             ->whereHas('ferryRoutes', function (Builder $q) use ($get): void {
                                 $q->where('mode', $get('mode'))
                                     ->where('operator', $get('operator'))
-                                    ->where('is_active', true)
+                                    ->active()
                                     ->has('schedules');
                             })
                             ->get()
@@ -179,9 +179,9 @@ class PromotionalTicketResource extends Resource
                     ->formatStateUsing(fn(mixed $state): string => ucfirst((string) $state)),
                 Infolists\Components\TextEntry::make('schedule.ferryRoute.operator')
                     ->label('Operator'),
-                Infolists\Components\TextEntry::make('schedule.vehicle.name')
+                Infolists\Components\TextEntry::make('schedule.ferryRoute.vehicle.name')
                     ->label('Vehicle Name'),
-                Infolists\Components\TextEntry::make('schedule.vehicle.vehicle_id')
+                Infolists\Components\TextEntry::make('schedule.ferryRoute.vehicle.vehicle_id')
                     ->label('Vehicle ID'),
                 Infolists\Components\TextEntry::make('schedule.ferryRoute.origin')
                     ->label('Origin'),
@@ -236,10 +236,10 @@ class PromotionalTicketResource extends Resource
                     ->label('Operator')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('schedule.vehicle.name')
+                Tables\Columns\TextColumn::make('schedule.ferryRoute.vehicle.name')
                     ->label('Vehicle Name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('schedule.vehicle.vehicle_id')
+                Tables\Columns\TextColumn::make('schedule.ferryRoute.vehicle.vehicle_id')
                     ->label('Vehicle ID')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('route')
