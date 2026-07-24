@@ -327,6 +327,10 @@ class BookingForm extends Component
             if (! blank($this->departure_date)) {
                 $this->availableSchedules = $this->getAvailableSchedules();
             }
+            // Also fetch return schedules for round trips
+            if ($this->trip_type === 'round_trip' && ! blank($this->return_date)) {
+                $this->availableReturnSchedules = $this->getAvailableReturnSchedules();
+            }
         }
 
         $this->syncPassengerEntries();
@@ -1535,8 +1539,10 @@ public function selectedSchedule(): ?array
             'adults' => $this->adults,
             'children' => $this->children,
             'selected_schedule_id' => $this->selected_schedule_id,
+            'selected_return_schedule_id' => $this->selected_return_schedule_id,
             'passengers' => $this->passengers,
             'selected_schedule_accommodation_id' => $this->selected_schedule_accommodation_id,
+            'selected_return_schedule_accommodation_id' => $this->selected_return_schedule_accommodation_id,
             'selected_transport_class_id' => $this->selected_transport_class_id,
             'has_vehicle' => $this->has_vehicle,
             'vehicle_booking_method' => $this->vehicle_booking_method,
@@ -1732,8 +1738,10 @@ public function selectedSchedule(): ?array
 
             $settings = PaymentSetting::current();
             $serviceFee = (count($this->passengers) * floatval($settings->fee_per_person));
+            // Accommodation fee: only charged if accommodation is actually selected AND has a price
+            $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
 
-            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee;
+            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee;
         }
         
         // If booking an Eloquent tour with tour pricing (future use when price_from is added)
@@ -1755,8 +1763,10 @@ public function selectedSchedule(): ?array
 
             $settings = PaymentSetting::current();
             $serviceFee = (count($this->passengers) * floatval($settings->fee_per_person));
+            // Accommodation fee: only charged if accommodation is actually selected AND has a price
+            $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
 
-            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee;
+            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee;
         }
 
         $baseSchedulePrice = $this->getSelectedSchedulePrice();
@@ -1816,8 +1826,103 @@ public function selectedSchedule(): ?array
         // Service fee: charged per traveler
         $payingTravelers = count($this->passengers);
         $serviceFee = ($payingTravelers * floatval($settings->fee_per_person));
+        
+        // Accommodation fee: only charged if accommodation is actually selected AND has a price
+        $totalAccommodationAmount = $scheduleAccommodationPrice + $returnScheduleAccommodationPrice + $hotelTotal;
+        $accommodationFee = $totalAccommodationAmount > 0 ? floatval($settings->fee_per_accommodation) : 0;
 
-        return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee;
+        return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee;
+    }
+
+    /**
+     * Get detailed price breakdown for display in the submit form
+     */
+    public function getPriceBreakdown(): array
+    {
+        $breakdown = [
+            'departure_ticket' => 0,
+            'return_ticket' => 0,
+            'accommodation' => 0,
+            'transport_class' => 0,
+            'vehicle' => 0,
+            'hotel' => 0,
+            'fee_per_traveler' => 0,
+            'fee_per_accommodation' => 0,
+            'total' => 0,
+        ];
+
+        $settings = PaymentSetting::current();
+        $passengerCount = count($this->passengers);
+
+        // Get ticket prices per person
+        $departureTicketPrice = $this->getSelectedSchedulePrice();
+        $departureAccommodationPrice = $this->getSelectedScheduleAccommodationPrice();
+        $returnTicketPrice = $this->getSelectedReturnSchedulePrice();
+        $returnAccommodationPrice = $this->getSelectedReturnScheduleAccommodationPrice();
+
+        // Calculate totals considering discounts
+        $discountsById = $this->discounts->keyBy('id');
+        
+        $totalDepartureTicket = 0;
+        $totalReturnTicket = 0;
+        $totalDepartureAccommodation = 0;
+        $totalReturnAccommodation = 0;
+
+        foreach ($this->passengers as $passenger) {
+            $depTicket = $departureTicketPrice;
+            $retTicket = $returnTicketPrice;
+            
+            if (!empty($passenger['discount_id'])) {
+                $discount = $discountsById->get($passenger['discount_id']);
+                if ($discount) {
+                    $percentage = floatval($discount->percentage) / 100;
+                    $depTicket -= $depTicket * $percentage;
+                    $retTicket -= $retTicket * $percentage;
+                }
+            }
+
+            $totalDepartureTicket += $depTicket;
+            $totalReturnTicket += $retTicket;
+            $totalDepartureAccommodation += $departureAccommodationPrice;
+            $totalReturnAccommodation += $returnAccommodationPrice;
+        }
+
+        $breakdown['departure_ticket'] = $totalDepartureTicket;
+        $breakdown['return_ticket'] = $totalReturnTicket;
+        $breakdown['accommodation'] = $totalDepartureAccommodation + $totalReturnAccommodation;
+
+        // Transport class (per booking, not per person)
+        $breakdown['transport_class'] = $this->selected_transport_class_id
+            ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id)->price ?? 0)
+            : 0;
+
+        // Vehicle (per booking, not per person)
+        $breakdown['vehicle'] = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
+
+        // Hotel (per booking, not per person)
+        $breakdown['hotel'] = $this->selected_hotel_id
+            ? floatval($this->accommodationCatalog->firstWhere('id', $this->selected_hotel_id)->price ?? 0)
+            : 0;
+
+        // Fees
+        $breakdown['fee_per_traveler'] = $passengerCount * floatval($settings->fee_per_person);
+        
+        // Accommodation fee: only charged if accommodation is actually selected AND has a price
+        $accommodationTotal = $breakdown['accommodation'] + $breakdown['hotel'];
+        $breakdown['fee_per_accommodation'] = $accommodationTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
+
+        // Calculate total (sum of all items)
+        $breakdown['total'] = 
+            $breakdown['departure_ticket'] +
+            $breakdown['return_ticket'] +
+            $breakdown['accommodation'] +
+            $breakdown['transport_class'] +
+            $breakdown['vehicle'] +
+            $breakdown['hotel'] +
+            $breakdown['fee_per_traveler'] +
+            $breakdown['fee_per_accommodation'];
+
+        return $breakdown;
     }
 
     protected function getSelectedReturnSchedulePrice(): float

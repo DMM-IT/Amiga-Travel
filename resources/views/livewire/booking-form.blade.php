@@ -162,7 +162,7 @@
                             </div>
 
                             <div class="grid gap-6 lg:grid-cols-4 mt-4">
-                                <label class="relative block">
+                                <label class="relative block" data-error="mode">
                                     <span class="text-slate-700 font-semibold text-sm">Mode</span>
                                     <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
                                         <div class="flex items-center gap-2">
@@ -276,7 +276,7 @@
 
                             <div class="lg:col-span-2">
                             <div class="grid gap-6 lg:grid-cols-2">
-                            <label class="relative block">
+                            <label class="relative block" data-error="origin">
                                 <span class="text-slate-700 font-semibold text-sm">Origin</span>
                                 <button type="button" wire:click.prevent="toggleOriginDropdown" @if($prefilled_from_package || $mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $origin ?: ($mode === '' ? 'Select mode first' : 'Select origin') }}</span>
@@ -306,7 +306,7 @@
                                 @endif
                             </label>
 
-                            <label class="relative block">
+                            <label class="relative block" data-error="destination">
                                 <span class="text-slate-700 font-semibold text-sm">Destination</span>
                                 <button type="button" wire:click.prevent="toggleDestinationDropdown" @if($prefilled_from_package || $mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $destination ?: (blank($origin) ? 'Select origin first' : 'Select destination') }}</span>
@@ -340,7 +340,7 @@
                         </div>
 
                         <div class="grid gap-6 lg:grid-cols-2">
-                            <div class="block">
+                            <div class="block" data-error="departure_date">
                                     <label class="block text-slate-700 font-semibold text-sm">Departure Date</label>
                                         <div class="mt-2">
                                             @php
@@ -364,7 +364,7 @@
                                 </div>
 
                                 @if($trip_type === 'round_trip')
-                                    <div class="block">
+                                    <div class="block" data-error="return_date">
                                         <label class="block text-slate-700 font-semibold text-sm">Return Date</label>
                                         <div class="mt-2">
                                             @php
@@ -401,7 +401,7 @@
                             </div>
 
                             <div class="grid gap-6 lg:grid-cols-2">
-                                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm" data-error="adults">
                                     <div class="flex items-center justify-between gap-4">
                                         <div>
                                             <p class="text-slate-900 font-semibold">Adults</p>
@@ -416,7 +416,7 @@
                                     @error('adults')<p class="mt-3 text-sm text-rose-600">{{ $message }}</p>@enderror
                                 </div>
 
-                                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm" data-error="children">
                                     <div class="flex items-center justify-between gap-4">
                                         <div>
                                             <p class="text-slate-900 font-semibold">Children</p>
@@ -451,7 +451,7 @@
                                     </div>
 
                                     @if ($has_vehicle)
-                                        <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-6">
+                                        <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-6" data-error="vehicle_booking_method">
                                             <div class="grid gap-4 {{ $vehicle_booking_method === 'brand_model' ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} sm:grid-cols-2">
                                                 <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                     <p class="text-sm font-semibold text-slate-900">Classify Cargo by:</p>
@@ -1050,7 +1050,7 @@
                                 @php
                                     $countByType[$passenger['type']] = ($countByType[$passenger['type']] ?? 0) + 1;
                                 @endphp
-                                <div wire:key="passenger-{{ $index }}" class="flex flex-col lg:flex-row gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <div wire:key="passenger-{{ $index }}" class="flex flex-col lg:flex-row gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" data-error="passengers">
                                     <div class="flex-shrink-0 lg:w-32 lg:pt-8">
                                         <div class="rounded-full bg-[#db2777] px-4 py-2 text-center text-xs uppercase tracking-wider font-bold text-white shadow-sm inline-block w-full">
                                             {{ $typeLabels[$passenger['type']] }} {{ $countByType[$passenger['type']] }}
@@ -1278,13 +1278,13 @@
 
                     @if ($step === 5)
                         <div class="grid gap-6 lg:grid-cols-2">
-                            <label class="block">
+                            <label class="block" data-error="client_name">
                                 <span class="text-slate-900 font-bold text-sm">Your name</span>
                                 <input type="text" wire:model.defer="client_name" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Jane Doe" />
                                 @error('client_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
 
-                            <label class="block">
+                            <label class="block" data-error="client_email">
                                 <span class="text-slate-900 font-bold text-sm">Email address</span>
                                 <input type="email" wire:model.defer="client_email" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="you@example.com" />
                                 @error('client_email')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -1394,31 +1394,190 @@
                         </div>
 
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-                            <h2 class="text-lg font-bold text-slate-900">Selected schedule</h2>
+                            <h2 class="text-lg font-bold text-slate-900">Selected schedule{{ $trip_type === 'round_trip' ? 's' : '' }}</h2>
                             @php
-                                $schedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
+                                $departureSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
+                                $returnSchedule = $trip_type === 'round_trip' ? collect($availableReturnSchedules)->firstWhere('id', $selected_return_schedule_id) : null;
                             @endphp
-                            @if ($schedule)
+                            
+                            {{-- Departure Ticket --}}
+                            @if ($departureSchedule)
                                 <div class="mt-4 rounded-xl bg-white p-5 border border-slate-200 shadow-sm">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <p class="text-[#db2777] font-extrabold text-lg">{{ $schedule['service'] }}</p>
-                                            <p class="text-slate-600 font-medium mt-1">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-slate-900 font-bold text-lg">₱{{ number_format($schedule['price'], 2) }}</p>
-                                            <p class="text-slate-500 text-sm">Duration: {{ $schedule['duration'] }}</p>
+                                    <div class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Departure</div>
+                                    
+                                    {{-- Operator Logo and Route --}}
+                                    @php
+                                        $depOpLogo = null;
+                                        if ($operator) {
+                                            if (stripos($operator, '2GO') !== false) $depOpLogo = '2GO-Logo.png';
+                                            elseif (stripos($operator, 'Starlite') !== false) $depOpLogo = 'starlite-Logo.jfif';
+                                            elseif (stripos($operator, 'Cebu') !== false) $depOpLogo = 'CebuPecific-Logo.png';
+                                            elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $depOpLogo = 'Pal-Logo.jfif';
+                                            elseif (stripos($operator, 'AirAsia') !== false) $depOpLogo = 'AirAsia-Logo.png';
+                                        }
+                                    @endphp
+                                    
+                                    <div class="mb-4 flex items-center gap-4 pb-4 border-b border-slate-100">
+                                        @if($depOpLogo)
+                                            <div class="w-16 h-12 flex-shrink-0">
+                                                <img src="{{ asset('images/' . $depOpLogo) }}" alt="{{ $operator }}" class="w-full h-full object-contain">
+                                            </div>
+                                        @endif
+                                        <div class="flex-1">
+                                            <p class="text-slate-500 text-xs font-semibold">{{ $origin }} → {{ $destination }}</p>
+                                            <p class="text-slate-900 font-bold text-sm mt-1">{{ $operator ?: 'Ferry Service' }}</p>
                                         </div>
                                     </div>
-                                    @if ($schedule['vehicle_name'])
+                                    
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-[#db2777] font-extrabold text-lg">{{ $departureSchedule['service'] }}</p>
+                                            <p class="text-slate-600 font-medium mt-1">{{ $departureSchedule['departure'] }} → {{ $departureSchedule['arrival'] }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-slate-900 font-bold text-lg">₱{{ number_format($departureSchedule['price'], 2) }}</p>
+                                            <p class="text-slate-500 text-sm">Duration: {{ $departureSchedule['duration'] }}</p>
+                                        </div>
+                                    </div>
+                                    @if ($departureSchedule['vehicle_name'])
                                         <div class="mt-3 pt-3 border-t border-slate-100">
-                                            <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Vehicle:</span> {{ $schedule['vehicle_name'] }}</p>
+                                            <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Vehicle:</span> {{ $departureSchedule['vehicle_name'] }}</p>
                                         </div>
                                     @endif
                                 </div>
                             @else
-                                <p class="mt-4 text-slate-500 italic">No schedule selected yet.</p>
+                                <p class="mt-4 text-slate-500 italic">No departure schedule selected yet.</p>
                             @endif
+
+                            {{-- Return Ticket (if round trip) --}}
+                            @if ($trip_type === 'round_trip')
+                                @if ($returnSchedule)
+                                    <div class="mt-4 rounded-xl bg-white p-5 border border-slate-200 shadow-sm">
+                                        <div class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Return</div>
+                                        
+                                        {{-- Operator Logo and Route (reversed for return) --}}
+                                        @php
+                                            $retOpLogo = null;
+                                            if ($operator) {
+                                                if (stripos($operator, '2GO') !== false) $retOpLogo = '2GO-Logo.png';
+                                                elseif (stripos($operator, 'Starlite') !== false) $retOpLogo = 'starlite-Logo.jfif';
+                                                elseif (stripos($operator, 'Cebu') !== false) $retOpLogo = 'CebuPecific-Logo.png';
+                                                elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $retOpLogo = 'Pal-Logo.jfif';
+                                                elseif (stripos($operator, 'AirAsia') !== false) $retOpLogo = 'AirAsia-Logo.png';
+                                            }
+                                        @endphp
+                                        
+                                        <div class="mb-4 flex items-center gap-4 pb-4 border-b border-slate-100">
+                                            @if($retOpLogo)
+                                                <div class="w-16 h-12 flex-shrink-0">
+                                                    <img src="{{ asset('images/' . $retOpLogo) }}" alt="{{ $operator }}" class="w-full h-full object-contain">
+                                                </div>
+                                            @endif
+                                            <div class="flex-1">
+                                                <p class="text-slate-500 text-xs font-semibold">{{ $destination }} → {{ $origin }}</p>
+                                                <p class="text-slate-900 font-bold text-sm mt-1">{{ $operator ?: 'Ferry Service' }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <p class="text-[#db2777] font-extrabold text-lg">{{ $returnSchedule['service'] }}</p>
+                                                <p class="text-slate-600 font-medium mt-1">{{ $returnSchedule['departure'] }} → {{ $returnSchedule['arrival'] }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-slate-900 font-bold text-lg">₱{{ number_format($returnSchedule['price'], 2) }}</p>
+                                                <p class="text-slate-500 text-sm">Duration: {{ $returnSchedule['duration'] }}</p>
+                                            </div>
+                                        </div>
+                                        @if ($returnSchedule['vehicle_name'])
+                                            <div class="mt-3 pt-3 border-t border-slate-100">
+                                                <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Vehicle:</span> {{ $returnSchedule['vehicle_name'] }}</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <p class="mt-4 text-slate-500 italic">No return schedule selected yet.</p>
+                                @endif
+                            @endif
+                        </div>
+
+                        {{-- Price Breakdown --}}
+                        @php
+                            $breakdown = $this->getPriceBreakdown();
+                        @endphp
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+                            <h2 class="text-lg font-bold text-slate-900">Price Breakdown</h2>
+                            <div class="mt-4 space-y-3">
+                                {{-- Tickets --}}
+                                @if ($breakdown['departure_ticket'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Departure Ticket ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['departure_ticket'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                @if ($trip_type === 'round_trip' && $breakdown['return_ticket'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Return Ticket ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['return_ticket'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                {{-- Accommodation --}}
+                                @if ($breakdown['accommodation'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Schedule Accommodation</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['accommodation'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                {{-- Transport Class --}}
+                                @if ($breakdown['transport_class'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Transport Class</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['transport_class'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                {{-- Vehicle --}}
+                                @if ($breakdown['vehicle'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Vehicle</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['vehicle'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                {{-- Hotel --}}
+                                @if ($breakdown['hotel'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Hotel</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['hotel'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                {{-- Fees --}}
+                                @if ($breakdown['fee_per_traveler'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Service Fee ({{ $adults + $children }} traveler{{ $adults + $children !== 1 ? 's' : '' }})</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['fee_per_traveler'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                @if ($breakdown['fee_per_accommodation'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Accommodation Service Fee</span>
+                                        <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['fee_per_accommodation'], 2) }}</span>
+                                    </div>
+                                @endif
+
+                                {{-- Grand Total --}}
+                                <div class="mt-4 pt-4 border-t-2 border-slate-300 rounded-lg bg-gradient-to-r from-[#db2777]/5 to-[#216417]/5 p-4 border border-slate-300">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-900 font-bold text-lg">Grand Total</span>
+                                        <span class="text-[#db2777] font-extrabold text-2xl">₱{{ number_format($breakdown['total'], 2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
 
@@ -1447,6 +1606,49 @@
                             @endif
                         </div>
                     </form>
+                    
+                    <script>
+                        // Auto-scroll to first error on validation failure
+                        // Use both Livewire event and MutationObserver for maximum reliability
+                        const scrollToFirstError = () => {
+                            setTimeout(() => {
+                                const errorMessage = document.querySelector('.text-rose-600');
+                                if (errorMessage) {
+                                    const errorContainer = errorMessage.closest('[data-error]') || errorMessage.closest('label') || errorMessage.parentElement;
+                                    if (errorContainer) {
+                                        errorContainer.scrollIntoView({ 
+                                            behavior: 'smooth', 
+                                            block: 'center' 
+                                        });
+                                    }
+                                }
+                            }, 150);
+                        };
+
+                        // Listen for Livewire validation-error event
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.on('validation-error', scrollToFirstError);
+                        }
+
+                        // Also observe DOM changes for reliability
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.addedNodes.length) {
+                                    mutation.addedNodes.forEach((node) => {
+                                        if (node.textContent && node.textContent.includes('field is required')) {
+                                            scrollToFirstError();
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        observer.observe(document.body, {
+                            childList: true,
+                            subtree: true,
+                            characterData: true
+                        });
+                    </script>
                 </div>
             </div>
         </div>
