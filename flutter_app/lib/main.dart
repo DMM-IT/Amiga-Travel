@@ -53,9 +53,12 @@ class UserSession {
   static String email = 'user@amigagracia.com';
   static String token = '';
   static String lookupToken = '';
+  static int graciaPoints = 0;
+  static int pointsAwarded = 0;
+  static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.5+9';
+  static const String appVersion = '1.0.6+10';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -65,6 +68,9 @@ class UserSession {
     email = prefs.getString('email') ?? 'user@amigagracia.com';
     token = prefs.getString('token') ?? '';
     lookupToken = prefs.getString('lookupToken') ?? '';
+    graciaPoints = prefs.getInt('graciaPoints') ?? 0;
+    pointsAwarded = prefs.getInt('pointsAwarded') ?? 0;
+    spendThreshold = prefs.getInt('spendThreshold') ?? 0;
   }
 
   static Future<void> save() async {
@@ -75,6 +81,9 @@ class UserSession {
     await prefs.setString('email', email);
     await prefs.setString('token', token);
     await prefs.setString('lookupToken', lookupToken);
+    await prefs.setInt('graciaPoints', graciaPoints);
+    await prefs.setInt('pointsAwarded', pointsAwarded);
+    await prefs.setInt('spendThreshold', spendThreshold);
   }
 
   static Future<void> clear() async {
@@ -85,12 +94,18 @@ class UserSession {
     await prefs.remove('email');
     await prefs.remove('token');
     await prefs.remove('lookupToken');
+    await prefs.remove('graciaPoints');
+    await prefs.remove('pointsAwarded');
+    await prefs.remove('spendThreshold');
     isLoggedIn = false;
     isEmailVerified = false;
     username = 'Traveler';
     email = 'user@amigagracia.com';
     token = '';
     lookupToken = '';
+    graciaPoints = 0;
+    pointsAwarded = 0;
+    spendThreshold = 0;
   }
 
   static String getBaseUrl() {
@@ -101,6 +116,12 @@ class UserSession {
 
     if (kIsWeb && configuredUrl.isEmpty) return '';
     return configuredUrl.replaceFirst(RegExp(r'/$'), '');
+  }
+
+  static int calculateEarnedPoints(double price) {
+    if (spendThreshold <= 0 || pointsAwarded <= 0) return 0;
+    final centavos = (price * 100).toInt();
+    return (centavos ~/ spendThreshold) * pointsAwarded;
   }
 }
 
@@ -479,6 +500,39 @@ class _MainScreenState extends State<MainScreen> {
   String? _travelMode;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchGlobalPoints();
+  }
+
+  Future<void> _fetchGlobalPoints() async {
+    if (UserSession.isLoggedIn && UserSession.token.isNotEmpty) {
+      try {
+        final res = await http.get(
+          Uri.parse('${UserSession.getBaseUrl()}/api/gracia-points'),
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ${UserSession.token}',
+          },
+        );
+        final data = jsonDecode(res.body);
+        if (res.statusCode == 200 && data['status'] == 'success') {
+          setState(() {
+            UserSession.graciaPoints = data['current_points'] ?? 0;
+            if (data['active_rule'] != null) {
+              UserSession.pointsAwarded = data['active_rule']['points_awarded'] ?? 0;
+              UserSession.spendThreshold = data['active_rule']['spend_threshold_centavos'] ?? 0;
+            }
+          });
+          UserSession.save();
+        }
+      } catch (e) {
+        debugPrint('Failed to fetch points: $e');
+      }
+    }
+  }
+
   void _navigateToTravel(String mode) {
     setState(() {
       _travelMode = mode;
@@ -531,12 +585,17 @@ class _MainScreenState extends State<MainScreen> {
           if (UserSession.isLoggedIn)
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.volunteer_activism, color: kPink, size: 20),
-                  const SizedBox(width: 6),
-                  const Text('Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kPink)),
-                ],
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GraciaPointsScreen()));
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.star_rounded, color: kPink, size: 20),
+                    const SizedBox(width: 6),
+                    Text('${UserSession.graciaPoints} pts', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kPink)),
+                  ],
+                ),
               ),
             ),
         ],
@@ -550,7 +609,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SchedulesScreen(),
           TravelScreen(initialMode: _travelMode),
-          GraciaPointsScreen(), // Removed const to allow rebuild on login state change
+          const VouchersScreen(),
           ActivityScreen(onLoginSuccess: () => setState(() {})),
         ],
       ),
@@ -580,9 +639,9 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Travel',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.volunteer_activism_outlined),
-            activeIcon: Icon(Icons.volunteer_activism),
-            label: 'Gracia',
+            icon: Icon(Icons.local_activity_outlined),
+            activeIcon: Icon(Icons.local_activity),
+            label: 'Vouchers',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long_outlined),
@@ -2532,14 +2591,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             '₱${b['total_price']}',
                             style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: kPink),
                           ),
-                          if (b['gracia_points'] != null && b['gracia_points'] > 0)
-                            Row(
-                              children: [
-                                const Icon(Icons.volunteer_activism, color: kPink, size: 14),
-                                const SizedBox(width: 4),
-                                Text('+${b['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
-                              ],
-                            ),
+                              if (b['gracia_points'] != null && b['gracia_points'] > 0)
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star_rounded, color: kPink, size: 14),
+                                    const SizedBox(width: 4),
+                                    Text('+${b['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                  ],
+                                ),
                           Text(
                             b['created_at'] != null ? 'Booked: ${b['created_at'].toString().split('T')[0]}' : '',
                             style: const TextStyle(fontSize: 11, color: kSlate400),
@@ -3322,33 +3381,40 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            // Operator Badge
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                              decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight_takeoff,
-                                                    color: kGreen,
-                                                    size: 13,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    s['operator'] ?? 'Operator',
-                                                    style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12),
-                                                  ),
-                                                ],
+                                              // Operator Badge
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    if (getOperatorLogoUrl(s['operator'] ?? '').isNotEmpty) ...[
+                                                      Image.network(getOperatorLogoUrl(s['operator'] ?? ''), height: 12, width: 24, fit: BoxFit.contain,
+                                                        errorBuilder: (ctx, err, stack) => const SizedBox(),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                    ] else ...[
+                                                      Icon(
+                                                        widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight_takeoff,
+                                                        color: kGreen,
+                                                        size: 13,
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                    ],
+                                                    Text(
+                                                      s['operator'] ?? 'Operator',
+                                                      style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
                                             Row(
                                               crossAxisAlignment: CrossAxisAlignment.end,
                                               children: [
                                                 Text('₱${s['price']}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kPink)),
                                                 if (s['gracia_points'] != null && s['gracia_points'] > 0) ...[
                                                   const SizedBox(width: 8),
-                                                  const Icon(Icons.volunteer_activism, color: kPink, size: 14),
+                                                  const Icon(Icons.star_rounded, color: kPink, size: 14),
                                                   const SizedBox(width: 4),
                                                   Text('+${s['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
                                                 ],
@@ -4484,9 +4550,12 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     _SummarySection(title: 'Add-on Stays', children: [
                       ...widget.booking.selectedAccommodationIds.map((id) {
                         final acc = widget.booking.availableAccommodations.firstWhere(
-                          (a) => a['id'] == id, orElse: () => {'name': 'Accommodation #$id', 'price': '—'},
+                          (a) => a['id'] == id, orElse: () => {'name': 'Accommodation #$id', 'price': '0'},
                         );
-                        return _SummaryRow(acc['name'] as String, '₱${acc['price']}');
+                        final p = double.tryParse(acc['price'].toString()) ?? 0;
+                        final pts = UserSession.calculateEarnedPoints(p);
+                        final valStr = pts > 0 ? '₱$p  (+${pts}pts)' : '₱$p';
+                        return _SummaryRow(acc['name'] as String, valStr);
                       }),
                     ]),
                     const SizedBox(height: 16),
@@ -4497,7 +4566,11 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     _SummarySection(title: 'Vehicle / Car Booking', children: [
                       _SummaryRow('Vehicle Type', widget.booking.vehicleType.isEmpty ? '—' : widget.booking.vehicleType),
                       _SummaryRow('Plate Number', widget.booking.vehiclePlateNumber.isEmpty ? '—' : widget.booking.vehiclePlateNumber),
-                      _SummaryRow('Vehicle Fee', '₱${widget.booking.vehiclePrice.toStringAsFixed(2)}'),
+                      _SummaryRow('Vehicle Fee', () {
+                         final p = widget.booking.vehiclePrice;
+                         final pts = UserSession.calculateEarnedPoints(p);
+                         return pts > 0 ? '₱${p.toStringAsFixed(2)}  (+${pts}pts)' : '₱${p.toStringAsFixed(2)}';
+                      }()),
                     ]),
                     const SizedBox(height: 16),
                   ],
@@ -5597,7 +5670,7 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.volunteer_activism, size: 80, color: kSlate300),
+            const Icon(Icons.star_rounded, size: 80, color: kSlate300),
             const SizedBox(height: 16),
             const Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -5722,6 +5795,20 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                   ),
                 );
   }
+}
+
+String getOperatorLogoUrl(String operatorName) {
+  if (operatorName.isEmpty) return '';
+  final lower = operatorName.toLowerCase();
+  String logo = '';
+  if (lower.contains('2go')) logo = '2GO-Logo.png';
+  else if (lower.contains('starlite')) logo = 'starlite-Logo.jfif';
+  else if (lower.contains('cebu')) logo = 'CebuPecific-Logo.png';
+  else if (lower.contains('pal') || lower.contains('philippine airlines')) logo = 'Pal-Logo.jfif';
+  else if (lower.contains('airasia')) logo = 'AirAsia-Logo.png';
+  
+  if (logo.isEmpty) return '';
+  return '${UserSession.getBaseUrl()}/images/$logo';
 }
 
 // ==========================================
@@ -5931,7 +6018,17 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(route['vehicle']?['full_name'] ?? route['operator'] ?? 'Amiga Gracia', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                                      Row(
+                                        children: [
+                                          if (getOperatorLogoUrl(route['operator'] ?? '').isNotEmpty) ...[
+                                            Image.network(getOperatorLogoUrl(route['operator'] ?? ''), height: 16, width: 32, fit: BoxFit.contain,
+                                              errorBuilder: (ctx, err, stack) => const SizedBox(),
+                                            ),
+                                            const SizedBox(width: 6),
+                                          ],
+                                          Text(route['vehicle']?['full_name'] ?? route['operator'] ?? 'Amiga Gracia', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -5963,11 +6060,6 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(child: Text(s['service_name'] ?? 'Economy', style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                                            child: Text('₱$price', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
-                                          ),
                                         ],
                                       ),
                                       const Spacer(),
@@ -6044,3 +6136,124 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
   }
 }
 
+// ==========================================
+// VOUCHERS SCREEN
+// ==========================================
+class VouchersScreen extends StatefulWidget {
+  const VouchersScreen({super.key});
+
+  @override
+  State<VouchersScreen> createState() => _VouchersScreenState();
+}
+
+class _VouchersScreenState extends State<VouchersScreen> {
+  bool _isLoading = true;
+  String _error = '';
+  List<dynamic> _vouchers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVouchers();
+  }
+
+  Future<void> _fetchVouchers() async {
+    try {
+      final res = await http.get(
+        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers'),
+        headers: {'Accept': 'application/json'},
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        if (mounted) {
+          setState(() {
+            _vouchers = data['vouchers'] ?? [];
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _error = 'Failed to load vouchers.';
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Network error occurred.';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator(color: kPink));
+    if (_error.isNotEmpty) return Center(child: Text(_error, style: const TextStyle(color: Colors.red)));
+
+    return RefreshIndicator(
+      onRefresh: _fetchVouchers,
+      color: kPink,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text('Available Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+          const SizedBox(height: 12),
+          if (_vouchers.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
+                child: Column(
+                  children: [
+                    Icon(Icons.local_activity, size: 64, color: kSlate200),
+                    SizedBox(height: 16),
+                    Text('No vouchers available', style: TextStyle(color: kSlate400, fontSize: 16)),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._vouchers.map((v) {
+              return Card(
+                color: Colors.white,
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 3,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: kPink.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.local_activity, color: kPink, size: 28),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(v['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kGreen)),
+                            const SizedBox(height: 4),
+                            Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(height: 4),
+                            Text(v['description'] ?? '', style: const TextStyle(color: kSlate500, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+        ],
+      ),
+    );
+  }
+}

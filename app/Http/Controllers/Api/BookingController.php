@@ -285,15 +285,26 @@ class BookingController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'lookup_token' => 'required|string',
+            'lookup_token' => 'nullable|string',
         ]);
 
-        $verifiedEmail = Cache::get('booking_lookup_token:' . hash('sha256', $request->input('lookup_token')));
-        if (! $verifiedEmail || strtolower($verifiedEmail) !== strtolower($request->input('email'))) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Email verification is required before viewing bookings.',
-            ], 401);
+        $isAuthenticated = auth('api')->check() && auth('api')->user()->email === $request->input('email');
+
+        if (!$isAuthenticated) {
+            if (!$request->input('lookup_token')) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Lookup token or authentication required.',
+                ], 401);
+            }
+
+            $verifiedEmail = Cache::get('booking_lookup_token:' . hash('sha256', $request->input('lookup_token')));
+            if (! $verifiedEmail || strtolower($verifiedEmail) !== strtolower($request->input('email'))) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Email verification is required before viewing bookings.',
+                ], 401);
+            }
         }
 
         $bookings = \App\Models\Booking::where('client_email', '=', $request->input('email'), 'and')

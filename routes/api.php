@@ -42,6 +42,7 @@ Route::post('/support', function (Illuminate\Http\Request $request) {
 
 Route::get('/promotions', [PromotionController::class, 'index']);
 Route::get('/discounts', [DiscountController::class, 'index']);
+Route::get('/vouchers', [\App\Http\Controllers\Api\VoucherController::class, 'index']);
 Route::post('/vouchers/validate', [\App\Http\Controllers\Api\VoucherController::class, 'validateVoucher']);
 Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/tours', [\App\Http\Controllers\Api\TourController::class, 'index']);
