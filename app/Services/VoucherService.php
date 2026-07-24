@@ -97,7 +97,7 @@ class VoucherService
         }
         
         // Check eligible schedule
-        if ($voucher->eligible_schedule_id && $bookingData['schedule_id'] != $voucher->eligible_schedule_id) {
+        if ($voucher->eligible_schedule_id && (empty($bookingData['schedule_id']) || $bookingData['schedule_id'] != $voucher->eligible_schedule_id)) {
             return $this->error('This voucher is not valid for this schedule');
         }
         
@@ -144,7 +144,7 @@ class VoucherService
     protected function calculateBaseAmount(string $scope, array $bookingData): float
     {
         /** @var Schedule|null $schedule */
-        $schedule = Schedule::query()->where('id', $bookingData['schedule_id'])->first();
+        $schedule = !empty($bookingData['schedule_id']) ? Schedule::query()->where('id', $bookingData['schedule_id'])->first() : null;
         $scheduleAccommodationPrice = isset($bookingData['selected_schedule_accommodation_id'])
             ? (ScheduleAccommodation::query()->where('id', $bookingData['selected_schedule_accommodation_id'])->first()?->price ?? 0)
             : 0;
@@ -153,7 +153,8 @@ class VoucherService
         $discounts = Discount::all()->keyBy('id');
         
         $fareTotal = collect($bookingData['passengers'] ?? [])->sum(function (array $passenger) use ($schedule, $scheduleAccommodationPrice, $tripMultiplier, $discounts) {
-            $fare = ($schedule->price + $scheduleAccommodationPrice) * $tripMultiplier;
+            $basePrice = $schedule ? $schedule->price : 0;
+            $fare = ($basePrice + $scheduleAccommodationPrice) * $tripMultiplier;
             
             if (!empty($passenger['discount_id'])) {
                 $discount = $discounts->get($passenger['discount_id']);
