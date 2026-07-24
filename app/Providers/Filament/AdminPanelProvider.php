@@ -78,6 +78,9 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::SCRIPTS_AFTER, function (): View {
                 return view('filament.partials.chart-assets');
             })
+            ->renderHook(PanelsRenderHook::BODY_END, function (): View {
+                return view('filament.partials.scroll-validation');
+            })
 
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
