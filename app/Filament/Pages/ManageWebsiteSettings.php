@@ -90,37 +90,52 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->required()
                                         ->maxLength(120),
                                     Textarea::make('description')
-                                        ->label('Card Description')
+                                        ->label('Card Summary')
                                         ->rows(2)
                                         ->maxLength(255),
+                                    Textarea::make('detail')
+                                        ->label('Detail Article')
+                                        ->rows(4)
+                                        ->maxLength(400)
+                                        ->helperText('A short article-style description for the detailed card.'),
+                                    FileUpload::make('image')
+                                        ->label('Card Image')
+                                        ->image()
+                                        ->directory('website-settings/about-booking-cards'),
                                     TextInput::make('button_text')
                                         ->label('Button Text')
-                                        ->default('Book Now')
+                                        ->default('View Details')
                                         ->maxLength(50),
                                     TextInput::make('link')
                                         ->label('Button Link')
-                                        ->default('/book/new')
+                                        ->default('/about')
                                         ->maxLength(255),
                                 ])
                                 ->columns(1)
                                 ->default([
                                     [
                                         'title' => 'Book a 2GO Ferry',
-                                        'description' => 'Start your ferry ticket request with 2GO for safe and reliable travel across major sea routes.',
-                                        'button_text' => 'Book Now',
-                                        'link' => '/book/new',
+                                        'description' => 'Request ferry ticket assistance with 2GO across our major routes.',
+                                        'detail' => 'Learn how we arrange 2GO ferry trips with secure bookings and smooth customer support for luggage and cargo.',
+                                        'image' => null,
+                                        'button_text' => 'View Details',
+                                        'link' => '/about',
                                     ],
                                     [
                                         'title' => 'Book Airline Tickets',
-                                        'description' => 'Request airline seat bookings with Philippine Airlines, Cebu Pacific, AirAsia, and more.',
-                                        'button_text' => 'Book Now',
-                                        'link' => '/book/new',
+                                        'description' => 'Request airline seat bookings for major carriers such as PAL, Cebu Pacific, and AirAsia.',
+                                        'detail' => 'Our team helps you compare airline schedules, seat availability, and fare options for domestic and international travel.',
+                                        'image' => null,
+                                        'button_text' => 'View Details',
+                                        'link' => '/about',
                                     ],
                                     [
                                         'title' => 'Request Custom Travel',
-                                        'description' => 'Plan special tours, group travel, or apprenticeship journeys with our experienced team.',
-                                        'button_text' => 'Book Now',
-                                        'link' => '/contact-us',
+                                        'description' => 'Plan personalized tours, group travel, and apprenticeship journeys.',
+                                        'detail' => 'We craft custom travel packages that include tour itineraries, accommodations, and special arrangements for groups.',
+                                        'image' => null,
+                                        'button_text' => 'View Details',
+                                        'link' => '/about',
                                     ],
                                 ]),
                         ]),
