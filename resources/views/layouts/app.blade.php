@@ -252,6 +252,85 @@
             </div>
         </footer>
         @livewireScripts
+        <!-- Global Livewire Validation Error Auto-Scroll -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                let shouldScrollOnNextUpdate = false;
+                let scrollTimeout = null;
+
+                function setScrollTrigger() {
+                    shouldScrollOnNextUpdate = true;
+                    if (scrollTimeout) clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        shouldScrollOnNextUpdate = false;
+                    }, 4000);
+                }
+
+                document.addEventListener('submit', () => {
+                    setScrollTrigger();
+                });
+
+                document.addEventListener('click', (e) => {
+                    const button = e.target.closest('button, input[type="submit"], input[type="button"]');
+                    if (button) {
+                        const isSubmitType = button.getAttribute('type') === 'submit';
+                        const hasWireClick = button.hasAttribute('wire:click');
+                        const isPrimaryAction = button.classList.contains('bg-blue-600') || button.classList.contains('bg-[#ee018d]') || button.classList.contains('bg-emerald-600');
+                        
+                        if (isSubmitType || hasWireClick || isPrimaryAction) {
+                            setScrollTrigger();
+                        }
+                    }
+                });
+
+                document.addEventListener('livewire:init', () => {
+                    Livewire.hook('commit', ({ succeed }) => {
+                        succeed(() => {
+                            setTimeout(() => {
+                                if (shouldScrollOnNextUpdate) {
+                                    const selectors = [
+                                        '[aria-invalid="true"]',
+                                        '.text-rose-600',
+                                        '.text-red-600',
+                                        '.text-red-500',
+                                        '.invalid-feedback',
+                                        '.error-message'
+                                    ];
+
+                                    let firstErrorElement = null;
+                                    for (const selector of selectors) {
+                                        firstErrorElement = document.querySelector(selector);
+                                        if (firstErrorElement) break;
+                                    }
+
+                                    if (firstErrorElement) {
+                                        firstErrorElement.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'center'
+                                        });
+
+                                        shouldScrollOnNextUpdate = false;
+
+                                        let input = null;
+                                        if (['INPUT', 'SELECT', 'TEXTAREA'].includes(firstErrorElement.tagName)) {
+                                            input = firstErrorElement;
+                                        } else {
+                                            const container = firstErrorElement.closest('.mb-4, .space-y-2, .grid, div');
+                                            if (container) {
+                                                input = container.querySelector('input, select, textarea');
+                                            }
+                                        }
+                                        if (input) {
+                                            input.focus();
+                                        }
+                                    }
+                                }
+                            }, 100);
+                        });
+                    });
+                });
+            });
+        </script>
         @stack('scripts')
         <script>
             if ('serviceWorker' in navigator) {
