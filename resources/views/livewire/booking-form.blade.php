@@ -637,113 +637,51 @@
                                             @endif
                                         </div>
                                     @endif
-                                    <div class="grid gap-4 lg:grid-cols-2">
-                                        @forelse($availableSchedules as $schedule)
-                                            <button type="button" wire:click.prevent="selectSchedule({{ $schedule['id'] }})" class="rounded-2xl border p-6 text-left transition duration-200 {{ $selected_schedule_id === $schedule['id'] ? 'border-[#db2777] bg-[#db2777] text-white shadow-md' : 'border-slate-200 bg-white text-slate-900 hover:border-[#db2777]/50 hover:shadow-sm' }}">
-                                                <div class="flex items-center justify-between gap-4">
-                                                    <div class="flex items-start gap-4">
-                                                        @php
-                                                            $opName = $schedule['operator'] ?? '';
-                                                            $opLogo = null;
-                                                            if (stripos($opName, '2GO') !== false) $opLogo = '2GO-Logo.png';
-                                                            elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
-                                                            elseif (stripos($opName, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
-                                                            elseif (stripos($opName, 'Pal') !== false || stripos($opName, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
-                                                            elseif (stripos($opName, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
-                                                        @endphp
-                                                        @if($opLogo)
-                                                            <div class="w-12 h-12 shrink-0 bg-white rounded border {{ $selected_schedule_id === $schedule['id'] ? 'border-white/30 shadow' : 'border-slate-200' }} flex items-center justify-center p-1 overflow-hidden mt-1">
-                                                                <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $opName }}" class="w-full h-full object-contain">
-                                                            </div>
-                                                        @endif
-                                                        <div>
-                                                            <h3 class="text-lg font-bold">{{ $schedule['service'] }}</h3>
-                                                            @if ($schedule['operator'])
-                                                                <p class="mt-1 text-sm font-medium {{ $selected_schedule_id === $schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">
-                                                                    {{ $schedule['operator'] }}
-                                                                </p>
-                                                            @endif
-                                                            @if ($schedule['vehicle_name'])
-                                                                <p class="mt-1 text-sm {{ $selected_schedule_id === $schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">{{ $schedule['vehicle_name'] }}</p>
-                                                            @endif
-                                                            <p class="mt-2 text-sm font-semibold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-slate-900' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
-                                                        </div>
-                                                    </div>
-                                                    <span class="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider {{ $selected_schedule_id === $schedule['id'] ? 'border-white/30 bg-white/20 text-white' : 'border-slate-200 bg-slate-50 text-slate-600' }}">{{ $schedule['availability'] }}</span>
-                                                </div>
-                                                <div class="mt-5 pt-4 border-t {{ $selected_schedule_id === $schedule['id'] ? 'border-white/20' : 'border-slate-100' }} space-y-1">
-                                                    <p class="text-sm font-medium {{ $selected_schedule_id === $schedule['id'] ? 'text-white/90' : 'text-slate-600' }}">Duration: {{ $schedule['duration'] }}</p>
-                                                    <p class="text-lg font-bold {{ $selected_schedule_id === $schedule['id'] ? 'text-white' : 'text-slate-900' }}">Fare: ₱{{ number_format($schedule['price'], 2) }}</p>
-                                                </div>
-                                            </button>
-                                        @empty
-                                            <p class="rounded-xl border border-slate-200 bg-slate-50 p-6 text-slate-600 text-sm lg:col-span-2">No schedules are available for this route on the selected date. Go back and try another date, or contact Amiga Gracia Travel Services.</p>
-                                        @endforelse
-                                    </div>
-                                    @error('selected_schedule_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-
-                                    @if($selected_schedule_id)
-                                        @php
-                                            $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
-                                        @endphp
-
-                                        {{-- Ferry: Show accommodations --}}
-                                        @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']))
-                                            <div class="mt-6 border-t border-slate-200 pt-6">
-                                                <p class="text-slate-900 font-bold mb-4 text-lg">Select your accommodation:</p>
-                                                <div class="grid gap-4 sm:grid-cols-2">
-                                                    @foreach($selectedSchedule['accommodations'] as $accommodation)
-                                                        @php $isAccommodationSelected = $selected_schedule_accommodation_id === $accommodation['id']; @endphp
-                                                        <button type="button" wire:click.prevent="selectScheduleAccommodation({{ $accommodation['id'] }})" class="rounded-2xl border-2 p-5 text-left transition duration-200 {{ $isAccommodationSelected ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
-                                                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                                                <h4 class="font-bold text-slate-900">{{ $accommodation['name'] }}</h4>
-                                                                @if($accommodation['has_bed'])
-                                                                    <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full border border-slate-200">With Bed</span>
-                                                                @endif
-                                                            </div>
-                                                            @if($accommodation['description'])
-                                                                <p class="mt-2 text-sm text-slate-600 leading-relaxed">{{ $accommodation['description'] }}</p>
-                                                            @endif
-                                                            <p class="mt-4 text-xl font-extrabold text-[#db2777]">₱{{ number_format($accommodation['price'], 2) }}</p>
-                                                        </button>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        {{-- Airline: Show transport classes --}}
-                                        @if($mode === 'airline' && $selectedSchedule && !empty($selectedSchedule['transport_classes']))
-                                            <div class="mt-6 border-t border-slate-200 pt-6">
-                                                <p class="text-slate-900 font-bold mb-4 text-lg">Select your travel class:</p>
-                                                <div class="grid gap-4 sm:grid-cols-2">
-                                                    @foreach($selectedSchedule['transport_classes'] as $class)
-                                                        @php $isClassSelected = $selected_transport_class_id === $class['id']; @endphp
-                                                        <button type="button" wire:click.prevent="selectTransportClass({{ $class['id'] }})" class="rounded-2xl border-2 p-5 text-left transition duration-200 overflow-hidden {{ $isClassSelected ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
-                                                            <div class="relative h-32 w-full overflow-hidden rounded-xl bg-slate-100 mb-4 border border-slate-200">
-                                                                @if($class['cover_image'])
-                                                                    <img src="{{ $class['cover_image'] }}" alt="{{ $class['name'] }}" class="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
-                                                                @else
-                                                                    <div class="flex h-full w-full items-center justify-center text-slate-400 text-sm font-medium">No photo</div>
-                                                                @endif
-                                                            </div>
-                                                            <h4 class="font-bold text-slate-900 text-lg">{{ $class['name'] }}</h4>
-                                                            @if($class['description'])
-                                                                <p class="mt-1 text-sm text-slate-600 leading-relaxed">{{ $class['description'] }}</p>
-                                                            @endif
-                                                            <div class="mt-3 flex flex-wrap gap-2">
-                                                                @if(!empty($class['row_start']) && !empty($class['row_end']))
-                                                                    <span class="inline-flex text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">Rows {{ $class['row_start'] }}-{{ $class['row_end'] }}</span>
-                                                                @endif
-                                                                @if(!empty($class['seat_capacity']))
-                                                                    <span class="inline-flex text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">{{ number_format($class['seat_capacity']) }} seats</span>
-                                                                @endif
-                                                            </div>
-                                                            <p class="mt-4 text-xl font-extrabold text-[#db2777]">₱{{ number_format($class['price'], 2) }}</p>
-                                                        </button>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        @endif
+                                    @if($trip_type === 'round_trip')
+                                        <x-schedule-carousel 
+                                            title="Departure Trip"
+                                            subtitle="Select your preferred departure trip vessel"
+                                            :origin="$origin"
+                                            :destination="$destination"
+                                            :schedules="$availableSchedules"
+                                            selectedId="{{ $selected_schedule_id }}"
+                                            selectedAccommodationId="{{ $selected_schedule_accommodation_id }}"
+                                            selectedClassId="{{ $selected_transport_class_id }}"
+                                            selectMethod="selectSchedule"
+                                            selectAccommodationMethod="selectScheduleAccommodation"
+                                            selectClassMethod="selectTransportClass"
+                                            :mode="$mode"
+                                        />
+                                        
+                                        <div class="border-t border-slate-200 my-8"></div>
+                                        
+                                        <x-schedule-carousel 
+                                            title="Returning Trip"
+                                            subtitle="Select your preferred returning trip vessel"
+                                            :origin="$destination"
+                                            :destination="$origin"
+                                            :schedules="$availableReturnSchedules"
+                                            selectedId="{{ $selected_return_schedule_id }}"
+                                            selectedAccommodationId="{{ $selected_return_schedule_accommodation_id }}"
+                                            selectedClassId="{{ $selected_transport_class_id }}" 
+                                            selectMethod="selectReturnSchedule"
+                                            selectAccommodationMethod="selectReturnScheduleAccommodation"
+                                            selectClassMethod="selectTransportClass"
+                                            :mode="$mode"
+                                        />
+                                    @else
+                                        <x-schedule-carousel 
+                                            title="Select a schedule"
+                                            :schedules="$availableSchedules"
+                                            selectedId="{{ $selected_schedule_id }}"
+                                            selectedAccommodationId="{{ $selected_schedule_accommodation_id }}"
+                                            selectedClassId="{{ $selected_transport_class_id }}"
+                                            selectMethod="selectSchedule"
+                                            selectAccommodationMethod="selectScheduleAccommodation"
+                                            selectClassMethod="selectTransportClass"
+                                            :mode="$mode"
+                                        />
+                                    @endif
 
                                         {{-- Baggage toggle --}}
                                         @if($this->baggageRules)
@@ -789,7 +727,6 @@
                                                 </div>
                                             </div>
                                         @endif
-                                    @endif
                                 </div>
 
                                 {{-- Right Column: Seat Map / Ferry summary --}}
@@ -975,8 +912,10 @@
 
                                             <div class="mt-6 space-y-4">
                                                 <div class="rounded-xl border border-[#db2777]/20 bg-[#db2777]/5 p-4 shadow-sm">
-                                                    <p class="text-slate-900 font-bold">Selected schedule</p>
-                                                    <p class="mt-2 text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} · {{ $selectedSchedule['departure'] }} → {{ $selectedSchedule['arrival'] }}</p>
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <p class="text-slate-900 font-bold">Selected schedule @if($trip_type === 'round_trip') (Departure) @endif</p>
+                                                    </div>
+                                                    <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} · {{ $selectedSchedule['departure'] }} → {{ $selectedSchedule['arrival'] }}</p>
                                                     <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedSchedule['duration'] }}</p>
                                                     <p class="mt-1 text-sm text-slate-600 font-bold">Fare: ₱{{ number_format($selectedSchedule['price'], 2) }}</p>
                                                 </div>
@@ -984,7 +923,7 @@
                                                 @php $selectedAccommodation = collect($selectedSchedule['accommodations'] ?? [])->firstWhere('id', $selected_schedule_accommodation_id); @endphp
 
                                                 <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                                                    <p class="text-slate-900 font-bold">Accommodation</p>
+                                                    <p class="text-slate-900 font-bold">Accommodation @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                     @if($selectedAccommodation)
                                                         <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedAccommodation['name'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600">Accommodation: ₱{{ number_format($selectedAccommodation['price'], 2) }}</p>
@@ -997,6 +936,41 @@
                                                         <p class="mt-2 text-sm text-slate-500 italic">Select an accommodation on the left to continue.</p>
                                                     @endif
                                                 </div>
+                                                
+                                                @if($trip_type === 'round_trip')
+                                                    @php $selectedReturnSchedule = collect($availableReturnSchedules)->firstWhere('id', $selected_return_schedule_id); @endphp
+                                                    @if($selectedReturnSchedule)
+                                                        <div class="rounded-xl border border-[#db2777]/20 bg-[#db2777]/5 p-4 shadow-sm mt-4">
+                                                            <div class="flex items-center justify-between mb-2">
+                                                                <p class="text-slate-900 font-bold">Selected schedule (Returning)</p>
+                                                            </div>
+                                                            <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} · {{ $selectedReturnSchedule['departure'] }} → {{ $selectedReturnSchedule['arrival'] }}</p>
+                                                            <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedReturnSchedule['duration'] }}</p>
+                                                            <p class="mt-1 text-sm text-slate-600 font-bold">Fare: ₱{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
+                                                        </div>
+
+                                                        @php $selectedReturnAccommodation = collect($selectedReturnSchedule['accommodations'] ?? [])->firstWhere('id', $selected_return_schedule_accommodation_id); @endphp
+
+                                                        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                                            <p class="text-slate-900 font-bold">Accommodation (Returning)</p>
+                                                            @if($selectedReturnAccommodation)
+                                                                <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedReturnAccommodation['name'] }}</p>
+                                                                <p class="mt-1 text-sm text-slate-600">Accommodation: ₱{{ number_format($selectedReturnAccommodation['price'], 2) }}</p>
+                                                                <p class="mt-1 text-sm text-slate-600">Ticket fare: ₱{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
+                                                                <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: ₱{{ number_format($selectedReturnSchedule['price'] + $selectedReturnAccommodation['price'], 2) }}</p>
+                                                                @if(!empty($selectedReturnAccommodation['description']))
+                                                                    <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedReturnAccommodation['description'] }}</p>
+                                                                @endif
+                                                            @else
+                                                                <p class="mt-2 text-sm text-slate-500 italic">Select an accommodation on the left to continue.</p>
+                                                            @endif
+                                                        </div>
+                                                    @else
+                                                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm text-center">
+                                                            <p class="text-slate-500 text-sm italic">Select a returning schedule on the left to view details.</p>
+                                                        </div>
+                                                    @endif
+                                                @endif
                                             </div>
                                         </div>
                                     @else

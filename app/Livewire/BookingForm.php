@@ -50,6 +50,7 @@ class BookingForm extends Component
     public ?int $duration_days = null;
     public array $available_package_dates = [];
     public array $available_schedule_dates = [];
+    public array $availableReturnSchedules = [];
     public int $adults = 1;
     public int $children = 0;
     public ?int $selected_schedule_id = null;
@@ -88,6 +89,8 @@ class BookingForm extends Component
 
     // Selected schedule accommodation id
     public ?int $selected_schedule_accommodation_id = null;
+    public ?int $selected_return_schedule_id = null;
+    public ?int $selected_return_schedule_accommodation_id = null;
     public ?int $selected_transport_class_id = null;
     public ?int $selectingSeatForPassengerIndex = null;
 
@@ -485,6 +488,7 @@ public function selectedSchedule(): ?array
     {
         $this->departure_date = $value;
         $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         
         // If it's a tour package with duration, recalculate return date
@@ -530,6 +534,7 @@ public function selectedSchedule(): ?array
         $this->origin = '';
         $this->destination = '';
         $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         $this->resetVehicleData();
     }
@@ -600,6 +605,7 @@ public function selectedSchedule(): ?array
         $this->origin = '';
         $this->destination = '';
         $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         $this->resetVehicleData();
         $this->showModeDropdown = false;
@@ -609,6 +615,7 @@ public function selectedSchedule(): ?array
     {
         $this->operator = $operator;
         $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         $this->showOperatorDropdown = false;
         $this->updateAvailableScheduleDates();
@@ -661,6 +668,7 @@ public function selectedSchedule(): ?array
         $this->origin = $origin;
         $this->destination = '';
         $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         $this->showOriginDropdown = false;
         $this->originSearch = '';
@@ -670,6 +678,7 @@ public function selectedSchedule(): ?array
     {
         $this->destination = $destination;
         $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         $this->showDestinationDropdown = false;
         $this->destinationSearch = '';
@@ -742,6 +751,7 @@ public function selectedSchedule(): ?array
     public function updatedOperator(): void
     {
         $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         $this->updateAvailableScheduleDates();
         $this->saveDraft();
@@ -757,6 +767,7 @@ public function selectedSchedule(): ?array
 
         if ($field === 'departure_date') {
             $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
             $this->availableSchedules = [];
             $this->updateReturnDateFromDuration();
         }
@@ -815,6 +826,7 @@ public function selectedSchedule(): ?array
 
         if (in_array($propertyName, ['origin', 'destination', 'departure_date'], true)) {
             $this->selected_schedule_id = null;
+        $this->selected_return_schedule_id = null;
             $this->availableSchedules = [];
         }
 
@@ -841,10 +853,17 @@ public function selectedSchedule(): ?array
         if ($this->step === 1) {
             if (! $this->tour_id) {
                 $this->availableSchedules = $this->getAvailableSchedules();
+                $this->availableReturnSchedules = $this->getAvailableReturnSchedules();
 
                 if (empty($this->availableSchedules)) {
                     throw ValidationException::withMessages([
                         'departure_date' => 'No ferry schedules are available for this route on the selected date. Try another date or contact Amiga Gracia Travel Services.',
+                    ]);
+                }
+                
+                if ($this->trip_type === 'round_trip' && empty($this->availableReturnSchedules)) {
+                    throw ValidationException::withMessages([
+                        'return_date' => 'No return schedules are available for this route on the selected date. Try another date.',
                     ]);
                 }
             }
@@ -893,6 +912,12 @@ public function selectedSchedule(): ?array
 
         $this->saveDraft();
     }
+    
+    public function selectReturnSchedule(int $scheduleId): void
+    {
+        $this->selected_return_schedule_id = $scheduleId;
+        $this->saveDraft();
+    }
 
     protected function getAvailableSchedules(): array
     {
@@ -901,6 +926,22 @@ public function selectedSchedule(): ?array
             ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
             ->get()
             ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date))
+            ->values()
+            ->all();
+    }
+
+    protected function getAvailableReturnSchedules(): array
+    {
+        if ($this->trip_type !== 'round_trip' || !$this->return_date) {
+            return [];
+        }
+        
+        return Schedule::query()
+            ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
+            // Reverse origin and destination for return trip
+            ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode, $this->operator)
+            ->get()
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date))
             ->values()
             ->all();
     }
@@ -1102,6 +1143,7 @@ public function selectedSchedule(): ?array
     {
         if ($this->selected_schedule_accommodation_id === $accommodationId) {
             $this->selected_schedule_accommodation_id = null;
+        $this->selected_return_schedule_accommodation_id = null;
         } else {
             $this->selected_schedule_accommodation_id = $accommodationId;
         }
@@ -1521,6 +1563,25 @@ public function selectedSchedule(): ?array
                 'selected_schedule_id' => 'The selected schedule is no longer available for this route and date.',
             ]);
         }
+        
+        if ($this->trip_type === 'round_trip' && !$this->tour_id) {
+            if (! $this->selected_return_schedule_id) {
+                throw ValidationException::withMessages([
+                    'selected_return_schedule_id' => 'Please select a return schedule.',
+                ]);
+            }
+            
+            $isReturnValid = Schedule::query()
+                ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode)
+                ->where('id', $this->selected_return_schedule_id)
+                ->exists();
+
+            if (! $isReturnValid) {
+                throw ValidationException::withMessages([
+                    'selected_return_schedule_id' => 'The selected return schedule is no longer available for this route and date.',
+                ]);
+            }
+        }
     }
 
     protected function generateTransactionNumber(): string
@@ -1572,11 +1633,22 @@ public function selectedSchedule(): ?array
 
         $baseSchedulePrice = $this->getSelectedSchedulePrice();
         $scheduleAccommodationPrice = $this->getSelectedScheduleAccommodationPrice();
-        $tripMultiplier = $this->trip_type === 'round_trip' ? 2 : 1;
+        
+        $returnSchedulePrice = $this->getSelectedReturnSchedulePrice();
+        $returnScheduleAccommodationPrice = $this->getSelectedReturnScheduleAccommodationPrice();
+        
         $discountsById = $this->discounts->keyBy('id');
 
-        $transportTotal = collect($this->passengers)->sum(function (array $passenger) use ($baseSchedulePrice, $scheduleAccommodationPrice, $tripMultiplier, $discountsById) {
-            $fare = ($baseSchedulePrice + $scheduleAccommodationPrice) * $tripMultiplier;
+        $transportTotal = collect($this->passengers)->sum(function (array $passenger) use (
+            $baseSchedulePrice, 
+            $scheduleAccommodationPrice, 
+            $returnSchedulePrice, 
+            $returnScheduleAccommodationPrice, 
+            $discountsById
+        ) {
+            $departureFare = $baseSchedulePrice + $scheduleAccommodationPrice;
+            $returnFare = $returnSchedulePrice + $returnScheduleAccommodationPrice;
+            $fare = $departureFare + $returnFare;
 
             if (! empty($passenger['discount_id'])) {
                 $discount = $discountsById->get($passenger['discount_id']);
@@ -1606,6 +1678,18 @@ public function selectedSchedule(): ?array
         $serviceFee = ($payingTravelers * floatval($settings->fee_per_person));
 
         return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee;
+    }
+
+    protected function getSelectedReturnSchedulePrice(): float
+    {
+        if (! $this->selected_return_schedule_id) {
+            return 0;
+        }
+
+        $schedule = collect($this->availableReturnSchedules)
+            ->firstWhere('id', $this->selected_return_schedule_id);
+
+        return $schedule ? floatval($schedule['price']) : 0;
     }
 
     protected function getSelectedScheduleAccommodationPrice(): float
@@ -1732,6 +1816,25 @@ public function selectedSchedule(): ?array
     public function togglePassengerInfoModal(): void
     {
         $this->showPassengerInfoModal = ! $this->showPassengerInfoModal;
+    }
+
+    protected function getSelectedReturnScheduleAccommodationPrice(): float
+    {
+        if (! $this->selected_return_schedule_accommodation_id || ! $this->selected_return_schedule_id) {
+            return 0;
+        }
+
+        $schedule = collect($this->availableReturnSchedules)
+            ->firstWhere('id', $this->selected_return_schedule_id);
+
+        if (! $schedule || empty($schedule['schedule_accommodations'])) {
+            return 0;
+        }
+
+        $accommodation = collect($schedule['schedule_accommodations'])
+            ->firstWhere('id', $this->selected_return_schedule_accommodation_id);
+
+        return $accommodation ? floatval($accommodation['price']) : 0;
     }
 
     protected function getSelectedSchedulePrice(): float

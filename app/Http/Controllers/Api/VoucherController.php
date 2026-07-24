@@ -21,6 +21,14 @@ class VoucherController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Filter out vouchers that have reached their total_usage_limit
+        $vouchers = $vouchers->filter(function ($voucher) {
+            if ($voucher->total_usage_limit !== null) {
+                return $voucher->redemptions()->count() < $voucher->total_usage_limit;
+            }
+            return true;
+        })->values();
+
         return response()->json([
             'status' => 'success',
             'vouchers' => $vouchers,

@@ -27,6 +27,14 @@ class Booking extends Model
         'schedule_accommodation_id',
         'schedule_accommodation_name',
         'schedule_accommodation_price',
+        'return_schedule_id',
+        'return_schedule_service',
+        'return_schedule_departure_time',
+        'return_schedule_arrival_time',
+        'return_schedule_price',
+        'return_schedule_accommodation_id',
+        'return_schedule_accommodation_name',
+        'return_schedule_accommodation_price',
         'status',
         'total_price',
         'client_email',
@@ -68,6 +76,8 @@ class Booking extends Model
         'rebooking_return_date' => 'date',
         'schedule_price' => 'decimal:2',
         'schedule_accommodation_price' => 'decimal:2',
+        'return_schedule_price' => 'decimal:2',
+        'return_schedule_accommodation_price' => 'decimal:2',
         'total_price' => 'decimal:2',
         'has_vehicle' => 'boolean',
         'vehicle_price' => 'decimal:2',
@@ -109,6 +119,16 @@ class Booking extends Model
     public function scheduleAccommodation(): BelongsTo
     {
         return $this->belongsTo(ScheduleAccommodation::class);
+    }
+
+    public function returnSchedule(): BelongsTo
+    {
+        return $this->belongsTo(Schedule::class, 'return_schedule_id');
+    }
+
+    public function returnScheduleAccommodation(): BelongsTo
+    {
+        return $this->belongsTo(ScheduleAccommodation::class, 'return_schedule_accommodation_id');
     }
 
     public function transaction(): HasOne
