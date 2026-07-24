@@ -145,7 +145,7 @@ class Booking extends Model
     public function voucherRedemption(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(VoucherRedemption::class);
-    }
+    }     
 
     public function getScheduleSummaryAttribute(): ?string
     {
