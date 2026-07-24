@@ -69,6 +69,11 @@ class Voucher extends Model
         return $this->belongsTo(Schedule::class, 'eligible_schedule_id');
     }
 
+    public function claimedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'user_hidden_vouchers')->withTimestamps();
+    }
+
     // Helpers
     public function getTotalUsedAttribute(): int
     {

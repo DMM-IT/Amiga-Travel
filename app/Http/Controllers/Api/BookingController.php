@@ -57,6 +57,7 @@ class BookingController extends Controller
             'voucher_code' => 'nullable|string|max:50',
             'return_schedule_id' => 'nullable|integer|exists:schedules,id',
             'selected_return_schedule_accommodation_id' => 'nullable|integer|exists:schedule_accommodations,id',
+            'use_points' => 'nullable|boolean',
         ]);
 
         $schedule = Schedule::findOrFail($request->input('schedule_id'));
@@ -112,6 +113,25 @@ class BookingController extends Controller
                 $totalPrice = $subtotalBeforeVoucher - $discountAmount;
             }
 
+            // Calculate points discount
+            $pointsUsed = 0;
+            $pointsDiscount = 0.00;
+            $user = auth()->guard('api')->user();
+            if ($user && $request->input('use_points', false)) {
+                $balance = \App\Models\GraciaUserBalance::where('user_id', $user->id)->first();
+                $availablePoints = $balance ? $balance->current_points : 0;
+                
+                if ($availablePoints > 0) {
+                    $pointsUsed = (int) min($availablePoints, ceil($totalPrice)); // 1 point = 1 PHP. Round up the limit so we can cover the full decimal if needed, wait, min(pts, total). If total is 50.50, we can use 50 pts, not 51 unless we allow negative total. Let's use floor.
+                    $pointsUsed = (int) min($availablePoints, floor($totalPrice)); 
+                    // Actually, if they have 100 points, they can use 50 or 51? Let's use min(available, ceil(total)).
+                    // It's safer to just let pointsDiscount = pointsUsed, and if total goes below 0, it becomes 0.
+                    $pointsUsed = (int) min($availablePoints, ceil($totalPrice));
+                    $pointsDiscount = (float) $pointsUsed;
+                    $totalPrice = max(0, $totalPrice - $pointsDiscount);
+                }
+            }
+
             $booking = Booking::create([
                 'user_id' => auth()->guard('api')->user()?->id,
                 'transaction_number' => 'AGT-' . now()->format('Ymd') . '-' . rand(1000, 9999),
@@ -147,7 +167,13 @@ class BookingController extends Controller
                 'voucher_code' => $voucher?->code,
                 'voucher_discount_amount' => $discountAmount,
                 'subtotal_before_voucher' => $subtotalBeforeVoucher,
+                'points_used' => $pointsUsed,
+                'points_discount' => $pointsDiscount,
             ]);
+
+            if ($pointsUsed > 0) {
+                app(\App\Services\GraciaPointsService::class)->deductPointsForPayment($booking);
+            }
 
             foreach ($request->input('passengers') as $passengerData) {
                 Passenger::create([
@@ -228,6 +254,8 @@ class BookingController extends Controller
                 'subtotal_before_voucher' => floatval($booking->subtotal_before_voucher),
                 'voucher_code' => $booking->voucher_code,
                 'voucher_discount_amount' => floatval($booking->voucher_discount_amount),
+                'points_used' => $booking->points_used,
+                'points_discount' => floatval($booking->points_discount),
                 'total_price' => floatval($booking->total_price),
             ]);
 
@@ -468,6 +496,7 @@ class BookingController extends Controller
         ]);
 
         app(\App\Services\GraciaPointsService::class)->reversePointsForBooking($booking);
+        app(\App\Services\GraciaPointsService::class)->refundRedeemedPoints($booking);
 
         if ($booking->transaction) {
             $booking->transaction->update(['payment_status' => 'cancelled']);

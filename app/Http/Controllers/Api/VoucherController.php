@@ -8,18 +8,30 @@ use App\Services\VoucherService;
 
 class VoucherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $vouchers = \App\Models\Voucher::where('is_active', true)
-            ->where('is_hidden', false)
+        $vouchersQuery = \App\Models\Voucher::where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('start_at')->orWhere('start_at', '<=', now());
             })
             ->where(function ($q) {
                 $q->whereNull('end_at')->orWhere('end_at', '>=', now());
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+            });
+
+        // Vouchers should be either public (not hidden) OR claimed by the logged in user
+        if (auth('api')->check()) {
+            $userId = auth('api')->id();
+            $vouchersQuery->where(function($q) use ($userId) {
+                $q->where('is_hidden', false)
+                  ->orWhereHas('claimedByUsers', function($q2) use ($userId) {
+                      $q2->where('user_id', $userId);
+                  });
+            });
+        } else {
+            $vouchersQuery->where('is_hidden', false);
+        }
+
+        $vouchers = $vouchersQuery->orderBy('created_at', 'desc')->get();
 
         // Filter out vouchers that have reached their total_usage_limit
         $vouchers = $vouchers->filter(function ($voucher) {
@@ -32,6 +44,58 @@ class VoucherController extends Controller
         return response()->json([
             'status' => 'success',
             'vouchers' => $vouchers,
+        ]);
+    }
+
+    public function claim(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string'
+        ]);
+
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthenticated.'], 401);
+        }
+
+        $voucher = \App\Models\Voucher::where('code', $request->code)
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('start_at')->orWhere('start_at', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('end_at')->orWhere('end_at', '>=', now());
+            })
+            ->first();
+
+        if (!$voucher) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid or expired voucher code.']);
+        }
+
+        // Must be a hidden voucher to be claimed like this? We can allow any voucher, but if it's already in their list, just say so.
+        $alreadyClaimed = \Illuminate\Support\Facades\DB::table('user_hidden_vouchers')
+            ->where('user_id', $user->id)
+            ->where('voucher_id', $voucher->id)
+            ->exists();
+
+        if ($alreadyClaimed) {
+            return response()->json(['status' => 'error', 'message' => 'You have already added this voucher.']);
+        }
+
+        if ($voucher->total_usage_limit !== null && $voucher->redemptions()->count() >= $voucher->total_usage_limit) {
+            return response()->json(['status' => 'error', 'message' => 'This voucher has reached its usage limit.']);
+        }
+
+        \Illuminate\Support\Facades\DB::table('user_hidden_vouchers')->insert([
+            'user_id' => $user->id,
+            'voucher_id' => $voucher->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Voucher successfully added!',
         ]);
     }
     public function validateVoucher(Request $request, VoucherService $voucherService)

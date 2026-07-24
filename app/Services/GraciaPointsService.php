@@ -129,6 +129,83 @@ class GraciaPointsService
         });
     }
 
+    public function deductPointsForPayment(Booking $booking): void
+    {
+        if (!$booking->user_id || $booking->points_used <= 0) return;
+
+        $idempotencyKey = "booking_{$booking->id}_redeemed";
+
+        DB::transaction(function () use ($booking, $idempotencyKey) {
+            if (GraciaPointLedger::where('idempotency_key', $idempotencyKey)->exists()) {
+                return;
+            }
+
+            $balance = GraciaUserBalance::firstOrCreate(
+                ['user_id' => $booking->user_id],
+                ['current_points' => 0, 'unconverted_spend_centavos' => 0]
+            );
+
+            // Assuming validation was done before, but we cap it to the available balance just in case
+            $pointsToDeduct = min($booking->points_used, $balance->current_points);
+            
+            if ($pointsToDeduct > 0) {
+                GraciaPointLedger::create([
+                    'user_id' => $booking->user_id,
+                    'booking_id' => $booking->id,
+                    'points' => -$pointsToDeduct,
+                    'entry_type' => 'redeemed',
+                    'qualifying_spend_centavos' => 0,
+                    'reason' => 'Points used for booking ' . $booking->transaction_number,
+                    'idempotency_key' => $idempotencyKey,
+                ]);
+
+                $balance->current_points -= $pointsToDeduct;
+                $balance->save();
+            }
+        });
+    }
+
+    public function refundRedeemedPoints(Booking $booking): void
+    {
+        if (!$booking->user_id || $booking->points_used <= 0) return;
+
+        $idempotencyKey = "booking_{$booking->id}_refund_redeemed";
+
+        DB::transaction(function () use ($booking, $idempotencyKey) {
+            if (GraciaPointLedger::where('idempotency_key', $idempotencyKey)->exists()) {
+                return;
+            }
+
+            $redeemedEntry = GraciaPointLedger::where('booking_id', $booking->id)
+                ->where('entry_type', 'redeemed')
+                ->first();
+
+            if (!$redeemedEntry) {
+                return;
+            }
+
+            $balance = GraciaUserBalance::firstOrCreate(
+                ['user_id' => $booking->user_id],
+                ['current_points' => 0, 'unconverted_spend_centavos' => 0]
+            );
+
+            $refundedPoints = abs($redeemedEntry->points); // Points were stored as negative in ledger
+
+            GraciaPointLedger::create([
+                'user_id' => $booking->user_id,
+                'booking_id' => $booking->id,
+                'points' => $refundedPoints,
+                'entry_type' => 'refunded',
+                'qualifying_spend_centavos' => 0,
+                'reason' => 'Points refunded from cancelled booking ' . $booking->transaction_number,
+                'idempotency_key' => $idempotencyKey,
+            ]);
+
+            $balance->current_points += $refundedPoints;
+            $balance->save();
+        });
+    }
+
     public function addManualAdjustment(User $user, int $points, string $reason, User $admin): void
     {
         DB::transaction(function () use ($user, $points, $reason, $admin) {

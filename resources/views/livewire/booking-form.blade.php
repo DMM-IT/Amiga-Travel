@@ -344,9 +344,17 @@
                                     <label class="block text-slate-700 font-semibold text-sm">Departure Date</label>
                                         <div class="mt-2">
                                             @php
-                                                $enabledDepartureDates = !empty($available_package_dates) ? $available_package_dates : (!empty($available_schedule_dates) ? $available_schedule_dates : []);
+                                                $restrictDepartureDates = false;
+                                                $enabledDepartureDates = [];
+                                                if (!empty($available_package_dates) || !empty($available_schedule_dates)) {
+                                                    $restrictDepartureDates = true;
+                                                    $enabledDepartureDates = !empty($available_package_dates) ? $available_package_dates : $available_schedule_dates;
+                                                } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
+                                                    $restrictDepartureDates = true;
+                                                    $enabledDepartureDates = [];
+                                                }
                                             @endphp
-                                            @if(!empty($enabledDepartureDates))
+                                            @if($restrictDepartureDates)
                                                 <livewire:date-picker wire:model="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
                                             @else
                                                 <livewire:date-picker wire:model="departure_date" field="departure_date" label="" min="{{ date('Y-m-d') }}" />
@@ -360,9 +368,17 @@
                                         <label class="block text-slate-700 font-semibold text-sm">Return Date</label>
                                         <div class="mt-2">
                                             @php
-                                                $enabledReturnDates = !empty($available_package_dates) ? $available_package_dates : (!empty($available_schedule_dates) ? $available_schedule_dates : []);
+                                                $restrictReturnDates = false;
+                                                $enabledReturnDates = [];
+                                                if (!empty($available_package_dates) || !empty($available_schedule_dates)) {
+                                                    $restrictReturnDates = true;
+                                                    $enabledReturnDates = !empty($available_package_dates) ? $available_package_dates : $available_schedule_dates;
+                                                } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
+                                                    $restrictReturnDates = true;
+                                                    $enabledReturnDates = [];
+                                                }
                                             @endphp
-                                            @if(!empty($enabledReturnDates))
+                                            @if($restrictReturnDates)
                                                 <livewire:date-picker wire:model="return_date" field="return_date" :enabled-dates="$enabledReturnDates" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
                                             @else
                                                 <livewire:date-picker wire:model="return_date" field="return_date" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
