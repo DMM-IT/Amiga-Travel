@@ -1,16 +1,16 @@
 # Graph Report - Amiga-Travel  (2026-07-24)
 
 ## Corpus Check
-- 414 files · ~249,975 words
+- 415 files · ~257,691 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5161 nodes · 12377 edges · 294 communities (261 shown, 33 thin omitted)
+- 5161 nodes · 12377 edges · 295 communities (263 shown, 32 thin omitted)
 - Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 1144 edges (avg confidence: 0.67)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `65a2952c`
+- Built from commit: `d2014493`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -187,6 +187,7 @@
 - AdminPanelProvider.php
 - oe
 - How to Update the Android App (APK)
+- FerryRoute.php
 
 ## God Nodes (most connected - your core abstractions)
 1. `_update()` - 88 edges
@@ -215,7 +216,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (294 total, 33 thin omitted)
+## Communities (295 total, 32 thin omitted)
 
 ### Community 0 - "HTTP Controllers & Routing (C0)"
 Cohesion: 0.01
@@ -306,8 +307,8 @@ Cohesion: 0.12
 Nodes (19): Ah(), De(), Ea(), ed(), getAllParsedValues(), getMatchingVisibleMetas(), hc(), label() (+11 more)
 
 ### Community 22 - "Core Module 22"
-Cohesion: 0.06
-Nodes (26): DeleteAllUsers, PurgeExpiredProofs, Discount, HasMany, Passenger, BelongsTo, BelongsTo, ScheduleAccommodation (+18 more)
+Cohesion: 0.07
+Nodes (20): Passenger, BelongsTo, BelongsTo, ScheduleAccommodation, BelongsTo, UserLoginHistory, HasMany, VehicleBrand (+12 more)
 
 ### Community 23 - "Core Module 23"
 Cohesion: 0.06
@@ -354,8 +355,8 @@ Cohesion: 0.07
 Nodes (50): xg(), ac(), Ai(), applyStack(), ar(), as(), aspectRatio(), ca() (+42 more)
 
 ### Community 34 - "Data Models & Domain (C34)"
-Cohesion: 0.05
-Nodes (13): FerryRoute, BelongsTo, HasMany, BelongsTo, BelongsToMany, Builder, HasMany, Schedule (+5 more)
+Cohesion: 0.08
+Nodes (8): BelongsTo, BelongsToMany, Builder, HasMany, Schedule, BelongsToMany, TransportClass, TransportClassSeeder
 
 ### Community 35 - "Data Models & Domain (C35)"
 Cohesion: 0.07
@@ -375,15 +376,15 @@ Nodes (31): add(), buildTicks(), C(), Co(), cr(), diff(), Et(), format() (+23 mo
 
 ### Community 39 - "Data Models & Domain (C39)"
 Cohesion: 0.06
-Nodes (16): BookingCancellation, self, BookingConfirmation, BookingCreated, PaymentProofReceived, RebookingRequested, RebookingVerification, Booking (+8 more)
+Nodes (14): Booking, BelongsTo, BelongsToMany, HasMany, Inquiry, BelongsTo, Transaction, AdminNotificationFeed (+6 more)
 
 ### Community 40 - "HTTP Controllers & Routing (C40)"
 Cohesion: 0.09
 Nodes (24): cc(), dl(), Do(), first(), _getLegendItemAt(), _getUniformDataChanges(), _handleEvent(), ic() (+16 more)
 
 ### Community 42 - "Filament Admin & UI (C42)"
-Cohesion: 0.12
-Nodes (9): AccommodationController, DiscountController, PromotionController, Request, TourController, Controller, Accommodation, BelongsToMany (+1 more)
+Cohesion: 0.10
+Nodes (10): AccommodationController, DiscountController, PromotionController, Controller, Accommodation, BelongsToMany, Discount, HasMany (+2 more)
 
 ### Community 43 - "Core Module 43"
 Cohesion: 0.06
@@ -450,8 +451,8 @@ Cohesion: 0.14
 Nodes (30): Qt(), Cn(), da(), En(), fa(), Fi(), fn(), h() (+22 more)
 
 ### Community 60 - "Filament Admin & UI (C60)"
-Cohesion: 0.12
-Nodes (8): ListTours, Form, Table, TourResource, TourController, HasMany, Tour, Attribute
+Cohesion: 0.11
+Nodes (10): ListTours, Form, Table, TourResource, Request, TourController, TourController, HasMany (+2 more)
 
 ### Community 61 - "Data Models & Domain (C61)"
 Cohesion: 0.18
@@ -462,8 +463,8 @@ Cohesion: 0.13
 Nodes (17): canSetCurrentTextAttribute(), didClickAttachment(), dragstart(), findAttachmentForElement(), getAttachmentAndPositionById(), getAttachmentById(), getAttachmentPieces(), getAttachments() (+9 more)
 
 ### Community 63 - "Data Models & Domain (C63)"
-Cohesion: 0.06
-Nodes (21): PaymentProof, UserDashboard, Inquiry, BelongsTo, Transaction, AdminNotificationFeed, Collection, BaseTestCase (+13 more)
+Cohesion: 0.08
+Nodes (11): BaseTestCase, CreatesApplication, RefreshDatabase, BookingLookupCancellationTest, ExampleTest, TestCase, AdminNotificationFeedTest, ExampleTest (+3 more)
 
 ### Community 64 - "Data Models & Domain (C64)"
 Cohesion: 0.13
@@ -562,8 +563,8 @@ Cohesion: 0.14
 Nodes (13): addFaq, addQuickFact, addSocialLink, closePanel, removeFaq({{ $fi }}), removeHeroImage({{ (int)$idx }}), removeQuickFact({{ $fi }}), removeSocialLink({{ $li }}) (+5 more)
 
 ### Community 90 - "Filament Admin & UI (C90)"
-Cohesion: 0.17
-Nodes (5): BookingStatusChart, RecentActivityWidget, TopRoutesWidget, Builder, Widget
+Cohesion: 0.21
+Nodes (4): BookingStatusChart, RecentActivityWidget, TopRoutesWidget, Widget
 
 ### Community 91 - "Core Module 91"
 Cohesion: 0.24
@@ -610,8 +611,8 @@ Cohesion: 0.36
 Nodes (10): HWND, LPARAM, LRESULT, UINT, WPARAM, EnableFullDpiSupportIfAvailable(), GetHandle, GetThisFromHandle (+2 more)
 
 ### Community 103 - "Resource"
-Cohesion: 0.11
-Nodes (9): ScheduleController, AuthController, WebsiteSetting, AppServiceProvider, RedirectResponse, Request, ServiceProvider, User (+1 more)
+Cohesion: 0.07
+Nodes (20): BookingController, Request, VoucherService, ScheduleController, Request, VoucherService, VoucherController, AuthController (+12 more)
 
 ### Community 106 - "Filament Admin & UI (C106)"
 Cohesion: 0.20
@@ -666,8 +667,8 @@ Cohesion: 0.40
 Nodes (4): main, package:flutter_app/main.dart, package:flutter/material.dart, package:flutter_test/flutter_test.dart
 
 ### Community 120 - "Core Module 120"
-Cohesion: 0.18
-Nodes (8): BookingController, Request, VoucherService, Request, VoucherService, VoucherController, Controller, Schedule
+Cohesion: 0.14
+Nodes (10): BookingCancellation, self, BookingConfirmation, BookingCreated, PaymentProofReceived, RebookingRequested, RebookingVerification, Mailable (+2 more)
 
 ### Community 121 - "Core Module 121"
 Cohesion: 0.67
@@ -684,6 +685,10 @@ Nodes (5): For /graphify explain, For /graphify path, graphify reference: query,
 ### Community 222 - "Core Module 222"
 Cohesion: 0.33
 Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
+
+### Community 224 - "Core Module 224"
+Cohesion: 0.19
+Nodes (3): BookingExportController, WebsiteSetting, Response
 
 ### Community 245 - "graphify reference: query, path, explain"
 Cohesion: 0.33
@@ -766,17 +771,21 @@ Cohesion: 0.29
 Nodes (7): chartOptionScopes(), br(), ii(), vr(), xr(), Xs(), yr()
 
 ### Community 291 - "AdminPanelProvider.php"
-Cohesion: 0.47
-Nodes (4): AdminPanelProvider, Panel, Color, PanelProvider
+Cohesion: 0.13
+Nodes (7): DeleteAllUsers, PurgeExpiredProofs, PaymentProof, UserDashboard, Command, Component, WithFileUploads
 
 ### Community 293 - "How to Update the Android App (APK)"
 Cohesion: 0.33
 Nodes (5): How to Update the Android App (APK), Step 1: Bump the Version Number, Step 2: Build the New APK, Step 3: Copy the New APK to the Web Server, What happens automatically next?
 
+### Community 294 - "FerryRoute.php"
+Cohesion: 0.18
+Nodes (4): FerryRoute, BelongsTo, HasMany, FerryRouteSeeder
+
 ## Knowledge Gaps
 - **545 isolated node(s):** `UserSession`, `BookingData`, `prefs`, `isFirstLaunch`, `kGreen` (+540 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **32 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
