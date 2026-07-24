@@ -58,7 +58,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.7+11';
+  static const String appVersion = '1.0.8+12';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -678,112 +678,94 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   int _currentPromoPage = 0;
   bool _promoLoading = true;
 
-  final List<Map<String, dynamic>> _domesticPackages = [
-    {
-      'name': 'Puerto Galera Rainy Promo',
-      'desc': '3D/2N · Ferry + Hotel + Island Tour',
-      'price': '₱4,994',
-      'tag': 'Rainy Promo',
-      'tagColor': Color(0xFF216417),
-      'gradient': [Color(0xFF1565C0), Color(0xFF42A5F5)],
-    },
-    {
-      'name': 'Tagaytay City Tour',
-      'desc': '2D/1N · Hotel + City Tour',
-      'price': '₱5,900',
-      'tag': 'City Escape',
-      'tagColor': Color(0xFF1565C0),
-      'gradient': [Color(0xFF00BCD4), Color(0xFF006064)],
-    },
-  ];
-
-  final List<Map<String, dynamic>> _internationalPackages = [
-    {
-      'name': 'Love to Love Singapore & KL',
-      'desc': '6D/5N · Airfare + Hotel + Tours',
-      'price': '₱39,888',
-      'tag': 'Love to Love',
-      'tagColor': Color(0xFFEE018D),
-      'gradient': [Color(0xFFE91E63), Color(0xFF880E4F)],
-    },
-    {
-      'name': 'Great Singapore',
-      'desc': '5D/4N · Airfare + Hotel + Transfers',
-      'price': '₱32,888',
-      'tag': 'Singapore',
-      'tagColor': Color(0xFF7B1FA2),
-      'gradient': [Color(0xFF7B1FA2), Color(0xFF4A148C)],
-    },
-    {
-      'name': 'Golden Thailand Choose Premium',
-      'desc': '5D/3N · Pattaya + Bangkok + Tours',
-      'price': '₱32,888',
-      'tag': 'Thailand',
-      'tagColor': Color(0xFFC62828),
-      'gradient': [Color(0xFFC62828), Color(0xFF7F0000)],
-    },
-    {
-      'name': 'Memorable Japan - Hokkaido',
-      'desc': '8D/5N · Airfare + Hotel + Private Coach',
-      'price': '₱2,288',
-      'tag': 'Japan',
-      'tagColor': Color(0xFF216417),
-      'gradient': [Color(0xFF00897B), Color(0xFF004D40)],
-    },
-    {
-      'name': 'Heartfelt Korea',
-      'desc': '6D/4N · Airfare + Hotel + Guided Tours',
-      'price': '₱37,888',
-      'tag': 'Korea',
-      'tagColor': Color(0xFF1565C0),
-      'gradient': [Color(0xFF1565C0), Color(0xFF42A5F5)],
-    },
-  ];
-
-  final List<Map<String, dynamic>> _services = [
-    {
-      'title': '2GO Travel Booking',
-      'desc': 'Premier overnight ship accommodation and fast cargo transits with 2GO Travel.',
-      'icon': Icons.directions_boat,
-      'color': Color(0xFFEE018D),
-    },
-    {
-      'title': 'Starlite & Supercat',
-      'desc': 'Affordable regional transits between Batangas, Calapan, and Roxas.',
-      'icon': Icons.sailing,
-      'color': Color(0xFF216417),
-    },
-    {
-      'title': 'Airline Ticketing',
-      'desc': 'Domestic & international flights: AirAsia, Cebu Pacific, and PAL.',
-      'icon': Icons.flight,
-      'color': Color(0xFF1565C0),
-    },
-    {
-      'title': 'Tour Packages',
-      'desc': 'Curated local and international itineraries with accommodations & guides.',
-      'icon': Icons.landscape,
-      'color': Color(0xFF7B1FA2),
-    },
-    {
-      'title': 'Apprenticeships & Training',
-      'desc': 'Hospitality training programs and educational field trips with 2GO.',
-      'icon': Icons.school,
-      'color': Color(0xFFF57C00),
-    },
-    {
-      'title': 'Custom Group Packages',
-      'desc': 'Corporate retreats, family reunions, and large group travel packages.',
-      'icon': Icons.groups,
-      'color': Color(0xFF00897B),
-    },
-  ];
+  List<Map<String, dynamic>> _domesticPackages = [];
+  List<Map<String, dynamic>> _internationalPackages = [];
+  List<Map<String, dynamic>> _services = [];
+  bool _toursLoading = true;
+  bool _servicesLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tourTabController = TabController(length: 2, vsync: this);
     _fetchPromotions();
+    _fetchTours();
+    _fetchServices();
+  }
+
+  void _fetchTours() async {
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.get(Uri.parse('$baseUrl/api/tours'));
+      if (res.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(res.body);
+        final domestic = <Map<String, dynamic>>[];
+        final intl = <Map<String, dynamic>>[];
+        
+        for (var t in data) {
+          final isDomestic = t['country'] != null && t['country'].toString().toLowerCase().contains('philippines');
+          final formatted = {
+            'name': t['tour_name'] ?? t['package_name'] ?? 'Tour',
+            'desc': t['destinations'] ?? '${t['duration'] ?? ''}',
+            'price': t['price_per_pax'] != null ? '₱${t['price_per_pax']}' : 'Contact us',
+            'tag': t['country'] ?? 'Tour',
+            'tagColor': isDomestic ? kGreen : kPink,
+            'gradient': isDomestic ? [kGreen, const Color(0xFF0e2709)] : [kPink, const Color(0xFF880E4F)],
+            'image': t['image'],
+          };
+          if (isDomestic) domestic.add(formatted);
+          else intl.add(formatted);
+        }
+        
+        if (mounted) {
+          setState(() {
+            _domesticPackages = domestic;
+            _internationalPackages = intl;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Fetch tours error: $e');
+    } finally {
+      if (mounted) setState(() => _toursLoading = false);
+    }
+  }
+
+  void _fetchServices() async {
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.get(Uri.parse('$baseUrl/api/services'));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['status'] == 'success' && data['services'] != null) {
+          final List<dynamic> srvs = data['services'];
+          final parsed = srvs.map((s) {
+            IconData icon = Icons.check_circle_outline;
+            Color color = kGreen;
+            final t = (s['title'] ?? '').toString().toLowerCase();
+            if (t.contains('2go')) { icon = Icons.directions_boat; color = kPink; }
+            else if (t.contains('starlite') || t.contains('supercat')) { icon = Icons.sailing; color = kGreen; }
+            else if (t.contains('air')) { icon = Icons.flight; color = const Color(0xFF1565C0); }
+            else if (t.contains('tour')) { icon = Icons.landscape; color = const Color(0xFF7B1FA2); }
+            else if (t.contains('training') || t.contains('school')) { icon = Icons.school; color = const Color(0xFFF57C00); }
+            else if (t.contains('group')) { icon = Icons.groups; color = const Color(0xFF00897B); }
+            
+            return {
+              'title': s['title'] ?? 'Service',
+              'desc': s['description'] ?? '',
+              'icon': icon,
+              'color': color,
+            };
+          }).toList();
+          
+          if (mounted) setState(() => _services = parsed);
+        }
+      }
+    } catch (e) {
+      debugPrint('Fetch services error: $e');
+    } finally {
+      if (mounted) setState(() => _servicesLoading = false);
+    }
   }
 
   @override
@@ -931,7 +913,61 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          // Points and Vouchers
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GraciaPointsScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: kSlate200),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                      ),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.star_rounded, color: kPink, size: 28),
+                          SizedBox(height: 8),
+                          Text('My Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VouchersScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: kSlate200),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                      ),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.local_activity, color: kGreen, size: 28),
+                          SizedBox(height: 8),
+                          Text('Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 24),
 
           // Quick Services
           Padding(
@@ -1024,44 +1060,46 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ],
                 ),
                 const SizedBox(height: 8),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _services.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.3,
-                  ),
-                  itemBuilder: (context, i) {
-                    final s = _services[i];
-                    return Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: kSlate200),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: (s['color'] as Color).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
+                SizedBox(
+                  height: 130,
+                  child: _servicesLoading
+                    ? const Center(child: CircularProgressIndicator(color: kGreen))
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _services.length,
+                        itemBuilder: (context, i) {
+                          final s = _services[i];
+                          return GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ServicesScreen())),
+                            child: Container(
+                              width: 110,
+                              margin: const EdgeInsets.only(right: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: kSlate200),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: (s['color'] as Color).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 20),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(s['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                ],
+                              ),
                             ),
-                            child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 20),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(s['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: kSlate800), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          Text(s['desc'] as String, style: const TextStyle(color: kSlate500, fontSize: 10), maxLines: 2, overflow: TextOverflow.ellipsis),
-                        ],
+                          );
+                        },
                       ),
-                    );
-                  },
                 ),
               ],
             ),
@@ -1086,32 +1124,48 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ],
                 ),
                 const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: kSlate100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TabBar(
-                    controller: _tourTabController,
-                    indicatorColor: kGreen,
-                    labelColor: kGreen,
-                    unselectedLabelColor: kSlate500,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                    tabs: const [Tab(text: 'Domestic'), Tab(text: 'International')],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 200,
-                  child: TabBarView(
-                    controller: _tourTabController,
+                if (_toursLoading)
+                  const SizedBox(height: 150, child: Center(child: CircularProgressIndicator(color: kGreen)))
+                else if (_domesticPackages.isEmpty && _internationalPackages.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                    child: const Center(
+                      child: Text('Coming Soon', style: TextStyle(color: kSlate500, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  )
+                else
+                  Column(
                     children: [
-                      _PackageHorizontalList(packages: _domesticPackages),
-                      _PackageHorizontalList(packages: _internationalPackages),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: kSlate100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: TabBar(
+                          controller: _tourTabController,
+                          indicatorColor: kGreen,
+                          labelColor: kGreen,
+                          unselectedLabelColor: kSlate500,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          tabs: const [Tab(text: 'Domestic'), Tab(text: 'International')],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 200,
+                        child: TabBarView(
+                          controller: _tourTabController,
+                          children: [
+                            _PackageHorizontalList(packages: _domesticPackages),
+                            _PackageHorizontalList(packages: _internationalPackages),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
               ],
             ),
           ),
@@ -5672,16 +5726,19 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
   @override
   Widget build(BuildContext context) {
     if (!UserSession.isLoggedIn) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.star_rounded, size: 80, color: kSlate300),
-            const SizedBox(height: 16),
-            const Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('Sign in to view and use your Gracia Points.', style: TextStyle(color: kSlate500)),
-          ],
+      return Scaffold(
+        appBar: AppBar(title: const Text('Gracia Points')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.star_rounded, size: 80, color: kSlate300),
+              const SizedBox(height: 16),
+              const Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Text('Sign in to view and use your Gracia Points.', style: TextStyle(color: kSlate500)),
+            ],
+          ),
         ),
       );
     }
@@ -5692,9 +5749,13 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
       Future.microtask(() => _fetchPoints());
     }
 
-    return _isLoading
-        ? const Center(child: CircularProgressIndicator(color: kPink))
-        : _error.isNotEmpty
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gracia Points'),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: kPink))
+          : _error.isNotEmpty
               ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
               : RefreshIndicator(
                   onRefresh: _fetchPoints,
@@ -5799,7 +5860,8 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                         }),
                     ],
                   ),
-                );
+                ),
+    );
   }
 }
 

@@ -46,6 +46,17 @@ Route::get('/vouchers', [\App\Http\Controllers\Api\VoucherController::class, 'in
 Route::post('/vouchers/validate', [\App\Http\Controllers\Api\VoucherController::class, 'validateVoucher']);
 Route::get('/accommodations', [AccommodationController::class, 'index']);
 Route::get('/tours', [\App\Http\Controllers\Api\TourController::class, 'index']);
+Route::get('/services', function () {
+    $settings = \App\Models\WebsiteSetting::where('page', 'services')->first();
+    $cards = [];
+    if ($settings && isset($settings->content['travel_service_cards'])) {
+        $cards = $settings->content['travel_service_cards'];
+    }
+    return response()->json([
+        'status' => 'success',
+        'services' => $cards,
+    ]);
+});
 Route::get('/vehicle-rates', [BookingController::class, 'vehicleRates']);
 
 Route::middleware('auth:api')->group(function () {
