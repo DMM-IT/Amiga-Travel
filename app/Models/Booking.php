@@ -59,6 +59,7 @@ class Booking extends Model
         'verified_by_user_id',
         'verified_at',
         'promotional_ticket_id',
+        'promo_ticket_count',
         'voucher_id',
         'voucher_code',
         'voucher_discount_amount',
@@ -67,6 +68,11 @@ class Booking extends Model
         'terms_version',
         'terms_accepted_ip',
         'terms_accepted_user_agent',
+        'service_cancellation_id',
+        'disruption_status',
+        'preferred_replacement_schedule_id',
+        'preferred_replacement_date',
+        'disruption_notes',
     ];
 
     protected $casts = [
@@ -74,6 +80,7 @@ class Booking extends Model
         'return_date' => 'date',
         'rebooking_departure_date' => 'date',
         'rebooking_return_date' => 'date',
+        'preferred_replacement_date' => 'date',
         'schedule_price' => 'decimal:2',
         'schedule_accommodation_price' => 'decimal:2',
         'return_schedule_price' => 'decimal:2',
@@ -87,10 +94,21 @@ class Booking extends Model
         'refund_amount' => 'decimal:2',
         'cancellation_window_expires_at' => 'datetime',
         'is_rebooked' => 'boolean',
+        'promo_ticket_count' => 'integer',
         'voucher_discount_amount' => 'decimal:2',
         'subtotal_before_voucher' => 'decimal:2',
         'terms_accepted_at' => 'datetime',
     ];
+
+    public function serviceCancellation(): BelongsTo
+    {
+        return $this->belongsTo(ServiceCancellation::class);
+    }
+
+    public function preferredReplacementSchedule(): BelongsTo
+    {
+        return $this->belongsTo(Schedule::class, 'preferred_replacement_schedule_id');
+    }
 
     public function passengers(): HasMany
     {

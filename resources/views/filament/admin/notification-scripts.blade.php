@@ -4,35 +4,40 @@ window.adminNotificationBell = function (config) {
 
     return {
         notifications: config.initialNotifications ?? [],
-        totalCount: config.initialTotalCount ?? 0,
-        unreadCount: config.initialUnreadCount ?? 0,
-        selectedIds: [],
-        dropdownOpen: false,
+        totalCount:    config.initialTotalCount ?? 0,
+        unreadCount:   config.initialUnreadCount ?? 0,
+        selectedIds:   [],
+        dropdownOpen:  false,
         actionMenuOpen: false,
-        itemMenuOpen: null,
+        itemMenuOpen:  null,
         confirmingDelete: false,
         deleteTargetIds: [],
-        deleteTitle: '',
+        deleteTitle:   '',
         successMessage: '',
-        bulkMode: false,
-        activeTab: 'all',
+        bulkMode:      false,
+        activeTab:     'all',
+        busy:          false,
+
         formatTimeAgo(dateStr) {
             if (!dateStr) return '';
             const date = new Date(dateStr);
-            const now = new Date();
-            const diffMs = now - date;
-            if (isNaN(diffMs) || diffMs < 0) return 'now';
-            const diffMins = Math.floor(diffMs / 60000);
-            if (diffMins < 1) return 'now';
-            if (diffMins < 60) return `${diffMins}m`;
-            const diffHours = Math.floor(diffMins / 60);
-            if (diffHours < 24) return `${diffHours}h`;
-            const diffDays = Math.floor(diffHours / 24);
-            if (diffDays < 7) return `${diffDays}d`;
-            const diffWeeks = Math.floor(diffDays / 7);
-            return `${diffWeeks}w`;
+            const now  = new Date();
+            const ms   = now - date;
+            if (isNaN(ms) || ms < 0) return 'just now';
+            const mins  = Math.floor(ms / 60000);
+            if (mins < 1)  return 'just now';
+            if (mins === 1) return '1 min ago';
+            if (mins < 60)  return mins + ' min ago';
+            const hrs = Math.floor(mins / 60);
+            if (hrs === 1)  return '1 hour ago';
+            if (hrs < 24)   return hrs + ' hours ago';
+            const days = Math.floor(hrs / 24);
+            if (days === 1) return 'yesterday';
+            if (days < 7)   return days + ' days ago';
+            const weeks = Math.floor(days / 7);
+            if (weeks === 1) return '1 week ago';
+            return weeks + ' weeks ago';
         },
-        busy: false,
 
         init() {
             this.selectedIds = [];
@@ -42,67 +47,62 @@ window.adminNotificationBell = function (config) {
             return this.selectedIds.length;
         },
 
+        get visibleNotifications() {
+            if (this.activeTab === 'unread') {
+                return this.notifications.filter(n => !n.is_read);
+            }
+            return this.notifications;
+        },
+
         get allSelected() {
-            return this.notifications.length > 0
-                && this.selectedCount === this.notifications.length;
+            const vis = this.visibleNotifications;
+            return vis.length > 0 && vis.every(n => this.selectedIds.includes(n.id));
         },
 
         toggleSelectAll() {
-            if (this.allSelected) {
-                this.selectedIds = [];
-                return;
+            const vis = this.visibleNotifications;
+            const allSel = vis.every(n => this.selectedIds.includes(n.id));
+            if (allSel) {
+                const visIds = vis.map(n => n.id);
+                this.selectedIds = this.selectedIds.filter(id => !visIds.includes(id));
+            } else {
+                const newIds = vis.map(n => n.id).filter(id => !this.selectedIds.includes(id));
+                this.selectedIds = [...this.selectedIds, ...newIds];
             }
-
-            this.selectedIds = this.notifications.map((notification) => notification.id);
         },
 
-        toggleSelection(notificationId) {
-            if (this.selectedIds.includes(notificationId)) {
-                this.selectedIds = this.selectedIds.filter((id) => id !== notificationId);
-                return;
+        toggleSelection(id) {
+            if (this.selectedIds.includes(id)) {
+                this.selectedIds = this.selectedIds.filter(i => i !== id);
+            } else {
+                this.selectedIds = [...this.selectedIds, id];
             }
-
-            this.selectedIds = [...this.selectedIds, notificationId];
         },
 
         async fetchDropdown() {
-            if (this.busy) {
-                return;
-            }
-
+            if (this.busy) return;
             this.busy = true;
-
             try {
-                const response = await fetch('/admin/notifications/dropdown', {
-                    headers: {
-                        'Accept': 'application/json',
-                    },
+                const res = await fetch('/admin/notifications/dropdown', {
+                    headers: { 'Accept': 'application/json' },
                     credentials: 'same-origin',
                 });
-
-                if (! response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
+                if (!res.ok) return;
+                const data = await res.json();
                 this.notifications = data.notifications;
-                this.totalCount = data.total;
-                this.unreadCount = data.unread;
-                this.selectedIds = [];
+                this.totalCount    = data.total;
+                this.unreadCount   = data.unread;
+                this.selectedIds   = [];
             } finally {
                 this.busy = false;
             }
         },
 
         async sendAction(url, method, ids) {
-            if (! ids.length) {
-                return;
-            }
-
+            if (!ids.length) return;
             this.busy = true;
-
             try {
-                const response = await fetch(url, {
+                const res = await fetch(url, {
                     method,
                     headers: {
                         'Accept': 'application/json',
@@ -112,235 +112,196 @@ window.adminNotificationBell = function (config) {
                     credentials: 'same-origin',
                     body: JSON.stringify({ ids }),
                 });
-
-                if (! response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
+                if (!res.ok) return;
+                const data = await res.json();
                 await this.fetchDropdown();
-
-                if (data.unread !== undefined) {
-                    this.unreadCount = data.unread;
-                }
-
-                if (data.total !== undefined) {
-                    this.totalCount = data.total;
-                }
-
+                if (data.unread !== undefined) this.unreadCount = data.unread;
+                if (data.total  !== undefined) this.totalCount  = data.total;
                 this.selectedIds = [];
-                this.showSuccess(data.message || 'Action completed successfully.');
+                this.showSuccess(data.message || 'Done.');
             } finally {
                 this.busy = false;
                 this.confirmingDelete = false;
-                this.deleteTargetIds = [];
+                this.deleteTargetIds  = [];
             }
         },
 
-        async markRead(ids = null) {
-            await this.sendAction('/admin/notifications/api/mark-read', 'POST', ids ?? this.selectedIds);
-        },
-
-        async markUnread(ids = null) {
-            await this.sendAction('/admin/notifications/api/mark-unread', 'POST', ids ?? this.selectedIds);
-        },
-
-        async deleteSelected() {
-            if (! this.selectedCount) {
-                return;
-            }
-            this.deleteTitle = `Delete ${this.selectedCount} selected notification${this.selectedCount > 1 ? 's' : ''}?`;
-            this.deleteTargetIds = [...this.selectedIds];
-            this.confirmingDelete = true;
-        },
-
-        async deleteNotification(id) {
-            this.deleteTitle = 'Delete this notification?';
-            this.deleteTargetIds = [id];
-            this.confirmingDelete = true;
-        },
-
-        async confirmDelete() {
-            await this.sendAction('/admin/notifications/api', 'DELETE', this.deleteTargetIds);
-        },
-
-        toggleDropdown() {
-            this.dropdownOpen = !this.dropdownOpen;
-        },
-
-        async openNotification(notification) {
-            window.location.href = notification.url;
-        },
-
-        showSuccess(message) {
-            this.successMessage = message;
-            window.setTimeout(() => {
-                this.successMessage = '';
-            }, 3000);
-        },
-    };
-};
-
-window.adminNotificationsPage = function () {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-
-    return {
-        notifications: [],
-        totalCount: 0,
-        unreadCount: 0,
-        perPage: 10,
-        page: 1,
-        lastPage: 1,
-        search: '',
-        selectedIds: [],
-        actionMenuOpen: false,
-        itemMenuOpen: null,
-        confirmingDelete: false,
-        deleteTargetIds: [],
-        deleteTitle: '',
-        successMessage: '',
-        busy: false,
-
-        init() {
-            this.loadNotifications();
-        },
-
-        get selectedCount() {
-            return this.selectedIds.length;
-        },
-
-        get allSelected() {
-            return this.notifications.length > 0
-                && this.selectedCount === this.notifications.length;
-        },
-
-        toggleSelectAll() {
-            if (this.allSelected) {
-                this.selectedIds = [];
-                return;
-            }
-
-            this.selectedIds = this.notifications.map((notification) => notification.id);
-        },
-
-        toggleSelection(notificationId) {
-            if (this.selectedIds.includes(notificationId)) {
-                this.selectedIds = this.selectedIds.filter((id) => id !== notificationId);
-                return;
-            }
-
-            this.selectedIds = [...this.selectedIds, notificationId];
-        },
-
-        async loadNotifications(page = this.page) {
-            if (this.busy) {
-                return;
-            }
-
-            this.busy = true;
-
-            try {
-                const params = new URLSearchParams();
-                params.set('page', String(page));
-                params.set('per_page', String(this.perPage));
-                params.set('search', this.search);
-
-                const response = await fetch(`/admin/notifications/api/list?${params.toString()}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                    credentials: 'same-origin',
-                });
-
-                if (! response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
-
-                this.notifications = data.notifications;
-                this.totalCount = data.total;
-                this.unreadCount = data.unread;
-                this.perPage = data.per_page;
-                this.page = data.page;
-                this.lastPage = data.last_page;
-                this.selectedIds = [];
-            } finally {
-                this.busy = false;
-            }
-        },
-
-        async sendAction(url, method, ids) {
-            if (! ids.length) {
-                return;
-            }
-
-            this.busy = true;
-
-            try {
-                const response = await fetch(url, {
-                    method,
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({ ids }),
-                });
-
-                if (! response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
-                await this.loadNotifications(1);
-                this.selectedIds = [];
-                if (data.unread !== undefined) {
-                    this.unreadCount = data.unread;
-                }
-                if (data.total !== undefined) {
-                    this.totalCount = data.total;
-                }
-                this.showSuccess(data.message || 'Action completed successfully.');
-            } finally {
-                this.busy = false;
-                this.confirmingDelete = false;
-                this.deleteTargetIds = [];
-            }
-        },
-
-        async markRead(ids = null) {
-            await this.sendAction('/admin/notifications/api/mark-read', 'POST', ids ?? this.selectedIds);
-        },
-
-        async markUnread(ids = null) {
-            await this.sendAction('/admin/notifications/api/mark-unread', 'POST', ids ?? this.selectedIds);
-        },
+        async markRead(ids = null)   { await this.sendAction('/admin/notifications/api/mark-read',   'POST',   ids ?? this.selectedIds); },
+        async markUnread(ids = null) { await this.sendAction('/admin/notifications/api/mark-unread', 'POST',   ids ?? this.selectedIds); },
+        async confirmDelete()        { await this.sendAction('/admin/notifications/api',             'DELETE', this.deleteTargetIds); },
 
         deleteSelected() {
-            if (! this.selectedCount) {
-                return;
-            }
-            this.deleteTitle = `Delete ${this.selectedCount} selected notification${this.selectedCount > 1 ? 's' : ''}?`;
+            if (!this.selectedCount) return;
+            this.deleteTitle    = `Delete ${this.selectedCount} selected notification${this.selectedCount > 1 ? 's' : ''}?`;
             this.deleteTargetIds = [...this.selectedIds];
             this.confirmingDelete = true;
         },
 
         deleteNotification(id) {
-            this.deleteTitle = 'Delete this notification?';
+            this.deleteTitle    = 'Delete this notification?';
             this.deleteTargetIds = [id];
             this.confirmingDelete = true;
         },
 
-        async confirmDelete() {
-            await this.sendAction('/admin/notifications/api', 'DELETE', this.deleteTargetIds);
+        toggleDropdown()            { this.dropdownOpen = !this.dropdownOpen; },
+        openNotification(n)         { window.location.href = n.url; },
+        showSuccess(msg) {
+            this.successMessage = msg;
+            setTimeout(() => { this.successMessage = ''; }, 3000);
+        },
+    };
+};
+
+/* ------------------------------------------------------------------ */
+/* Full notifications page component                                    */
+/* ------------------------------------------------------------------ */
+window.adminNotificationsPage = function () {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    return {
+        notifications:    [],
+        totalCount:       0,
+        unreadCount:      0,
+        perPage:          10,
+        page:             1,
+        lastPage:         1,
+        search:           '',
+        activeTab:        'all',
+        selectedIds:      [],
+        actionMenuOpen:   false,
+        itemMenuOpen:     null,
+        confirmingDelete: false,
+        deleteTargetIds:  [],
+        deleteTitle:      '',
+        successMessage:   '',
+        busy:             false,
+
+        init() { this.loadNotifications(); },
+
+        get selectedCount() { return this.selectedIds.length; },
+
+        get allSelected() {
+            return this.notifications.length > 0
+                && this.selectedCount === this.notifications.length;
+        },
+
+        toggleSelectAll() {
+            if (this.allSelected) { this.selectedIds = []; return; }
+            this.selectedIds = this.notifications.map(n => n.id);
+        },
+
+        toggleSelection(id) {
+            if (this.selectedIds.includes(id)) {
+                this.selectedIds = this.selectedIds.filter(i => i !== id);
+            } else {
+                this.selectedIds = [...this.selectedIds, id];
+            }
+        },
+
+        formatTimeAgo(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now  = new Date();
+            const ms   = now - date;
+            if (isNaN(ms) || ms < 0) return 'just now';
+            const mins  = Math.floor(ms / 60000);
+            if (mins < 1)  return 'just now';
+            if (mins === 1) return '1 min ago';
+            if (mins < 60)  return mins + ' min ago';
+            const hrs = Math.floor(mins / 60);
+            if (hrs === 1)  return '1 hour ago';
+            if (hrs < 24)   return hrs + ' hours ago';
+            const days = Math.floor(hrs / 24);
+            if (days === 1) return 'yesterday';
+            if (days < 7)   return days + ' days ago';
+            const weeks = Math.floor(days / 7);
+            if (weeks === 1) return '1 week ago';
+            return weeks + ' weeks ago';
+        },
+
+        async loadNotifications(page = this.page) {
+            if (this.busy) return;
+            this.busy = true;
+            try {
+                const params = new URLSearchParams();
+                params.set('page',     String(page));
+                params.set('per_page', String(this.perPage));
+                params.set('search',   this.search);
+                if (this.activeTab === 'unread') params.set('unread_only', '1');
+
+                const res = await fetch(`/admin/notifications/api/list?${params}`, {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                this.notifications = data.notifications;
+                this.totalCount    = data.total;
+                this.unreadCount   = data.unread;
+                this.perPage       = data.per_page;
+                this.page          = data.page;
+                this.lastPage      = data.last_page;
+                this.selectedIds   = [];
+            } finally {
+                this.busy = false;
+            }
+        },
+
+        async switchTab(tab) {
+            if (this.activeTab === tab) return;
+            this.activeTab = tab;
+            this.page      = 1;
+            this.selectedIds = [];
+            await this.loadNotifications(1);
+        },
+
+        async sendAction(url, method, ids) {
+            if (!ids.length) return;
+            this.busy = true;
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ ids }),
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                await this.loadNotifications(1);
+                this.selectedIds = [];
+                if (data.unread !== undefined) this.unreadCount = data.unread;
+                if (data.total  !== undefined) this.totalCount  = data.total;
+                this.showSuccess(data.message || 'Done.');
+            } finally {
+                this.busy = false;
+                this.confirmingDelete = false;
+                this.deleteTargetIds  = [];
+            }
+        },
+
+        async markRead(ids = null)   { await this.sendAction('/admin/notifications/api/mark-read',   'POST',   ids ?? this.selectedIds); },
+        async markUnread(ids = null) { await this.sendAction('/admin/notifications/api/mark-unread', 'POST',   ids ?? this.selectedIds); },
+        async confirmDelete()        { await this.sendAction('/admin/notifications/api',             'DELETE', this.deleteTargetIds); },
+
+        deleteSelected() {
+            if (!this.selectedCount) return;
+            this.deleteTitle     = `Delete ${this.selectedCount} selected notification${this.selectedCount > 1 ? 's' : ''}?`;
+            this.deleteTargetIds = [...this.selectedIds];
+            this.confirmingDelete = true;
+        },
+
+        deleteNotification(id) {
+            this.deleteTitle     = 'Delete this notification?';
+            this.deleteTargetIds = [id];
+            this.confirmingDelete = true;
         },
 
         async changePage(page) {
-            if (page < 1 || page > this.lastPage || page === this.page) {
-                return;
-            }
+            if (page < 1 || page > this.lastPage || page === this.page) return;
             this.page = page;
             await this.loadNotifications(page);
         },
@@ -350,15 +311,11 @@ window.adminNotificationsPage = function () {
             await this.loadNotifications(1);
         },
 
-        openNotification(notification) {
-            window.location.href = notification.url;
-        },
+        openNotification(n) { window.location.href = n.url; },
 
-        showSuccess(message) {
-            this.successMessage = message;
-            window.setTimeout(() => {
-                this.successMessage = '';
-            }, 3000);
+        showSuccess(msg) {
+            this.successMessage = msg;
+            setTimeout(() => { this.successMessage = ''; }, 3500);
         },
     };
 };

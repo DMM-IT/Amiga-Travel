@@ -722,27 +722,60 @@
                                             @endif
                                         @endif
 
-                                        {{-- Promo Ticket toggle --}}
+                                        {{-- Promo Ticket section --}}
                                         @php
                                             $activePromo = $this->getActivePromoTicket();
                                         @endphp
+
                                         @if($activePromo)
-                                            <div class="mt-6 border-t border-slate-200 pt-6">
-                                                <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-[#db2777] bg-[#db2777]/5 p-5 shadow-sm">
-                                                    <div>
-                                                        <p class="text-slate-900 font-bold text-lg">Promotional Ticket Available!</p>
-                                                        <p class="mt-1 text-sm text-slate-600">
-                                                            Promo price: <span class="font-bold text-[#db2777]">₱{{ number_format($activePromo->promo_price, 2) }}</span>
-                                                            &nbsp;|&nbsp; Remaining: {{ $activePromo->remaining_quantity }} of {{ $activePromo->quantity_available }}
-                                                        </p>
+                                            @if($mode === 'airline')
+                                                {{-- Airline: per-passenger promo info banner --}}
+                                                @php
+                                                    $slotsSelected = $this->getSelectedPromoPassengerCount();
+                                                    $slotsRemaining = $this->getAvailablePromoSlotsRemaining();
+                                                @endphp
+                                                <div class="mt-6 border-t border-slate-200 pt-6">
+                                                    <div class="rounded-2xl border-2 border-[#db2777] bg-gradient-to-r from-[#db2777]/5 to-[#db2777]/10 p-5 shadow-sm">
+                                                        <div class="flex flex-wrap items-center justify-between gap-4">
+                                                            <div>
+                                                                <p class="font-bold text-lg text-slate-900 flex items-center gap-2">
+                                                                    <span class="text-xl">✨</span> Promotional Fare Available!
+                                                                </p>
+                                                                <p class="mt-1 text-sm text-slate-600">
+                                                                    Promo price: <span class="font-bold text-[#db2777]">₱{{ number_format($activePromo->promo_price, 2) }}</span>
+                                                                    &nbsp;·&nbsp;
+                                                                    <span class="font-semibold">{{ $activePromo->remaining_quantity }}</span> ticket(s) remaining
+                                                                </p>
+                                                                <p class="mt-2 text-xs text-slate-500">Select which passenger(s) below will use this promotional fare.</p>
+                                                            </div>
+                                                            @if($slotsSelected > 0)
+                                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#db2777] px-4 py-1.5 text-sm font-semibold text-white shadow">
+                                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                                    {{ $slotsSelected }} of {{ $activePromo->remaining_quantity + $slotsSelected }} selected
+                                                                </span>
+                                                            @endif
+                                                        </div>
                                                     </div>
-                                                    <label class="relative inline-flex cursor-pointer items-center gap-3">
-                                                        <input type="checkbox" wire:model.live="use_promo_ticket" class="peer sr-only">
-                                                        <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#db2777] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#db2777]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
-                                                        <span class="text-sm font-semibold text-slate-700">{{ $use_promo_ticket ? 'Use Promo Ticket' : 'Regular Ticket' }}</span>
-                                                    </label>
                                                 </div>
-                                            </div>
+                                            @else
+                                                {{-- Ferry / other modes: keep the original booking-level toggle --}}
+                                                <div class="mt-6 border-t border-slate-200 pt-6">
+                                                    <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border-2 border-[#db2777] bg-[#db2777]/5 p-5 shadow-sm">
+                                                        <div>
+                                                            <p class="text-slate-900 font-bold text-lg">Promotional Ticket Available!</p>
+                                                            <p class="mt-1 text-sm text-slate-600">
+                                                                Promo price: <span class="font-bold text-[#db2777]">₱{{ number_format($activePromo->promo_price, 2) }}</span>
+                                                                &nbsp;|&nbsp; Remaining: {{ $activePromo->remaining_quantity }} of {{ $activePromo->quantity_available }}
+                                                            </p>
+                                                        </div>
+                                                        <label class="relative inline-flex cursor-pointer items-center gap-3">
+                                                            <input type="checkbox" wire:model.live="use_promo_ticket" class="peer sr-only">
+                                                            <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#db2777] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#db2777]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+                                                            <span class="text-sm font-semibold text-slate-700">{{ $use_promo_ticket ? 'Use Promo Ticket' : 'Regular Ticket' }}</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         @endif
                                 </div>
 
@@ -1043,15 +1076,65 @@
                                         </div>
                                     </label>
 
-                                    <label class="block min-w-0">
+                                    {{-- Airline per-passenger promo toggle --}}
+                                    @if($mode === 'airline')
+                                        @php
+                                            $passengerActivePromo = $activePromo ?? $this->getActivePromoTicket();
+                                            $passengerHasPromo    = ! empty($passenger['use_promo']);
+                                            $discountClearedByPromo = ! empty($passenger['promo_cleared_discount']);
+                                            $slotsLeft = $this->getAvailablePromoSlotsRemaining();
+                                        @endphp
+                                        @if($passengerActivePromo)
+                                            <div class="col-span-full mt-1">
+                                                @if($passengerHasPromo)
+                                                    {{-- Active promo badge --}}
+                                                    <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#db2777] bg-[#db2777]/5 px-4 py-3">
+                                                        <div class="flex items-center gap-2">
+                                                            <svg class="h-5 w-5 text-[#db2777] shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                            <div>
+                                                                <p class="font-bold text-sm text-[#db2777]">Promotional Fare Applied</p>
+                                                                <p class="text-xs text-slate-600">₱{{ number_format($passengerActivePromo->promo_price, 2) }}/pax · Discounts are not combinable with a promo fare.</p>
+                                                                @if($discountClearedByPromo)
+                                                                    <p class="mt-1 text-xs text-amber-600 font-medium">⚠ Your discount selection was removed because promo fares cannot be combined with other discounts.</p>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <button type="button"
+                                                            wire:click.prevent="togglePassengerPromo({{ $index }})"
+                                                            class="inline-flex items-center gap-1 rounded-lg border border-[#db2777] px-3 py-1.5 text-xs font-semibold text-[#db2777] hover:bg-[#db2777]/10 transition-colors">
+                                                            Remove Promo
+                                                        </button>
+                                                    </div>
+                                                @elseif($slotsLeft > 0)
+                                                    {{-- Available promo button --}}
+                                                    <button type="button"
+                                                        wire:click.prevent="togglePassengerPromo({{ $index }})"
+                                                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#db2777]/40 px-4 py-2.5 text-sm font-semibold text-[#db2777] hover:border-[#db2777] hover:bg-[#db2777]/5 transition-all">
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                                        Use Promo Fare <span class="text-xs font-normal text-slate-500">({{ $slotsLeft }} remaining)</span>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    @endif
+
+                                    {{-- Discount select — hidden when promo is active for this passenger --}}
+                                    @php
+                                        $passengerHasPromoForDiscount = ($mode === 'airline') && ! empty($passenger['use_promo']);
+                                    @endphp
+                                    <label class="block min-w-0 {{ $passengerHasPromoForDiscount ? 'opacity-40 pointer-events-none select-none' : '' }}">
                                         <span class="text-slate-900 font-bold text-sm">Discount</span>
-                                        <select wire:model.number="passengers.{{ $index }}.discount_id" wire:change="$refresh" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all">
-                                            <option value="">No discount</option>
-                                            @foreach($availableDiscounts as $discount)
-                                                <option value="{{ $discount->id }}">{{ $discount->name }} ({{ $discount->percentage }}%)</option>
-                                            @endforeach
-                                        </select>
-                                        @error('passengers.' . $index . '.discount_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                        @if($passengerHasPromoForDiscount)
+                                            <p class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-400">No discount — promo fare applied</p>
+                                        @else
+                                            <select wire:model.number="passengers.{{ $index }}.discount_id" wire:change="$refresh" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all">
+                                                <option value="">No discount</option>
+                                                @foreach($availableDiscounts as $discount)
+                                                    <option value="{{ $discount->id }}">{{ $discount->name }} ({{ $discount->percentage }}%)</option>
+                                                @endforeach
+                                            </select>
+                                            @error('passengers.' . $index . '.discount_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                        @endif
                                     </label>
 
                                     @php
@@ -1231,19 +1314,37 @@
                                             ? collect($selectedSchedule['accommodations'])->firstWhere('id', $selected_schedule_accommodation_id)
                                             : null;
                                         $discountedCount = collect($passengers)->filter(fn ($p) => !empty($p['discount_id']))->count();
+                                        $promoCount = ($mode === 'airline') ? $this->getSelectedPromoPassengerCount() : 0;
                                     @endphp
+                                    @if($promoCount > 0)
+                                        <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Promotional fare:</span> <span class="text-[#db2777] font-semibold">{{ $promoCount }} passenger(s)</span></p>
+                                    @endif
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Discounted travelers:</span> {{ $discountedCount }} of {{ count($passengers) }}</p>
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Accommodation selected:</span> {{ $selectedAccommodation ? $selectedAccommodation['name'] : 'None' }}</p>
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Estimated total:</span> <span class="font-extrabold text-[#db2777]">₱{{ number_format($this->calculateTotalPrice(), 2) }}</span></p>
                                 </div>
+
                             </div>
 
                             <div class="mt-6 space-y-3">
+                                @php
+                                    $summaryPromoTicket = ($mode === 'airline') ? $this->getActivePromoTicket() : null;
+                                @endphp
                                 @forelse($passengers as $passenger)
+                                    @php
+                                        $summaryIsPromo = $summaryPromoTicket && ! empty($passenger['use_promo']);
+                                    @endphp
                                     <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm transition-shadow hover:shadow-md">
                                         <div class="flex items-center justify-between">
                                             <span class="text-slate-900 font-bold text-sm">{{ ucfirst($passenger['type']) }}{{ $passenger['name'] ? ' — ' . $passenger['name'] : '' }}</span>
-                                            <span class="text-slate-500 text-xs font-semibold px-2 py-1 bg-slate-100 rounded-full">{{ optional($discounts->firstWhere('id', $passenger['discount_id']))->name ?? 'No discount' }}</span>
+                                            @if($summaryIsPromo)
+                                                <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 bg-[#db2777]/10 text-[#db2777] rounded-full">
+                                                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                    Promotional Fare — ₱{{ number_format($summaryPromoTicket->promo_price, 2) }}
+                                                </span>
+                                            @else
+                                                <span class="text-slate-500 text-xs font-semibold px-2 py-1 bg-slate-100 rounded-full">{{ optional($discounts->firstWhere('id', $passenger['discount_id']))->name ?? 'No discount' }}</span>
+                                            @endif
                                         </div>
                                         @if (isset($passenger['seat_number']) || isset($passenger['seat_section']))
                                             <div class="mt-3 text-sm text-slate-600 font-medium">
@@ -1258,6 +1359,7 @@
                                     <p class="text-slate-500 italic">No passengers added yet.</p>
                                 @endforelse
                             </div>
+
 
                             <div class="mt-6 space-y-3">
                                 @if ($mode === 'ferry' && $has_vehicle)

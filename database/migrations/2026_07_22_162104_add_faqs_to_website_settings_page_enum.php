@@ -10,7 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE website_settings MODIFY COLUMN `page` ENUM('header','footer','home','about','gallery','services','tour_package','schedules','contact_us','download','faqs') DEFAULT 'home'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE website_settings MODIFY COLUMN `page` ENUM('header','footer','home','about','gallery','services','tour_package','schedules','contact_us','download','faqs') DEFAULT 'home'");
+        }
     }
 
     /**
@@ -18,6 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE website_settings MODIFY COLUMN `page` ENUM('header','footer','home','about','gallery','services','tour_package','schedules','contact_us','download') DEFAULT 'home'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE website_settings MODIFY COLUMN `page` ENUM('header','footer','home','about','gallery','services','tour_package','schedules','contact_us','download') DEFAULT 'home'");
+        }
     }
 };

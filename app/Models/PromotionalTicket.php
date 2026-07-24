@@ -33,6 +33,11 @@ class PromotionalTicket extends Model
         return $this->belongsTo(Schedule::class);
     }
 
+    public function promoPassengers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Passenger::class, 'promotional_ticket_id');
+    }
+
     public function scopeActiveAndAvailable(Builder $query): Builder
     {
         $now = Carbon::now();
