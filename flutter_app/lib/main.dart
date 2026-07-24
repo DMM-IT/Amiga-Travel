@@ -1253,42 +1253,46 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   height: 130,
                   child: _servicesLoading
                     ? const Center(child: CircularProgressIndicator(color: kGreen))
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _services.length,
-                        itemBuilder: (context, i) {
-                          final s = _services[i];
-                          return GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ServicesScreen())),
-                            child: Container(
-                              width: 110,
-                              margin: const EdgeInsets.only(right: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: kSlate200),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: (s['color'] as Color).withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 20),
+                    : _services.isEmpty
+                        ? const Center(
+                            child: Text('No services configured yet.', style: TextStyle(color: kSlate400, fontSize: 13)),
+                          )
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _services.length,
+                            itemBuilder: (context, i) {
+                              final s = _services[i];
+                              return GestureDetector(
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ServicesScreen())),
+                                child: Container(
+                                  width: 110,
+                                  margin: const EdgeInsets.only(right: 12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: kSlate200),
+                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(s['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: (s['color'] as Color).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 20),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(s['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                 ),
               ],
             ),
@@ -3640,51 +3644,63 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                              // Operator Badge
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                                decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    if (getOperatorLogoUrl(s['operator'] ?? '').isNotEmpty) ...[
-                                                      Image.network(getOperatorLogoUrl(s['operator'] ?? ''), height: 12, width: 24, fit: BoxFit.contain,
-                                                        errorBuilder: (ctx, err, stack) => const SizedBox(),
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                    ] else ...[
-                                                      Icon(
-                                                        widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight_takeoff,
-                                                        color: kGreen,
-                                                        size: 13,
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                    ],
-                                                    Text(
-                                                      s['operator'] ?? 'Operator',
-                                                      style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12),
-                                                    ),
+                                              // Price display
+                                              Row(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: [
+                                                  Text('₱${s['price']}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kPink)),
+                                                  if (s['gracia_points'] != null && s['gracia_points'] > 0) ...[
+                                                    const SizedBox(width: 8),
+                                                    const Icon(Icons.star_rounded, color: kPink, size: 14),
+                                                    const SizedBox(width: 4),
+                                                    Text('+${s['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
                                                   ],
-                                                ),
-                                              ),
-                                            Row(
-                                              crossAxisAlignment: CrossAxisAlignment.end,
-                                              children: [
-                                                Text('₱${s['price']}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kPink)),
-                                                if (s['gracia_points'] != null && s['gracia_points'] > 0) ...[
-                                                  const SizedBox(width: 8),
-                                                  const Icon(Icons.star_rounded, color: kPink, size: 14),
-                                                  const SizedBox(width: 4),
-                                                  Text('+${s['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
                                                 ],
-                                              ],
+                                              ),
+                                            // Operator badge
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                              decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                              child: Text(
+                                                s['operator'] ?? 'Operator',
+                                                style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                                              ),
                                             ),
                                           ],
                                         ),
                                         const SizedBox(height: 12),
-                                        // Vehicle name and service name
+                                        // Vehicle / Operator logo + ship name row
                                         Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
+                                            if (getOperatorLogoUrl(s['operator'] ?? '').isNotEmpty) ...[
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Image.network(
+                                                  getOperatorLogoUrl(s['operator'] ?? ''),
+                                                  height: 44,
+                                                  width: 72,
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (ctx, err, stack) => Icon(
+                                                    widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight_takeoff,
+                                                    color: kGreen,
+                                                    size: 40,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                            ] else ...[
+                                              Container(
+                                                padding: const EdgeInsets.all(8),
+                                                decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                                child: Icon(
+                                                  widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight_takeoff,
+                                                  color: kGreen,
+                                                  size: 28,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                            ],
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
@@ -4287,6 +4303,7 @@ class _StayScreenState extends State<StayScreen> {
       final accData = jsonDecode(res.body);
       if (res.statusCode == 200 && accData['status'] == 'success') {
         _accommodations = List<Map<String, dynamic>>.from(accData['accommodations']);
+        widget.booking.availableAccommodations = _accommodations;
       }
     } catch (_) {}
     finally {
@@ -4362,7 +4379,28 @@ class _StayScreenState extends State<StayScreen> {
                                           if (a['description'] != null)
                                             Text(a['description'] as String, style: const TextStyle(color: kSlate500, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
                                           const SizedBox(height: 4),
-                                          Text('₱${a['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14)),
+                                          Row(
+                                            children: [
+                                              Text('₱${a['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14)),
+                                              Builder(builder: (ctx) {
+                                                final p = double.tryParse(a['price'].toString()) ?? 0;
+                                                final pts = UserSession.calculateEarnedPoints(p);
+                                                if (pts > 0) {
+                                                  return Padding(
+                                                    padding: const EdgeInsets.only(left: 8.0),
+                                                    child: Row(
+                                                      children: [
+                                                        const Icon(Icons.star_rounded, color: kPink, size: 14),
+                                                        const SizedBox(width: 4),
+                                                        Text('+$pts pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }
+                                                return const SizedBox();
+                                              }),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -4870,6 +4908,37 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  Builder(builder: (ctx) {
+                    final pts = UserSession.calculateEarnedPoints(widget.booking.totalPrice);
+                    if (pts > 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: kPink.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: kPink.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.star_rounded, color: kPink, size: 20),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  'You will earn $pts Gracia Points for this booking!',
+                                  style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox();
+                  }),
 
                   SizedBox(
                     width: double.infinity,
@@ -5915,6 +5984,13 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
           _activeRule = data['active_rule'];
           _history = data['history'] ?? [];
           _isLoading = false;
+
+          UserSession.graciaPoints = _currentPoints;
+          if (_activeRule != null) {
+            UserSession.pointsAwarded = _activeRule!['points_awarded'] ?? 0;
+            UserSession.spendThreshold = _activeRule!['spend_threshold_centavos'] ?? 0;
+          }
+          UserSession.save();
         });
       } else {
         setState(() {
@@ -6273,10 +6349,26 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                             ),
                             child: Row(
                               children: [
-                                CircleAvatar(
-                                  backgroundColor: isFerry ? Colors.blue.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
-                                  child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
-                                ),
+                                // Large operator logo
+                                if (getOperatorLogoUrl(route['operator'] ?? '').isNotEmpty)
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      getOperatorLogoUrl(route['operator'] ?? ''),
+                                      height: 52,
+                                      width: 84,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (ctx, err, stack) => CircleAvatar(
+                                        backgroundColor: isFerry ? Colors.blue.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+                                        child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  CircleAvatar(
+                                    backgroundColor: isFerry ? Colors.blue.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+                                    child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
+                                  ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
@@ -6293,17 +6385,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          if (getOperatorLogoUrl(route['operator'] ?? '').isNotEmpty) ...[
-                                            Image.network(getOperatorLogoUrl(route['operator'] ?? ''), height: 16, width: 32, fit: BoxFit.contain,
-                                              errorBuilder: (ctx, err, stack) => const SizedBox(),
-                                            ),
-                                            const SizedBox(width: 6),
-                                          ],
-                                          Text(route['vehicle']?['full_name'] ?? route['operator'] ?? 'Amiga Gracia', style: const TextStyle(fontSize: 12, color: kSlate500)),
-                                        ],
-                                      ),
+                                      Text(route['vehicle']?['full_name'] ?? route['operator'] ?? 'Amiga Gracia', style: const TextStyle(fontSize: 12, color: kSlate500)),
                                     ],
                                   ),
                                 ),
@@ -6429,14 +6511,21 @@ class _VouchersScreenState extends State<VouchersScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchVouchers();
+    if (UserSession.isLoggedIn) {
+      _fetchVouchers();
+    } else {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _fetchVouchers() async {
     try {
       final res = await http.get(
         Uri.parse('${UserSession.getBaseUrl()}/api/vouchers'),
-        headers: {'Accept': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+        },
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
@@ -6466,69 +6555,107 @@ class _VouchersScreenState extends State<VouchersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator(color: kPink));
-    if (_error.isNotEmpty) return Center(child: Text(_error, style: const TextStyle(color: Colors.red)));
-
-    return RefreshIndicator(
-      onRefresh: _fetchVouchers,
-      color: kPink,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text('Available Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
-          const SizedBox(height: 12),
-          if (_vouchers.isEmpty)
-            const Center(
+    return Scaffold(
+      backgroundColor: kBgLight,
+      appBar: AppBar(
+        title: const Text('Vouchers'),
+        backgroundColor: kGreen,
+        foregroundColor: Colors.white,
+      ),
+      body: !UserSession.isLoggedIn
+          ? Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 48),
+                padding: const EdgeInsets.all(32),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.local_activity, size: 64, color: kSlate200),
-                    SizedBox(height: 16),
-                    Text('No vouchers available', style: TextStyle(color: kSlate400, fontSize: 16)),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: kPink.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.local_activity, size: 56, color: kPink),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('Login Required', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                    const SizedBox(height: 8),
+                    const Text('Please log in to view your available vouchers.', style: TextStyle(color: kSlate500, fontSize: 14), textAlign: TextAlign.center),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                      child: const Text('Go Back'),
+                    ),
                   ],
                 ),
               ),
             )
-          else
-            ..._vouchers.map((v) {
-              return Card(
-                color: Colors.white,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 3,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: kPink.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.local_activity, color: kPink, size: 28),
+          : _isLoading
+              ? const Center(child: CircularProgressIndicator(color: kPink))
+              : _error.isNotEmpty
+                  ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
+                  : RefreshIndicator(
+                      onRefresh: _fetchVouchers,
+                      color: kPink,
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          const Text('Available Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                          const SizedBox(height: 12),
+                          if (_vouchers.isEmpty)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 48),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.local_activity, size: 64, color: kSlate200),
+                                    SizedBox(height: 16),
+                                    Text('No vouchers available', style: TextStyle(color: kSlate400, fontSize: 16)),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            ..._vouchers.map((v) {
+                              return Card(
+                                color: Colors.white,
+                                margin: const EdgeInsets.only(bottom: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: kPink.withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.local_activity, color: kPink, size: 28),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(v['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kGreen)),
+                                            const SizedBox(height: 4),
+                                            Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                            const SizedBox(height: 4),
+                                            Text(v['description'] ?? '', style: const TextStyle(color: kSlate500, fontSize: 12)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(v['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kGreen)),
-                            const SizedBox(height: 4),
-                            Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            const SizedBox(height: 4),
-                            Text(v['description'] ?? '', style: const TextStyle(color: kSlate500, fontSize: 12)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-        ],
-      ),
+                    ),
     );
   }
 }

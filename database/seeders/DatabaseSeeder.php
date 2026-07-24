@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder
             VehicleSeeder::class,
             FerryRouteSeeder::class,
             WebsiteSettingSeeder::class,
+            GraciaEarningRuleSeeder::class,
         ]);
     }
 }

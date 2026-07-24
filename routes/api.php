@@ -49,8 +49,17 @@ Route::get('/tours', [\App\Http\Controllers\Api\TourController::class, 'index'])
 Route::get('/services', function () {
     $settings = \App\Models\WebsiteSetting::where('page', 'services')->first();
     $cards = [];
-    if ($settings && isset($settings->content['travel_service_cards'])) {
-        $cards = $settings->content['travel_service_cards'];
+    if ($settings && !empty($settings->content['travel_service_cards'])) {
+        $cards = array_values($settings->content['travel_service_cards']);
+    }
+    // Fallback to hardcoded defaults if nothing is configured
+    if (empty($cards)) {
+        $cards = [
+            ['title' => '2GO Travel Booking', 'description' => 'Book premier overnight ship accommodation with 2GO Travel.'],
+            ['title' => 'Starlite Ferries Inc.', 'description' => 'Affordable regional transits between Batangas and Calapan.'],
+            ['title' => 'Airline Ticketing', 'description' => 'Domestic and international flights via AirAsia, Cebu Pacific, and PAL.'],
+            ['title' => 'Tour Packages', 'description' => 'Curated itineraries for local and international destinations.'],
+        ];
     }
     return response()->json([
         'status' => 'success',
