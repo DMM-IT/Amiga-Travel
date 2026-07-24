@@ -30,7 +30,7 @@ class VoucherController extends Controller
     {
         $request->validate([
             'voucher_code' => 'required|string|max:50',
-            'schedule_id' => 'required|integer|exists:schedules,id',
+            'schedule_id' => 'nullable|integer',
             'origin' => 'required|string',
             'destination' => 'required|string',
             'trip_type' => 'required|string|in:one_way,round_trip',

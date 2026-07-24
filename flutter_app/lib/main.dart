@@ -58,7 +58,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.9+13';
+  static const String appVersion = '1.0.10+14';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -167,6 +167,10 @@ class BookingData {
   String clientName = '';
   String clientEmail = '';
 
+  // Voucher
+  String? voucherCode;
+  Map<String, dynamic>? voucherData; // {name, discount_type, discount_value, eligible_scope, discount_amount, final_total}
+
   // Pricing
   double totalPrice = 0;
   
@@ -199,6 +203,8 @@ class BookingData {
       'availableAccommodations': availableAccommodations,
       'clientName': clientName,
       'clientEmail': clientEmail,
+      'voucherCode': voucherCode,
+      'voucherData': voucherData,
       'totalPrice': totalPrice,
       'savedStep': savedStep,
     };
@@ -241,6 +247,8 @@ class BookingData {
     
     b.clientName = json['clientName'] ?? '';
     b.clientEmail = json['clientEmail'] ?? '';
+    b.voucherCode = json['voucherCode'];
+    b.voucherData = json['voucherData'] != null ? Map<String, dynamic>.from(json['voucherData']) : null;
     b.totalPrice = (json['totalPrice'] ?? 0.0).toDouble();
     b.savedStep = json['savedStep'] ?? 0;
     
@@ -4543,6 +4551,9 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             'vehicle_plate_number': widget.booking.vehiclePlateNumber,
             'vehicle_price': widget.booking.vehiclePrice,
           },
+          'selected_transport_class_id': widget.booking.selectedTransportClassId,
+          'selected_schedule_accommodation_id': widget.booking.selectedScheduleAccommodationId,
+          if (widget.booking.voucherCode != null) 'voucher_code': widget.booking.voucherCode,
         }),
       );
       final data = jsonDecode(res.body);
@@ -4848,6 +4859,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       pax[i]['name'] as String? ?? '',
                     )),
                   ]),
+                  const SizedBox(height: 8),
+                  _VoucherSection(booking: widget.booking, scopeFilter: 'ticket_fare', onVoucherChanged: () => setState(() {})),
                   const SizedBox(height: 16),
 
                   // Add-ons
@@ -4863,6 +4876,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                         return _SummaryRow(acc['name'] as String, valStr);
                       }),
                     ]),
+                    const SizedBox(height: 8),
+                    _VoucherSection(booking: widget.booking, scopeFilter: 'accommodation', onVoucherChanged: () => setState(() {})),
                     const SizedBox(height: 16),
                   ],
 
@@ -4877,6 +4892,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                          return pts > 0 ? '₱${p.toStringAsFixed(2)}  (+${pts}pts)' : '₱${p.toStringAsFixed(2)}';
                       }()),
                     ]),
+                    const SizedBox(height: 8),
+                    _VoucherSection(booking: widget.booking, scopeFilter: 'vehicle', onVoucherChanged: () => setState(() {})),
                     const SizedBox(height: 16),
                   ],
 
@@ -4907,37 +4924,77 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  
+                  const Text('Total Booking Voucher (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                  const SizedBox(height: 8),
+                  _VoucherSection(booking: widget.booking, scopeFilter: null, onVoucherChanged: () => setState(() {})),
                   const SizedBox(height: 24),
 
                   Builder(builder: (ctx) {
-                    final pts = UserSession.calculateEarnedPoints(widget.booking.totalPrice);
-                    if (pts > 0) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: kPink.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: kPink.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.star_rounded, color: kPink, size: 20),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  'You will earn $pts Gracia Points for this booking!',
-                                  style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
+                    final subtotal = widget.booking.totalPrice;
+                    final discount = widget.booking.voucherData != null ? (widget.booking.voucherData!['discount_amount'] as num).toDouble() : 0.0;
+                    final finalTotal = (subtotal - discount).clamp(0.0, double.infinity);
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _SummarySection(title: 'Payment Summary', children: [
+                          _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
+                          if (discount > 0) ...[
+                            _SummaryRow('Voucher Discount', '- ₱${discount.toStringAsFixed(2)}'),
+                            const Divider(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                                Text('₱${finalTotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, color: kPink, fontSize: 18)),
+                              ],
+                            ),
+                          ] else ...[
+                            const Divider(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                                Text('₱${subtotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, color: kPink, fontSize: 18)),
+                              ],
+                            ),
+                          ],
+                        ]),
+                        const SizedBox(height: 16),
+                        Builder(builder: (ctx) {
+                          final pts = UserSession.calculateEarnedPoints(finalTotal);
+                          if (pts > 0) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: kPink.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: kPink.withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.star_rounded, color: kPink, size: 20),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'You will earn $pts Gracia Points for this booking!',
+                                        style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                    return const SizedBox();
+                            );
+                          }
+                          return const SizedBox();
+                        }),
+                      ],
+                    );
                   }),
 
                   SizedBox(
@@ -5078,6 +5135,476 @@ class BookingSuccessScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// VOUCHER SECTION WIDGET (for booking flow)
+// ==========================================
+class _VoucherSection extends StatelessWidget {
+  final BookingData booking;
+  final String? scopeFilter;
+  final VoidCallback onVoucherChanged;
+
+  const _VoucherSection({
+    required this.booking,
+    this.scopeFilter,
+    required this.onVoucherChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final vCode = booking.voucherCode;
+    final vData = booking.voucherData;
+
+    // Determine if the current voucher matches the scope of this section
+    // If the scope filter is specific (e.g., 'vehicle'), only show the applied voucher if it's a vehicle voucher.
+    // If scopeFilter is null (Submit screen), show the applied voucher regardless of scope.
+    final bool isApplicableHere = vData == null || scopeFilter == null || vData['eligible_scope'] == scopeFilter;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: kSlate200),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Platform Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                  Text(
+                    scopeFilter == 'vehicle' ? 'Use vehicle vouchers here' :
+                    scopeFilter == 'ticket_fare' ? 'Use ticket fare vouchers here' :
+                    scopeFilter == 'accommodation' ? 'Use accommodation vouchers here' :
+                    'Use any applicable voucher',
+                    style: const TextStyle(color: kSlate500, fontSize: 12),
+                  ),
+                ],
+              ),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => VoucherPickerScreen(booking: booking, scopeFilter: scopeFilter),
+                    ),
+                  );
+                  if (result != null || booking.voucherCode == null) {
+                    onVoucherChanged();
+                  }
+                },
+                icon: const Icon(Icons.local_activity, size: 16, color: kPink),
+                label: Text(
+                  (vCode != null && isApplicableHere) ? 'Change' : 'Select',
+                  style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: kPink, width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+          if (vCode != null) ...[
+            if (isApplicableHere) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: kPink.withOpacity(0.05),
+                  border: Border.all(color: kPink.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: kPink, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(vData!['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                          const SizedBox(height: 2),
+                          Text('Code: $vCode', style: const TextStyle(color: kPink, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '- ₱${(vData['discount_amount'] as num).toStringAsFixed(2)}',
+                      style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 12),
+              Text(
+                'A voucher for a different section (${vData!['eligible_scope']}) is currently applied. Remove it first if you want to use a ${scopeFilter} voucher.',
+                style: const TextStyle(color: Colors.amber, fontSize: 12),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ==========================================
+// VOUCHER PICKER SCREEN (booking context)
+// ==========================================
+class VoucherPickerScreen extends StatefulWidget {
+  final BookingData booking;
+  final String? scopeFilter; // null = all scopes, 'ticket_fare', 'vehicle', 'accommodation', 'booking_total'
+  const VoucherPickerScreen({super.key, required this.booking, this.scopeFilter});
+
+  @override
+  State<VoucherPickerScreen> createState() => _VoucherPickerScreenState();
+}
+
+class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
+  List<dynamic> _vouchers = [];
+  bool _isLoading = true;
+  bool _isValidating = false;
+  final TextEditingController _codeCtrl = TextEditingController();
+  String? _errorMsg;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVouchers();
+    _codeCtrl.text = widget.booking.voucherCode ?? '';
+  }
+
+  @override
+  void dispose() {
+    _codeCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchVouchers() async {
+    try {
+      final res = await http.get(
+        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers'),
+        headers: {
+          'Accept': 'application/json',
+          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+        },
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        var vouchers = data['vouchers'] as List<dynamic>? ?? [];
+        if (widget.scopeFilter != null) {
+          vouchers = vouchers.where((v) => v['eligible_scope'] == widget.scopeFilter).toList();
+        }
+        if (mounted) setState(() { _vouchers = vouchers; _isLoading = false; });
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _applyCode(String code) async {
+    if (code.trim().isEmpty) return;
+    setState(() { _isValidating = true; _errorMsg = null; });
+    try {
+      final booking = widget.booking;
+      final body = {
+        'voucher_code': code.trim().toUpperCase(),
+        'schedule_id': booking.selectedSchedule?['id'] ?? 0,
+        'origin': booking.origin,
+        'destination': booking.destination,
+        'trip_type': booking.tripType,
+        'client_email': booking.clientEmail.isNotEmpty ? booking.clientEmail : UserSession.email,
+        'passengers': booking.passengers.isNotEmpty
+            ? booking.passengers.map((p) => {'type': p['type'], 'discount_id': p['discount_id']}).toList()
+            : [{'type': 'adult', 'discount_id': null}],
+        'accommodation_ids': booking.selectedAccommodationIds,
+        'has_vehicle': booking.hasVehicle,
+        if (booking.hasVehicle) 'vehicle_price': booking.vehiclePrice,
+      };
+      final res = await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/validate'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+        },
+        body: jsonEncode(body),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        final d = data['data'];
+        widget.booking.voucherCode = code.trim().toUpperCase();
+        widget.booking.voucherData = {
+          'name': d['voucher_name'],
+          'discount_type': d['discount_type'],
+          'discount_value': d['discount_value'],
+          'eligible_scope': d['eligible_scope'],
+          'discount_amount': d['discount_amount'],
+          'final_total': d['final_total'],
+          'original_subtotal': d['original_subtotal'],
+        };
+        if (mounted) Navigator.pop(context, widget.booking.voucherData);
+      } else {
+        setState(() => _errorMsg = data['message'] ?? 'Invalid voucher code.');
+      }
+    } catch (e) {
+      setState(() => _errorMsg = 'Error: $e');
+    } finally {
+      if (mounted) setState(() => _isValidating = false);
+    }
+  }
+
+  String _scopeTitle(String? scope) {
+    switch (scope) {
+      case 'ticket_fare': return 'Ticket Fare Only';
+      case 'vehicle': return 'Vehicle Only';
+      case 'accommodation': return 'Accommodation Only';
+      case 'booking_total': return 'Booking Total';
+      default: return 'Any Booking';
+    }
+  }
+
+  IconData _scopeIcon(String? scope) {
+    switch (scope) {
+      case 'ticket_fare': return Icons.airplane_ticket;
+      case 'vehicle': return Icons.directions_car;
+      case 'accommodation': return Icons.hotel;
+      case 'booking_total': return Icons.receipt_long;
+      default: return Icons.local_activity;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentCode = widget.booking.voucherCode;
+    return Scaffold(
+      backgroundColor: kBgLight,
+      appBar: AppBar(
+        title: Text(widget.scopeFilter != null ? '${_scopeTitle(widget.scopeFilter)} Voucher' : 'Select Voucher'),
+        backgroundColor: kGreen,
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          // Input code bar
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _codeCtrl,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          hintText: 'Enter voucher / promo code',
+                          prefixIcon: const Icon(Icons.confirmation_num_outlined, color: kPink),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: _isValidating ? null : () => _applyCode(_codeCtrl.text),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPink,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: _isValidating
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('Apply', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                if (_errorMsg != null) ...[ const SizedBox(height: 8), Text(_errorMsg!, style: const TextStyle(color: Colors.red, fontSize: 13)) ],
+                if (currentCode != null && widget.booking.voucherData != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: kGreen.withOpacity(0.3))),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: kGreen, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Applied: $currentCode — Saves ₱${(widget.booking.voucherData!['discount_amount'] as num).toStringAsFixed(2)}',
+                            style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            widget.booking.voucherCode = null;
+                            widget.booking.voucherData = null;
+                            _codeCtrl.clear();
+                            setState(() {});
+                          },
+                          child: const Icon(Icons.close, color: kSlate500, size: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          // Voucher list
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: kPink))
+                : _vouchers.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.local_activity, size: 60, color: kSlate200),
+                            SizedBox(height: 12),
+                            Text('No applicable vouchers available', style: TextStyle(color: kSlate400, fontSize: 15)),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _vouchers.length,
+                        itemBuilder: (context, i) {
+                          final v = _vouchers[i];
+                          final scope = v['eligible_scope'] as String?;
+                          final isSelected = widget.booking.voucherCode == v['code'];
+                          return GestureDetector(
+                            onTap: () => _applyCode(v['code'] as String),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))],
+                              ),
+                              height: 100,
+                              child: Row(
+                                children: [
+                                  // Left badge
+                                  Container(
+                                    width: 90,
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? kPink : kGreen,
+                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(_scopeIcon(scope), color: Colors.white, size: 28),
+                                        const SizedBox(height: 6),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          child: Text(
+                                            _scopeTitle(scope),
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Right details
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            v['discount_type'] == 'percentage'
+                                                ? '${v['discount_value']}% off${v['max_discount'] != null ? " (max ₱${v['max_discount']})" : ""}'
+                                                : '₱${v['discount_value']} off',
+                                            style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12),
+                                          ),
+                                          if (v['min_booking_amount'] != null) Text('Min. Spend ₱${v['min_booking_amount']}', style: const TextStyle(color: kSlate500, fontSize: 11)),
+                                          const Spacer(),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.access_time, size: 11, color: kSlate400),
+                                              const SizedBox(width: 4),
+                                              Text(v['end_at'] != null ? 'Valid till: ${v['end_at'].toString().substring(0, 10)}' : 'No expiry', style: const TextStyle(color: kSlate500, fontSize: 11)),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  // Select indicator
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 12),
+                                    child: isSelected
+                                        ? const Icon(Icons.check_circle, color: kGreen, size: 24)
+                                        : OutlinedButton(
+                                            onPressed: () => _applyCode(v['code'] as String),
+                                            style: OutlinedButton.styleFrom(
+                                              side: const BorderSide(color: kPink),
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              minimumSize: Size.zero,
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                            ),
+                                            child: const Text('Use', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+          // Remove voucher button at bottom
+          if (currentCode != null)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () {
+                    widget.booking.voucherCode = null;
+                    widget.booking.voucherData = null;
+                    Navigator.pop(context, null);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('Remove Voucher', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
