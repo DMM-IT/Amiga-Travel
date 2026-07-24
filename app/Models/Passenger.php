@@ -17,6 +17,14 @@ class Passenger extends Model
         'seat_number',
         'seat_row',
         'seat_section',
+        'promotional_ticket_id',
+        'is_promo',
+        'promo_price',
+    ];
+
+    protected $casts = [
+        'is_promo'   => 'boolean',
+        'promo_price' => 'decimal:2',
     ];
 
     public function booking(): BelongsTo
@@ -27,5 +35,10 @@ class Passenger extends Model
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
+    }
+
+    public function promotionalTicket(): BelongsTo
+    {
+        return $this->belongsTo(PromotionalTicket::class);
     }
 }

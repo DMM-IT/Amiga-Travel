@@ -500,8 +500,8 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/AdminNotificationController.php": {
-    "mtime": 1784900134.975246,
-    "ast_hash": "8a82fd6799f5d22cc7e214116891c19d",
+    "mtime": 1784911093.9851172,
+    "ast_hash": "538c3907ac0652e2c954a3dff43aecf2",
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/AccommodationController.php": {
@@ -645,8 +645,8 @@
     "semantic_hash": ""
   },
   "app/Models/Booking.php": {
-    "mtime": 1784908386.2745357,
-    "ast_hash": "ed68c77a60b2fb2a3cac8168f854e6ed",
+    "mtime": 1784911529.6138937,
+    "ast_hash": "242feb44260da0c3e99a3810419c04c9",
     "semantic_hash": ""
   },
   "app/Models/Discount.php": {
@@ -725,8 +725,8 @@
     "semantic_hash": ""
   },
   "app/Models/User.php": {
-    "mtime": 1784900134.5769286,
-    "ast_hash": "b7fb214b84f85380f1769605845d8206",
+    "mtime": 1784911538.9362333,
+    "ast_hash": "7c235e306c37c72f4573317fc79073a8",
     "semantic_hash": ""
   },
   "app/Models/UserLoginHistory.php": {
@@ -1145,8 +1145,8 @@
     "semantic_hash": ""
   },
   "database/migrations/2026_07_21_215731_add_schedules_to_website_settings_page_enum.php": {
-    "mtime": 1784643903.8857522,
-    "ast_hash": "e935d1fd3c33b9a0d869f63d1ac6fb82",
+    "mtime": 1784912041.1065314,
+    "ast_hash": "e3dff65b969bde71a7d753ed2d2a645e",
     "semantic_hash": ""
   },
   "database/migrations/2026_07_22_000000_add_cancellation_window_to_bookings.php": {
@@ -1160,8 +1160,8 @@
     "semantic_hash": ""
   },
   "database/migrations/2026_07_22_162104_add_faqs_to_website_settings_page_enum.php": {
-    "mtime": 1784711259.715114,
-    "ast_hash": "904952009afc80c8f79454275eb14d9a",
+    "mtime": 1784912045.8934097,
+    "ast_hash": "e6ee4323ae597dbe7f1819f61e8a41e7",
     "semantic_hash": ""
   },
   "database/migrations/2026_07_23_000000_create_app_notifications_table.php": {
@@ -1655,13 +1655,13 @@
     "semantic_hash": ""
   },
   "resources/views/filament/admin/notification-bell.blade.php": {
-    "mtime": 1784908970.290539,
-    "ast_hash": "43545d600042ceb3d5b4362de41dafd2",
+    "mtime": 1784911006.6050203,
+    "ast_hash": "798567f7492e63fcc13cdda1b727d38f",
     "semantic_hash": ""
   },
   "resources/views/filament/admin/notification-scripts.blade.php": {
-    "mtime": 1784907976.2075498,
-    "ast_hash": "6984223d571f9d5304c1d7f0c403c005",
+    "mtime": 1784910925.233086,
+    "ast_hash": "88a4ea27122889ff68648194d39bf91f",
     "semantic_hash": ""
   },
   "resources/views/filament/infolists/entries/proof-image.blade.php": {
@@ -1680,8 +1680,8 @@
     "semantic_hash": ""
   },
   "resources/views/filament/pages/admin-notifications.blade.php": {
-    "mtime": 1784900134.9806828,
-    "ast_hash": "697110875ed20bca8f04c9f644802e60",
+    "mtime": 1784911082.6715174,
+    "ast_hash": "893d7fe150bafd21cf870749b7a4747d",
     "semantic_hash": ""
   },
   "resources/views/filament/pages/manage-payment-settings.blade.php": {
@@ -1750,18 +1750,18 @@
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1784908088.6476567,
-    "ast_hash": "b25e270806fa63c1b055353df6b3159e",
+    "mtime": 1784909240.4745986,
+    "ast_hash": "3f855b9a66155aeae283e8a8c17ebbad",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1784908386.3545184,
-    "ast_hash": "d112a4ac861ead14ca456353bde65dbd",
+    "mtime": 1784909377.4075673,
+    "ast_hash": "76661347fd6a886695746b96844e55ce",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
-    "mtime": 1784678591.4317358,
-    "ast_hash": "91f55951f5dd25e253eef03951b45bb4",
+    "mtime": 1784911632.070529,
+    "ast_hash": "846fea4e02c5f8d364a921064962f2f5",
     "semantic_hash": ""
   },
   "resources/views/livewire/date-picker.blade.php": {
@@ -1840,8 +1840,8 @@
     "semantic_hash": ""
   },
   "routes/web.php": {
-    "mtime": 1784900134.6382036,
-    "ast_hash": "e77d2e3fba9161e198fb31c1f38ed535",
+    "mtime": 1784911624.2455168,
+    "ast_hash": "b992ccc0784c255c6ebcc5293d303608",
     "semantic_hash": ""
   },
   "scratch/count.php": {
@@ -2522,6 +2522,86 @@
   "public/images/world-map.svg": {
     "mtime": 1784643904.3134243,
     "ast_hash": "3c5d6d6d404e019acb9be5898feb8ffc",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/ServiceCancellationResource.php": {
+    "mtime": 1784911576.660573,
+    "ast_hash": "584f9d6ff4b3347ba3217486fe17479a",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/ServiceCancellationResource/Pages/CreateServiceCancellation.php": {
+    "mtime": 1784911586.215039,
+    "ast_hash": "cbb30778a5d381b723f2eeb41af34e2e",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/ServiceCancellationResource/Pages/ListServiceCancellations.php": {
+    "mtime": 1784911581.4253042,
+    "ast_hash": "661877f05728953434325f800e89814d",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/ServiceCancellationResource/Pages/ViewServiceCancellation.php": {
+    "mtime": 1784911598.1161277,
+    "ast_hash": "59403f06ac9893094fa7e039bef05fa8",
+    "semantic_hash": ""
+  },
+  "app/Livewire/BookingReschedule.php": {
+    "mtime": 1784911603.8687723,
+    "ast_hash": "ddbafb5e6504c8cf9816af51eabe63c9",
+    "semantic_hash": ""
+  },
+  "app/Mail/RescheduleApprovalNotificationMail.php": {
+    "mtime": 1784911562.846469,
+    "ast_hash": "6a0bd36772c94eec9bf739add0280c4b",
+    "semantic_hash": ""
+  },
+  "app/Mail/ServiceCancellationNotificationMail.php": {
+    "mtime": 1784911552.6421323,
+    "ast_hash": "183b3bb704ab4386569b743dd4859b91",
+    "semantic_hash": ""
+  },
+  "app/Models/ServiceCancellation.php": {
+    "mtime": 1784911467.7216969,
+    "ast_hash": "05eb259777fab1c1a86c30f253549351",
+    "semantic_hash": ""
+  },
+  "app/Models/ServiceCancellationReplacementSchedule.php": {
+    "mtime": 1784911520.9403045,
+    "ast_hash": "62387701b4b8076737581f2bc166cf8f",
+    "semantic_hash": ""
+  },
+  "app/Services/ServiceCancellationManager.php": {
+    "mtime": 1784911547.0937316,
+    "ast_hash": "9594d1b893f618c08bb4dc0e23005d7b",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_25_000001_create_service_cancellations_tables.php": {
+    "mtime": 1784911497.6731088,
+    "ast_hash": "2f5740307197f150f90a63de739646ef",
+    "semantic_hash": ""
+  },
+  "resources/views/booking-reschedule.blade.php": {
+    "mtime": 1784911617.4349523,
+    "ast_hash": "6f4fdf95d0422b8d1287308e9988b9da",
+    "semantic_hash": ""
+  },
+  "resources/views/emails/reschedule-approval-notification.blade.php": {
+    "mtime": 1784911569.479072,
+    "ast_hash": "8c12c8dbb5d5b49150321e655b31a671",
+    "semantic_hash": ""
+  },
+  "resources/views/emails/service-cancellation-notification.blade.php": {
+    "mtime": 1784911558.411288,
+    "ast_hash": "2b8a7ac296aa472d6ef4c24130e18327",
+    "semantic_hash": ""
+  },
+  "resources/views/livewire/booking-reschedule.blade.php": {
+    "mtime": 1784911613.0638444,
+    "ast_hash": "73e1f70f6c787f22f9e52816645cf00f",
+    "semantic_hash": ""
+  },
+  "tests/Feature/ServiceCancellationTest.php": {
+    "mtime": 1784911963.1470456,
+    "ast_hash": "f7b0c4a11dfc6a821fd1c0eef888e0c3",
     "semantic_hash": ""
   }
 }

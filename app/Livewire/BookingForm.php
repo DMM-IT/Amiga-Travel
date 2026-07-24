@@ -117,6 +117,8 @@ class BookingForm extends Component
     public ?string $driver_birthday = null;
     public bool $showBaggageRules = false;
     public bool $hasExtraBaggage = false;
+    // NOTE: use_promo_ticket is kept for ferry bookings (backward compat).
+    // For airline bookings the per-passenger $passengers[n]['use_promo'] flag is used instead.
     public bool $use_promo_ticket = false;
     public \Illuminate\Support\Collection $vehicleBrandCatalog;
     public \Illuminate\Support\Collection $vehicleModelCatalog;
@@ -971,6 +973,8 @@ public function selectedSchedule(): ?array
                     'seat_number' => null,
                     'seat_row' => null,
                     'seat_section' => null,
+                    'use_promo' => false,
+                    'promo_cleared_discount' => false,
                 ]);
 
                 $nameParts = $this->passengerNameParts($passenger);
@@ -985,6 +989,8 @@ public function selectedSchedule(): ?array
                     'seat_number' => $passenger['seat_number'] ?? null,
                     'seat_row' => $passenger['seat_row'] ?? null,
                     'seat_section' => $passenger['seat_section'] ?? null,
+                    'use_promo' => $passenger['use_promo'] ?? false,
+                    'promo_cleared_discount' => $passenger['promo_cleared_discount'] ?? false,
                 ], $passenger);
             }
         }
@@ -1052,7 +1058,62 @@ public function selectedSchedule(): ?array
 
     public function updatedUsePromoTicket(bool $value): void
     {
+        // Ferry-mode booking-level toggle — unchanged behavior
         $this->saveDraft();
+    }
+
+    // ─── Per-passenger promo helpers (airline mode only) ─────────────────────
+
+    public function togglePassengerPromo(int $index): void
+    {
+        if ($this->mode !== 'airline') {
+            return;
+        }
+
+        $passenger = $this->passengers[$index] ?? null;
+        if ($passenger === null) {
+            return;
+        }
+
+        $currentlyOn = (bool) ($passenger['use_promo'] ?? false);
+
+        if ($currentlyOn) {
+            // Disable promo for this passenger
+            $this->passengers[$index]['use_promo'] = false;
+            $this->passengers[$index]['promo_cleared_discount'] = false;
+        } else {
+            // Enable promo — first check there are slots remaining
+            if ($this->getAvailablePromoSlotsRemaining() <= 0) {
+                return; // No slots left — silently refuse
+            }
+
+            $this->passengers[$index]['use_promo'] = true;
+
+            // Auto-clear any discount that was selected
+            if (! empty($passenger['discount_id'])) {
+                $this->passengers[$index]['discount_id'] = null;
+                $this->passengers[$index]['promo_cleared_discount'] = true;
+            } else {
+                $this->passengers[$index]['promo_cleared_discount'] = false;
+            }
+        }
+
+        $this->saveDraft();
+    }
+
+    public function getSelectedPromoPassengerCount(): int
+    {
+        return collect($this->passengers)->filter(fn ($p) => ! empty($p['use_promo']))->count();
+    }
+
+    public function getAvailablePromoSlotsRemaining(): int
+    {
+        $promoTicket = $this->getActivePromoTicket();
+        if (! $promoTicket) {
+            return 0;
+        }
+
+        return max(0, $promoTicket->remaining_quantity - $this->getSelectedPromoPassengerCount());
     }
 
     public function updatedVehicleBookingMethod(string $value): void
@@ -1272,9 +1333,36 @@ public function selectedSchedule(): ?array
         $transaction = null;
 
         DB::transaction(function () use (&$transaction, $schedule, $scheduleAccommodation) {
-            // If using promo ticket, increment quantity_sold with row lock
             $usedPromoTicket = null;
-            if ($this->use_promo_ticket && $schedule) {
+            $promoTicketCount = 0;
+
+            if ($this->mode === 'airline' && $schedule) {
+                // ── Airline: per-passenger promo assignment ──────────────────
+                $promoPassengerIndices = collect($this->passengers)
+                    ->keys()
+                    ->filter(fn ($i) => ! empty($this->passengers[$i]['use_promo']))
+                    ->values();
+
+                $promoTicketCount = $promoPassengerIndices->count();
+
+                if ($promoTicketCount > 0) {
+                    // Lock the promo ticket row before any increment
+                    $usedPromoTicket = $schedule->promotionalTickets()
+                        ->activeAndAvailable()
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $usedPromoTicket || $usedPromoTicket->remaining_quantity < $promoTicketCount) {
+                        // Not enough promo slots — abort cleanly
+                        throw new \RuntimeException(
+                            'Not enough promotional ticket slots remaining. Please review your selection and try again.'
+                        );
+                    }
+
+                    $usedPromoTicket->increment('quantity_sold', $promoTicketCount);
+                }
+            } elseif ($this->use_promo_ticket && $schedule) {
+                // ── Ferry / other modes: existing booking-level promo logic ──
                 $usedPromoTicket = $schedule->promotionalTickets()
                     ->activeAndAvailable()
                     ->lockForUpdate()
@@ -1282,9 +1370,10 @@ public function selectedSchedule(): ?array
 
                 if ($usedPromoTicket && $usedPromoTicket->quantity_sold < $usedPromoTicket->quantity_available) {
                     $usedPromoTicket->increment('quantity_sold');
+                    $promoTicketCount = 1;
                 } else {
-                    // If no available promo, disable use_promo_ticket (safety net)
                     $this->use_promo_ticket = false;
+                    $usedPromoTicket = null;
                 }
             }
 
@@ -1324,6 +1413,7 @@ public function selectedSchedule(): ?array
                 'driver_name' => $this->driver_name,
                 'driver_birthday' => $this->driver_birthday,
                 'promotional_ticket_id' => $usedPromoTicket?->id,
+                'promo_ticket_count' => $promoTicketCount,
                 'terms_accepted_at' => $termsAcceptedAt,
                 'terms_version' => $termsVersion,
                 'terms_accepted_ip' => $termsAcceptedIp,
@@ -1331,14 +1421,20 @@ public function selectedSchedule(): ?array
             ]);
 
             foreach ($this->passengers as $passenger) {
+                $isPromo = $this->mode === 'airline' && ! empty($passenger['use_promo']) && $usedPromoTicket;
+
                 Passenger::create([
                     'booking_id' => $booking->id,
                     'type' => $passenger['type'],
                     'name' => $passenger['name'] ?: null,
-                    'discount_id' => $passenger['discount_id'] ?: null,
+                    // A promo passenger cannot have a discount
+                    'discount_id' => $isPromo ? null : ($passenger['discount_id'] ?: null),
                     'seat_number' => $passenger['seat_number'] ?? null,
                     'seat_row' => $passenger['seat_row'] ?? null,
                     'seat_section' => $passenger['seat_section'] ?? null,
+                    'promotional_ticket_id' => $isPromo ? $usedPromoTicket->id : null,
+                    'is_promo' => $isPromo,
+                    'promo_price' => $isPromo ? floatval($usedPromoTicket->promo_price) : null,
                 ]);
             }
 
@@ -1419,7 +1515,7 @@ public function selectedSchedule(): ?array
             'vehicle_plate_number' => $this->vehicle_plate_number,
             'vehicle_price' => $this->vehicle_price,
             'has_extra_baggage' => $this->hasExtraBaggage,
-            'use_promo_ticket' => $this->use_promo_ticket,
+            'use_promo_ticket' => $this->use_promo_ticket, // retained for ferry mode
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
             'selected_hotel_id' => $this->selected_hotel_id,
@@ -1639,15 +1735,27 @@ public function selectedSchedule(): ?array
         
         $discountsById = $this->discounts->keyBy('id');
 
+        // For airline bookings, fetch the active promo ticket once (if any)
+        $activePromoTicket = ($this->mode === 'airline') ? $this->getActivePromoTicket() : null;
+
         $transportTotal = collect($this->passengers)->sum(function (array $passenger) use (
-            $baseSchedulePrice, 
-            $scheduleAccommodationPrice, 
-            $returnSchedulePrice, 
-            $returnScheduleAccommodationPrice, 
-            $discountsById
+            $baseSchedulePrice,
+            $scheduleAccommodationPrice,
+            $returnSchedulePrice,
+            $returnScheduleAccommodationPrice,
+            $discountsById,
+            $activePromoTicket
         ) {
-            $departureFare = $baseSchedulePrice + $scheduleAccommodationPrice;
+            $scheduleAccommodationPrice_ = $scheduleAccommodationPrice;
             $returnFare = $returnSchedulePrice + $returnScheduleAccommodationPrice;
+
+            // Airline per-passenger promo: departure leg uses promo_price, no discount applied
+            if ($activePromoTicket && ! empty($passenger['use_promo'])) {
+                $departureFare = floatval($activePromoTicket->promo_price) + $scheduleAccommodationPrice_;
+                return $departureFare + $returnFare;
+            }
+
+            $departureFare = $baseSchedulePrice + $scheduleAccommodationPrice_;
             $fare = $departureFare + $returnFare;
 
             if (! empty($passenger['discount_id'])) {
@@ -1843,8 +1951,9 @@ public function selectedSchedule(): ?array
             return 0;
         }
 
-        // Check if using promo ticket
-        if ($this->use_promo_ticket) {
+        // For airline bookings, per-passenger promo pricing is applied in calculateTotalPrice().
+        // For ferry (and other) modes, honour the booking-level use_promo_ticket toggle.
+        if ($this->mode !== 'airline' && $this->use_promo_ticket) {
             $schedule = Schedule::query()->find($this->selected_schedule_id);
             if ($schedule) {
                 $promoTicket = $schedule->activePromotionalTicket();

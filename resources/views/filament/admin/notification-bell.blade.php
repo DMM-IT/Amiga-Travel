@@ -1,231 +1,323 @@
 <div x-data="adminNotificationBell({ initialNotifications: [], initialTotalCount: 0, initialUnreadCount: 0 })" x-init="fetchDropdown()" class="relative">
+
+    {{-- ───── Bell Trigger Button ───── --}}
     <div class="relative">
         <button
             type="button"
             @click.prevent="toggleDropdown()"
-            class="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+            class="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
             aria-label="Admin notifications"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6.002 6.002 0 0 0-4-5.659V4a2 2 0 10-4 0v1.341A6.002 6.002 0 0 0 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9" />
             </svg>
-
-            <span x-show="unreadCount > 0" class="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-semibold text-white" x-text="unreadCount"></span>
+            {{-- Unread badge --}}
+            <span
+                x-show="unreadCount > 0"
+                x-cloak
+                class="absolute -right-1 -top-1 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-gray-900"
+                x-text="unreadCount > 99 ? '99+' : unreadCount"
+            ></span>
         </button>
 
+        {{-- ───── Dropdown Panel ───── --}}
         <div
             x-show="dropdownOpen"
             x-cloak
-            @click.outside="dropdownOpen = false"
+            @click.outside="dropdownOpen = false; actionMenuOpen = false; itemMenuOpen = null"
             x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="fixed inset-x-4 top-20 mx-auto sm:absolute sm:inset-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:mt-0 w-auto sm:w-[270px] rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-800 z-[9999]"
+            x-transition:enter-start="opacity-0 translate-y-1 scale-[0.98]"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 translate-y-1 scale-[0.98]"
+            class="fixed inset-x-3 top-[4.5rem] sm:absolute sm:inset-auto sm:right-0 sm:top-[calc(100%+10px)] sm:w-[420px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999] flex flex-col overflow-hidden"
+            style="max-height: min(92dvh, 560px);"
         >
-            <!-- Header (FB Style) -->
-            <div class="px-4 pt-4 pb-2 text-gray-900 dark:text-white">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-[20px] font-bold tracking-tight">Notifications</h2>
-                    
-                    <!-- Action menu toggle (...) -->
-                    <div class="relative">
-                        <button 
-                            type="button" 
-                            @click.prevent="actionMenuOpen = !actionMenuOpen" 
-                            class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors"
+
+            {{-- ── Panel Header ── --}}
+            <div class="shrink-0 px-5 pt-5 pb-0">
+                {{-- Title row --}}
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-[17px] font-bold tracking-tight text-gray-900 dark:text-white">Notifications</h2>
+
+                    {{-- Three-dot global actions --}}
+                    <div class="relative" @click.stop>
+                        <button
+                            type="button"
+                            @click.prevent="actionMenuOpen = !actionMenuOpen; itemMenuOpen = null"
+                            :class="actionMenuOpen ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                            class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+                            aria-label="Notification actions"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
                         </button>
-                        
-                        <div x-show="actionMenuOpen" @click.outside="actionMenuOpen = false" x-cloak class="absolute right-0 mt-2 w-48 rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg dark:border-gray-800 dark:bg-gray-900 z-[10000]">
-                            <button type="button" @click.prevent="bulkMode = !bulkMode; actionMenuOpen = false" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800" x-text="bulkMode ? 'Disable Selection' : 'Enable Selection'"></button>
-                            <button type="button" @click.prevent="toggleSelectAll(); actionMenuOpen = false" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800">Select all</button>
-                            <button type="button" @click.prevent="markRead(); actionMenuOpen = false" :disabled="selectedCount === 0" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:text-gray-200 dark:hover:bg-gray-800">Mark as read</button>
-                            <button type="button" @click.prevent="markUnread(); actionMenuOpen = false" :disabled="selectedCount === 0" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 dark:text-gray-200 dark:hover:bg-gray-800">Mark as unread</button>
-                            <button type="button" @click.prevent="deleteSelected(); actionMenuOpen = false" :disabled="selectedCount === 0" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-900/50">Delete selected</button>
+
+                        {{-- Actions dropdown --}}
+                        <div
+                            x-show="actionMenuOpen"
+                            @click.outside="actionMenuOpen = false"
+                            x-cloak
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 top-full mt-1.5 w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl z-[10001] py-1 overflow-hidden"
+                        >
+                            {{-- Enable / Disable selection --}}
+                            <button type="button"
+                                @click.prevent="bulkMode = !bulkMode; actionMenuOpen = false"
+                                class="group w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="16" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3v4M8 3v4M3 11h18"/></svg>
+                                <span x-text="bulkMode ? 'Disable selection' : 'Enable selection'"></span>
+                            </button>
+
+                            {{-- Select all --}}
+                            <button type="button"
+                                @click.prevent="bulkMode = true; toggleSelectAll(); actionMenuOpen = false"
+                                class="group w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                Select all
+                            </button>
+
+                            <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+
+                            {{-- Mark selected as read --}}
+                            <button type="button"
+                                @click.prevent="markRead(); actionMenuOpen = false"
+                                :disabled="selectedCount === 0"
+                                class="group w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Mark selected as read
+                            </button>
+
+                            {{-- Mark selected as unread --}}
+                            <button type="button"
+                                @click.prevent="markUnread(); actionMenuOpen = false"
+                                :disabled="selectedCount === 0"
+                                class="group w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                Mark selected as unread
+                            </button>
+
+                            {{-- Delete selected --}}
+                            <button type="button"
+                                @click.prevent="deleteSelected(); actionMenuOpen = false"
+                                :disabled="selectedCount === 0"
+                                class="group w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                Delete selected
+                            </button>
+
+                            <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+
+                            {{-- Open all notifications --}}
+                            <a href="{{ \App\Filament\Pages\AdminNotifications::getUrl() }}"
+                               @click="dropdownOpen = false"
+                               class="group w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                Open all notifications
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tabs (All / Unread) -->
-                <div class="flex gap-2 mt-3">
-                    <button 
-                        type="button" 
-                        @click="activeTab = 'all'" 
-                        :class="activeTab === 'all' ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800/50'" 
-                        class="px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition"
-                    >
-                        All
-                    </button>
-                    <button 
-                        type="button" 
-                        @click="activeTab = 'unread'" 
-                        :class="activeTab === 'unread' ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800/50'" 
-                        class="px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition"
+                {{-- Tab bar --}}
+                <div class="flex border-b border-gray-100 dark:border-gray-800 -mx-5 px-5">
+                    <button
+                        type="button"
+                        @click="activeTab = 'all'"
+                        :class="activeTab === 'all'
+                            ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400 font-semibold'
+                            : 'border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+                        class="mr-5 pb-3 pt-0.5 text-sm transition-colors"
+                    >All</button>
+                    <button
+                        type="button"
+                        @click="activeTab = 'unread'"
+                        :class="activeTab === 'unread'
+                            ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400 font-semibold'
+                            : 'border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+                        class="mr-5 pb-3 pt-0.5 text-sm transition-colors flex items-center gap-1.5"
                     >
                         Unread
-                        <span x-show="unreadCount > 0" class="ml-1 px-1.5 py-0.5 rounded-full text-[11px] bg-amber-500 text-white" x-text="unreadCount"></span>
+                        <span
+                            x-show="unreadCount > 0"
+                            x-cloak
+                            class="inline-flex items-center justify-center h-[18px] min-w-[18px] px-1 rounded-full bg-primary-500 text-[10px] font-bold text-white leading-none"
+                            x-text="unreadCount"
+                        ></span>
                     </button>
                 </div>
 
-                <!-- Bulk Selection Stats (only in bulk mode) -->
-                <div x-show="bulkMode" class="mt-2.5 flex items-center justify-between text-[12px] text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-2">
-                    <label class="inline-flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500" @click="toggleSelectAll()" :checked="allSelected">
-                        Select all
+                {{-- Bulk selection bar --}}
+                <div x-show="bulkMode" x-cloak class="flex items-center justify-between py-3 text-sm border-b border-gray-100 dark:border-gray-800 -mx-5 px-5">
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer select-none text-gray-700 dark:text-gray-300">
+                        <input
+                            type="checkbox"
+                            class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800"
+                            @click="toggleSelectAll()"
+                            :checked="allSelected"
+                            :indeterminate="selectedCount > 0 && !allSelected"
+                        >
+                        <span class="font-medium">Select all</span>
                     </label>
-                    <span x-show="selectedCount > 0" class="font-medium text-amber-600 dark:text-amber-400" x-text="selectedCount + ' selected'"></span>
+                    <span x-show="selectedCount > 0" class="text-xs font-semibold text-primary-600 dark:text-primary-400" x-text="selectedCount + ' selected'"></span>
                 </div>
             </div>
 
-            <!-- Scrollable Content -->
-            <div class="max-h-[380px] overflow-y-auto px-2 pb-4">
-                <!-- Group helper properties to dynamically show headers -->
-                <div x-data="{ 
-                    hasUnread(notifs) { return notifs.some(n => !n.is_read) },
-                    hasRead(notifs) { return notifs.some(n => n.is_read) }
-                }">
-                    <!-- Empty State -->
-                    <template x-if="notifications.length === 0 || (activeTab === 'unread' && unreadCount === 0)">
-                        <div class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                            You have no notifications.
+            {{-- ── Scrollable Notification List ── --}}
+            <div class="flex-1 overflow-y-auto min-h-0 py-1.5 px-2">
+
+                {{-- Empty State --}}
+                <template x-if="visibleNotifications.length === 0">
+                    <div class="flex flex-col items-center justify-center py-14 px-4 text-center">
+                        <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341A6.002 6.002 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
                         </div>
-                    </template>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200"
+                           x-text="activeTab === 'unread' ? 'All caught up!' : 'No notifications'"></p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                           x-text="activeTab === 'unread' ? 'No unread notifications right now.' : 'New notifications will appear here.'"></p>
+                    </div>
+                </template>
 
-                    <!-- All Tab Layout (Divided into "New" and "Earlier") -->
-                    <template x-if="activeTab === 'all' && notifications.length > 0">
-                        <div>
-                            <!-- "New" Section Heading (only if there are unread notifications) -->
-                            <template x-if="hasUnread(notifications)">
-                                <div class="px-2 py-1 flex items-center justify-between">
-                                    <span class="text-[13px] font-semibold text-gray-900 dark:text-white">New</span>
-                                    <a href="{{ \App\Filament\Pages\AdminNotifications::getUrl() }}" class="text-xs text-blue-500 hover:underline">See all</a>
-                                </div>
-                            </template>
-                            
-                            <!-- "New" Notifications List -->
-                            <div class="space-y-1">
-                                <template x-for="notification in notifications.filter(n => !n.is_read)" :key="notification.id">
-                                    <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative cursor-pointer" @click="openNotification(notification)">
-                                        <!-- Bulk Checkbox (only shown in bulkMode) -->
-                                        <input x-show="bulkMode" @click.stop type="checkbox" class="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500 shrink-0" :value="notification.id" @change="toggleSelection(notification.id)" :checked="selectedIds.includes(notification.id)">
-                                        
-                                        <!-- Text/Content -->
-                                        <div class="flex-1 min-w-0 pr-6">
-                                            <p class="text-[13px] leading-snug text-gray-900 dark:text-white break-words">
-                                                <span class="font-bold text-gray-950 dark:text-gray-100" x-text="notification.title"></span>
-                                                <span class="text-gray-700 dark:text-gray-300" x-text="notification.message"></span>
-                                            </p>
-                                            <p class="text-[12px] font-semibold text-blue-500 dark:text-blue-400 mt-1" x-text="formatTimeAgo(notification.created_at)"></p>
-                                        </div>
+                {{-- Notification rows --}}
+                <template x-for="notification in visibleNotifications" :key="notification.id">
+                    <div
+                        class="group relative flex items-start gap-2.5 rounded-xl px-3 py-3 mb-0.5 cursor-pointer transition-all select-none"
+                        :class="!notification.is_read
+                            ? 'border-l-[3px] border-primary-400 bg-primary-50 dark:bg-primary-950/20 hover:bg-primary-100/70 dark:hover:bg-primary-950/30 pl-[9px]'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'"
+                        @click="openNotification(notification)"
+                    >
+                        {{-- Checkbox (bulk mode only) --}}
+                        <div x-show="bulkMode" @click.stop class="shrink-0 pt-0.5">
+                            <input
+                                type="checkbox"
+                                class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800"
+                                :value="notification.id"
+                                @change="toggleSelection(notification.id)"
+                                :checked="selectedIds.includes(notification.id)"
+                            >
+                        </div>
 
-                                        <!-- Unread Dot Indicator (Blue dot) -->
-                                        <div class="h-3.5 w-3.5 rounded-full bg-blue-500 shrink-0 self-center"></div>
+                        {{-- Content --}}
+                        <div class="flex-1 min-w-0 pr-8">
+                            {{-- Title + message on same visual line --}}
+                            <p class="text-[13px] leading-snug text-gray-900 dark:text-white">
+                                <span class="font-semibold" x-text="notification.title"></span><span class="text-gray-500 dark:text-gray-400 ml-1" x-text="notification.message"></span>
+                            </p>
+                            {{-- Timestamp --}}
+                            <p class="mt-1 text-[11px] font-medium"
+                               :class="!notification.is_read ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'"
+                               x-text="formatTimeAgo(notification.created_at)"></p>
+                        </div>
 
-                                        <!-- Individual Options Trigger (hidden by default, shown on hover/click) -->
-                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
-                                            <button type="button" @click.prevent="itemMenuOpen = itemMenuOpen === notification.id ? null : notification.id" class="rounded-full bg-white dark:bg-gray-900 p-1.5 text-gray-500 shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                </svg>
-                                            </button>
-                                            <div x-show="itemMenuOpen === notification.id" @click.outside="itemMenuOpen = null" x-cloak class="absolute right-0 mt-1.5 w-40 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 z-[10000]">
-                                                <button type="button" @click.prevent="notification.is_read ? markUnread([notification.id]) : markRead([notification.id]); itemMenuOpen = null" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800" x-text="notification.is_read ? 'Mark as unread' : 'Mark as read'"></button>
-                                                <button type="button" @click.prevent="deleteNotification(notification.id); itemMenuOpen = null" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/50">Delete</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
+                        {{-- Per-item three-dot menu --}}
+                        <div class="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" @click.stop>
+                            <button
+                                type="button"
+                                @click.prevent="itemMenuOpen = (itemMenuOpen === notification.id ? null : notification.id); actionMenuOpen = false"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                            </button>
 
-                            <!-- "Earlier" Section Heading -->
-                            <template x-if="hasRead(notifications)">
-                                <div class="px-2 py-1 mt-3 flex items-center justify-between">
-                                    <span class="text-[13px] font-semibold text-gray-900 dark:text-white">Earlier</span>
-                                </div>
-                            </template>
-
-                            <!-- "Earlier" Notifications List -->
-                            <div class="space-y-1">
-                                <template x-for="notification in notifications.filter(n => n.is_read)" :key="notification.id">
-                                    <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative cursor-pointer opacity-75" @click="openNotification(notification)">
-                                        <!-- Bulk Checkbox (only shown in bulkMode) -->
-                                        <input x-show="bulkMode" @click.stop type="checkbox" class="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500 shrink-0" :value="notification.id" @change="toggleSelection(notification.id)" :checked="selectedIds.includes(notification.id)">
-                                        
-                                        <!-- Text/Content -->
-                                        <div class="flex-1 min-w-0 pr-6">
-                                            <p class="text-[13px] leading-snug text-gray-900 dark:text-white break-words">
-                                                <span class="font-bold text-gray-955 dark:text-gray-100" x-text="notification.title"></span>
-                                                <span class="text-gray-700 dark:text-gray-300" x-text="notification.message"></span>
-                                            </p>
-                                            <p class="text-[12px] text-gray-400 dark:text-gray-500 mt-1" x-text="formatTimeAgo(notification.created_at)"></p>
-                                        </div>
-
-                                        <!-- Individual Options Trigger (hidden by default, shown on hover/click) -->
-                                        <div class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
-                                            <button type="button" @click.prevent="itemMenuOpen = itemMenuOpen === notification.id ? null : notification.id" class="rounded-full bg-white dark:bg-gray-900 p-1.5 text-gray-500 shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                </svg>
-                                            </button>
-                                            <div x-show="itemMenuOpen === notification.id" @click.outside="itemMenuOpen = null" x-cloak class="absolute right-0 mt-1.5 w-40 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 z-[10000]">
-                                                <button type="button" @click.prevent="notification.is_read ? markUnread([notification.id]) : markRead([notification.id]); itemMenuOpen = null" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800" x-text="notification.is_read ? 'Mark as unread' : 'Mark as read'"></button>
-                                                <button type="button" @click.prevent="deleteNotification(notification.id); itemMenuOpen = null" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/50">Delete</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
+                            <div
+                                x-show="itemMenuOpen === notification.id"
+                                @click.outside="itemMenuOpen = null"
+                                x-cloak
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                class="absolute right-0 top-full mt-1 w-44 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl z-[10002] py-1 overflow-hidden"
+                            >
+                                <button type="button"
+                                    @click.prevent="notification.is_read ? markUnread([notification.id]) : markRead([notification.id]); itemMenuOpen = null"
+                                    class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                    x-text="notification.is_read ? 'Mark as unread' : 'Mark as read'"
+                                ></button>
+                                <button type="button"
+                                    @click.prevent="deleteNotification(notification.id); itemMenuOpen = null"
+                                    class="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                                >Delete</button>
                             </div>
                         </div>
-                    </template>
-
-                    <!-- Unread Tab Layout -->
-                    <template x-if="activeTab === 'unread' && unreadCount > 0">
-                        <div class="space-y-1">
-                            <template x-for="notification in notifications.filter(n => !n.is_read)" :key="notification.id">
-                                <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative cursor-pointer" @click="openNotification(notification)">
-                                    <!-- Bulk Checkbox (only shown in bulkMode) -->
-                                    <input x-show="bulkMode" @click.stop type="checkbox" class="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500 shrink-0" :value="notification.id" @change="toggleSelection(notification.id)" :checked="selectedIds.includes(notification.id)">
-                                    
-                                    <!-- Text/Content -->
-                                    <div class="flex-1 min-w-0 pr-6">
-                                        <p class="text-[13px] leading-snug text-gray-900 dark:text-white break-words">
-                                            <span class="font-bold text-gray-955 dark:text-gray-100" x-text="notification.title"></span>
-                                            <span class="text-gray-700 dark:text-gray-300" x-text="notification.message"></span>
-                                        </p>
-                                        <p class="text-[12px] font-semibold text-blue-500 dark:text-blue-400 mt-1" x-text="formatTimeAgo(notification.created_at)"></p>
-                                    </div>
-
-                                    <!-- Unread Dot Indicator (Blue dot) -->
-                                    <div class="h-3.5 w-3.5 rounded-full bg-blue-500 shrink-0 self-center"></div>
-
-                                    <!-- Individual Options Trigger (hidden by default, shown on hover/click) -->
-                                    <div class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
-                                        <button type="button" @click.prevent="itemMenuOpen = itemMenuOpen === notification.id ? null : notification.id" class="rounded-full bg-white dark:bg-gray-900 p-1.5 text-gray-500 shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </button>
-                                        <div x-show="itemMenuOpen === notification.id" @click.outside="itemMenuOpen = null" x-cloak class="absolute right-0 mt-1.5 w-40 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 z-[10000]">
-                                            <button type="button" @click.prevent="notification.is_read ? markUnread([notification.id]) : markRead([notification.id]); itemMenuOpen = null" class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800" x-text="notification.is_read ? 'Mark as unread' : 'Mark as read'"></button>
-                                            <button type="button" @click.prevent="deleteNotification(notification.id); itemMenuOpen = null" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/50">Delete</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
+                    </div>
+                </template>
             </div>
 
-            <!-- Footer (FB Style) -->
-            <div class="border-t border-gray-100 bg-gray-50 px-4 py-3.5 dark:border-gray-800 dark:bg-gray-900 text-center">
-                <a href="{{ \App\Filament\Pages\AdminNotifications::getUrl() }}" class="text-sm font-bold text-[#1877f2] hover:underline">See all in settings</a>
+            {{-- ── Footer ── --}}
+            <div class="shrink-0 border-t border-gray-100 dark:border-gray-800 px-2 py-2">
+                <a
+                    href="{{ \App\Filament\Pages\AdminNotifications::getUrl() }}"
+                    @click="dropdownOpen = false"
+                    class="flex items-center justify-center gap-1.5 w-full rounded-xl py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                    View all notifications
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- ───── Delete Confirmation Modal ───── --}}
+    <div
+        x-show="confirmingDelete"
+        x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-[10003] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+    >
+        <div
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            class="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 shadow-2xl"
+        >
+            <div class="flex items-start gap-4">
+                <div class="h-10 w-10 shrink-0 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">Confirm deletion</h3>
+                    <p class="mt-1.5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed" x-text="deleteTitle"></p>
+                </div>
+            </div>
+            <div class="mt-5 flex gap-3">
+                <button type="button"
+                    @click.prevent="confirmDelete()"
+                    :disabled="busy"
+                    class="flex-1 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-70 px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+                >Delete</button>
+                <button type="button"
+                    @click.prevent="confirmingDelete = false; deleteTargetIds = []"
+                    :disabled="busy"
+                    class="flex-1 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-200 transition-colors"
+                >Cancel</button>
             </div>
         </div>
     </div>

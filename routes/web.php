@@ -36,6 +36,9 @@ Route::post('/booking/draft/cancel', function (Request $request) {
 Route::redirect('/book', '/book/new')->name('book');
 Route::view('/book/new', 'book')->name('book.new');
 Route::view('/book/status', 'book-status')->name('book.status');
+Route::get('/booking/reschedule/{transaction_number}', function (string $transaction_number) {
+    return view('booking-reschedule', ['transaction_number' => $transaction_number]);
+})->name('booking.reschedule');
 
 Route::get('/about', function () use ($renderWebsitePage) {
     return $renderWebsitePage('about', 'about');

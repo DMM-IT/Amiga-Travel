@@ -49,6 +49,7 @@ class User extends Authenticatable implements FilamentUser
             'discounts' => 'Discounts',
             'schedules' => 'Schedules',
             'ferry_airline' => 'Ferry & Airline',
+            'service_cancellations' => 'Service Cancellations',
         ],
         'Bookings' => [
             'bookings' => 'Bookings',
@@ -81,6 +82,7 @@ class User extends Authenticatable implements FilamentUser
         'discounts' => 'Discounts',
         'schedules' => 'Schedules',
         'ferry_airline' => 'Ferry & Airline',
+        'service_cancellations' => 'Service Cancellations',
         'bookings' => 'Bookings',
         'transactions' => 'Transactions',
         'airline_seats' => 'Airline Seats',

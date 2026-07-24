@@ -233,7 +233,15 @@ class PromotionalTicketResource extends Resource
                     ->formatStateUsing(fn(PromotionalTicket $record): string => "{$record->remaining_quantity} / {$record->quantity_available}"),
                 Infolists\Components\TextEntry::make('quantity_sold')
                     ->label('Quantity Sold'),
+                Infolists\Components\TextEntry::make('promo_passengers_count')
+                    ->label('Passengers Receiving Promo Fare')
+                    ->getStateUsing(fn(PromotionalTicket $record): int => $record->promoPassengers()->count())
+                    ->helperText('Number of individual passengers assigned this promotional fare (airline bookings).'),
+                Infolists\Components\TextEntry::make('promo_bookings_count')
+                    ->label('Bookings Using This Ticket')
+                    ->getStateUsing(fn(PromotionalTicket $record): int => \App\Models\Booking::where('promotional_ticket_id', $record->id)->count()),
                 Infolists\Components\TextEntry::make('status_label')
+
                     ->label('Status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {

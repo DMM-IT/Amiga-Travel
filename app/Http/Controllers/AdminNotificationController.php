@@ -49,6 +49,11 @@ class AdminNotificationController
             })->values();
         }
 
+        // Optional: filter to unread only (for Unread tab on full page)
+        if (filter_var($request->query('unread_only', false), FILTER_VALIDATE_BOOLEAN)) {
+            $notifications = $notifications->where('is_read', false)->values();
+        }
+
         $perPage = max(5, min(50, (int) $request->query('per_page', 10)));
         $page = max(1, (int) $request->query('page', 1));
 
