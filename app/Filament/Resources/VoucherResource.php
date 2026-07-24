@@ -117,6 +117,10 @@ class VoucherResource extends Resource
                 Toggle::make('is_active')
                     ->label('Active')
                     ->default(true),
+                Toggle::make('is_hidden')
+                    ->label('Hidden Voucher')
+                    ->helperText('If enabled, this voucher will not appear in the mobile app\'s voucher list, but can still be applied if the code is typed manually.')
+                    ->default(false),
                 TextInput::make('total_usage_limit')
                     ->label('Total Usage Limit')
                     ->numeric()
@@ -260,6 +264,8 @@ class VoucherResource extends Resource
                     ->formatStateUsing(fn (string $state) => ucwords(str_replace('_', ' ', $state))),
                 ToggleColumn::make('is_active')
                     ->label('Active'),
+                ToggleColumn::make('is_hidden')
+                    ->label('Hidden'),
                 TextColumn::make('total_used')
                     ->label('Used')
                     ->sortable()

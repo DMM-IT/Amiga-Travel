@@ -25,6 +25,7 @@ class Voucher extends Model
         'eligible_origin',
         'eligible_destination',
         'eligible_schedule_id',
+        'is_hidden',
     ];
 
     protected $casts = [
@@ -35,6 +36,7 @@ class Voucher extends Model
         'end_at' => 'datetime',
         'is_active' => 'boolean',
         'one_use_per_customer' => 'boolean',
+        'is_hidden' => 'boolean',
     ];
 
     protected static function booted(): void

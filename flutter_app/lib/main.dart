@@ -798,7 +798,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SchedulesScreen(),
           TravelScreen(initialMode: _travelMode),
-          const VouchersScreen(),
+          VouchersScreen(onUseVoucher: () => setState(() => _selectedIndex = 1)),
           ActivityScreen(onLoginSuccess: () => setState(() {})),
         ],
       ),
@@ -6497,7 +6497,8 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 // VOUCHERS SCREEN
 // ==========================================
 class VouchersScreen extends StatefulWidget {
-  const VouchersScreen({super.key});
+  final VoidCallback? onUseVoucher;
+  const VouchersScreen({super.key, this.onUseVoucher});
 
   @override
   State<VouchersScreen> createState() => _VouchersScreenState();
@@ -6601,6 +6602,38 @@ class _VouchersScreenState extends State<VouchersScreen> {
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
+                          // Input Promo Code at top
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: kSlate200),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.confirmation_num_outlined, color: kPink, size: 20),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: TextField(
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Input promo code',
+                                      hintStyle: TextStyle(color: kSlate400, fontSize: 14),
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Voucher check is applied at checkout.')));
+                                  },
+                                  child: const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ),
+
                           const Text('Available Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
                           const SizedBox(height: 12),
                           if (_vouchers.isEmpty)
@@ -6618,34 +6651,198 @@ class _VouchersScreenState extends State<VouchersScreen> {
                             )
                           else
                             ..._vouchers.map((v) {
-                              return Card(
-                                color: Colors.white,
-                                margin: const EdgeInsets.only(bottom: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                elevation: 3,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
+                              IconData scopeIcon;
+                              String scopeLabel;
+                              switch (v['eligible_scope']) {
+                                case 'ticket_fare':
+                                  scopeIcon = Icons.airplane_ticket;
+                                  scopeLabel = 'Ticket Fare Only';
+                                  break;
+                                case 'vehicle':
+                                  scopeIcon = Icons.directions_car;
+                                  scopeLabel = 'Vehicle Only';
+                                  break;
+                                case 'accommodation':
+                                  scopeIcon = Icons.hotel;
+                                  scopeLabel = 'Accommodation Only';
+                                  break;
+                                case 'booking_total':
+                                  scopeIcon = Icons.receipt_long;
+                                  scopeLabel = 'Booking Total';
+                                  break;
+                                default:
+                                  scopeIcon = Icons.local_activity;
+                                  scopeLabel = 'Any Booking';
+                              }
+
+                              return GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.white,
+                                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                                    builder: (ctx) => Padding(
+                                      padding: const EdgeInsets.all(24),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(12),
+                                                decoration: BoxDecoration(color: kGreen.withOpacity(0.1), shape: BoxShape.circle),
+                                                child: Icon(scopeIcon, color: kPink, size: 28),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                                                    const SizedBox(height: 4),
+                                                    Text(scopeLabel, style: const TextStyle(color: kGreen, fontSize: 13, fontWeight: FontWeight.bold)),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const Divider(height: 32),
+                                          const Text('Voucher Code', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                          const SizedBox(height: 4),
+                                          Text(v['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: kPink, letterSpacing: 1.5)),
+                                          const SizedBox(height: 16),
+                                          const Text('Description / Internal Notes', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                          const SizedBox(height: 4),
+                                          Text(v['description'] ?? 'No additional details.', style: const TextStyle(color: kSlate800, fontSize: 14)),
+                                          const SizedBox(height: 16),
+                                          const Text('Minimum Spend', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                          const SizedBox(height: 4),
+                                          Text(v['min_booking_amount'] != null ? '₱${v['min_booking_amount']}' : 'No minimum spend', style: const TextStyle(color: kSlate800, fontSize: 14, fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 16),
+                                          const Text('Valid Until', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                          const SizedBox(height: 4),
+                                          Text(v['end_at'] != null ? v['end_at'].toString().substring(0,10) : 'No expiration', style: const TextStyle(color: kSlate800, fontSize: 14, fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 32),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            height: 50,
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pop(ctx);
+                                                if (widget.onUseVoucher != null) {
+                                                  widget.onUseVoucher!();
+                                                } else if (Navigator.canPop(context)) {
+                                                  Navigator.pop(context);
+                                                }
+                                              },
+                                              style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                                              child: const Text('Use Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  height: 110,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 3)),
+                                    ],
+                                  ),
                                   child: Row(
                                     children: [
+                                      // Left side colored block (1/4 width)
                                       Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: kPink.withOpacity(0.1),
-                                          shape: BoxShape.circle,
+                                        width: 100,
+                                        decoration: const BoxDecoration(
+                                          color: kGreen,
+                                          borderRadius: BorderRadius.horizontal(left: Radius.circular(8)),
                                         ),
-                                        child: const Icon(Icons.local_activity, color: kPink, size: 28),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Text(v['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kGreen)),
-                                            const SizedBox(height: 4),
-                                            Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                            const SizedBox(height: 4),
-                                            Text(v['description'] ?? '', style: const TextStyle(color: kSlate500, fontSize: 12)),
+                                            Icon(scopeIcon, color: kPink, size: 36),
+                                            const SizedBox(height: 8),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                                              child: Text(
+                                                scopeLabel,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
                                           ],
+                                        ),
+                                      ),
+                                      // Right side voucher details
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(12),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                                    const SizedBox(height: 6),
+                                                    if (v['min_booking_amount'] != null)
+                                                      Text('Min. Spend ₱${v['min_booking_amount']}', style: const TextStyle(color: kSlate500, fontSize: 12)),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      v['description'] ?? 'Exclusive Voucher',
+                                                      style: const TextStyle(color: kSlate500, fontSize: 11),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    const Spacer(),
+                                                    Row(
+                                                      children: [
+                                                        const Icon(Icons.access_time, size: 12, color: kSlate400),
+                                                        const SizedBox(width: 4),
+                                                        Text(
+                                                          v['end_at'] != null ? 'Expiring: ${v['end_at'].toString().substring(0,10)}' : 'No expiration',
+                                                          style: const TextStyle(color: kSlate500, fontSize: 11),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              // Use button
+                                              const SizedBox(width: 8),
+                                              Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  OutlinedButton(
+                                                    onPressed: () {
+                                                      if (widget.onUseVoucher != null) {
+                                                        widget.onUseVoucher!();
+                                                      } else if (Navigator.canPop(context)) {
+                                                        Navigator.pop(context);
+                                                      }
+                                                    },
+                                                    style: OutlinedButton.styleFrom(
+                                                      side: const BorderSide(color: kPink, width: 1.5),
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                      minimumSize: Size.zero,
+                                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                    ),
+                                                    child: const Text('Use', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],

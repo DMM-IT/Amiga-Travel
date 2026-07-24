@@ -11,6 +11,7 @@ class VoucherController extends Controller
     public function index()
     {
         $vouchers = \App\Models\Voucher::where('is_active', true)
+            ->where('is_hidden', false)
             ->where(function ($q) {
                 $q->whereNull('start_at')->orWhere('start_at', '<=', now());
             })
