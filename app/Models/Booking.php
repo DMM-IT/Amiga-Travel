@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Mail;
 
 class Booking extends Model
@@ -110,7 +111,7 @@ class Booking extends Model
         return $this->belongsTo(ScheduleAccommodation::class);
     }
 
-    public function transaction()
+    public function transaction(): HasOne
     {
         return $this->hasOne(Transaction::class);
     }
