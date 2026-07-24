@@ -58,7 +58,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.8+12';
+  static const String appVersion = '1.0.9+13';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -129,6 +129,8 @@ class UserSession {
 // BOOKING STATE (passed through screens)
 // ==========================================
 class BookingData {
+  static BookingData? activeSession;
+  
   String mode = 'ferry'; // ferry | airline
   String tripType = 'one_way';
   String? operator;
@@ -167,6 +169,246 @@ class BookingData {
 
   // Pricing
   double totalPrice = 0;
+  
+  // State restoration
+  int savedStep = 0;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'mode': mode,
+      'tripType': tripType,
+      'operator': operator,
+      'origin': origin,
+      'destination': destination,
+      'departureDate': departureDate,
+      'returnDate': returnDate,
+      'adults': adults,
+      'children': children,
+      'selectedSchedule': selectedSchedule,
+      'selectedTransportClassId': selectedTransportClassId,
+      'selectedTransportClass': selectedTransportClass,
+      'selectedScheduleAccommodationId': selectedScheduleAccommodationId,
+      'selectedScheduleAccommodation': selectedScheduleAccommodation,
+      'hasVehicle': hasVehicle,
+      'selectedVehicleRateId': selectedVehicleRateId,
+      'vehicleType': vehicleType,
+      'vehiclePlateNumber': vehiclePlateNumber,
+      'vehiclePrice': vehiclePrice,
+      'passengers': passengers,
+      'selectedAccommodationIds': selectedAccommodationIds,
+      'availableAccommodations': availableAccommodations,
+      'clientName': clientName,
+      'clientEmail': clientEmail,
+      'totalPrice': totalPrice,
+      'savedStep': savedStep,
+    };
+  }
+
+  static BookingData fromJson(Map<String, dynamic> json) {
+    final b = BookingData();
+    b.mode = json['mode'] ?? 'ferry';
+    b.tripType = json['tripType'] ?? 'one_way';
+    b.operator = json['operator'];
+    b.origin = json['origin'] ?? '';
+    b.destination = json['destination'] ?? '';
+    b.departureDate = json['departureDate'] ?? '';
+    b.returnDate = json['returnDate'];
+    b.adults = json['adults'] ?? 1;
+    b.children = json['children'] ?? 0;
+    
+    b.selectedSchedule = json['selectedSchedule'] != null ? Map<String, dynamic>.from(json['selectedSchedule']) : null;
+    b.selectedTransportClassId = json['selectedTransportClassId'];
+    b.selectedTransportClass = json['selectedTransportClass'] != null ? Map<String, dynamic>.from(json['selectedTransportClass']) : null;
+    b.selectedScheduleAccommodationId = json['selectedScheduleAccommodationId'];
+    b.selectedScheduleAccommodation = json['selectedScheduleAccommodation'] != null ? Map<String, dynamic>.from(json['selectedScheduleAccommodation']) : null;
+    
+    b.hasVehicle = json['hasVehicle'] ?? false;
+    b.selectedVehicleRateId = json['selectedVehicleRateId'];
+    b.vehicleType = json['vehicleType'] ?? '';
+    b.vehiclePlateNumber = json['vehiclePlateNumber'] ?? '';
+    b.vehiclePrice = (json['vehiclePrice'] ?? 0.0).toDouble();
+    
+    if (json['passengers'] != null) {
+      b.passengers = List<Map<String, dynamic>>.from(json['passengers'].map((x) => Map<String, dynamic>.from(x)));
+    }
+    
+    if (json['selectedAccommodationIds'] != null) {
+      b.selectedAccommodationIds = List<int>.from(json['selectedAccommodationIds']);
+    }
+    if (json['availableAccommodations'] != null) {
+      b.availableAccommodations = List<Map<String, dynamic>>.from(json['availableAccommodations'].map((x) => Map<String, dynamic>.from(x)));
+    }
+    
+    b.clientName = json['clientName'] ?? '';
+    b.clientEmail = json['clientEmail'] ?? '';
+    b.totalPrice = (json['totalPrice'] ?? 0.0).toDouble();
+    b.savedStep = json['savedStep'] ?? 0;
+    
+    return b;
+  }
+  
+  Future<void> saveToPrefs(int currentStep) async {
+    savedStep = currentStep;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('saved_booking_session', jsonEncode(toJson()));
+  }
+
+  static Future<BookingData?> loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final str = prefs.getString('saved_booking_session');
+    if (str != null && str.isNotEmpty) {
+      try {
+        return fromJson(jsonDecode(str));
+      } catch (e) {
+        debugPrint('Error decoding saved session: $e');
+      }
+    }
+    return null;
+  }
+
+  static Future<void> clearPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('saved_booking_session');
+  }
+}
+
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+class GlobalUpdateWrapper extends StatefulWidget {
+  final Widget child;
+  const GlobalUpdateWrapper({super.key, required this.child});
+  @override
+  State<GlobalUpdateWrapper> createState() => _GlobalUpdateWrapperState();
+}
+
+class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsBindingObserver {
+  bool _isChecking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkVersionAndPrompt();
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      if (BookingData.activeSession != null) {
+        BookingData.activeSession!.saveToPrefs(BookingData.activeSession!.savedStep);
+      }
+    }
+  }
+
+  Future<void> _checkVersionAndPrompt() async {
+    if (_isChecking) return;
+    _isChecking = true;
+    try {
+      final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version')).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final latestVersion = data['version'] as String;
+        if (latestVersion != UserSession.appVersion && mounted) {
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            UpdateChecker.showUpdateDialog(context, latestVersion);
+          }
+        }
+      }
+    } catch (_) {}
+    finally {
+      _isChecking = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+class UpdateChecker {
+  static void showUpdateDialog(BuildContext context, String latestVersion) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        bool isDownloading = false;
+        double progress = 0.0;
+        String dlError = '';
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Update Required'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
+                  if (isDownloading) ...[
+                    const SizedBox(height: 20),
+                    LinearProgressIndicator(value: progress, color: kGreen),
+                    const SizedBox(height: 8),
+                    Text('${(progress * 100).toStringAsFixed(0)}% downloaded'),
+                  ],
+                  if (dlError.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(dlError, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                  ]
+                ],
+              ),
+              actions: [
+                if (!isDownloading)
+                  FilledButton(
+                    onPressed: () async {
+                      setState(() {
+                        isDownloading = true;
+                        dlError = '';
+                      });
+                      try {
+                        final apkUrl = '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
+                        final request = http.Request('GET', Uri.parse(apkUrl));
+                        final response = await http.Client().send(request);
+                        if (response.statusCode != 200) throw Exception('Server returned ${response.statusCode}');
+                        
+                        final contentLength = response.contentLength ?? 1;
+                        final dir = await getExternalStorageDirectory();
+                        final file = File('${dir!.path}/update_$latestVersion.apk');
+                        final sink = file.openWrite();
+                        
+                        int bytes = 0;
+                        await response.stream.listen((List<int> chunk) {
+                          bytes += chunk.length;
+                          setState(() => progress = bytes / contentLength);
+                          sink.add(chunk);
+                        }).asFuture();
+                        await sink.close();
+                        
+                        final result = await OpenFilex.open(file.path);
+                        if (result.type != ResultType.done) throw Exception(result.message);
+                        setState(() => isDownloading = false);
+                      } catch (e) {
+                        debugPrint('Download error: $e');
+                        setState(() {
+                          isDownloading = false;
+                          dlError = 'Failed to download update. Please try again or download from website.';
+                        });
+                      }
+                    },
+                    child: const Text('Update Now'),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 // ==========================================
@@ -179,6 +421,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Amiga Gracia',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -195,6 +438,7 @@ class MyApp extends StatelessWidget {
           elevation: 2,
         ),
       ),
+      builder: (context, child) => GlobalUpdateWrapper(child: child!),
       home: SplashLoaderScreen(isFirstLaunch: isFirstLaunch),
     );
   }
@@ -231,88 +475,7 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
         // If versions don't match, show update prompt
         if (latestVersion != UserSession.appVersion) {
           if (mounted) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (ctx) {
-                bool isDownloading = false;
-                double progress = 0.0;
-                String dlError = '';
-                return StatefulBuilder(
-                  builder: (context, setState) {
-                    return AlertDialog(
-                      title: const Text('Update Required'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
-                          if (isDownloading) ...[
-                            const SizedBox(height: 20),
-                            LinearProgressIndicator(value: progress, color: kGreen),
-                            const SizedBox(height: 8),
-                            Text('${(progress * 100).toStringAsFixed(0)}% downloaded'),
-                          ],
-                          if (dlError.isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            Text(dlError, style: const TextStyle(color: Colors.red, fontSize: 12)),
-                          ]
-                        ],
-                      ),
-                      actions: [
-                        if (!isDownloading)
-                          FilledButton(
-                            onPressed: () async {
-                              setState(() {
-                                isDownloading = true;
-                                dlError = '';
-                              });
-                              try {
-                                final apkUrl = '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
-                                final request = http.Request('GET', Uri.parse(apkUrl));
-                                final response = await http.Client().send(request);
-                                
-                                if (response.statusCode != 200) {
-                                  throw Exception('Server returned ${response.statusCode}');
-                                }
-                                
-                                final contentLength = response.contentLength ?? 1;
-                                
-                                final dir = await getExternalStorageDirectory();
-                                final file = File('${dir!.path}/update_$latestVersion.apk');
-                                final sink = file.openWrite();
-                                
-                                int bytes = 0;
-                                await response.stream.listen((List<int> chunk) {
-                                  bytes += chunk.length;
-                                  setState(() => progress = bytes / contentLength);
-                                  sink.add(chunk);
-                                }).asFuture();
-                                await sink.close();
-                                
-                                final result = await OpenFilex.open(file.path);
-                                if (result.type != ResultType.done) {
-                                  throw Exception(result.message);
-                                }
-                                
-                                setState(() => isDownloading = false);
-                              } catch (e) {
-                                debugPrint('Download error: $e');
-                                setState(() {
-                                  isDownloading = false;
-                                  progress = 0;
-                                  dlError = 'Download failed. Please try again or visit the website.';
-                                });
-                              }
-                            },
-                            style: FilledButton.styleFrom(backgroundColor: kGreen),
-                            child: const Text('Update Now'),
-                          ),
-                      ],
-                    );
-                  }
-                );
-              },
-            );
+            UpdateChecker.showUpdateDialog(context, latestVersion);
           }
           return; // Stop initialization, wait for update
         }
@@ -322,15 +485,41 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
       // Proceed if server is unreachable
     }
 
-    // 2. Proceed to app
-    Future.delayed(const Duration(seconds: 3), () {
+    // 2. Check for saved booking session
+    BookingData? savedSession = await BookingData.loadFromPrefs();
+
+    // 3. Proceed to app
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => widget.isFirstLaunch ? const OnboardingScreen() : const MainScreen(),
-          ),
-        );
+        if (savedSession != null) {
+          BookingData.activeSession = savedSession;
+          // Jump to booking flow at the saved step
+          // To make it simple, we push MainScreen as base, then the proper booking screen
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+          
+          if (savedSession.savedStep >= 0) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => TravelScreen(initialMode: savedSession.mode)));
+          }
+          if (savedSession.savedStep >= 1) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: savedSession)));
+          }
+          if (savedSession.savedStep >= 2) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: savedSession)));
+          }
+          if (savedSession.savedStep >= 3) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: savedSession)));
+          }
+          if (savedSession.savedStep >= 4) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: savedSession)));
+          }
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => widget.isFirstLaunch ? const OnboardingScreen() : const MainScreen(),
+            ),
+          );
+        }
       }
     });
   }
@@ -1459,6 +1648,10 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
            booking.vehiclePrice = double.tryParse(selected.first['price'].toString()) ?? 0;
        }
     }
+
+    BookingData.activeSession = booking;
+    booking.savedStep = 1;
+    booking.saveToPrefs(1);
 
     Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: booking)));
   }
@@ -3218,6 +3411,8 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       widget.booking.selectedTransportClass = null;
       widget.booking.selectedScheduleAccommodationId = null;
       widget.booking.selectedScheduleAccommodation = null;
+      widget.booking.savedStep = 2;
+      widget.booking.saveToPrefs(2);
       Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
     }
   }
@@ -3254,6 +3449,8 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           widget.booking.selectedScheduleAccommodationId = null;
                           widget.booking.selectedScheduleAccommodation = null;
                           Navigator.pop(context);
+                          widget.booking.savedStep = 2; // We treat seat selection as part of step 2 transition
+                          widget.booking.saveToPrefs(2);
                           Navigator.push(context, MaterialPageRoute(builder: (_) => SeatSelectionScreen(booking: widget.booking)));
                         },
                         borderRadius: BorderRadius.circular(12),
@@ -3340,6 +3537,8 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           widget.booking.selectedTransportClassId = null;
                           widget.booking.selectedTransportClass = null;
                           Navigator.pop(context);
+                          widget.booking.savedStep = 2;
+                          widget.booking.saveToPrefs(2);
                           Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
                         },
                         borderRadius: BorderRadius.circular(12),
@@ -3703,6 +3902,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               child: ElevatedButton(
                 onPressed: allAssigned
                     ? () {
+                        widget.booking.savedStep = 2;
+                        widget.booking.saveToPrefs(2);
                         Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
                       }
                     : null,
@@ -3874,6 +4075,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
         widget.booking.passengers[i]['id_number'] = null;
       }
     }
+    widget.booking.savedStep = 3;
+    widget.booking.saveToPrefs(3);
     Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: widget.booking)));
   }
 
@@ -4186,6 +4389,8 @@ class _StayScreenState extends State<StayScreen> {
                         height: 52,
                         child: ElevatedButton(
                           onPressed: () {
+                            widget.booking.savedStep = 4;
+                            widget.booking.saveToPrefs(4);
                             Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: widget.booking)));
                           },
                           style: ElevatedButton.styleFrom(
@@ -4304,6 +4509,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
+        BookingData.clearPrefs();
+        BookingData.activeSession = null;
         // Store booking details — show payment/QR screen instead of navigating away
         setState(() {
           _bookingId = data['booking_id'] as int?;
