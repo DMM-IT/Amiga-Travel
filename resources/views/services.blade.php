@@ -19,6 +19,59 @@
                 'description' => 'Quickly check available schedules, fares, and cabins for 2GO Travel and Starlite Ferries Inc. Complete your passenger credentials and print tickets instantly.',
                 'button_text' => 'Start Direct Booking',
             ];
+            
+            // New Travel & Booking Services Cards
+            $travelServiceCards = $pageContent['travel_service_cards'] ?? [
+                [
+                    'icon' => 'M13 5l7 7-7 7M5 5l7 7-7 7',
+                    'title' => '2GO Travel Booking',
+                    'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel. Ideal for family retreats, business logistics, and leisure trips.',
+                    'note' => 'Available Online',
+                    'link' => '/book/new',
+                    'color' => 'text-pink-600',
+                ],
+                [
+                    'icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z',
+                    'title' => 'Starlite Ferries Inc.',
+                    'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings and roll-on/roll-off (RoRo) cargo slots.',
+                    'note' => 'Available Online',
+                    'link' => '/book/new',
+                    'color' => 'text-emerald-700',
+                ],
+                [
+                    'icon' => 'M12 14l9-5-9-5-9 5 9 5z',
+                    'title' => 'Airline Ticketing',
+                    'description' => 'Domestic and international flights powered by leading carriers including AirAsia, Cebu Pacific, and Philippine Airlines (PAL). Hassle-free check-ins and seat bookings.',
+                    'note' => 'PAL, CebuPac, AirAsia',
+                    'link' => '/book/new',
+                    'color' => 'text-blue-600',
+                ],
+                [
+                    'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
+                    'title' => 'Tour Packages',
+                    'description' => 'Curated itineraries for local and international travel destinations, complete with accommodations and guides.',
+                    'note' => 'Local & International',
+                    'link' => '/tour-package',
+                    'color' => 'text-purple-600',
+                ],
+                [
+                    'icon' => 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8',
+                    'title' => 'Apprenticeships & Training',
+                    'description' => 'Custom-tailored hospitality training programs, onboard apprenticeship training options, and educational field trips in cooperation with 2GO.',
+                    'note' => 'For Academe & Students',
+                    'link' => '/contact-us',
+                    'color' => 'text-orange-600',
+                ],
+                [
+                    'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
+                    'title' => 'Custom Travel Arrangements',
+                    'description' => 'Tailored travel packages for corporate retreats, family reunions, and large groups. We handle flight connections, hotel accommodation blocks, and group transport.',
+                    'note' => 'Tailored For Groups',
+                    'link' => '/contact-us',
+                    'color' => 'text-teal-700',
+                ],
+            ];
+            
             $serviceCards = $pageContent['service_cards'] ?? [
                 [
                     'icon' => 'M13 5l7 7-7 7M5 5l7 7-7 7',
@@ -88,6 +141,36 @@
             </div>
         </div>
 
+        <!-- Travel & Booking Services Section -->
+        <div class="mb-16">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Travel & Booking Services</h2>
+                <p class="mt-3 text-slate-600 max-w-2xl mx-auto">Choose from our ferry, airline, tour, and custom travel arrangements.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($travelServiceCards as $card)
+                <div class="bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition duration-200">
+                    <div class="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-current mb-6 {{ data_get($card, 'color') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ data_get($card, 'icon') }}" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900">{{ data_get($card, 'title') }}</h3>
+                    <p class="mt-3 text-slate-500 text-sm leading-relaxed flex-grow">
+                        {{ data_get($card, 'description') }}
+                    </p>
+                    <div class="mt-6 pt-6 border-t border-slate-100">
+                        <span class="text-xs font-semibold text-slate-400 block mb-3">{{ data_get($card, 'note') }}</span>
+                        <a href="{{ data_get($card, 'link') }}" class="text-sm font-bold {{ data_get($card, 'color') }} hover:opacity-80 transition inline-flex items-center gap-1">
+                            Learn more →
+                        </a>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
         <!-- Services Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @foreach($serviceCards as $card)
@@ -106,4 +189,6 @@
                 </div>
             </div>
             @endforeach
+        </div>
+    </div>
 @endsection
