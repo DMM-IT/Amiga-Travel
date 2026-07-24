@@ -1,16 +1,16 @@
-# Graph Report - amiga-gracia  (2026-07-24)
+# Graph Report - Amiga-Travel  (2026-07-24)
 
 ## Corpus Check
-- 427 files · ~267,789 words
+- 433 files · ~410,771 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5475 nodes · 13152 edges · 299 communities (267 shown, 32 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 1272 edges (avg confidence: 0.68)
+- 5516 nodes · 13147 edges · 323 communities (284 shown, 39 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 1243 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6347cd97`
+- Built from commit: `85e6a592`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -173,22 +173,46 @@
 - ScheduleResource.php
 - Core Module 225
 - Core Module 227
+- Core Module 228
+- Core Module 231
+- Core Module 241
+- Core Module 242
 - ManageProofs
 - graphify reference: add a URL and watch a folder
+- graphify reference: add a URL and watch a folder
+- FerryRoute.php
+- Filament\Resources\Pages\ViewRecord
+- getDataset
+- VoucherResource
+- .nextStep
+- .updateReturnDateFromDuration
+- UserResource
+- VehicleRateResource
+- qt
+- PurgeExpiredProofs.php
+- BookingExportController
+- yn
+- AdminPanelProvider.php
+- UserFactory
+- Collection
+- Illuminate\Database\Eloquent\Relations\HasOne
+- Illuminate\Support\Facades\Validator
 
 ## God Nodes (most connected - your core abstractions)
-1. `_update()` - 88 edges
-2. `x()` - 85 edges
-3. `_update()` - 84 edges
-4. `BookingForm` - 80 edges
-5. `Booking` - 80 edges
-6. `te()` - 74 edges
-7. `V()` - 72 edges
-8. `Schedule` - 58 edges
-9. `draw()` - 55 edges
-10. `vd()` - 53 edges
+1. `components/chart.js` - 948 edges
+2. `stat/chart.js` - 612 edges
+3. `_update()` - 88 edges
+4. `x()` - 85 edges
+5. `BookingForm` - 84 edges
+6. `Booking` - 84 edges
+7. `_update()` - 84 edges
+8. `te()` - 74 edges
+9. `V()` - 72 edges
+10. `draw()` - 55 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `te()` --indirect_call--> `Pr()`  [INFERRED]
+  public/js/filament/forms/components/markdown-editor.js → public/js/filament/filament/echo.js
 - `getExtension()` --indirect_call--> `Ht()`  [INFERRED]
   public/js/filament/forms/components/file-upload.js → public/js/filament/forms/components/markdown-editor.js
 - `_getTestState()` --indirect_call--> `Ht()`  [INFERRED]
@@ -197,125 +221,123 @@
   public/js/filament/forms/components/rich-editor.js → public/js/filament/forms/components/markdown-editor.js
 - `wWinMain()` --calls--> `CreateAndAttachConsole()`  [INFERRED]
   flutter_app/windows/runner/main.cpp → flutter_app/windows/runner/utils.cpp
-- `Win32Window::Win32Window()` --calls--> `Destroy`  [INFERRED]
-  flutter_app/windows/runner/win32_window.cpp → flutter_app/windows/runner/win32_window.h
 
 ## Import Cycles
 - None detected.
 
-## Communities (299 total, 32 thin omitted)
+## Communities (323 total, 39 thin omitted)
 
 ### Community 0 - "HTTP Controllers & Routing (C0)"
 Cohesion: 0.01
-Nodes (308): bool get, Color, dart:async, dart:convert, DateTime, double?, _accommodations, _activePassengerIndex (+300 more)
+Nodes (316): bool get, Color, dart:async, dart:convert, DateTime, double?, _accommodations, _activePassengerIndex (+308 more)
 
 ### Community 1 - "Data Models & Domain (C1)"
 Cohesion: 0.01
-Nodes (105): acquireContext(), addControllers(), addPlugins(), addScales(), alpha(), beforeDatasetDraw(), beforeDatasetsDraw(), bh() (+97 more)
+Nodes (120): components/chart.js, acquireContext(), addEventListener(), alpha(), beforeDatasetDraw(), beforeDatasetsDraw(), bh(), bindResponsiveEvents() (+112 more)
 
 ### Community 2 - "HTTP Controllers & Routing (C2)"
 Cohesion: 0.02
-Nodes (128): activateAttributeIfSupported(), appendStringToTextAtIndex(), applyBlockAttribute(), attachmentDidChangeAttributes(), attachmentDidChangeUploadProgress(), attachmentIsManaged(), attributeChangedCallback(), canRedo() (+120 more)
+Nodes (124): activateAttributeIfSupported(), appendStringToTextAtIndex(), applyBlockAttribute(), attachmentDidChangeUploadProgress(), attachmentIsManaged(), attributeChangedCallback(), canRedo(), canSyncDocumentView() (+116 more)
 
 ### Community 3 - "Core Module 3"
-Cohesion: 0.01
-Nodes (23): AccommodationResource, ApkUserResource, AppNotificationResource, BookingResource, DiscountResource, GraciaEarningRuleResource, InquiryResource, PromotionalTicketResource (+15 more)
+Cohesion: 0.03
+Nodes (10): AccommodationResource, AppNotificationResource, BookingResource, DiscountResource, GraciaEarningRuleResource, InquiryResource, TourResource, TransportClassResource (+2 more)
 
 ### Community 4 - "Core Module 4"
 Cohesion: 0.04
-Nodes (156): _a(), Ac(), ad(), Ae(), af(), ai(), al(), An() (+148 more)
+Nodes (152): _a(), Ae(), af(), ai(), al(), An(), ao(), ar() (+144 more)
 
 ### Community 5 - "Core Module 5"
 Cohesion: 0.02
-Nodes (107): Bt(), xo(), aa(), addEventListener(), an(), aspectRatio(), beforeDatasetDraw(), beforeDatasetsDraw() (+99 more)
+Nodes (104): stat/chart.js, aa(), active(), addControllers(), addPlugins(), addScales(), al(), an() (+96 more)
 
 ### Community 6 - "Core Module 6"
-Cohesion: 0.03
-Nodes (121): _a(), abutsStart(), after(), afterAutoSkip(), Ah(), Ai(), Al(), ar() (+113 more)
+Cohesion: 0.02
+Nodes (144): _a(), aa(), abutsStart(), after(), afterAutoSkip(), Ag(), Ai(), Al() (+136 more)
 
 ### Community 7 - "Data Models & Domain (C7)"
-Cohesion: 0.05
-Nodes (23): AdminNotifications, BookingsRelationManager, GraciaPointLedgersRelationManager, AccommodationsRelationManager, PassengersRelationManager, TransportClassesRelationManager, ScheduleAccommodationsRelationManager, TransportClassesRelationManager (+15 more)
+Cohesion: 0.07
+Nodes (24): AdminNotifications, ApkUserResource/RelationManagers/BookingsRelationManager.php, BookingsRelationManager, GraciaPointLedgersRelationManager, AccommodationsRelationManager, PassengersRelationManager, BookingResource/RelationManagers/TransportClassesRelationManager.php, TransportClassesRelationManager (+16 more)
 
 ### Community 8 - "Core Module 8"
 Cohesion: 0.04
-Nodes (108): addAttribute(), addAttributeAtRange(), addAttributesAtRange(), addHTMLAttribute(), appendText(), applyBlockAttributeAtRange(), breakFormattedBlock(), charAt() (+100 more)
+Nodes (115): addAttribute(), addAttributeAtRange(), addAttributesAtRange(), addHTMLAttribute(), appendText(), applyBlockAttributeAtRange(), canBeGroupedWith(), canDecreaseBlockAttributeLevel() (+107 more)
 
 ### Community 9 - "Database Schema (C9)"
-Cohesion: 0.03
-Nodes (13): TourResource, ListVehicles, ScheduleController, FerryRoute, PromotionalTicket, Schedule, TransportClass, FerryRouteSeeder (+5 more)
+Cohesion: 0.06
+Nodes (7): PromotionalTicket, Schedule, TransportClass, TransportClassSeeder, HasOneThrough, Illuminate\Database\Eloquent\Relations\BelongsToMany, ScheduleSeatingProfileTest
 
 ### Community 10 - "Core Module 10"
-Cohesion: 0.08
-Nodes (62): [x](), $c(), ca(), D(), E(), Ea(), g(), H() (+54 more)
+Cohesion: 0.07
+Nodes (66): [g](), [x](), $c(), D(), E(), Ea(), g(), H() (+58 more)
 
 ### Community 11 - "Database Schema (C11)"
 Cohesion: 0.03
-Nodes (101): ArrowLeft(), ArrowRight(), attachFiles(), backspace(), beforeinput(), canApplyToDocument(), compositionend(), compositionstart() (+93 more)
+Nodes (97): attachFiles(), backspace(), beforeinput(), canApplyToDocument(), compositionend(), compositionShouldAcceptFile(), compositionstart(), compositionupdate() (+89 more)
 
 ### Community 12 - "Data Models & Domain (C12)"
-Cohesion: 0.04
-Nodes (101): ad(), adjustHitBoxes(), ae(), af(), afterDraw(), bn(), calculateLabelRotation(), _calculatePadding() (+93 more)
+Cohesion: 0.06
+Nodes (66): adjustHitBoxes(), ae(), afterDraw(), aspectRatio(), _computeLabelArea(), _computeTitleHeight(), cs(), De() (+58 more)
 
 ### Community 13 - "Core Module 13"
-Cohesion: 0.04
-Nodes (22): BookingController, PaymentProof, UserDashboard, BookingCancellation, self, BookingConfirmation, BookingCreated, PaymentProofReceived (+14 more)
+Cohesion: 0.06
+Nodes (10): Booking, Inquiry, Transaction, ReportingService, BelongsTo, BelongsToMany, HasMany, Illuminate\Support\Collection (+2 more)
 
 ### Community 14 - "Core Module 14"
 Cohesion: 0.04
-Nodes (95): addElements(), applyStack(), aspectRatio(), buildOrUpdateElements(), C(), Ca(), _cachedScopes(), _calculateBarIndexPixels() (+87 more)
+Nodes (96): ad(), af(), Ah(), applyStack(), bf(), buildTicks(), _calculateBarIndexPixels(), _calculateBarValuePixels() (+88 more)
 
 ### Community 15 - "Core Module 15"
-Cohesion: 0.05
-Nodes (23): CreateUser, EditUser, AdminNotificationController, AuthController, AdminMiddleware, EnsureStaffPermission, AdminNotificationStatus, HasOne (+15 more)
+Cohesion: 0.08
+Nodes (11): AdminNotificationController, ScheduleController, AuthController, AdminMiddleware, EnsureStaffPermission, FerryRoute, Closure, Illuminate\Http\RedirectResponse (+3 more)
 
 ### Community 16 - "Data Models & Domain (C16)"
 Cohesion: 0.05
-Nodes (52): ba(), bi(), c(), ca(), clickPercent(), constructor(), de(), e() (+44 more)
+Nodes (45): ba(), bi(), c(), ca(), clickPercent(), constructor(), e(), getExtension() (+37 more)
 
 ### Community 17 - "Core Module 17"
-Cohesion: 0.12
-Nodes (69): Sg(), at(), B(), br(), Bt(), cd(), Cr(), Ct() (+61 more)
+Cohesion: 0.10
+Nodes (83): define(), Sg(), ad(), at(), B(), br(), Bt(), ca() (+75 more)
 
 ### Community 18 - "HTTP Controllers & Routing (C18)"
-Cohesion: 0.05
-Nodes (4): BookingForm, Collection, Illuminate\Support\Facades\Validator, Validator
+Cohesion: 0.07
+Nodes (4): BookingForm, Collection, Component, WithFileUploads
 
 ### Community 19 - "HTTP Controllers & Routing (C19)"
-Cohesion: 0.04
-Nodes (67): Ac(), Bl(), cf(), clone(), create(), Dl(), dtFormatter(), eg() (+59 more)
+Cohesion: 0.03
+Nodes (83): ar(), Bl(), cf(), clone(), constructor(), create(), Dl(), dtFormatter() (+75 more)
 
 ### Community 20 - "Core Module 20"
-Cohesion: 0.05
-Nodes (67): addBox(), afterBuildTicks(), afterCalculateLabelRotation(), afterDataLimits(), afterFit(), afterSetDimensions(), afterTickToLabelConversion(), afterUpdate() (+59 more)
+Cohesion: 0.04
+Nodes (88): addBox(), afterBuildTicks(), afterCalculateLabelRotation(), afterDataLimits(), afterFit(), afterSetDimensions(), afterTickToLabelConversion(), afterUpdate() (+80 more)
 
 ### Community 21 - "Data Models & Domain (C21)"
 Cohesion: 0.04
-Nodes (12): Pr(), Bi(), Id(), ji(), qi(), Ri(), te(), Vi() (+4 more)
+Nodes (16): Bi(), bn(), Id(), ji(), kd(), ki(), kl(), on() (+8 more)
 
 ### Community 22 - "Core Module 22"
 Cohesion: 0.06
-Nodes (59): attachmentManagerDidRequestRemovalOfAttachment(), breaksOnReturn(), Ca(), canSetCurrentAttribute(), canSetCurrentBlockAttribute(), compositionControllerDidRequestRemovalOfAttachment(), decreaseBlockAttributeLevel(), decreaseListLevel() (+51 more)
+Nodes (59): attachmentManagerDidRequestRemovalOfAttachment(), breakFormattedBlock(), breaksOnReturn(), Ca(), canSetCurrentAttribute(), canSetCurrentBlockAttribute(), compositionControllerDidRequestRemovalOfAttachment(), copyWithoutText() (+51 more)
 
 ### Community 23 - "Core Module 23"
 Cohesion: 0.06
-Nodes (42): ai(), apply(), co(), Cr(), $e(), es(), Et(), fo() (+34 more)
+Nodes (40): ai(), apply(), B(), co(), Cr(), $e(), es(), Et() (+32 more)
 
 ### Community 24 - "Filament Admin & UI (C24)"
-Cohesion: 0.05
-Nodes (55): addEventListener(), an(), Au(), ba(), beforeDraw(), bindEvents(), bindResponsiveEvents(), bindUserEvents() (+47 more)
+Cohesion: 0.04
+Nodes (63): Ac(), an(), Au(), average(), ba(), beforeDraw(), bu(), Ca() (+55 more)
 
 ### Community 25 - "Data Models & Domain (C25)"
-Cohesion: 0.08
-Nodes (50): e(), i(), l(), Ni(), o(), t(), u(), be() (+42 more)
+Cohesion: 0.17
+Nodes (16): e(), i(), l(), Ni(), o(), t(), u(), be() (+8 more)
 
 ### Community 26 - "Data Models & Domain (C26)"
-Cohesion: 0.05
-Nodes (54): _a(), active(), add(), _animateOptions(), average(), ba(), _cachedScopes(), _createAnimations() (+46 more)
+Cohesion: 0.09
+Nodes (30): average(), fn(), getBasePosition(), getBaseValue(), getCenterPoint(), getProps(), hasValue(), hn() (+22 more)
 
 ### Community 27 - "Core Module 27"
-Cohesion: 0.07
-Nodes (49): buildOrUpdateScales(), C(), cl(), Co(), cr(), D(), E(), endOf() (+41 more)
+Cohesion: 0.09
+Nodes (38): add(), C(), Co(), _computeLabelSizes(), cr(), diff(), endOf(), Et() (+30 more)
 
 ### Community 28 - "Core Module 28"
 Cohesion: 0.06
@@ -323,183 +345,183 @@ Nodes (17): ListAccommodations, ListApkUsers, ListAppNotifications, ListBookings
 
 ### Community 29 - "Database Schema (C29)"
 Cohesion: 0.06
-Nodes (23): actions(), button(), constructor(), danger(), dispatch(), dispatchSelf(), dispatchTo(), duration() (+15 more)
+Nodes (24): actions(), button(), constructor(), danger(), dispatch(), dispatchSelf(), dispatchTo(), duration() (+16 more)
 
 ### Community 30 - "Core Module 30"
 Cohesion: 0.07
-Nodes (7): Passenger, ScheduleAccommodation, TourDate, Voucher, VoucherRedemption, VoucherService, Illuminate\Database\Eloquent\Relations\BelongsTo
+Nodes (18): Discount, GraciaPointLedger, Passenger, ScheduleAccommodation, TourDate, UserLoginHistory, VehicleBrand, VehicleModel (+10 more)
 
 ### Community 31 - "Frontend & Components (C31)"
 Cohesion: 0.07
 Nodes (44): ActivityScreen, _ActivityScreenState, BookingDetailsScreen, _BookingDetailsScreenState, BookingSubmitScreen, _BookingSubmitScreenState, ContactScreen, _ContactScreenState (+36 more)
 
 ### Community 32 - "Core Module 32"
-Cohesion: 0.06
-Nodes (43): disabled(), afterAutoSkip(), Ao(), Bi(), buildLookupTable(), buildTicks(), determineDataLimits(), diff() (+35 more)
+Cohesion: 0.10
+Nodes (29): afterAutoSkip(), Ao(), Bi(), buildLookupTable(), determineDataLimits(), Fi(), getAllParsedValues(), getDataTimestamps() (+21 more)
 
 ### Community 33 - "Core Module 33"
 Cohesion: 0.08
 Nodes (43): adjustHitBoxes(), afterDraw(), bc(), Bl(), clear(), _computeLabelArea(), _computeTitleHeight(), _createItems() (+35 more)
 
 ### Community 34 - "Data Models & Domain (C34)"
-Cohesion: 0.06
-Nodes (11): OverallReports, Collection, StaffPerformance, ViewApkUser, ViewBooking, ViewInquiry, ViewPromotionalTicket, ViewTransaction (+3 more)
+Cohesion: 0.10
+Nodes (4): OverallReports, Collection, StaffPerformance, DatePicker
 
 ### Community 35 - "Data Models & Domain (C35)"
-Cohesion: 0.07
-Nodes (16): AccommodationController, DiscountController, Accommodation, Discount, VehicleBrand, VehicleModel, DatabaseSeeder, DiscountSeeder (+8 more)
+Cohesion: 0.13
+Nodes (10): DatabaseSeeder, DiscountSeeder, FerryRouteSeeder, ScheduleAccommodationSeeder, TourHotelsSeeder, VehicleRateSeeder, VehicleSeeder, WebsiteSettingSeeder (+2 more)
 
 ### Community 36 - "Core Module 36"
-Cohesion: 0.07
-Nodes (41): as(), At(), Bs(), cc(), De(), Ea(), ed(), Fc() (+33 more)
+Cohesion: 0.09
+Nodes (34): At(), Bs(), cc(), cd(), clear(), cn(), Da(), Fc() (+26 more)
 
 ### Community 37 - "Filament Admin & UI (C37)"
-Cohesion: 0.07
-Nodes (40): afterDatasetsUpdate(), buildOrUpdateControllers(), _d(), _destroyDatasetMeta(), Fd(), first(), generateLabels(), getDatasetMeta() (+32 more)
+Cohesion: 0.11
+Nodes (26): afterDatasetsUpdate(), _d(), generateLabels(), getDatasetMeta(), getDataVisibility(), getMaxBorderWidth(), getStyle(), _handleEvent() (+18 more)
 
 ### Community 38 - "Core Module 38"
 Cohesion: 0.07
 Nodes (14): EditAccommodation, EditAppNotification, EditBooking, EditDiscount, EditGraciaEarningRule, EditPromotionalTicket, EditSchedule, EditTour (+6 more)
 
 ### Community 39 - "Data Models & Domain (C39)"
-Cohesion: 0.07
-Nodes (33): cacheViewForObject(), compositionDidLoadSnapshot(), createAttachmentNodes(), createChildView(), createContainerElement(), createDocumentFragmentForSync(), createElement(), createNodes() (+25 more)
+Cohesion: 0.09
+Nodes (28): cacheViewForObject(), compositionDidLoadSnapshot(), createAttachmentNodes(), createChildView(), createContainerElement(), createDocumentFragmentForSync(), createElement(), createNodes() (+20 more)
 
 ### Community 40 - "HTTP Controllers & Routing (C40)"
-Cohesion: 0.10
-Nodes (36): add(), applyKeyboardCommand(), attachmentEditorDidRequestRemovalOfAttachment(), canBeGrouped(), checkValidity(), createCaptionElement(), dialogIsVisible(), didClickActionButton() (+28 more)
+Cohesion: 0.08
+Nodes (45): add(), applyKeyboardCommand(), attachmentDidChangeAttributes(), attachmentEditorDidRequestRemovalOfAttachment(), canBeGrouped(), checkValidity(), createCaptionElement(), createContentNodes() (+37 more)
 
 ### Community 41 - "Data Models & Domain (C41)"
 Cohesion: 0.08
-Nodes (36): canAcceptDataTransfer(), canDecreaseNestingLevel(), canIncreaseNestingLevel(), compositionControllerDidFocus(), compositionDidRequestChangingSelectionToLocationRange(), createDOMRangeFromPoint(), createLocationRangeFromDOMRange(), decreaseNestingLevel() (+28 more)
+Nodes (37): canAcceptDataTransfer(), canDecreaseNestingLevel(), canIncreaseNestingLevel(), compositionControllerDidFocus(), compositionDidRequestChangingSelectionToLocationRange(), createDOMRangeFromPoint(), createLocationRangeFromDOMRange(), decreaseNestingLevel() (+29 more)
 
 ### Community 42 - "Filament Admin & UI (C42)"
-Cohesion: 0.09
-Nodes (36): afterBuildTicks(), afterCalculateLabelRotation(), afterDataLimits(), afterFit(), afterSetDimensions(), afterTickToLabelConversion(), afterUpdate(), beforeBuildTicks() (+28 more)
+Cohesion: 0.07
+Nodes (44): afterBuildTicks(), afterCalculateLabelRotation(), afterDataLimits(), afterFit(), afterSetDimensions(), afterTickToLabelConversion(), afterUpdate(), beforeBuildTicks() (+36 more)
 
 ### Community 43 - "Core Module 43"
-Cohesion: 0.09
-Nodes (36): calculateCircumference(), calculateLabelRotation(), _calculatePadding(), _circumference(), _computeAngle(), _computeLabelItems(), _computeLabelSizes(), computeTickLimit() (+28 more)
+Cohesion: 0.06
+Nodes (64): applyStack(), ar(), as(), buildTicks(), _calculateBarIndexPixels(), _calculateBarValuePixels(), calculateCircumference(), _calculatePadding() (+56 more)
 
 ### Community 44 - "Core Module 44"
 Cohesion: 0.07
-Nodes (11): ListTours, PromotionController, TourController, VoucherController, BookingExportController, Controller, TourController, Tour (+3 more)
+Nodes (13): ListTours, AccommodationController, DiscountController, PromotionController, Api/TourController.php, TourController, Controller, Controllers/TourController.php (+5 more)
 
 ### Community 45 - "Core Module 45"
-Cohesion: 0.10
-Nodes (13): CreatesApplication, Illuminate\Foundation\Testing\RefreshDatabase, Illuminate\Foundation\Testing\TestCase, BookingLookupCancellationTest, BookingRebookingFlowTest, ExampleTest, GraciaPointsServiceTest, TestCase (+5 more)
+Cohesion: 0.12
+Nodes (13): CreatesApplication, Illuminate\Foundation\Testing\RefreshDatabase, Illuminate\Foundation\Testing\TestCase, BookingLookupCancellationTest, BookingRebookingFlowTest, Feature/ExampleTest.php, ExampleTest, GraciaPointsServiceTest (+5 more)
 
 ### Community 46 - "HTTP Controllers & Routing (C46)"
-Cohesion: 0.08
-Nodes (35): afterDatasetsUpdate(), buildOrUpdateControllers(), _destroyDatasetMeta(), dl(), Do(), generateLabels(), getController(), getDatasetMeta() (+27 more)
+Cohesion: 0.10
+Nodes (28): afterDatasetsUpdate(), generateLabels(), getDatasetMeta(), getDataVisibility(), _getLegendItemAt(), getMaxBorderWidth(), _getSortedDatasetMetas(), getStyle() (+20 more)
 
 ### Community 47 - "Core Module 47"
-Cohesion: 0.07
-Nodes (34): box(), canBeConsolidatedWith(), canBeGroupedWith(), canDecreaseBlockAttributeLevel(), compositionControllerDidRender(), constructor(), formDisabledCallback(), fromUCS2String() (+26 more)
+Cohesion: 0.08
+Nodes (30): box(), canBeConsolidatedWith(), compositionControllerDidRender(), constructor(), disabled(), formDisabledCallback(), fromUCS2String(), get() (+22 more)
 
 ### Community 48 - "Data Models & Domain (C48)"
-Cohesion: 0.12
-Nodes (34): Ae(), ar(), at(), Cn(), de(), dt(), En(), fr() (+26 more)
+Cohesion: 0.23
+Nodes (18): Ae(), at(), de(), dt(), fr(), Gt(), ht(), It() (+10 more)
 
 ### Community 49 - "Data Models & Domain (C49)"
-Cohesion: 0.10
-Nodes (34): applyStack(), ar(), as(), _calculateBarIndexPixels(), _calculateBarValuePixels(), _computeGridLineItems(), countVisibleElements(), datasetAnimationScopeKeys() (+26 more)
+Cohesion: 0.06
+Nodes (52): Bt(), xo(), addEventListener(), bindEvents(), bindResponsiveEvents(), bindUserEvents(), buildOrUpdateScales(), _checkEventBindings() (+44 more)
 
 ### Community 50 - "Data Models & Domain (C50)"
 Cohesion: 0.07
 Nodes (5): ManageWebsiteSettings, WebsiteSetting, AppServiceProvider, Illuminate\Support\Facades\View, Illuminate\Support\ServiceProvider
 
 ### Community 51 - "Core Module 51"
-Cohesion: 0.07
-Nodes (33): Ag(), Ef(), fe(), features(), fromFormat(), fromHTTP(), fromISOTime(), fromRFC2822() (+25 more)
+Cohesion: 0.06
+Nodes (11): EditUser, AdminNotificationStatus, HasOne, User, Voucher, AdminNotificationFeed, Filament\Models\Contracts\FilamentUser, Illuminate\Database\Eloquent\Relations\HasMany (+3 more)
 
 ### Community 52 - "Data Models & Domain (C52)"
-Cohesion: 0.08
-Nodes (32): alpha(), be(), ea(), en(), fe(), Fs(), ge(), Go() (+24 more)
+Cohesion: 0.10
+Nodes (26): alpha(), be(), en(), fe(), greyscale(), Hi(), ic(), interpolate() (+18 more)
 
 ### Community 53 - "Filament Admin & UI (C53)"
-Cohesion: 0.08
-Nodes (11): Action, DeleteAllUsers, PurgeExpiredProofs, ManagePaymentSettings, ManageProofs, PaymentSetting, self, Filament\Actions\Action (+3 more)
+Cohesion: 0.07
+Nodes (9): Action, ManagePaymentSettings, ManageProofs, TransactionResource, PaymentSetting, self, Filament\Actions\Action, Filament\Actions\Concerns\InteractsWithActions (+1 more)
 
 ### Community 54 - "Core Module 54"
-Cohesion: 0.09
-Nodes (17): a(), ar(), at(), b(), cr(), d(), f(), g() (+9 more)
+Cohesion: 0.10
+Nodes (13): a(), ar(), at(), cr(), d(), f(), H(), ji() (+5 more)
 
 ### Community 55 - "HTTP Controllers & Routing (C55)"
-Cohesion: 0.09
-Nodes (31): Yn(), acquireContext(), addElements(), buildOrUpdateElements(), configure(), constructor(), _dataCheck(), datasetScopeKeys() (+23 more)
+Cohesion: 0.07
+Nodes (43): Yn(), _a(), acquireContext(), ba(), _cachedScopes(), configure(), constructor(), createResolver() (+35 more)
 
 ### Community 56 - "Core Module 56"
-Cohesion: 0.08
-Nodes (5): FerryRouteResource, CreateFerryRoute, EditFerryRoute, Vehicle, $set(
+Cohesion: 0.07
+Nodes (9): FerryRouteResource, CreateFerryRoute, EditFerryRoute, ListVehicles, Vehicle, Form, Illuminate\Database\Eloquent\Builder, Resource (+1 more)
 
 ### Community 57 - "Data Models & Domain (C57)"
-Cohesion: 0.10
-Nodes (15): CreateAccommodation, CreateAppNotification, CreateBooking, CreateDiscount, CreateGraciaEarningRule, CreateInquiry, CreatePromotionalTicket, CreateSchedule (+7 more)
+Cohesion: 0.08
+Nodes (16): CreateAccommodation, CreateAppNotification, CreateBooking, CreateDiscount, CreateGraciaEarningRule, CreateInquiry, CreatePromotionalTicket, CreateSchedule (+8 more)
 
 ### Community 58 - "Core Module 58"
-Cohesion: 0.17
-Nodes (29): _a(), ba(), Be(), Bi(), br(), Ca(), ce(), Dn() (+21 more)
+Cohesion: 0.16
+Nodes (33): _a(), aa(), ba(), Be(), Bi(), br(), Ca(), ce() (+25 more)
 
 ### Community 59 - "Core Module 59"
 Cohesion: 0.09
-Nodes (18): Any, Cocoa, Flutter, AppDelegate, Bool, RunnerTests, AppDelegate, Bool (+10 more)
+Nodes (22): Any, Cocoa, Flutter, ios/Runner/AppDelegate.swift, AppDelegate, Bool, ios/RunnerTests/RunnerTests.swift, RunnerTests (+14 more)
 
 ### Community 60 - "Filament Admin & UI (C60)"
-Cohesion: 0.13
-Nodes (8): GraciaPointsController, AppNotification, GraciaEarningRule, GraciaPointLedger, GraciaUserBalance, GraciaPointsService, GraciaEarningRuleSeeder, Illuminate\Database\Eloquent\Factories\HasFactory
+Cohesion: 0.15
+Nodes (7): GraciaPointsController, AppNotification, GraciaEarningRule, GraciaUserBalance, GraciaPointsService, GraciaEarningRuleSeeder, Illuminate\Database\Eloquent\Factories\HasFactory
 
 ### Community 61 - "Data Models & Domain (C61)"
 Cohesion: 0.07
-Nodes (26): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+18 more)
+Nodes (27): .claude/skills/graphify/SKILL.md, For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands (+19 more)
 
 ### Community 62 - "Core Module 62"
-Cohesion: 0.09
-Nodes (27): attachmentForFile(), attributesForFile(), compositionShouldAcceptFile(), didChangeAttributes(), getContentType(), getCurrentTextAttributes(), getHeight(), getHref() (+19 more)
+Cohesion: 0.08
+Nodes (30): attachmentForFile(), attributesForFile(), canSetCurrentTextAttribute(), didChangeAttributes(), didClickAttachment(), dragstart(), findAttachmentForElement(), getAttachmentAndPositionById() (+22 more)
 
 ### Community 63 - "Data Models & Domain (C63)"
 Cohesion: 0.09
-Nodes (27): active(), _animateOptions(), average(), cd(), clear(), cn(), _createAnimations(), Da() (+19 more)
+Nodes (29): addControllers(), addElements(), addPlugins(), addScales(), buildOrUpdateControllers(), buildOrUpdateElements(), _dataCheck(), _destroy() (+21 more)
 
 ### Community 64 - "Data Models & Domain (C64)"
-Cohesion: 0.10
-Nodes (27): tl(), ac(), Ai(), ca(), ec(), Fc(), G(), getIndexAngle() (+19 more)
+Cohesion: 0.12
+Nodes (24): ac(), Ai(), ca(), calculateLabelRotation(), drawGrid(), ec(), Fc(), G() (+16 more)
 
 ### Community 65 - "Core Module 65"
-Cohesion: 0.24
-Nodes (26): d(), Di(), f(), Ge(), h(), I(), ja(), k() (+18 more)
+Cohesion: 0.25
+Nodes (25): d(), Di(), f(), Ge(), I(), ir(), ja(), k() (+17 more)
 
 ### Community 66 - "HTTP Controllers & Routing (C66)"
-Cohesion: 0.10
-Nodes (26): add(), bf(), buildTicks(), eh(), _generate(), _getAnims(), getTickLimit(), Gi() (+18 more)
+Cohesion: 0.07
+Nodes (39): active(), add(), _animateOptions(), Bi(), _cachedScopes(), cancel(), chartOptionScopes(), _createAnimations() (+31 more)
 
 ### Community 67 - "Core Module 67"
 Cohesion: 0.08
-Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
+Nodes (25): .copilot/skills/graphify/SKILL.md, For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands (+17 more)
 
 ### Community 68 - "Database Schema (C68)"
 Cohesion: 0.10
-Nodes (20): FlPluginRegistry, fl_register_plugins(), main(), my_application_activate(), my_application_class_init(), my_application_dispose(), my_application_init(), my_application_local_command_line() (+12 more)
+Nodes (22): FlPluginRegistry, linux/flutter/generated_plugin_registrant.cc, fl_register_plugins(), linux/flutter/generated_plugin_registrant.h, main(), my_application_activate(), my_application_class_init(), my_application_dispose() (+14 more)
 
 ### Community 69 - "Core Module 69"
 Cohesion: 0.08
-Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
+Nodes (25): .github/skills/graphify/SKILL.md, For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands (+17 more)
 
 ### Community 70 - "Database Seeders & Testing (C70)"
-Cohesion: 0.17
-Nodes (25): Qt(), aa(), da(), fa(), Fi(), fn(), gr(), Ii() (+17 more)
+Cohesion: 0.14
+Nodes (30): Qt(), Cn(), da(), En(), fa(), Fi(), fn(), h() (+22 more)
 
 ### Community 71 - "Data Models & Domain (C71)"
 Cohesion: 0.08
 Nodes (24): APP_DEBUG, APP_ENV, APP_NAME, APP_URL, CACHE_STORE, DB_CONNECTION, DB_DATABASE, DB_HOST (+16 more)
 
 ### Community 72 - "Core Module 72"
-Cohesion: 0.12
-Nodes (23): [g](), Aa(), Jc(), Ln(), ma(), pi(), qa(), qc() (+15 more)
+Cohesion: 0.08
+Nodes (44): Aa(), Ac(), bl(), Cc(), ce(), cf(), cl(), Dc() (+36 more)
 
 ### Community 73 - "HTTP Controllers & Routing (C73)"
-Cohesion: 0.11
-Nodes (22): addControllers(), addPlugins(), addScales(), al(), cancel(), _createDescriptors(), _descriptors(), _each() (+14 more)
+Cohesion: 0.08
+Nodes (5): ApkUserResource, VehicleResource, DashboardStatsOverview, SystemStatsOverview, Filament\Widgets\StatsOverviewWidget
 
 ### Community 74 - "Data Models & Domain (C74)"
 Cohesion: 0.10
@@ -514,12 +536,12 @@ Cohesion: 0.11
 Nodes (21): actionIsExternal(), canInvokeAction(), compositionControllerDidBlur(), compositionControllerDidSyncDocumentView(), compositionDidAddAttachment(), compositionDidChangeAttachmentPreviewURL(), compositionDidChangeCurrentAttributes(), compositionDidChangeDocument() (+13 more)
 
 ### Community 77 - "Core Module 77"
-Cohesion: 0.10
-Nodes (21): canSetCurrentTextAttribute(), compositionControllerDidRequestDeselectingAttachment(), compositionDidStartEditingAttachment(), cut(), didClickAttachment(), dragstart(), findAttachmentForElement(), getAttachmentAndPositionById() (+13 more)
+Cohesion: 0.14
+Nodes (10): BookingCancellation, self, BookingConfirmation, BookingCreated, PaymentProofReceived, RebookingRequested, RebookingVerification, Illuminate\Bus\Queueable (+2 more)
 
 ### Community 78 - "Core Module 78"
-Cohesion: 0.10
-Nodes (21): Bi(), chartOptionScopes(), constructor(), describe(), Ec(), Fr(), getDevicePixelRatio(), getMeta() (+13 more)
+Cohesion: 0.13
+Nodes (24): C(), Ce(), co(), formats(), Ft(), ga(), getLabelAndValue(), getLabelForValue() (+16 more)
 
 ### Community 79 - "Core Module 79"
 Cohesion: 0.10
@@ -531,7 +553,7 @@ Nodes (16): wchar_t, Scale(), Create, Destroy, SetQuitOnClose, Show, UpdateTheme
 
 ### Community 81 - "Core Module 81"
 Cohesion: 0.18
-Nodes (20): appendAttachmentWithAttributes(), appendBlockForAttributesWithElement(), appendBlockForElement(), appendBlockForTextNode(), appendEmptyBlock(), appendPiece(), appendStringWithAttributes(), find() (+12 more)
+Nodes (20): It(), appendAttachmentWithAttributes(), appendBlockForAttributesWithElement(), appendBlockForElement(), appendBlockForTextNode(), appendEmptyBlock(), appendPiece(), appendStringWithAttributes() (+12 more)
 
 ### Community 82 - "Core Module 82"
 Cohesion: 0.11
@@ -545,9 +567,13 @@ Nodes (15): DartProject, HWND, LPARAM, LRESULT, UINT, WPARAM, FlutterWindow, flu
 Cohesion: 0.16
 Nodes (5): BookingStatusChart, RecentActivityWidget, RevenueChartWidget, TopRoutesWidget, Filament\Widgets\Widget
 
+### Community 85 - "Core Module 85"
+Cohesion: 0.12
+Nodes (5): BookingLookup, PaymentProof, UserDashboard, Livewire\Component, Livewire\WithFileUploads
+
 ### Community 86 - "Data Models & Domain (C86)"
-Cohesion: 0.15
-Nodes (17): At(), beforeDraw(), dataset(), Fa(), getMaximumSize(), getSortedVisibleDatasetMetas(), getVisibleDatasetCount(), index() (+9 more)
+Cohesion: 0.10
+Nodes (23): At(), beforeDraw(), dataset(), ea(), Fa(), ge(), getMaximumSize(), getSortedVisibleDatasetMetas() (+15 more)
 
 ### Community 87 - "Core Module 87"
 Cohesion: 0.12
@@ -567,19 +593,19 @@ Nodes (13): autoload-dev, psr-4, description, keywords, license, minimum-stabili
 
 ### Community 91 - "Core Module 91"
 Cohesion: 0.19
-Nodes (12): RegisterPlugins(), OnCreate, HWND, Win32Window, child_content_, GetClientArea, OnCreate, quit_on_close_ (+4 more)
+Nodes (14): windows/flutter/generated_plugin_registrant.cc, windows/flutter/generated_plugin_registrant.h, RegisterPlugins(), OnCreate, HWND, Win32Window, child_content_, GetClientArea (+6 more)
 
 ### Community 93 - "Core Module 93"
 Cohesion: 0.15
 Nodes (11): file_selector_macos, firebase_core, firebase_messaging, RegisterGeneratedPlugins(), flutter_local_notifications, FlutterPluginRegistry, FlutterViewController, Foundation (+3 more)
 
 ### Community 94 - "Data Models & Domain (C94)"
-Cohesion: 0.18
-Nodes (12): Ce(), De(), di(), e(), Ht(), Ie(), Re(), t() (+4 more)
+Cohesion: 0.15
+Nodes (14): Ce(), De(), di(), e(), Ht(), Ie(), Me(), Re() (+6 more)
 
 ### Community 95 - "Filament Admin & UI (C95)"
 Cohesion: 0.15
-Nodes (12): background_color, categories, description, display, icons, name, orientation, short_name (+4 more)
+Nodes (13): public/manifest.json, background_color, categories, description, display, icons, name, orientation (+5 more)
 
 ### Community 96 - "Filament Admin & UI (C96)"
 Cohesion: 0.24
@@ -587,19 +613,19 @@ Nodes (9): wWinMain(), string, wchar_t, CreateAndAttachConsole(), GetCommandLine
 
 ### Community 97 - "Core Module 97"
 Cohesion: 0.26
-Nodes (7): C(), D(), J(), O(), U(), v(), X()
+Nodes (8): filament/app.js, C(), D(), J(), O(), U(), v(), X()
 
 ### Community 98 - "Core Module 98"
 Cohesion: 0.18
 Nodes (12): Be(), ei(), ii(), le(), ni(), oi(), r(), ri() (+4 more)
 
 ### Community 99 - "Core Module 99"
-Cohesion: 0.23
-Nodes (12): aa(), determineDataLimits(), Dh(), _getLabelBounds(), getMinMax(), _getOtherScale(), getUserBounds(), handleTickRangeOptions() (+4 more)
+Cohesion: 0.09
+Nodes (3): PromotionalTicketResource, ScheduleResource, $set(
 
 ### Community 100 - "Filament Admin & UI (C100)"
 Cohesion: 0.18
-Nodes (10): background_color, description, display, icons, name, orientation, prefer_related_applications, short_name (+2 more)
+Nodes (11): web/manifest.json, background_color, description, display, icons, name, orientation, prefer_related_applications (+3 more)
 
 ### Community 101 - "Core Module 101"
 Cohesion: 0.36
@@ -611,15 +637,15 @@ Nodes (9): Flutter & Android Studio Setup Guide, Option A: VS Code (Recommended)
 
 ### Community 103 - "Resource"
 Cohesion: 0.22
-Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
+Nodes (9): .claude/skills/graphify/references/exports.md, graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag) (+1 more)
 
 ### Community 104 - "Filament Admin & UI (C104)"
 Cohesion: 0.22
-Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
+Nodes (9): .copilot/skills/graphify/references/exports.md, graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag) (+1 more)
 
 ### Community 105 - "Filament Admin & UI (C105)"
 Cohesion: 0.22
-Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
+Nodes (9): .github/skills/graphify/references/exports.md, graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag) (+1 more)
 
 ### Community 106 - "Filament Admin & UI (C106)"
 Cohesion: 0.25
@@ -630,12 +656,12 @@ Cohesion: 0.25
 Nodes (8): post-root-package-install, setup, composer install, npm install --ignore-scripts, npm run build, @php artisan key:generate, @php artisan migrate --force, @php -r \"file_exists('.env') || copy('.env.example', '.env');\
 
 ### Community 108 - "Core Module 108"
-Cohesion: 0.25
-Nodes (8): build, _checkVersionAndProceed, _goNext, _goToSchedule, _selectTransportOption, _showAirlineClassPicker, _showFerryAccommodationPicker, MaterialPageRoute
+Cohesion: 0.33
+Nodes (6): build, _checkVersionAndProceed, _goNext, _goToSchedule, _selectTransportOption, MaterialPageRoute
 
 ### Community 109 - "Core Module 109"
-Cohesion: 0.29
-Nodes (8): Dt(), Fe(), He(), i(), ir(), Mt(), nr(), rt()
+Cohesion: 0.20
+Nodes (11): b(), Dt(), Fe(), g(), He(), i(), ir(), Mt() (+3 more)
 
 ### Community 110 - "Core Module 110"
 Cohesion: 0.29
@@ -647,19 +673,23 @@ Nodes (5): How to Update the Android App (APK), Step 1: Bump the Version Number,
 
 ### Community 112 - "Core Module 112"
 Cohesion: 0.33
-Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
+Nodes (6): .claude/skills/graphify/references/query.md, For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
 ### Community 113 - "User"
 Cohesion: 0.33
-Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
+Nodes (6): .copilot/skills/graphify/references/query.md, For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
 ### Community 114 - "Core Module 114"
 Cohesion: 0.33
-Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
+Nodes (6): .github/skills/graphify/references/query.md, For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
+
+### Community 117 - "_each"
+Cohesion: 0.11
+Nodes (23): ArrowLeft(), ArrowRight(), createDOMRangeFromLocationRange(), editAttachment(), expandSelectionInDirection(), findContainerAndOffsetFromLocation(), findNodeAndOffsetFromLocation(), getAttachmentAtRange() (+15 more)
 
 ### Community 118 - "Database Seeders & Testing (C118)"
-Cohesion: 0.33
-Nodes (6): B(), g(), Hn(), lt(), _o(), Y()
+Cohesion: 0.17
+Nodes (6): BookingController, Request, Request, VoucherController, Controller, HasOne
 
 ### Community 119 - "Core Module 119"
 Cohesion: 0.40
@@ -671,15 +701,15 @@ Nodes (4): main, package:flutter_app/main.dart, package:flutter/material.dart, p
 
 ### Community 122 - "Core Module 122"
 Cohesion: 0.50
-Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
+Nodes (4): .claude/skills/graphify/references/add-watch.md, For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
 ### Community 123 - "Core Module 123"
 Cohesion: 0.50
-Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
+Nodes (4): .claude/skills/graphify/references/hooks.md, For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
 ### Community 124 - "Core Module 124"
 Cohesion: 0.50
-Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
+Nodes (4): .claude/skills/graphify/references/update.md, For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 125 - "Core Module 125"
 Cohesion: 0.50
@@ -687,55 +717,107 @@ Nodes (4): post-create-project-cmd, @php artisan key:generate --ansi, @php artis
 
 ### Community 126 - "Core Module 126"
 Cohesion: 0.50
-Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
+Nodes (4): .copilot/skills/graphify/references/add-watch.md, For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
 ### Community 127 - "Core Module 127"
 Cohesion: 0.50
-Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
+Nodes (4): .copilot/skills/graphify/references/hooks.md, For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
 ### Community 128 - "Core Module 128"
 Cohesion: 0.50
-Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
+Nodes (4): .copilot/skills/graphify/references/update.md, For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
 ### Community 129 - "Core Module 129"
 Cohesion: 0.50
-Nodes (3): Amiga Gracia Flutter App, Getting Started, Railway build
+Nodes (4): flutter_app/README.md, Amiga Gracia Flutter App, Getting Started, Railway build
 
 ### Community 130 - "Core Module 130"
 Cohesion: 0.50
-Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
+Nodes (4): .github/skills/graphify/references/add-watch.md, For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
 ### Community 131 - "Core Module 131"
 Cohesion: 0.50
-Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
+Nodes (4): .github/skills/graphify/references/hooks.md, For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
 ### Community 132 - "Core Module 132"
 Cohesion: 0.50
-Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
+Nodes (4): .github/skills/graphify/references/update.md, For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
+
+### Community 133 - "Core Module 133"
+Cohesion: 0.67
+Nodes (3): PHPUnit\Framework\TestCase, Unit/ExampleTest.php, ExampleTest
+
+### Community 135 - "Core Module 135"
+Cohesion: 0.67
+Nodes (3): .claude/skills/graphify/references/github-and-merge.md, graphify reference: GitHub clone and cross-repo merge, Step 0 - Clone GitHub repo(s) (only if a GitHub URL was given)
+
+### Community 136 - "Core Module 136"
+Cohesion: 0.67
+Nodes (3): .claude/skills/graphify/references/transcribe.md, graphify reference: transcribe video and audio, Step 2.5 - Transcribe video / audio files (only if video files detected)
 
 ### Community 137 - "Core Module 137"
 Cohesion: 0.67
 Nodes (3): extra, laravel, dont-discover
 
+### Community 138 - "Core Module 138"
+Cohesion: 0.67
+Nodes (3): .copilot/skills/graphify/references/github-and-merge.md, graphify reference: GitHub clone and cross-repo merge, Step 0 - Clone GitHub repo(s) (only if a GitHub URL was given)
+
+### Community 139 - "Core Module 139"
+Cohesion: 0.67
+Nodes (3): .copilot/skills/graphify/references/transcribe.md, graphify reference: transcribe video and audio, Step 2.5 - Transcribe video / audio files (only if video files detected)
+
+### Community 207 - "Core Module 207"
+Cohesion: 0.67
+Nodes (3): .github/skills/graphify/references/github-and-merge.md, graphify reference: GitHub clone and cross-repo merge, Step 0 - Clone GitHub repo(s) (only if a GitHub URL was given)
+
+### Community 208 - "Core Module 208"
+Cohesion: 0.67
+Nodes (3): .github/skills/graphify/references/transcribe.md, graphify reference: transcribe video and audio, Step 2.5 - Transcribe video / audio files (only if video files detected)
+
+### Community 300 - "Filament\Resources\Pages\ViewRecord"
+Cohesion: 0.15
+Nodes (7): ViewApkUser, ViewBooking, ViewInquiry, ViewPromotionalTicket, ViewTransaction, ViewVoucher, Filament\Resources\Pages\ViewRecord
+
+### Community 301 - "getDataset"
+Cohesion: 0.18
+Nodes (16): addElements(), buildOrUpdateControllers(), buildOrUpdateElements(), _dataCheck(), _destroy(), _destroyDatasetMeta(), Ei(), getController() (+8 more)
+
+### Community 307 - "qt"
+Cohesion: 0.36
+Nodes (8): hs(), Ln(), Nn(), ps(), qt(), Ro(), Se(), wo()
+
+### Community 308 - "PurgeExpiredProofs.php"
+Cohesion: 0.38
+Nodes (3): DeleteAllUsers, PurgeExpiredProofs, Illuminate\Console\Command
+
+### Community 311 - "yn"
+Cohesion: 0.33
+Nodes (7): ar(), ft(), kn(), sr(), wn(), Ye(), yn()
+
+### Community 312 - "AdminPanelProvider.php"
+Cohesion: 0.47
+Nodes (4): AdminPanelProvider, Filament\Panel, Filament\PanelProvider, Filament\Support\Colors\Color
+
 ## Knowledge Gaps
-- **587 isolated node(s):** `$schema`, `name`, `type`, `description`, `laravel` (+582 more)
+- **633 isolated node(s):** `UserSession`, `BookingData`, `UpdateChecker`, `prefs`, `isFirstLaunch` (+628 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **32 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **39 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `A()` connect `Core Module 72` to `Core Module 32`, `Core Module 65`, `HTTP Controllers & Routing (C2)`, `Core Module 33`, `Core Module 4`, `Database Seeders & Testing (C70)`, `HTTP Controllers & Routing (C40)`, `Core Module 10`, `Data Models & Domain (C12)`, `Core Module 47`, `Core Module 17`, `Core Module 22`, `Data Models & Domain (C25)`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
-- **Why does `draw()` connect `Data Models & Domain (C12)` to `Data Models & Domain (C1)`, `Core Module 65`, `Core Module 72`, `Core Module 10`, `Core Module 43`, `Core Module 14`, `Core Module 20`, `Filament Admin & UI (C24)`, `Core Module 27`, `Data Models & Domain (C63)`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Why does `Br()` connect `Data Models & Domain (C1)` to `Core Module 6`, `HTTP Controllers & Routing (C40)`, `Core Module 47`, `Core Module 17`, `Data Models & Domain (C94)`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **Are the 16 inferred relationships involving `x()` (e.g. with `de()` and `g()`) actually correct?**
+- **Why does `components/chart.js` connect `Data Models & Domain (C1)` to `HTTP Controllers & Routing (C66)`, `Core Module 36`, `Filament Admin & UI (C37)`, `Core Module 6`, `Core Module 10`, `Data Models & Domain (C12)`, `Core Module 14`, `Core Module 78`, `Data Models & Domain (C49)`, `Core Module 17`, `HTTP Controllers & Routing (C19)`, `Core Module 20`, `Filament Admin & UI (C24)`, `Data Models & Domain (C63)`?**
+  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+- **Why does `stat/chart.js` connect `Core Module 5` to `Core Module 4`, `Core Module 6`, `Core Module 10`, `Data Models & Domain (C12)`, `Core Module 17`, `Data Models & Domain (C26)`, `Core Module 27`, `Core Module 32`, `Core Module 33`, `Filament Admin & UI (C42)`, `Core Module 43`, `getDataset`, `HTTP Controllers & Routing (C46)`, `Core Module 47`, `Data Models & Domain (C49)`, `Data Models & Domain (C52)`, `HTTP Controllers & Routing (C55)`, `Data Models & Domain (C64)`, `HTTP Controllers & Routing (C66)`, `Data Models & Domain (C86)`?**
+  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+- **Why does `A()` connect `Core Module 72` to `Core Module 65`, `HTTP Controllers & Routing (C2)`, `Core Module 33`, `Core Module 4`, `Database Seeders & Testing (C70)`, `HTTP Controllers & Routing (C40)`, `Core Module 10`, `Data Models & Domain (C12)`, `Core Module 47`, `Core Module 17`, `Core Module 22`, `Data Models & Domain (C25)`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Are the 4 inferred relationships involving `components/chart.js` (e.g. with `dg()` and `Ms()`) actually correct?**
+  _`components/chart.js` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 16 inferred relationships involving `x()` (e.g. with `g()` and `_i()`) actually correct?**
   _`x()` has 16 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 80 inferred relationships involving `static` (e.g. with `.canCreate()` and `.canDelete()`) actually correct?**
-  _`static` has 80 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `$schema`, `name`, `type` to the rest of the system?**
-  _587 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `UserSession`, `BookingData`, `UpdateChecker` to the rest of the system?**
+  _633 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `HTTP Controllers & Routing (C0)` be split into smaller, more focused modules?**
-  _Cohesion score 0.006472491909385114 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.006309148264984227 - nodes in this community are weakly interconnected._
