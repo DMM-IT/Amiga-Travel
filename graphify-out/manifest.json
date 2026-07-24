@@ -930,8 +930,8 @@
     "semantic_hash": "e07862ac930ed4d8479185d52c6cc66d"
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1784889628.631957,
-    "ast_hash": "ec4f6a1a401dc11da006f2139f0778a8",
+    "mtime": 1784899207.6562808,
+    "ast_hash": "216ba2ecd5a7a859a5882fc5dedcb904",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
@@ -2360,8 +2360,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/VoucherResource.php": {
-    "mtime": 1784876607.9826896,
-    "ast_hash": "e3e82cff05ec3304f797e21841fbb63a",
+    "mtime": 1784899589.924072,
+    "ast_hash": "93a6938f83c2ea9436237565f78c1269",
     "semantic_hash": ""
   },
   "app/Filament/Resources/VoucherResource/Pages/CreateVoucher.php": {
@@ -2395,13 +2395,13 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/VoucherController.php": {
-    "mtime": 1784877819.4384406,
-    "ast_hash": "e44ea98b9c893adc659eccc0e279e663",
+    "mtime": 1784899608.5779521,
+    "ast_hash": "0dda85c94a456cfb9a52fe99d1515ed5",
     "semantic_hash": ""
   },
   "app/Models/Voucher.php": {
-    "mtime": 1784872832.034789,
-    "ast_hash": "6ac81095aa9a1fbefe9cd498a48f90da",
+    "mtime": 1784899531.5354998,
+    "ast_hash": "5050d7ebf1e73fe706867b9b8eb5b760",
     "semantic_hash": ""
   },
   "app/Models/VoucherRedemption.php": {
@@ -2447,6 +2447,11 @@
   "database/seeders/GraciaEarningRuleSeeder.php": {
     "mtime": 1784890097.6943882,
     "ast_hash": "1c480c06f54a98bcde575beb362529f4",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_24_212315_add_is_hidden_to_vouchers_table.php": {
+    "mtime": 1784899490.4326112,
+    "ast_hash": "8df79af8631c9db3cd6533668bfbf968",
     "semantic_hash": ""
   }
 }
