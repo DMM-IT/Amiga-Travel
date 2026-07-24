@@ -245,7 +245,7 @@ class PromotionalTicketResource extends Resource
                 Tables\Columns\TextColumn::make('route')
                     ->label('Route')
                     ->getStateUsing(fn(PromotionalTicket $record): string => "{$record->schedule?->ferryRoute?->origin} → {$record->schedule?->ferryRoute?->destination}")
-                    ->searchable(['ferryRoute.origin', 'ferryRoute.destination']),
+                    ->searchable(['schedule.ferryRoute.origin', 'schedule.ferryRoute.destination']),
                 Tables\Columns\TextColumn::make('schedule.departure_time')
                     ->label('Departure Date & Time')
                     ->dateTime('M j, Y H:i')
