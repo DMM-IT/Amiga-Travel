@@ -7,6 +7,7 @@ window.adminNotificationBell = function (config) {
         totalCount: config.initialTotalCount ?? 0,
         unreadCount: config.initialUnreadCount ?? 0,
         selectedIds: [],
+        dropdownOpen: false,
         actionMenuOpen: false,
         itemMenuOpen: null,
         confirmingDelete: false,
@@ -143,6 +144,10 @@ window.adminNotificationBell = function (config) {
 
         async confirmDelete() {
             await this.sendAction('/admin/notifications/api', 'DELETE', this.deleteTargetIds);
+        },
+
+        toggleDropdown() {
+            this.dropdownOpen = !this.dropdownOpen;
         },
 
         async openNotification(notification) {
