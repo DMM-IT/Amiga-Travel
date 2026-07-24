@@ -3,5 +3,12 @@
   "1": "ScheduleResource.php",
   "2": "booking-form.blade.php",
   "3": "filament.admin.notification-scripts",
-  "4": "app.blade.php"
+  "4": "app.blade.php",
+  "5": ".saveDraft",
+  "6": ".updateReturnDateFromDuration",
+  "7": ".nextStep",
+  "8": "BookingForm.php",
+  "9": ".calculateTotalPrice",
+  "10": ".resetVehicleData",
+  "11": "count.php"
 }
