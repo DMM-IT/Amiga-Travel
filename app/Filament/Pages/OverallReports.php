@@ -70,18 +70,25 @@ class OverallReports extends Page implements HasForms
     public function form(Form $form): Form
     {
         return $form
+            ->columns(2)
             ->schema([
                 DatePicker::make('customStartDate')
                     ->label('Start Date')
                     ->native(false)
                     ->maxDate(now())
                     ->live()
+                    ->extraInputAttributes([
+                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 text-white px-4 py-3 shadow-sm placeholder:text-slate-400',
+                    ])
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),
                 DatePicker::make('customEndDate')
                     ->label('End Date')
                     ->native(false)
                     ->maxDate(now())
                     ->live()
+                    ->extraInputAttributes([
+                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 text-white px-4 py-3 shadow-sm placeholder:text-slate-400',
+                    ])
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),
             ]);
     }
