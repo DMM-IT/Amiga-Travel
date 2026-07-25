@@ -58,14 +58,18 @@ class PaymentProof extends Component
             if ($imageInfo) {
                 $mimeType = $imageInfo['mime'];
 
-                // Create an image resource from the uploaded file
-                $image = match ($mimeType) {
-                    'image/jpeg', 'image/jpg' => imagecreatefromjpeg($filePath),
-                    'image/png' => imagecreatefrompng($filePath),
-                    'image/gif' => imagecreatefromgif($filePath),
-                    'image/webp' => imagecreatefromwebp($filePath),
-                    default => null,
-                };
+                // Create an image resource from the uploaded file only if the driver supports it.
+                $image = null;
+
+                if (in_array($mimeType, ['image/jpeg', 'image/jpg'], true) && function_exists('imagecreatefromjpeg')) {
+                    $image = imagecreatefromjpeg($filePath);
+                } elseif ($mimeType === 'image/png' && function_exists('imagecreatefrompng')) {
+                    $image = imagecreatefrompng($filePath);
+                } elseif ($mimeType === 'image/gif' && function_exists('imagecreatefromgif')) {
+                    $image = imagecreatefromgif($filePath);
+                } elseif ($mimeType === 'image/webp' && function_exists('imagecreatefromwebp')) {
+                    $image = imagecreatefromwebp($filePath);
+                }
 
                 if ($image) {
                 // Resize if too big (max width 1920px)
