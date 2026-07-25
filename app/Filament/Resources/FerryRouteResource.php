@@ -105,7 +105,7 @@ class FerryRouteResource extends Resource
                             $set('operator', optional(Vehicle::find($state))->operator);
 
                             $schedules = $get('schedules') ?? [];
-                            $vehicleName = optional(Vehicle::find($state))->vehicle_id;
+                            $vehicleName = optional(Vehicle::find($state))->name;
                             foreach ($schedules as $index => $schedule) {
                                 $schedules[$index]['vehicle_name'] = $vehicleName;
                             }
@@ -117,7 +117,7 @@ class FerryRouteResource extends Resource
                             $set('operator', optional(Vehicle::find($state))->operator);
 
                             $schedules = $get('schedules') ?? [];
-                            $vehicleName = optional(Vehicle::find($state))->vehicle_id;
+                            $vehicleName = optional(Vehicle::find($state))->name;
                             foreach ($schedules as $index => $schedule) {
                                 $schedules[$index]['vehicle_name'] = $vehicleName;
                             }
@@ -159,21 +159,21 @@ class FerryRouteResource extends Resource
                             ->itemLabel(fn (array $state): ?string => $state['vehicle_name'] ?? $state['service_name'] ?? 'New schedule')
                             ->mutateRelationshipDataBeforeFillUsing(function (array $data, callable $get): array {
                                 if ($vehicleId = $get('../../vehicle_id')) {
-                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->vehicle_id;
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
                                 }
 
                                 return $data;
                             })
                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data, callable $get): array {
                                 if ($vehicleId = $get('../../vehicle_id')) {
-                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->vehicle_id;
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
                                 }
 
                                 return $data;
                             })
                             ->mutateRelationshipDataBeforeSaveUsing(function (array $data, callable $get): array {
                                 if ($vehicleId = $get('../../vehicle_id')) {
-                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->vehicle_id;
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
                                 }
 
                                 return $data;
@@ -203,7 +203,7 @@ class FerryRouteResource extends Resource
                     $vehicleId = $get('../../vehicle_id');
 
                     if ($vehicleId) {
-                        $set('vehicle_name', optional(Vehicle::find($vehicleId))->vehicle_id);
+                        $set('vehicle_name', optional(Vehicle::find($vehicleId))->name);
                     }
                 })
                 ->nullable()

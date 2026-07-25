@@ -35,9 +35,15 @@
 
         {{-- Custom Date Range --}}
         @if($period === 'custom')
-            <div class="mt-4 flex flex-wrap gap-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-                <div class="flex-1 min-w-[200px] max-w-sm">
-                    {{ $this->form }}
+            <div class="mt-4 rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-sm ring-1 ring-white/10">
+                <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] items-end">
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        {{ $this->form }}
+                    </div>
+                    <div class="rounded-3xl bg-slate-900/90 px-4 py-3 text-sm text-gray-300 ring-1 ring-white/10">
+                        <p class="font-semibold text-white">Custom range</p>
+                        <p class="mt-1 text-xs text-gray-400">Select both start and end dates to refresh the report.</p>
+                    </div>
                 </div>
             </div>
         @endif
@@ -52,79 +58,77 @@
             ? round((($stats['total_revenue'] - $stats['prev_total_revenue']) / $stats['prev_total_revenue']) * 100, 1)
             : ($stats['total_revenue'] > 0 ? 100 : 0);
     @endphp
-    <div class="grid w-full gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+    <div class="grid w-full gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
         {{-- Total Bookings --}}
-        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
-            <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
-                <x-heroicon-o-ticket class="h-4 w-4 inline-block text-blue-500" />
-                Total Bookings
+        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Total Bookings</p>
+                </div>
+                <x-heroicon-o-ticket class="h-5 w-5 text-blue-400" />
             </div>
-            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
-            <div class="mt-2 flex items-center justify-center gap-1 text-xs font-medium {{ $bookingTrend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                @if($bookingTrend >= 0)
-                    <x-heroicon-m-arrow-trending-up class="h-3.5 w-3.5" />
-                @else
-                    <x-heroicon-m-arrow-trending-down class="h-3.5 w-3.5" />
-                @endif
-                {{ abs($bookingTrend) }}% vs prev period
-            </div>
+            <p class="mt-5 text-4xl font-bold text-white">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
+            <p class="mt-3 text-sm text-slate-400">{{ abs($bookingTrend) }}% vs prev period</p>
         </div>
 
         {{-- Total Revenue --}}
-        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
-            <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
-                <x-heroicon-o-banknotes class="h-4 w-4 inline-block text-emerald-500" />
-                Total Revenue
+        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Total Revenue</p>
+                </div>
+                <x-heroicon-o-banknotes class="h-5 w-5 text-emerald-400" />
             </div>
-            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
-            <div class="mt-2 flex items-center justify-center gap-1 text-xs font-medium {{ $revenueTrend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                @if($revenueTrend >= 0)
-                    <x-heroicon-m-arrow-trending-up class="h-3.5 w-3.5" />
-                @else
-                    <x-heroicon-m-arrow-trending-down class="h-3.5 w-3.5" />
-                @endif
-                {{ abs($revenueTrend) }}% vs prev period
-            </div>
+            <p class="mt-5 text-4xl font-bold text-white">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
+            <p class="mt-3 text-sm text-slate-400">{{ abs($revenueTrend) }}% vs prev period</p>
         </div>
 
         {{-- Avg Booking Value --}}
-        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
-            <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
-                <x-heroicon-o-calculator class="h-4 w-4 inline-block text-violet-500" />
-                Avg Booking Value
+        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Avg Booking Value</p>
+                </div>
+                <x-heroicon-o-calculator class="h-5 w-5 text-violet-400" />
             </div>
-            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
-            <p class="mt-2 text-xs text-gray-400">Per booking</p>
+            <p class="mt-5 text-4xl font-bold text-white">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
+            <p class="mt-3 text-sm text-slate-400">Per booking</p>
         </div>
 
         {{-- Completion Rate --}}
-        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
-            <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
-                <x-heroicon-o-check-circle class="h-4 w-4 inline-block text-emerald-500" />
-                Completion Rate
+        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Completion Rate</p>
+                </div>
+                <x-heroicon-o-check-circle class="h-5 w-5 text-emerald-400" />
             </div>
-            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ $stats['completion_rate'] ?? 0 }}%</p>
-            <p class="mt-2 text-xs text-gray-400">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
+            <p class="mt-5 text-4xl font-bold text-white">{{ $stats['completion_rate'] ?? 0 }}%</p>
+            <p class="mt-3 text-sm text-slate-400">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
         </div>
 
         {{-- Cancellation Rate --}}
-        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
-            <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
-                <x-heroicon-o-x-circle class="h-4 w-4 inline-block text-red-500" />
-                Cancellation Rate
+        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Cancellation Rate</p>
+                </div>
+                <x-heroicon-o-x-circle class="h-5 w-5 text-red-400" />
             </div>
-            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
-            <p class="mt-2 text-xs text-gray-400">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
+            <p class="mt-5 text-4xl font-bold text-white">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
+            <p class="mt-3 text-sm text-slate-400">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
         </div>
 
         {{-- Rebookings --}}
-        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
-            <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
-                <x-heroicon-o-arrow-path class="h-4 w-4 inline-block text-amber-500" />
-                Rebookings
+        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-400">Rebookings</p>
+                </div>
+                <x-heroicon-o-arrow-path class="h-5 w-5 text-amber-400" />
             </div>
-            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
-            <p class="mt-2 text-xs text-gray-400">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
+            <p class="mt-5 text-4xl font-bold text-white">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
+            <p class="mt-3 text-sm text-slate-400">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
         </div>
     </div>
 
