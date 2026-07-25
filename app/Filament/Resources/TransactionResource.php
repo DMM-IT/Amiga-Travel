@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class TransactionResource extends Resource
 {
@@ -275,7 +277,16 @@ class TransactionResource extends Resource
 
                         app(\App\Services\GraciaPointsService::class)->awardPointsForBooking($record->booking, Auth::user());
 
-                        Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath, $receiptDisk));
+                        try {
+                            Mail::to($record->booking->client_email)->send(new BookingConfirmation($record->booking, $ticketUrl, $receiptPath, $receiptDisk));
+                        } catch (Throwable $e) {
+                            Log::error('Failed sending booking confirmation email (transaction verify)', [
+                                'transaction_id' => $record->id ?? null,
+                                'booking_id' => $record->booking->id ?? null,
+                                'email' => $record->booking->client_email ?? null,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
                     })
                     ->requiresConfirmation()
                     ->color('success')

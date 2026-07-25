@@ -30,6 +30,8 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Carbon\Carbon;
 use Spatie\LaravelPdf\Facades\Pdf;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class BookingForm extends Component
 {
@@ -1512,7 +1514,15 @@ public function selectedSchedule(): ?array
                 ->view('pdf.receipt', ['booking' => $booking])
                 ->save($receiptPath);
 
-            Mail::to($booking->client_email)->send(new BookingCreated($booking, $receiptPath));
+            try {
+                Mail::to($booking->client_email)->send(new BookingCreated($booking, $receiptPath));
+            } catch (Throwable $e) {
+                Log::error('Failed sending booking created email', [
+                    'booking_id' => $booking->id ?? null,
+                    'email' => $booking->client_email ?? null,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         });
 
         return redirect()->route('payment.show', $transaction);

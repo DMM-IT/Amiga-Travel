@@ -8,6 +8,8 @@ use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class BookingLookup extends Component
 {
@@ -222,7 +224,15 @@ class BookingLookup extends Component
         $this->booking->transaction->update(['payment_status' => 'cancelled']);
         $this->booking = $this->booking->fresh(['passengers.discount', 'accommodations', 'transaction']);
 
-        Mail::to($this->booking->client_email)->send(new BookingCancellation($this->booking, $this->refund_destination));
+        try {
+            Mail::to($this->booking->client_email)->send(new BookingCancellation($this->booking, $this->refund_destination));
+        } catch (Throwable $e) {
+            Log::error('Failed sending booking cancellation email', [
+                'booking_id' => $this->booking->id ?? null,
+                'email' => $this->booking->client_email ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         $this->feedback = "Your booking has been cancelled successfully. Cancellation fee: ₱" . number_format($cancellationFee, 2) . ", Refund amount: ₱" . number_format($refundAmount, 2) . ". A confirmation email has been sent.";
         $this->resetCancellationState();
@@ -315,7 +325,15 @@ class BookingLookup extends Component
             'rebooking_return_date' => $this->rebooking_is_round_trip ? $this->rebooking_return_date : null,
         ]);
 
-        Mail::to($this->booking->client_email)->send(new RebookingRequested($this->booking));
+        try {
+            Mail::to($this->booking->client_email)->send(new RebookingRequested($this->booking));
+        } catch (Throwable $e) {
+            Log::error('Failed sending rebooking requested email', [
+                'booking_id' => $this->booking->id ?? null,
+                'email' => $this->booking->client_email ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         $this->isUploadingRebooking = false;
         $this->rebookingPaid = true;
