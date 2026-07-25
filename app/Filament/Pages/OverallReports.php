@@ -78,10 +78,10 @@ class OverallReports extends Page implements HasForms
                     ->maxDate(now())
                     ->live()
                     ->extraAttributes([
-                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 shadow-sm',
+                        'class' => 'rounded-3xl border border-slate-300 bg-white text-slate-900 shadow-sm ring-1 ring-gray-200 transition dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:ring-white/10',
                     ])
                     ->extraTriggerAttributes([
-                        'class' => 'w-full rounded-3xl bg-slate-950/80 px-4 py-3 text-left text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500',
+                        'class' => 'w-full rounded-3xl bg-transparent px-4 py-3 text-left text-sm leading-6 text-slate-900 placeholder:text-slate-400 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-100 dark:placeholder:text-slate-500',
                     ])
                     ->suffixIcon('heroicon-m-calendar')
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),
@@ -91,10 +91,10 @@ class OverallReports extends Page implements HasForms
                     ->maxDate(now())
                     ->live()
                     ->extraAttributes([
-                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 shadow-sm',
+                        'class' => 'rounded-3xl border border-slate-300 bg-white text-slate-900 shadow-sm ring-1 ring-gray-200 transition dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:ring-white/10',
                     ])
                     ->extraTriggerAttributes([
-                        'class' => 'w-full rounded-3xl bg-slate-950/80 px-4 py-3 text-left text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500',
+                        'class' => 'w-full rounded-3xl bg-transparent px-4 py-3 text-left text-sm leading-6 text-slate-900 placeholder:text-slate-400 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-100 dark:placeholder:text-slate-500',
                     ])
                     ->suffixIcon('heroicon-m-calendar')
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),

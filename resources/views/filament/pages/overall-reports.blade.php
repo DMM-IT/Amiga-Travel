@@ -2,17 +2,16 @@
 <div wire:poll.3s="refreshData" class="space-y-6 w-full">
 
     {{-- ═══ Header: Period Selector + Custom Dates + Export ═══ --}}
-    <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5">
+    <div class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-950/10 dark:bg-slate-950 dark:ring-white/10">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {{-- Period Pills --}}
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap items-center gap-2 rounded-full bg-slate-100 px-2 py-2 shadow-inner ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-white/10">
                 @foreach(['today' => 'Today', 'week' => 'This Week', 'month' => 'This Month', 'year' => 'This Year', 'all' => 'All Time', 'custom' => 'Custom'] as $value => $label)
                     <button
                         wire:click="$set('period', '{{ $value }}')"
                         @class([
-                            'rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200',
-                            'bg-primary-600 text-white shadow-md' => $period === $value,
-                            'bg-gray-50 text-gray-600 hover:bg-gray-100' => $period !== $value,
+                            'rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200',
+                            'bg-amber-500 text-white shadow-sm shadow-amber-500/15' => $period === $value,
+                            'bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800' => $period !== $value,
                         ])
                     >
                         {{ $label }}
@@ -20,29 +19,27 @@
                 @endforeach
             </div>
 
-            {{-- Export Buttons --}}
-            <div class="flex flex-wrap items-center justify-end gap-3 min-w-[240px] flex-shrink-0">
-                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500">
                     <x-heroicon-m-arrow-down-tray class="h-4 w-4" />
                     PDF
                 </a>
-                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700 dark:hover:bg-gray-700">
+                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white/10 dark:text-white dark:hover:bg-white/20">
                     <x-heroicon-m-table-cells class="h-4 w-4" />
                     CSV
                 </a>
             </div>
         </div>
 
-        {{-- Custom Date Range --}}
         @if($period === 'custom')
-            <div class="mt-4 rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-sm ring-1 ring-white/10">
-                <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] items-end">
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        {{ $this->form }}
+            <div class="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm ring-1 ring-gray-200 dark:border-slate-700 dark:bg-slate-900/90 dark:ring-white/10">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="min-w-0 lg:max-w-[320px]">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Custom range</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Select both start and end dates to refresh the report.</p>
                     </div>
-                    <div class="rounded-3xl bg-slate-900/90 px-4 py-3 text-sm text-gray-300 ring-1 ring-white/10">
-                        <p class="font-semibold text-white">Custom range</p>
-                        <p class="mt-1 text-xs text-gray-400">Select both start and end dates to refresh the report.</p>
+                    <div class="grid w-full gap-4 sm:grid-cols-2 lg:max-w-[540px]">
+                        {{ $this->form }}
                     </div>
                 </div>
             </div>
@@ -58,99 +55,93 @@
             ? round((($stats['total_revenue'] - $stats['prev_total_revenue']) / $stats['prev_total_revenue']) * 100, 1)
             : ($stats['total_revenue'] > 0 ? 100 : 0);
     @endphp
-    <div class="grid w-full gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {{-- KPI Card: Total Bookings --}}
-        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
-            <p class="text-xs text-gray-400">Month to date</p>
-            <div class="mt-2 flex items-start justify-between gap-3">
+    <div class="grid w-full gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        <div class="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-gray-200 min-h-[220px]">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Total Bookings</p>
-                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
-                    <p class="mt-2 text-xs text-gray-500">{{ abs($bookingTrend) }}% vs prev period</p>
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Month to date</p>
+                    <p class="mt-4 text-lg font-semibold text-slate-900">Total Bookings</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
+                    <p class="mt-3 text-sm text-slate-500">{{ abs($bookingTrend) }}% vs prev period</p>
                 </div>
-                <div class="flex flex-col items-end">
-                    <div class="h-12 w-28" wire:ignore id="spark-total-bookings"></div>
-                    <x-heroicon-o-ticket class="h-5 w-5 text-gray-400 mt-2" />
+                <div class="flex flex-col items-end gap-3">
+                    <div class="h-14 w-28 rounded-3xl bg-slate-100" wire:ignore id="spark-total-bookings"></div>
+                    <x-heroicon-o-ticket class="h-6 w-6 text-emerald-500" />
                 </div>
             </div>
         </div>
 
-        {{-- KPI Card: Total Revenue --}}
-        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
-            <p class="text-xs text-gray-400">Month to date</p>
-            <div class="mt-2 flex items-start justify-between gap-3">
+        <div class="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-gray-200 min-h-[220px]">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p class="mt-3 text-3xl font-extrabold text-gray-900">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
-                    <p class="mt-2 text-xs text-gray-500">{{ abs($revenueTrend) }}% vs prev period</p>
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Month to date</p>
+                    <p class="mt-4 text-lg font-semibold text-slate-900">Total Revenue</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
+                    <p class="mt-3 text-sm text-slate-500">{{ abs($revenueTrend) }}% vs prev period</p>
                 </div>
-                <div class="flex flex-col items-end">
-                    <div class="h-12 w-28" wire:ignore id="spark-total-revenue"></div>
-                    <x-heroicon-o-banknotes class="h-5 w-5 text-gray-400 mt-2" />
+                <div class="flex flex-col items-end gap-3">
+                    <div class="h-14 w-28 rounded-3xl bg-slate-100" wire:ignore id="spark-total-revenue"></div>
+                    <x-heroicon-o-banknotes class="h-6 w-6 text-amber-500" />
                 </div>
             </div>
         </div>
 
-        {{-- KPI Card: Avg Booking Value --}}
-        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
-            <p class="text-xs text-gray-400">Month to date</p>
-            <div class="mt-2 flex items-start justify-between gap-3">
+        <div class="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-gray-200 min-h-[220px]">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Avg Booking Value</p>
-                    <p class="mt-3 text-3xl font-extrabold text-gray-900">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
-                    <p class="mt-2 text-xs text-gray-500">Per booking</p>
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Month to date</p>
+                    <p class="mt-4 text-lg font-semibold text-slate-900">Avg Booking Value</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
+                    <p class="mt-3 text-sm text-slate-500">Per booking</p>
                 </div>
-                <div class="flex flex-col items-end">
-                    <div class="h-12 w-28" wire:ignore id="spark-avg-booking"></div>
-                    <x-heroicon-o-calculator class="h-5 w-5 text-gray-400 mt-2" />
+                <div class="flex flex-col items-end gap-3">
+                    <div class="h-14 w-28 rounded-3xl bg-slate-100" wire:ignore id="spark-avg-booking"></div>
+                    <x-heroicon-o-calculator class="h-6 w-6 text-violet-500" />
                 </div>
             </div>
         </div>
 
-        {{-- KPI Card: Completion Rate --}}
-        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
-            <p class="text-xs text-gray-400">Month to date</p>
-            <div class="mt-2 flex items-start justify-between gap-3">
+        <div class="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-gray-200 min-h-[220px]">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Completion Rate</p>
-                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ $stats['completion_rate'] ?? 0 }}%</p>
-                    <p class="mt-2 text-xs text-gray-500">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Month to date</p>
+                    <p class="mt-4 text-lg font-semibold text-slate-900">Completion Rate</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">{{ $stats['completion_rate'] ?? 0 }}%</p>
+                    <p class="mt-3 text-sm text-slate-500">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
                 </div>
-                <div class="flex flex-col items-end">
-                    <div class="h-12 w-28" wire:ignore id="spark-completion"></div>
-                    <x-heroicon-o-check-circle class="h-5 w-5 text-gray-400 mt-2" />
+                <div class="flex flex-col items-end gap-3">
+                    <div class="h-14 w-28 rounded-3xl bg-slate-100" wire:ignore id="spark-completion"></div>
+                    <x-heroicon-o-check-circle class="h-6 w-6 text-emerald-500" />
                 </div>
             </div>
         </div>
 
-        {{-- KPI Card: Cancellation Rate --}}
-        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
-            <p class="text-xs text-gray-400">Month to date</p>
-            <div class="mt-2 flex items-start justify-between gap-3">
+        <div class="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-gray-200 min-h-[220px]">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Cancellation Rate</p>
-                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
-                    <p class="mt-2 text-xs text-gray-500">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Month to date</p>
+                    <p class="mt-4 text-lg font-semibold text-slate-900">Cancellation Rate</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
+                    <p class="mt-3 text-sm text-slate-500">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
                 </div>
-                <div class="flex flex-col items-end">
-                    <div class="h-12 w-28" wire:ignore id="spark-cancellation"></div>
-                    <x-heroicon-o-x-circle class="h-5 w-5 text-gray-400 mt-2" />
+                <div class="flex flex-col items-end gap-3">
+                    <div class="h-14 w-28 rounded-3xl bg-slate-100" wire:ignore id="spark-cancellation"></div>
+                    <x-heroicon-o-x-circle class="h-6 w-6 text-red-500" />
                 </div>
             </div>
         </div>
 
-        {{-- KPI Card: Rebookings --}}
-        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
-            <p class="text-xs text-gray-400">Month to date</p>
-            <div class="mt-2 flex items-start justify-between gap-3">
+        <div class="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-gray-200 min-h-[220px]">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Rebookings</p>
-                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
-                    <p class="mt-2 text-xs text-gray-500">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
+                    <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Month to date</p>
+                    <p class="mt-4 text-lg font-semibold text-slate-900">Rebookings</p>
+                    <p class="mt-4 text-4xl font-extrabold text-slate-900">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
+                    <p class="mt-3 text-sm text-slate-500">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
                 </div>
-                <div class="flex flex-col items-end">
-                    <div class="h-12 w-28" wire:ignore id="spark-rebookings"></div>
-                    <x-heroicon-o-arrow-path class="h-5 w-5 text-gray-400 mt-2" />
+                <div class="flex flex-col items-end gap-3">
+                    <div class="h-14 w-28 rounded-3xl bg-slate-100" wire:ignore id="spark-rebookings"></div>
+                    <x-heroicon-o-arrow-path class="h-6 w-6 text-sky-500" />
                 </div>
             </div>
         </div>
