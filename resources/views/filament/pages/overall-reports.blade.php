@@ -10,7 +10,7 @@
                     <button
                         wire:click="$set('period', '{{ $value }}')"
                         @class([
-                            'rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200',
+                            'rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200',
                             'bg-primary-600 text-white shadow-md' => $period === $value,
                             'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700' => $period !== $value,
                         ])
@@ -21,12 +21,12 @@
             </div>
 
             {{-- Export Buttons --}}
-            <div class="flex gap-2 flex-shrink-0">
-                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+            <div class="flex flex-wrap items-center justify-end gap-3 min-w-[240px] flex-shrink-0">
+                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
                     <x-heroicon-m-arrow-down-tray class="h-4 w-4" />
                     PDF
                 </a>
-                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700 dark:hover:bg-gray-700">
+                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700 dark:hover:bg-gray-700">
                     <x-heroicon-m-table-cells class="h-4 w-4" />
                     CSV
                 </a>
@@ -52,15 +52,15 @@
             ? round((($stats['total_revenue'] - $stats['prev_total_revenue']) / $stats['prev_total_revenue']) * 100, 1)
             : ($stats['total_revenue'] > 0 ? 100 : 0);
     @endphp
-    <div class="grid w-full gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+    <div class="grid w-full gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
         {{-- Total Bookings --}}
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
+        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
             <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-ticket class="h-4 w-4 inline-block text-blue-500" />
                 Total Bookings
             </div>
-            <p class="mt-4 text-3xl font-bold text-gray-950 dark:text-white">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
-            <div class="mt-3 flex items-center justify-center gap-1 text-xs font-medium {{ $bookingTrend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
+            <div class="mt-2 flex items-center justify-center gap-1 text-xs font-medium {{ $bookingTrend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                 @if($bookingTrend >= 0)
                     <x-heroicon-m-arrow-trending-up class="h-3.5 w-3.5" />
                 @else
@@ -71,13 +71,13 @@
         </div>
 
         {{-- Total Revenue --}}
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
+        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
             <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-banknotes class="h-4 w-4 inline-block text-emerald-500" />
                 Total Revenue
             </div>
-            <p class="mt-4 text-3xl font-bold text-gray-950 dark:text-white">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
-            <div class="mt-3 flex items-center justify-center gap-1 text-xs font-medium {{ $revenueTrend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
+            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
+            <div class="mt-2 flex items-center justify-center gap-1 text-xs font-medium {{ $revenueTrend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
                 @if($revenueTrend >= 0)
                     <x-heroicon-m-arrow-trending-up class="h-3.5 w-3.5" />
                 @else
@@ -88,43 +88,43 @@
         </div>
 
         {{-- Avg Booking Value --}}
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
+        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
             <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-calculator class="h-4 w-4 inline-block text-violet-500" />
                 Avg Booking Value
             </div>
-            <p class="mt-4 text-3xl font-bold text-gray-950 dark:text-white">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
-            <p class="mt-3 text-xs text-gray-400">Per booking</p>
+            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
+            <p class="mt-2 text-xs text-gray-400">Per booking</p>
         </div>
 
         {{-- Completion Rate --}}
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
+        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
             <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-check-circle class="h-4 w-4 inline-block text-emerald-500" />
                 Completion Rate
             </div>
-            <p class="mt-4 text-3xl font-bold text-gray-950 dark:text-white">{{ $stats['completion_rate'] ?? 0 }}%</p>
-            <p class="mt-3 text-xs text-gray-400">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
+            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ $stats['completion_rate'] ?? 0 }}%</p>
+            <p class="mt-2 text-xs text-gray-400">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
         </div>
 
         {{-- Cancellation Rate --}}
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
+        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
             <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-x-circle class="h-4 w-4 inline-block text-red-500" />
                 Cancellation Rate
             </div>
-            <p class="mt-4 text-3xl font-bold text-gray-950 dark:text-white">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
-            <p class="mt-3 text-xs text-gray-400">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
+            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
+            <p class="mt-2 text-xs text-gray-400">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
         </div>
 
         {{-- Rebookings --}}
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
+        <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 flex flex-col items-center justify-center text-center min-h-[220px] h-full">
             <div class="self-end text-sm font-medium text-right text-gray-500 dark:text-gray-400">
                 <x-heroicon-o-arrow-path class="h-4 w-4 inline-block text-amber-500" />
                 Rebookings
             </div>
-            <p class="mt-4 text-3xl font-bold text-gray-950 dark:text-white">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
-            <p class="mt-3 text-xs text-gray-400">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
+            <p class="mt-3 text-2xl font-semibold text-gray-950 dark:text-white">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
+            <p class="mt-2 text-xs text-gray-400">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
         </div>
     </div>
 

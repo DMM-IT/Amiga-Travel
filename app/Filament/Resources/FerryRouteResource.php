@@ -157,6 +157,27 @@ class FerryRouteResource extends Resource
                             ->collapsible()
                             ->collapsed()
                             ->itemLabel(fn (array $state): ?string => $state['vehicle_name'] ?? $state['service_name'] ?? 'New schedule')
+                            ->mutateRelationshipDataBeforeFillUsing(function (array $data, callable $get): array {
+                                if ($vehicleId = $get('../../vehicle_id')) {
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->vehicle_id;
+                                }
+
+                                return $data;
+                            })
+                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, callable $get): array {
+                                if ($vehicleId = $get('../../vehicle_id')) {
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->vehicle_id;
+                                }
+
+                                return $data;
+                            })
+                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, callable $get): array {
+                                if ($vehicleId = $get('../../vehicle_id')) {
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->vehicle_id;
+                                }
+
+                                return $data;
+                            })
                             ->createItemButtonLabel('Add schedule')
                             ->columnSpanFull(),
                     ])
