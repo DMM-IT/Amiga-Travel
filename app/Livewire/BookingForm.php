@@ -1340,7 +1340,11 @@ public function selectedSchedule(): ?array
         $this->validate($this->allRules());
         $this->validatePassengerExtras();
         $this->assertSelectedScheduleIsValid();
-        $this->hasAcceptedTerms = false;
+
+        if ($this->hasAcceptedTerms) {
+            return $this->confirmTermsAndContinue();
+        }
+
         $this->showTermsModal = true;
     }
 
