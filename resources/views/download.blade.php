@@ -3,6 +3,59 @@
 @section('content')
 <div class="bg-slate-50 min-h-screen">
 
+    <!-- iOS Installation Modal -->
+    <div id="ios-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 transition-opacity backdrop-blur-sm" style="background-color: rgba(15, 23, 42, 0.4);" aria-hidden="true" onclick="document.getElementById('ios-modal').classList.add('hidden')"></div>
+
+            <div class="relative z-10 w-full max-w-lg bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all border border-slate-100">
+                <div class="px-6 py-8 sm:p-10">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-2xl bg-slate-50 sm:mx-0 shadow-sm border border-slate-100">
+                            <svg class="h-8 w-8 text-slate-800" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16.5 13.9c-.04-2.58 2.1-3.83 2.19-3.88-1.2-1.76-3.07-2-3.7-2.04-1.57-.16-3.06.92-3.86.92-.81 0-2.03-.9-3.32-.88-1.7.02-3.26.99-4.14 2.52-1.79 3.09-.46 7.68 1.28 10.19.85 1.22 1.86 2.59 3.2 2.54 1.29-.05 1.79-.83 3.35-.83 1.55 0 2.04.83 3.37.8 1.37-.03 2.23-1.25 3.07-2.48 1-1.46 1.4-2.87 1.42-2.94-.03-.01-2.73-1.04-2.78-4.04zM14.54 5.92c.7-.85 1.18-2.03 1.05-3.21-1.01.04-2.26.67-2.98 1.54-.64.77-1.2 1.97-1.05 3.12 1.14.09 2.28-.6 2.98-1.45z"/>
+                            </svg>
+                        </div>
+                        <div class="mt-4 text-center sm:mt-0 sm:ml-6 sm:text-left">
+                            <h3 class="text-2xl leading-6 font-black text-slate-900" id="modal-title">
+                                Install on iOS (Free)
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-slate-500 leading-relaxed">
+                                    You can install our full app experience directly to your home screen! It looks and feels exactly like the Android app. Just follow these steps:
+                                </p>
+                                <ul class="mt-6 space-y-4 text-sm text-slate-700">
+                                    <li class="flex items-start">
+                                        <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs mr-3">1</div>
+                                        <span>Tap the <strong>Open iOS Web App</strong> button below.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs mr-3">2</div>
+                                        <span>In Safari, tap the <strong>Share</strong> button <svg class="inline-block w-4 h-4 mx-1 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> at the bottom of the screen.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-bold text-xs mr-3">3</div>
+                                        <span>Scroll down and select <strong>"Add to Home Screen"</strong> <svg class="inline-block w-4 h-4 mx-1 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 sm:px-10 sm:flex sm:flex-row-reverse gap-3">
+                    <a href="{{ url('/app') }}" class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-slate-900 text-base font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 sm:w-auto sm:text-sm transition-colors">
+                        Open iOS Web App
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                    <button type="button" onclick="document.getElementById('ios-modal').classList.add('hidden')" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-xl border border-slate-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 sm:w-auto sm:text-sm transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @php
         $downloadSteps = $pageContent['download_steps'] ?? [
             [
@@ -114,6 +167,16 @@
                             </svg>
                             Download Android APK
                         </a>
+
+                        <!-- iOS Add to Home Screen Button / Instructions -->
+                        <button type="button" onclick="document.getElementById('ios-modal').classList.remove('hidden')"
+                           class="group inline-flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold text-base rounded-2xl shadow-lg border border-white/20 transition-all duration-300 hover:-translate-y-0.5"
+                        >
+                            <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current text-white" viewBox="0 0 24 24">
+                                <path d="M16.5 13.9c-.04-2.58 2.1-3.83 2.19-3.88-1.2-1.76-3.07-2-3.7-2.04-1.57-.16-3.06.92-3.86.92-.81 0-2.03-.9-3.32-.88-1.7.02-3.26.99-4.14 2.52-1.79 3.09-.46 7.68 1.28 10.19.85 1.22 1.86 2.59 3.2 2.54 1.29-.05 1.79-.83 3.35-.83 1.55 0 2.04.83 3.37.8 1.37-.03 2.23-1.25 3.07-2.48 1-1.46 1.4-2.87 1.42-2.94-.03-.01-2.73-1.04-2.78-4.04zM14.54 5.92c.7-.85 1.18-2.03 1.05-3.21-1.01.04-2.26.67-2.98 1.54-.64.77-1.2 1.97-1.05 3.12 1.14.09 2.28-.6 2.98-1.45z"/>
+                            </svg>
+                            Get for iOS
+                        </button>
                     </div>
 
                     <!-- App Info Grid -->
