@@ -14,7 +14,8 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER') ?: (env('MAIL_HOST') || env('MAIL_USERNAME') ? 'smtp' : 'log'),
+    // Default to 'failover' so when MAIL_MAILER is not set we avoid hard SMTP failures.
+    'default' => env('MAIL_MAILER', 'failover'),
 
     /*
     |--------------------------------------------------------------------------

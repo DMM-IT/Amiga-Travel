@@ -45,21 +45,29 @@ class PaymentProof extends Component
 
         // Compress the image before storing it!
         $filePath = $this->proof->path();
-        $imageInfo = getimagesize($filePath);
-        
-        if ($imageInfo) {
-            $mimeType = $imageInfo['mime'];
-            
-            // Create an image resource from the uploaded file
-            $image = match ($mimeType) {
-                'image/jpeg', 'image/jpg' => imagecreatefromjpeg($filePath),
-                'image/png' => imagecreatefrompng($filePath),
-                'image/gif' => imagecreatefromgif($filePath),
-                'image/webp' => imagecreatefromwebp($filePath),
-                default => null,
-            };
-            
-            if ($image) {
+
+        // If GD is not available on the host, skip compression and store the original file.
+        if (! extension_loaded('gd')) {
+            Log::warning('GD extension not available — skipping image compression and storing original proof file.', [
+                'transaction_id' => $this->transaction->id ?? null,
+            ]);
+            $path = $this->proof->store('proofs', 'public');
+        } else {
+            $imageInfo = getimagesize($filePath);
+
+            if ($imageInfo) {
+                $mimeType = $imageInfo['mime'];
+
+                // Create an image resource from the uploaded file
+                $image = match ($mimeType) {
+                    'image/jpeg', 'image/jpg' => imagecreatefromjpeg($filePath),
+                    'image/png' => imagecreatefrompng($filePath),
+                    'image/gif' => imagecreatefromgif($filePath),
+                    'image/webp' => imagecreatefromwebp($filePath),
+                    default => null,
+                };
+
+                if ($image) {
                 // Resize if too big (max width 1920px)
                 $maxWidth = 1920;
                 $originalWidth = $imageInfo[0];
@@ -113,19 +121,24 @@ class PaymentProof extends Component
                     default => $this->proof->extension(),
                 };
                 
-                // Generate new filename and store compressed image
-                $filename = uniqid('proof_', true) . '.' . $extension;
-                $path = \Illuminate\Support\Facades\Storage::disk('public')->putFileAs('proofs', new \Illuminate\Http\File($tempFile), $filename);
-                
-                // Delete temp file
-                unlink($tempFile);
+                    // Generate new filename and store compressed image
+                    $filename = uniqid('proof_', true) . '.' . $extension;
+                    $path = \Illuminate\Support\Facades\Storage::disk('public')->putFileAs('proofs', new \Illuminate\Http\File($tempFile), $filename);
+
+                    // Delete temp file
+                    unlink($tempFile);
+                } else {
+                    // Fall back to original if compression failed
+                    Log::warning('Image compression failed — storing original uploaded proof.', [
+                        'transaction_id' => $this->transaction->id ?? null,
+                        'file' => $this->proof->getClientOriginalName(),
+                    ]);
+                    $path = $this->proof->store('proofs', 'public');
+                }
             } else {
-                // Fall back to original if compression failed
+                // Fall back to original if not an image
                 $path = $this->proof->store('proofs', 'public');
             }
-        } else {
-            // Fall back to original if not an image
-            $path = $this->proof->store('proofs', 'public');
         }
 
         $this->transaction->update([
