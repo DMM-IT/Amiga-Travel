@@ -58,64 +58,64 @@
             ? round((($stats['total_revenue'] - $stats['prev_total_revenue']) / $stats['prev_total_revenue']) * 100, 1)
             : ($stats['total_revenue'] > 0 ? 100 : 0);
     @endphp
-    <div class="grid w-full gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+    <div class="grid w-full gap-5" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
         {{-- Total Bookings --}}
-        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
             <div class="flex items-center justify-between gap-3">
                 <div>
-                    <p class="text-sm font-medium text-slate-400">Total Bookings</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Total Bookings</p>
                 </div>
-                <x-heroicon-o-ticket class="h-5 w-5 text-blue-400" />
+                <x-heroicon-o-ticket class="h-6 w-6 text-sky-400" />
             </div>
-            <p class="mt-5 text-4xl font-bold text-white">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
+            <p class="mt-6 text-5xl font-extrabold text-white">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
             <p class="mt-3 text-sm text-slate-400">{{ abs($bookingTrend) }}% vs prev period</p>
         </div>
 
         {{-- Total Revenue --}}
-        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
             <div class="flex items-center justify-between gap-3">
                 <div>
-                    <p class="text-sm font-medium text-slate-400">Total Revenue</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Total Revenue</p>
                 </div>
-                <x-heroicon-o-banknotes class="h-5 w-5 text-emerald-400" />
+                <x-heroicon-o-banknotes class="h-6 w-6 text-emerald-400" />
             </div>
-            <p class="mt-5 text-4xl font-bold text-white">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
+            <p class="mt-6 text-5xl font-extrabold text-white">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
             <p class="mt-3 text-sm text-slate-400">{{ abs($revenueTrend) }}% vs prev period</p>
         </div>
 
         {{-- Avg Booking Value --}}
-        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
             <div class="flex items-center justify-between gap-3">
                 <div>
-                    <p class="text-sm font-medium text-slate-400">Avg Booking Value</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Avg Booking Value</p>
                 </div>
-                <x-heroicon-o-calculator class="h-5 w-5 text-violet-400" />
+                <x-heroicon-o-calculator class="h-6 w-6 text-violet-400" />
             </div>
-            <p class="mt-5 text-4xl font-bold text-white">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
+            <p class="mt-6 text-5xl font-extrabold text-white">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
             <p class="mt-3 text-sm text-slate-400">Per booking</p>
         </div>
 
         {{-- Completion Rate --}}
-        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
             <div class="flex items-center justify-between gap-3">
                 <div>
-                    <p class="text-sm font-medium text-slate-400">Completion Rate</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Completion Rate</p>
                 </div>
-                <x-heroicon-o-check-circle class="h-5 w-5 text-emerald-400" />
+                <x-heroicon-o-check-circle class="h-6 w-6 text-emerald-400" />
             </div>
-            <p class="mt-5 text-4xl font-bold text-white">{{ $stats['completion_rate'] ?? 0 }}%</p>
+            <p class="mt-6 text-5xl font-extrabold text-white">{{ $stats['completion_rate'] ?? 0 }}%</p>
             <p class="mt-3 text-sm text-slate-400">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
         </div>
 
         {{-- Cancellation Rate --}}
-        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
+        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
             <div class="flex items-center justify-between gap-3">
                 <div>
-                    <p class="text-sm font-medium text-slate-400">Cancellation Rate</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Cancellation Rate</p>
                 </div>
-                <x-heroicon-o-x-circle class="h-5 w-5 text-red-400" />
+                <x-heroicon-o-x-circle class="h-6 w-6 text-red-400" />
             </div>
-            <p class="mt-5 text-4xl font-bold text-white">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
+            <p class="mt-6 text-5xl font-extrabold text-white">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
             <p class="mt-3 text-sm text-slate-400">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
         </div>
 

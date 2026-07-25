@@ -77,18 +77,26 @@ class OverallReports extends Page implements HasForms
                     ->native(false)
                     ->maxDate(now())
                     ->live()
-                    ->extraInputAttributes([
-                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 text-white px-4 py-3 shadow-sm placeholder:text-slate-400',
+                    ->extraAttributes([
+                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 shadow-sm',
                     ])
+                    ->extraTriggerAttributes([
+                        'class' => 'w-full rounded-3xl bg-slate-950/80 px-4 py-3 text-left text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500',
+                    ])
+                    ->suffixIcon('heroicon-m-calendar')
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),
                 DatePicker::make('customEndDate')
                     ->label('End Date')
                     ->native(false)
                     ->maxDate(now())
                     ->live()
-                    ->extraInputAttributes([
-                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 text-white px-4 py-3 shadow-sm placeholder:text-slate-400',
+                    ->extraAttributes([
+                        'class' => 'rounded-3xl border border-white/10 bg-slate-950/80 shadow-sm',
                     ])
+                    ->extraTriggerAttributes([
+                        'class' => 'w-full rounded-3xl bg-slate-950/80 px-4 py-3 text-left text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500',
+                    ])
+                    ->suffixIcon('heroicon-m-calendar')
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),
             ]);
     }
