@@ -156,7 +156,7 @@ class FerryRouteResource extends Resource
                             ->deletable()
                             ->collapsible()
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['service_name'] ?? 'New schedule')
+                            ->itemLabel(fn (array $state): ?string => $state['vehicle_name'] ?? $state['service_name'] ?? 'New schedule')
                             ->createItemButtonLabel('Add schedule')
                             ->columnSpanFull(),
                     ])
