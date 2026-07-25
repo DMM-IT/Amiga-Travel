@@ -58,7 +58,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.12+16';
+  static const String appVersion = '1.0.13+17';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -504,41 +504,15 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
       // Proceed if server is unreachable
     }
 
-    // 2. Check for saved booking session
-    BookingData? savedSession = await BookingData.loadFromPrefs();
-
-    // 3. Proceed to app
+    // 2. Proceed to app
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        if (savedSession != null) {
-          BookingData.activeSession = savedSession;
-          // Jump to booking flow at the saved step
-          // To make it simple, we push MainScreen as base, then the proper booking screen
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
-          
-          if (savedSession.savedStep >= 0) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => TravelScreen(initialMode: savedSession.mode)));
-          }
-          if (savedSession.savedStep >= 1) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: savedSession)));
-          }
-          if (savedSession.savedStep >= 2) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: savedSession)));
-          }
-          if (savedSession.savedStep >= 3) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: savedSession)));
-          }
-          if (savedSession.savedStep >= 4) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: savedSession)));
-          }
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => widget.isFirstLaunch ? const OnboardingScreen() : const MainScreen(),
-            ),
-          );
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => widget.isFirstLaunch ? const OnboardingScreen() : const MainScreen(),
+          ),
+        );
       }
     });
   }
@@ -891,14 +865,46 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   List<Map<String, dynamic>> _services = [];
   bool _toursLoading = true;
   bool _servicesLoading = true;
+  BookingData? _savedSession;
 
   @override
   void initState() {
     super.initState();
     _tourTabController = TabController(length: 2, vsync: this);
+    _checkSavedSession();
     _fetchPromotions();
     _fetchTours();
     _fetchServices();
+  }
+
+  void _checkSavedSession() async {
+    final session = await BookingData.loadFromPrefs();
+    if (mounted) setState(() => _savedSession = session);
+  }
+
+  void _resumeBooking() {
+    if (_savedSession == null) return;
+    BookingData.activeSession = _savedSession;
+    if (_savedSession!.savedStep >= 0) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => TravelScreen(initialMode: _savedSession!.mode)));
+    }
+    if (_savedSession!.savedStep >= 1) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: _savedSession!)));
+    }
+    if (_savedSession!.savedStep >= 2) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: _savedSession!)));
+    }
+    if (_savedSession!.savedStep >= 3) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: _savedSession!)));
+    }
+    if (_savedSession!.savedStep >= 4) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: _savedSession!)));
+    }
+  }
+
+  void _cancelDraft() async {
+    await BookingData.clearPrefs();
+    if (mounted) setState(() => _savedSession = null);
   }
 
   void _fetchTours() async {
@@ -1039,12 +1045,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(color: kPink, borderRadius: BorderRadius.circular(20)),
-                                child: const Text('Kay Amiga, Hassle Free Ka!', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                child: const Text('Your journey deserves more than a destination - it deserves an exceptional experience', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(height: 10),
-                              const Text('Book Ferry Tickets\n& Flights Online', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
-                              const SizedBox(height: 6),
-                              const Text('Calapan • Batangas • Puerto Galera', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                              const Text('Welcome to Amiga Gracia\nTravel Services', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
                             ],
                           ),
                         ),
@@ -1083,6 +1087,53 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               }),
             ),
           const SizedBox(height: 8),
+
+          // Saved Session Banner
+          if (UserSession.isLoggedIn && _savedSession != null)
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: kPink.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: kPink.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('You have a pending booking in progress.', style: TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  const Text('Return to complete your booking or cancel the draft to start a new one.', style: TextStyle(color: kSlate600, fontSize: 12)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _resumeBooking,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPink,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                        ),
+                        child: const Text('Return to booking', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        onPressed: _cancelDraft,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: kPink,
+                          side: BorderSide(color: kPink.withOpacity(0.5)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                        ),
+                        child: const Text('Cancel draft', style: TextStyle(fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
 
           // Track Booking
           Padding(
@@ -1503,8 +1554,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
   String _mode = 'ferry';
   String? _origin;
   String? _destination;
-  DateTime _departureDate = DateTime.now().add(const Duration(days: 1));
-  DateTime _returnDate = DateTime.now().add(const Duration(days: 3));
+  DateTime? _departureDate;
+  DateTime? _returnDate;
   int _adults = 1;
   int _children = 0;
   bool _showPassengerDropdown = false;
@@ -1573,9 +1624,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _operators = List<String>.from(data['operators']);
-          _operator = _operators.isNotEmpty ? _operators.first : null;
+          _operator = null;
         });
-        _fetchOrigins();
       }
     } catch (e) {
       debugPrint('Error fetching operators: $e');
@@ -1594,12 +1644,11 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _origins = List<String>.from(data['origins']);
-          _origin = _origins.isNotEmpty ? _origins.first : null;
+          _origin = null;
           _destination = null;
           _destinations = [];
           _availableDepartureDates = [];
           _availableReturnDates = [];
-          if (_origin != null) _fetchDestinations(_origin!);
         });
       }
     } catch (e) {
@@ -1619,8 +1668,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _destinations = List<String>.from(data['destinations']);
-          _destination = _destinations.isNotEmpty ? _destinations.first : null;
-          if (_destination != null) _fetchAvailableDates();
+          _destination = null;
         });
       }
     } catch (e) {
@@ -1694,15 +1742,45 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
   int get _totalPassengers => _adults + _children;
 
   void _goToSchedule() {
-    if (_origin == null || _destination == null) return;
+    if (!UserSession.isLoggedIn) {
+      showDialog(context: context, builder: (_) => AlertDialog(
+        title: const Text('Login Required'),
+        content: const Text('You must be logged in to proceed with the booking.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () {
+            Navigator.pop(context);
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+              builder: (modalCtx) => Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(modalCtx).viewInsets.bottom),
+                child: SizedBox(
+                  height: MediaQuery.of(modalCtx).size.height * 0.85,
+                  child: ActivityScreen(onLoginSuccess: () {
+                    Navigator.pop(modalCtx); // Close the ActivityScreen modal on success
+                    _goToSchedule(); // Resume the booking flow
+                  }),
+                ),
+              ),
+            );
+          }, child: const Text('Login')),
+        ],
+      ));
+      return;
+    }
+    if (_origin == null || _destination == null || _departureDate == null) return;
+    if (_tripTabController.index == 1 && _returnDate == null) return;
     final booking = BookingData()
       ..mode = _mode
       ..operator = _operator
       ..tripType = _tripTabController.index == 0 ? 'one_way' : 'round_trip'
       ..origin = _origin!
       ..destination = _destination!
-      ..departureDate = _fmt(_departureDate)
-      ..returnDate = _tripTabController.index == 1 ? _fmt(_returnDate) : null
+      ..departureDate = _fmt(_departureDate!)
+      ..returnDate = _tripTabController.index == 1 ? _fmt(_returnDate!) : null
       ..adults = _adults
       ..children = _children;
 
@@ -1721,7 +1799,12 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     booking.savedStep = 1;
     booking.saveToPrefs(1);
 
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: booking)));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: booking))).then((_) {
+      if (mounted) {
+        booking.savedStep = 0;
+        booking.saveToPrefs(0);
+      }
+    });
   }
 
   @override
@@ -1783,7 +1866,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
                             value: _operators.contains(_operator) ? _operator : null,
-                            hint: const Text('Select Operator'),
+                            hint: const Text('Choose an operator'),
                             items: _operators.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                             onChanged: (val) {
                               setState(() {
@@ -1791,6 +1874,11 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                 _origin = null;
                                 _destination = null;
                                 _destinations = [];
+                                _origins = [];
+                                _departureDate = null;
+                                _returnDate = null;
+                                _availableDepartureDates = [];
+                                _availableReturnDates = [];
                               });
                               if (val != null) _fetchOrigins();
                             },
@@ -1804,9 +1892,9 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                             value: _origins.contains(_origin) ? _origin : null,
                             hint: const Text('Select Origin'),
                             items: _origins.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                            onChanged: (v) {
+                            onChanged: _operator == null ? null : (v) {
                               if (v != null) {
-                                setState(() { _origin = v; _destination = null; _destinations = []; _availableDepartureDates = []; _availableReturnDates = []; });
+                                setState(() { _origin = v; _destination = null; _destinations = []; _departureDate = null; _returnDate = null; _availableDepartureDates = []; _availableReturnDates = []; });
                                 _fetchDestinations(v);
                               }
                             },
@@ -1823,8 +1911,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                   value: _destinations.contains(_destination) ? _destination : null,
                                   hint: const Text('Select Destination'),
                                   items: _destinations.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                                  onChanged: (v) {
-                                    setState(() { _destination = v; _availableDepartureDates = []; _availableReturnDates = []; });
+                                  onChanged: _origin == null ? null : (v) {
+                                    setState(() { _destination = v; _departureDate = null; _returnDate = null; _availableDepartureDates = []; _availableReturnDates = []; });
                                     if (v != null) _fetchAvailableDates();
                                   },
                                   decoration: _dropDecor(Icons.navigation),
@@ -1834,10 +1922,10 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           // Travel Dates
                           _label('Travel Dates'),
                           const SizedBox(height: 6),
-                          _datePicker(_fmtDisplay(_departureDate), () => _selectDate(context, true)),
+                          _datePicker(_departureDate != null ? _fmtDisplay(_departureDate!) : 'Select Date', _destination == null ? null : () => _selectDate(context, true)),
                           if (_tripTabController.index == 1) ...[
                             const SizedBox(height: 10),
-                            _datePicker(_fmtDisplay(_returnDate), () => _selectDate(context, false), label: 'Return'),
+                            _datePicker(_returnDate != null ? _fmtDisplay(_returnDate!) : 'Select Date', _destination == null ? null : () => _selectDate(context, false), label: 'Return'),
                           ],
                           const SizedBox(height: 16),
 
@@ -2093,11 +2181,11 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       );
 
-  Widget _datePicker(String value, VoidCallback onTap, {String? label}) => InkWell(
+  Widget _datePicker(String value, VoidCallback? onTap, {String? label}) => InkWell(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          decoration: BoxDecoration(border: Border.all(color: kSlate400), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(border: Border.all(color: kSlate400), borderRadius: BorderRadius.circular(12), color: onTap == null ? kSlate50 : Colors.white),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -3333,10 +3421,20 @@ class AppDrawer extends StatelessWidget {
             ),
           const Padding(
             padding: EdgeInsets.all(16),
-            child: Text(
-              '© 2025 Amiga Gracia Travel Services',
-              style: TextStyle(color: kSlate400, fontSize: 11),
-              textAlign: TextAlign.center,
+            child: Column(
+              children: [
+                Text(
+                  'Version 1.0.0',
+                  style: TextStyle(color: kSlate400, fontSize: 12, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '© 2025 Amiga Gracia Travel Services',
+                  style: TextStyle(color: kSlate400, fontSize: 11),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
         ],
@@ -3371,12 +3469,17 @@ class _StepProgress extends StatelessWidget {
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(steps.length * 2 - 1, (i) {
           if (i.isOdd) {
             return Expanded(
               child: Container(
-                height: 2,
-                color: i ~/ 2 < currentStep - 1 ? kGreen : kSlate200,
+                height: 28,
+                alignment: Alignment.center,
+                child: Container(
+                  height: 2,
+                  color: i ~/ 2 < currentStep - 1 ? kGreen : kSlate200,
+                ),
               ),
             );
           }
@@ -3509,7 +3612,12 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       widget.booking.selectedScheduleAccommodation = null;
       widget.booking.savedStep = 2;
       widget.booking.saveToPrefs(2);
-      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+        if (mounted) {
+          widget.booking.savedStep = 1;
+          widget.booking.saveToPrefs(1);
+        }
+      });
     }
   }
 
@@ -3553,7 +3661,12 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                             if (widget.booking.tripType != 'round_trip' || (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)) {
                                 widget.booking.savedStep = 2; // We treat seat selection as part of step 2 transition
                                 widget.booking.saveToPrefs(2);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => SeatSelectionScreen(booking: widget.booking)));
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => SeatSelectionScreen(booking: widget.booking))).then((_) {
+                                  if (mounted) {
+                                    widget.booking.savedStep = 1;
+                                    widget.booking.saveToPrefs(1);
+                                  }
+                                });
                             }
                           }
                         },
@@ -3650,7 +3763,12 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           if (widget.booking.tripType != 'round_trip' || (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)) {
                             widget.booking.savedStep = 2;
                             widget.booking.saveToPrefs(2);
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+                              if (mounted) {
+                                widget.booking.savedStep = 1;
+                                widget.booking.saveToPrefs(1);
+                              }
+                            });
                           }
                         },
                         borderRadius: BorderRadius.circular(12),
@@ -3775,7 +3893,12 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                       ? () {
                                           widget.booking.savedStep = 2;
                                           widget.booking.saveToPrefs(2);
-                                          Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+                                            if (mounted) {
+                                              widget.booking.savedStep = 1;
+                                              widget.booking.saveToPrefs(1);
+                                            }
+                                          });
                                         }
                                       : null,
                                   style: ElevatedButton.styleFrom(
@@ -3884,7 +4007,12 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           if ((isAirline && classes.isEmpty) || (!isAirline && accommodations.isEmpty)) {
                               widget.booking.savedStep = 2;
                               widget.booking.saveToPrefs(2);
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+                                if (mounted) {
+                                  widget.booking.savedStep = 1;
+                                  widget.booking.saveToPrefs(1);
+                                }
+                              });
                           }
                       }
                     }
@@ -4113,7 +4241,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     ? () {
                         widget.booking.savedStep = 2;
                         widget.booking.saveToPrefs(2);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking)));
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+                          if (mounted) {
+                            widget.booking.savedStep = 1; // Or whatever step SeatSelection is logically part of, but SeatSelection leads to DiscountScreen. Wait, SeatSelection Screen pushes DiscountScreen!
+                            // Ah! Let's check SeatSelectionScreen!
+                            widget.booking.saveToPrefs(1);
+                          }
+                        });
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
@@ -4286,7 +4420,12 @@ class _DiscountScreenState extends State<DiscountScreen> {
     }
     widget.booking.savedStep = 3;
     widget.booking.saveToPrefs(3);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: widget.booking)));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: widget.booking))).then((_) {
+      if (mounted) {
+        widget.booking.savedStep = 2;
+        widget.booking.saveToPrefs(2);
+      }
+    });
   }
 
   @override
@@ -4622,7 +4761,12 @@ class _StayScreenState extends State<StayScreen> {
                           onPressed: () {
                             widget.booking.savedStep = 4;
                             widget.booking.saveToPrefs(4);
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: widget.booking)));
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: widget.booking))).then((_) {
+                              if (mounted) {
+                                widget.booking.savedStep = 3;
+                                widget.booking.saveToPrefs(3);
+                              }
+                            });
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kPink,
@@ -7378,10 +7522,10 @@ class _VouchersScreenState extends State<VouchersScreen> {
                               children: [
                                 const Icon(Icons.confirmation_num_outlined, color: kPink, size: 20),
                                 const SizedBox(width: 12),
-                                const Expanded(
+                                Expanded(
                                   child: TextField(
                                     controller: _promoCtrl,
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                       border: InputBorder.none,
                                       hintText: 'Input promo code',
                                       hintStyle: TextStyle(color: kSlate400, fontSize: 14),
