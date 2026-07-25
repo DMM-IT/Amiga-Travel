@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class Booking extends Model
 {
@@ -247,6 +249,14 @@ class Booking extends Model
             ]);
         }
 
-        Mail::to($this->client_email)->send(new RebookingVerification($this, $ticketUrl, $receiptPath, $receiptDisk));
+        try {
+            Mail::to($this->client_email)->send(new RebookingVerification($this, $ticketUrl, $receiptPath, $receiptDisk));
+        } catch (Throwable $e) {
+            Log::error('Failed sending rebooking verification email', [
+                'booking_id' => $this->id ?? null,
+                'email' => $this->client_email ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

@@ -100,16 +100,36 @@ class FerryRouteResource extends Resource
                         ->toArray())
                     ->reactive()
                     ->searchable()
-                    ->afterStateHydrated(function ($state, callable $set) {
+                    ->afterStateHydrated(function ($state, callable $set, callable $get) {
                         if ($state) {
                             $set('operator', optional(Vehicle::find($state))->operator);
+
+                            $schedules = $get('schedules') ?? [];
+                            $vehicleName = optional(Vehicle::find($state))->name;
+                            foreach ($schedules as $index => $schedule) {
+                                $schedules[$index]['vehicle_name'] = $vehicleName;
+                            }
+                            $set('schedules', $schedules);
                         }
                     })
-                    ->afterStateUpdated(function ($state, callable $set) {
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
                         if ($state) {
                             $set('operator', optional(Vehicle::find($state))->operator);
+
+                            $schedules = $get('schedules') ?? [];
+                            $vehicleName = optional(Vehicle::find($state))->name;
+                            foreach ($schedules as $index => $schedule) {
+                                $schedules[$index]['vehicle_name'] = $vehicleName;
+                            }
+                            $set('schedules', $schedules);
                         } else {
                             $set('operator', null);
+
+                            $schedules = $get('schedules') ?? [];
+                            foreach ($schedules as $index => $schedule) {
+                                $schedules[$index]['vehicle_name'] = null;
+                            }
+                            $set('schedules', $schedules);
                         }
                     })
                     ->hint('Select a vehicle from the ferry/airline list'),
@@ -136,7 +156,28 @@ class FerryRouteResource extends Resource
                             ->deletable()
                             ->collapsible()
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['service_name'] ?? 'New schedule')
+                            ->itemLabel(fn (array $state): ?string => $state['vehicle_name'] ?? $state['service_name'] ?? 'New schedule')
+                            ->mutateRelationshipDataBeforeFillUsing(function (array $data, callable $get): array {
+                                if ($vehicleId = $get('../../vehicle_id')) {
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
+                                }
+
+                                return $data;
+                            })
+                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, callable $get): array {
+                                if ($vehicleId = $get('../../vehicle_id')) {
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
+                                }
+
+                                return $data;
+                            })
+                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, callable $get): array {
+                                if ($vehicleId = $get('../../vehicle_id')) {
+                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
+                                }
+
+                                return $data;
+                            })
                             ->createItemButtonLabel('Add schedule')
                             ->columnSpanFull(),
                     ])
@@ -155,8 +196,16 @@ class FerryRouteResource extends Resource
                 ->maxLength(255),
 
             TextInput::make('vehicle_name')
-                ->label('IMO/Tail No.')
-                ->placeholder('e.g. MV Amiga, Flight 123')
+                ->label('Vehicle')
+                ->disabled()
+                ->reactive()
+                ->afterStateHydrated(function ($state, callable $set, callable $get) {
+                    $vehicleId = $get('../../vehicle_id');
+
+                    if ($vehicleId) {
+                        $set('vehicle_name', optional(Vehicle::find($vehicleId))->name);
+                    }
+                })
                 ->nullable()
                 ->maxLength(255),
 

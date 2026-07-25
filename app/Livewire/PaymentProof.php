@@ -5,6 +5,8 @@ namespace App\Livewire;
 use App\Models\Transaction;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PaymentProof extends Component
 {
@@ -131,8 +133,17 @@ class PaymentProof extends Component
             'payment_status' => 'pending',
         ]);
 
-        \Illuminate\Support\Facades\Mail::to($this->transaction->booking->client_email)
-            ->queue(new \App\Mail\PaymentProofReceived($this->transaction));
+        try {
+            \Illuminate\Support\Facades\Mail::to($this->transaction->booking->client_email)
+                ->queue(new \App\Mail\PaymentProofReceived($this->transaction));
+        } catch (Throwable $e) {
+            Log::error('Failed queueing payment proof received email', [
+                'transaction_id' => $this->transaction->id ?? null,
+                'booking_id' => $this->transaction->booking->id ?? null,
+                'email' => $this->transaction->booking->client_email ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         $this->transaction->refresh();
         session(['cancellation_window_expires_for_' . $this->transaction->booking->transaction_number => now()->addMinutes(5)->timestamp]);

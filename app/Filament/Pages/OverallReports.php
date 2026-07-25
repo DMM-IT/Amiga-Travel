@@ -70,18 +70,33 @@ class OverallReports extends Page implements HasForms
     public function form(Form $form): Form
     {
         return $form
+            ->columns(2)
             ->schema([
                 DatePicker::make('customStartDate')
                     ->label('Start Date')
                     ->native(false)
                     ->maxDate(now())
                     ->live()
+                    ->extraAttributes([
+                        'class' => 'rounded-3xl border border-slate-300 bg-white text-slate-900 shadow-sm ring-1 ring-gray-200 transition dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:ring-white/10',
+                    ])
+                    ->extraTriggerAttributes([
+                        'class' => 'w-full rounded-3xl bg-transparent px-4 py-3 text-left text-sm leading-6 text-slate-900 placeholder:text-slate-400 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-100 dark:placeholder:text-slate-500',
+                    ])
+                    ->suffixIcon('heroicon-m-calendar')
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),
                 DatePicker::make('customEndDate')
                     ->label('End Date')
                     ->native(false)
                     ->maxDate(now())
                     ->live()
+                    ->extraAttributes([
+                        'class' => 'rounded-3xl border border-slate-300 bg-white text-slate-900 shadow-sm ring-1 ring-gray-200 transition dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:ring-white/10',
+                    ])
+                    ->extraTriggerAttributes([
+                        'class' => 'w-full rounded-3xl bg-transparent px-4 py-3 text-left text-sm leading-6 text-slate-900 placeholder:text-slate-400 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-100 dark:placeholder:text-slate-500',
+                    ])
+                    ->suffixIcon('heroicon-m-calendar')
                     ->afterStateUpdated(fn () => $this->applyCustomDates()),
             ]);
     }

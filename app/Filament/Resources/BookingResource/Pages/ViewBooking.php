@@ -19,6 +19,8 @@ use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class ViewBooking extends ViewRecord
 {
@@ -158,9 +160,17 @@ class ViewBooking extends ViewRecord
                         ['booking' => $booking->id]
                     );
 
-                    Mail::to($booking->client_email)->send(new BookingConfirmation($booking, $ticketUrl, $receiptPath));
-
-                    $this->notify('success', 'Booking confirmed and confirmation email sent.');
+                    try {
+                        Mail::to($booking->client_email)->send(new BookingConfirmation($booking, $ticketUrl, $receiptPath));
+                        $this->notify('success', 'Booking confirmed and confirmation email sent.');
+                    } catch (Throwable $e) {
+                        Log::error('Failed sending booking confirmation email', [
+                            'booking_id' => $booking->id ?? null,
+                            'email' => $booking->client_email ?? null,
+                            'error' => $e->getMessage(),
+                        ]);
+                        $this->notify('warning', 'Booking confirmed but confirmation email failed to send.');
+                    }
                 })
                 ->requiresConfirmation()
                 ->color('success')

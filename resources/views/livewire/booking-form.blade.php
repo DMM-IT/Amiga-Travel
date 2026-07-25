@@ -1580,6 +1580,23 @@
                             </div>
                         </div>
 
+                        <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="flex flex-col gap-3">
+                                <button type="button" wire:click.prevent="$set('showTermsModal', true)" class="text-left w-full text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">
+                                    <h3 class="text-lg font-bold">Amiga Travel Agency Services Terms and Conditions</h3>
+                                </button>
+                                <label class="flex items-start gap-3">
+                                    <input type="checkbox" wire:model="hasAcceptedTerms" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#db2777] focus:ring-[#db2777]">
+                                    <div class="text-sm text-slate-700">
+                                        I have read and agree to the <button type="button" wire:click.prevent="$set('showTermsModal', true)" class="font-semibold text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">Amiga Travel Agency Services Terms and Conditions</button>.
+                                    </div>
+                                </label>
+                                @error('hasAcceptedTerms')
+                                    <p class="text-sm text-rose-600">{{ $message }}</p>
+                                @enderror
+                                <p class="text-sm text-slate-500">If you already agree, you may continue without opening the terms modal.</p>
+                            </div>
+                        </div>
 
                         @endif
 

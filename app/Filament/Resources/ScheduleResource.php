@@ -80,7 +80,7 @@ class ScheduleResource extends Resource
                             $route = \App\Models\FerryRoute::with('vehicle')->find($state);
                             if ($route?->vehicle) {
                                 $set('service_name', $route->vehicle->name);
-                                $set('vehicle_name', $route->vehicle->vehicle_id);
+                                $set('vehicle_name', $route->vehicle->name);
                             }
                         } else {
                             $set('service_name', null);
