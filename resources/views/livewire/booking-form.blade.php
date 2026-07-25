@@ -1580,6 +1580,12 @@
                             </div>
                         </div>
 
+                        <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <button type="button" wire:click.prevent="$set('showTermsModal', true)" class="text-left w-full text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">
+                                <h3 class="text-lg font-bold">Amiga Travel Agency Services Terms and Conditions</h3>
+                            </button>
+                            <p class="mt-2 text-sm text-slate-500">Review the terms in a modal overlay before completing your booking. You must accept them to continue.</p>
+                        </div>
 
                         @endif
 
