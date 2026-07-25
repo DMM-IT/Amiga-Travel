@@ -2,7 +2,7 @@
 <div wire:poll.3s="refreshData" class="space-y-6 w-full">
 
     {{-- ═══ Header: Period Selector + Custom Dates + Export ═══ --}}
-    <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+    <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-950/5">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {{-- Period Pills --}}
             <div class="flex flex-wrap gap-2">
@@ -12,7 +12,7 @@
                         @class([
                             'rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200',
                             'bg-primary-600 text-white shadow-md' => $period === $value,
-                            'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700' => $period !== $value,
+                            'bg-gray-50 text-gray-600 hover:bg-gray-100' => $period !== $value,
                         ])
                     >
                         {{ $label }}
@@ -58,77 +58,101 @@
             ? round((($stats['total_revenue'] - $stats['prev_total_revenue']) / $stats['prev_total_revenue']) * 100, 1)
             : ($stats['total_revenue'] > 0 ? 100 : 0);
     @endphp
-    <div class="grid w-full gap-5" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
-        {{-- Total Bookings --}}
-        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
-            <div class="flex items-center justify-between gap-3">
+    <div class="grid w-full gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {{-- KPI Card: Total Bookings --}}
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
+            <p class="text-xs text-gray-400">Month to date</p>
+            <div class="mt-2 flex items-start justify-between gap-3">
                 <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Total Bookings</p>
+                    <p class="text-sm font-medium text-gray-600">Total Bookings</p>
+                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ abs($bookingTrend) }}% vs prev period</p>
                 </div>
-                <x-heroicon-o-ticket class="h-6 w-6 text-sky-400" />
+                <div class="flex flex-col items-end">
+                    <div class="h-12 w-28" wire:ignore id="spark-total-bookings"></div>
+                    <x-heroicon-o-ticket class="h-5 w-5 text-gray-400 mt-2" />
+                </div>
             </div>
-            <p class="mt-6 text-5xl font-extrabold text-white">{{ number_format($stats['total_bookings'] ?? 0) }}</p>
-            <p class="mt-3 text-sm text-slate-400">{{ abs($bookingTrend) }}% vs prev period</p>
         </div>
 
-        {{-- Total Revenue --}}
-        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
-            <div class="flex items-center justify-between gap-3">
+        {{-- KPI Card: Total Revenue --}}
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
+            <p class="text-xs text-gray-400">Month to date</p>
+            <div class="mt-2 flex items-start justify-between gap-3">
                 <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Total Revenue</p>
+                    <p class="text-sm font-medium text-gray-600">Total Revenue</p>
+                    <p class="mt-3 text-3xl font-extrabold text-gray-900">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ abs($revenueTrend) }}% vs prev period</p>
                 </div>
-                <x-heroicon-o-banknotes class="h-6 w-6 text-emerald-400" />
+                <div class="flex flex-col items-end">
+                    <div class="h-12 w-28" wire:ignore id="spark-total-revenue"></div>
+                    <x-heroicon-o-banknotes class="h-5 w-5 text-gray-400 mt-2" />
+                </div>
             </div>
-            <p class="mt-6 text-5xl font-extrabold text-white">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
-            <p class="mt-3 text-sm text-slate-400">{{ abs($revenueTrend) }}% vs prev period</p>
         </div>
 
-        {{-- Avg Booking Value --}}
-        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
-            <div class="flex items-center justify-between gap-3">
+        {{-- KPI Card: Avg Booking Value --}}
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
+            <p class="text-xs text-gray-400">Month to date</p>
+            <div class="mt-2 flex items-start justify-between gap-3">
                 <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Avg Booking Value</p>
+                    <p class="text-sm font-medium text-gray-600">Avg Booking Value</p>
+                    <p class="mt-3 text-3xl font-extrabold text-gray-900">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
+                    <p class="mt-2 text-xs text-gray-500">Per booking</p>
                 </div>
-                <x-heroicon-o-calculator class="h-6 w-6 text-violet-400" />
+                <div class="flex flex-col items-end">
+                    <div class="h-12 w-28" wire:ignore id="spark-avg-booking"></div>
+                    <x-heroicon-o-calculator class="h-5 w-5 text-gray-400 mt-2" />
+                </div>
             </div>
-            <p class="mt-6 text-5xl font-extrabold text-white">₱{{ number_format($stats['avg_booking_value'] ?? 0, 2) }}</p>
-            <p class="mt-3 text-sm text-slate-400">Per booking</p>
         </div>
 
-        {{-- Completion Rate --}}
-        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
-            <div class="flex items-center justify-between gap-3">
+        {{-- KPI Card: Completion Rate --}}
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
+            <p class="text-xs text-gray-400">Month to date</p>
+            <div class="mt-2 flex items-start justify-between gap-3">
                 <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Completion Rate</p>
+                    <p class="text-sm font-medium text-gray-600">Completion Rate</p>
+                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ $stats['completion_rate'] ?? 0 }}%</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
                 </div>
-                <x-heroicon-o-check-circle class="h-6 w-6 text-emerald-400" />
+                <div class="flex flex-col items-end">
+                    <div class="h-12 w-28" wire:ignore id="spark-completion"></div>
+                    <x-heroicon-o-check-circle class="h-5 w-5 text-gray-400 mt-2" />
+                </div>
             </div>
-            <p class="mt-6 text-5xl font-extrabold text-white">{{ $stats['completion_rate'] ?? 0 }}%</p>
-            <p class="mt-3 text-sm text-slate-400">{{ $stats['completed_bookings'] ?? 0 }} confirmed</p>
         </div>
 
-        {{-- Cancellation Rate --}}
-        <div class="rounded-[32px] bg-slate-950 p-6 shadow-2xl ring-1 ring-white/10 text-left min-h-[220px] h-full border border-white/5">
-            <div class="flex items-center justify-between gap-3">
+        {{-- KPI Card: Cancellation Rate --}}
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
+            <p class="text-xs text-gray-400">Month to date</p>
+            <div class="mt-2 flex items-start justify-between gap-3">
                 <div>
-                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Cancellation Rate</p>
+                    <p class="text-sm font-medium text-gray-600">Cancellation Rate</p>
+                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
                 </div>
-                <x-heroicon-o-x-circle class="h-6 w-6 text-red-400" />
+                <div class="flex flex-col items-end">
+                    <div class="h-12 w-28" wire:ignore id="spark-cancellation"></div>
+                    <x-heroicon-o-x-circle class="h-5 w-5 text-gray-400 mt-2" />
+                </div>
             </div>
-            <p class="mt-6 text-5xl font-extrabold text-white">{{ $stats['cancellation_rate'] ?? 0 }}%</p>
-            <p class="mt-3 text-sm text-slate-400">{{ $stats['cancelled_bookings'] ?? 0 }} cancelled</p>
         </div>
 
-        {{-- Rebookings --}}
-        <div class="rounded-3xl bg-slate-950/80 p-5 shadow-lg ring-1 ring-white/10 text-left min-h-[220px] h-full">
-            <div class="flex items-center justify-between gap-3">
+        {{-- KPI Card: Rebookings --}}
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5">
+            <p class="text-xs text-gray-400">Month to date</p>
+            <div class="mt-2 flex items-start justify-between gap-3">
                 <div>
-                    <p class="text-sm font-medium text-slate-400">Rebookings</p>
+                    <p class="text-sm font-medium text-gray-600">Rebookings</p>
+                    <p class="mt-3 text-3xl font-extrabold text-gray-900">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
+                    <p class="mt-2 text-xs text-gray-500">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
                 </div>
-                <x-heroicon-o-arrow-path class="h-5 w-5 text-amber-400" />
+                <div class="flex flex-col items-end">
+                    <div class="h-12 w-28" wire:ignore id="spark-rebookings"></div>
+                    <x-heroicon-o-arrow-path class="h-5 w-5 text-gray-400 mt-2" />
+                </div>
             </div>
-            <p class="mt-5 text-4xl font-bold text-white">{{ number_format($stats['rebooking_count'] ?? 0) }}</p>
-            <p class="mt-3 text-sm text-slate-400">₱{{ number_format($stats['pending_revenue'] ?? 0, 0) }} pending</p>
         </div>
     </div>
 
@@ -507,6 +531,47 @@
             reportCharts.passengers.render();
         }
 
+        // Render small KPI sparklines
+        function renderSparklines() {
+            try {
+                const sparkConfigs = [
+                    { id: 'spark-total-bookings', series: data.revenue?.series?.[0]?.data || (data.bookingVolume?.series?.[0]?.data || []) , color: '#10B981' },
+                    { id: 'spark-total-revenue', series: data.revenue?.series?.[0]?.data || [], color: '#f59e0b' },
+                    { id: 'spark-avg-booking', series: data.bookingVolume?.series?.[0]?.data || [], color: '#8b5cf6' },
+                    { id: 'spark-completion', series: data.statusDistribution?.series || [], color: '#10B981' },
+                    { id: 'spark-cancellation', series: data.statusDistribution?.series || [], color: '#ef4444' },
+                    { id: 'spark-rebookings', series: data.bookingVolume?.series?.[0]?.data || [], color: '#3b82f6' },
+                ];
+
+                sparkConfigs.forEach(cfg => {
+                    const el = document.getElementById(cfg.id);
+                    if (!el) return;
+
+                    // clear previous chart if present
+                    if (reportCharts[cfg.id]) {
+                        try { reportCharts[cfg.id].destroy(); } catch (e) {}
+                        delete reportCharts[cfg.id];
+                    }
+
+                    const seriesData = Array.isArray(cfg.series) ? cfg.series : (cfg.series[0]?.data || []);
+
+                    reportCharts[cfg.id] = new ApexCharts(el, {
+                        chart: { type: 'area', sparkline: { enabled: true }, height: 40 },
+                        series: [{ data: seriesData }],
+                        stroke: { curve: 'smooth', width: 2 },
+                        fill: { opacity: 0.12 },
+                        colors: [cfg.color],
+                        tooltip: { enabled: false },
+                    });
+
+                    reportCharts[cfg.id].render();
+                });
+            } catch (err) {
+                console.error('Error rendering sparklines', err);
+            }
+        }
+
+        renderSparklines();
         initialized = true;
     }
 
