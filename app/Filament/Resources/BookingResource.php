@@ -104,6 +104,18 @@ class BookingResource extends Resource
                 Tables\Columns\TextColumn::make('departure_date')
                     ->date()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('rebooking_departure_date')
+                    ->label('Rebook Departure')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('—'),
+                Tables\Columns\TextColumn::make('rebooking_return_date')
+                    ->label('Rebook Return')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('—'),
                 Tables\Columns\IconColumn::make('has_vehicle')
                     ->label('Vehicle')
                     ->boolean()

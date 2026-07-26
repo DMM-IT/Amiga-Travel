@@ -45,34 +45,34 @@
                         </a>
                     </div>
                     <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
-                        <a href="{{ url('/') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('/') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">Home</a>
-                        <a href="{{ url('/about') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('about') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">About</a>
-                        <a href="{{ url('/schedules') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('schedules') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">Schedules</a>
+                        <a href="{{ url('/') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('/') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">Home</a>
+                        <a href="{{ url('/about') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('about') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">About</a>
+                        <a href="{{ url('/schedules') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('schedules') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">Schedules</a>
                         <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('services') || request()->is('tour-package') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition flex items-center gap-1">
+                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('services') || request()->is('tour-package') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition flex items-center gap-1">
                                 Discover
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
                             <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
-                                    <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Services</a>
-                                    <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Tour Package</a>
+                                    <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Services</a>
+                                    <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Tour Package</a>
                                 </div>
                             </div>
                         </div>
                         <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('contact-us') || request()->is('faqs') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition flex items-center gap-1">
+                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('contact-us') || request()->is('faqs') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition flex items-center gap-1">
                                 Get Help
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
                             <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
-                                    <a href="{{ url('/contact-us') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('contact-us') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">Contact Us</a>
-                                    <a href="{{ url('/faqs') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('faqs') ? 'bg-[#ee018d] text-white' : 'text-white hover:bg-[#ee018d] hover:text-white' }}">FAQs</a>
+                                    <a href="{{ url('/contact-us') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Contact Us</a>
+                                    <a href="{{ url('/faqs') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">FAQs</a>
                                 </div>
                             </div>
                         </div>
-                        <a href="{{ url('/download') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('download') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">Download App</a>
+                        <a href="{{ url('/download') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('download') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">Download App</a>
                     </nav>
 
                     <div class="flex items-center gap-4">
@@ -98,30 +98,30 @@
 
             <div id="mobile-menu" class="md:hidden hidden bg-[#1e4c21] border-t border-white/10">
                 <div class="max-w-full mx-auto px-4 py-4 space-y-3">
-                    <a href="{{ url('/') }}" class="block rounded-xl px-4 py-3 {{ request()->is('/') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Home</a>
-                    <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">About</a>
-                    <a href="{{ url('/schedules') }}" class="block rounded-xl px-4 py-3 {{ request()->is('schedules') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Schedules</a>
+                    <a href="{{ url('/') }}" class="block rounded-xl px-4 py-3 {{ request()->is('/') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Home</a>
+                    <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">About</a>
+                    <a href="{{ url('/schedules') }}" class="block rounded-xl px-4 py-3 {{ request()->is('schedules') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Schedules</a>
                     <div x-data="{ open: false }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('services') || request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">
+                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('services') || request()->is('tour-package') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">
                             Discover
                             <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1">
-                            <a href="{{ url('/services') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('services') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Services</a>
-                            <a href="{{ url('/tour-package') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Tour Package</a>
+                            <a href="{{ url('/services') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('services') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">Services</a>
+                            <a href="{{ url('/tour-package') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">Tour Package</a>
                         </div>
                     </div>
                     <div x-data="{ open: false }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('contact-us') || request()->is('faqs') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">
+                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('contact-us') || request()->is('faqs') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">
                             Get Help
                             <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1">
-                            <a href="{{ url('/contact-us') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">Contact Us</a>
-                            <a href="{{ url('/faqs') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/10 text-[#ee018d]' : 'text-white/80 hover:bg-white/10 hover:text-white' }}">FAQs</a>
+                            <a href="{{ url('/contact-us') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">Contact Us</a>
+                            <a href="{{ url('/faqs') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">FAQs</a>
                         </div>
                     </div>
-                    <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/10 text-[#ee018d]' : 'text-white hover:bg-white/10' }}">Download App</a>
+                    <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Download App</a>
                     <div class="border-t border-white/10 pt-3">
                         @if(!empty($headerData['phone']))
                             <a href="tel:{{ $headerData['phone'] }}" class="block text-sm text-white/90 hover:text-white">Call us: {{ $headerData['phone'] }}</a>
