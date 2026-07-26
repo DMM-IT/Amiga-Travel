@@ -35,7 +35,7 @@ class ManageWebsiteSettings extends Page implements HasForms
         switch ($this->currentPage) {
             case 'about':
                 return [
-                    Section::make('About Page')
+                    Section::make('About Page')->collapsible()
                         ->description('Main content for the About page')
                         ->schema([
                             TextInput::make('content.title')
@@ -46,7 +46,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->rows(5)
                                 ->columnSpanFull(),
                         ]),
-                    Section::make('Did you know?')
+                    Section::make('Did you know?')->collapsible()
                         ->description('Update the did you know facts shown on the about page')
                         ->schema([
                             Repeater::make('content.quick_facts')
@@ -69,20 +69,20 @@ class ManageWebsiteSettings extends Page implements HasForms
                                     ['label' => 'Specialty', 'value' => 'Ferry bookings, Educational tours, Apprenticeship programs'],
                                 ]),
                         ]),
-                    Section::make('Request Travel Bookings')
-                        ->description('Editable cards for the About page booking request section')
+                    Section::make('Amiga Details Cards')->collapsible()
+                        ->description('Editable cards for the About page details section')
                         ->schema([
                             TextInput::make('content.booking_section_title')
                                 ->label('Section Title')
-                                ->default('Request Travel Bookings')
+                                ->default('Amiga Details Cards')
                                 ->maxLength(255),
                             Textarea::make('content.booking_section_description')
                                 ->label('Section Description')
-                                ->default('Kay Amiga, Hassle Free Ka! Select a booking category to start your travel request.')
+                                ->default('Learn more about our services.')
                                 ->rows(3)
                                 ->maxLength(255),
                             Repeater::make('content.booking_cards')
-                                ->label('Booking Cards')
+                                ->label('Amiga Details Cards')
                                 ->schema([
                                     TextInput::make('title')
                                         ->label('Card Title')
@@ -105,10 +105,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->label('Button Text')
                                         ->default('View Details')
                                         ->maxLength(50),
-                                    TextInput::make('link')
-                                        ->label('Button Link')
-                                        ->default('/about')
-                                        ->maxLength(255),
                                 ])
                                 ->columns(1)
                                 ->default([
@@ -138,11 +134,51 @@ class ManageWebsiteSettings extends Page implements HasForms
                                     ],
                                 ]),
                         ]),
+                    Section::make('Suggested Trips')->collapsible()
+                        ->description('Editable cards for the About page suggested trips section')
+                        ->schema([
+                            TextInput::make('content.suggested_trips_title')
+                                ->label('Section Title')
+                                ->default('Suggested Trips')
+                                ->maxLength(255),
+                            Textarea::make('content.suggested_trips_description')
+                                ->label('Section Description')
+                                ->default('Explore these suggested trips.')
+                                ->rows(3)
+                                ->maxLength(255),
+                            Repeater::make('content.suggested_trips')
+                                ->label('Suggested Trips Cards')
+                                ->schema([
+                                    TextInput::make('title')
+                                        ->label('Card Title')
+                                        ->required()
+                                        ->maxLength(120),
+                                    Textarea::make('description')
+                                        ->label('Card Summary')
+                                        ->rows(2)
+                                        ->maxLength(255),
+                                    Textarea::make('detail')
+                                        ->label('Detail Article')
+                                        ->rows(4)
+                                        ->maxLength(400)
+                                        ->helperText('A short article-style description for the detailed card.'),
+                                    FileUpload::make('image')
+                                        ->label('Card Image')
+                                        ->image()
+                                        ->directory('website-settings/about-suggested-trips'),
+                                    TextInput::make('button_text')
+                                        ->label('Button Text')
+                                        ->default('View Details')
+                                        ->maxLength(50),
+                                ])
+                                ->columns(1)
+                                ->default([]),
+                        ]),
                 ];
 
             case 'gallery':
                 return [
-                    Section::make('Gallery Page')
+                    Section::make('Gallery Page')->collapsible()
                         ->description('Manage gallery header and image cards')
                         ->schema([
                             TextInput::make('content.badge')
@@ -186,7 +222,7 @@ class ManageWebsiteSettings extends Page implements HasForms
 
             case 'services':
                 return [
-                    Section::make('Services Page')
+                    Section::make('Services Page')->collapsible()
                         ->description('Manage the service header and service cards')
                         ->schema([
                             TextInput::make('content.badge')
@@ -200,7 +236,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->label('Page Description')
                                 ->rows(4)
                                 ->maxLength(255),
-                            Section::make('Service CTA')
+                            Section::make('Service CTA')->collapsible()
                                 ->schema([
                                     TextInput::make('content.service_cta.badge')
                                         ->label('CTA Badge')
@@ -312,7 +348,7 @@ class ManageWebsiteSettings extends Page implements HasForms
 
             case 'tour_package':
                 return [
-                    Section::make('Tour Packages Page')
+                    Section::make('Tour Packages Page')->collapsible()
                         ->description('Manage the header and package sections for tour packages')
                         ->schema([
                             TextInput::make('content.badge')
@@ -428,7 +464,7 @@ class ManageWebsiteSettings extends Page implements HasForms
 
             case 'download':
                 return [
-                    Section::make('Download Page')
+                    Section::make('Download Page')->collapsible()
                         ->description('Manage the download page content and app install steps')
                         ->schema([
                             TextInput::make('content.title')
@@ -494,7 +530,7 @@ class ManageWebsiteSettings extends Page implements HasForms
 
             case 'contact_us':
                 return [
-                    Section::make('Contact Information')
+                    Section::make('Contact Information')->collapsible()
                         ->description('Contact details shown on Contact Us page')
                         ->schema([
                             TextInput::make('content.title')
@@ -540,7 +576,7 @@ class ManageWebsiteSettings extends Page implements HasForms
 
             case 'faqs':
                 return [
-                    Section::make('FAQs')
+                    Section::make('FAQs')->collapsible()
                         ->description('Manage Frequently Asked Questions')
                         ->schema([
                             TextInput::make('content.title')
@@ -570,7 +606,7 @@ class ManageWebsiteSettings extends Page implements HasForms
 
             default:
                 return [
-                    Section::make('Page Information')
+                    Section::make('Page Information')->collapsible()
                         ->description('Main content for this page')
                         ->schema([
                             FileUpload::make('content.hero_image')
@@ -679,7 +715,7 @@ class ManageWebsiteSettings extends Page implements HasForms
         if ($this->currentPage === 'header') {
             return $form
                 ->schema([
-                    Section::make('Header Configuration')
+                    Section::make('Header Configuration')->collapsible()
                         ->description('Manage header content visible on all pages')
                         ->schema([
                             FileUpload::make('header_data.logo')
@@ -707,7 +743,7 @@ class ManageWebsiteSettings extends Page implements HasForms
         } elseif ($this->currentPage === 'footer') {
             return $form
                 ->schema([
-                    Section::make('Footer Configuration')
+                    Section::make('Footer Configuration')->collapsible()
                         ->description('Manage footer content visible on all pages')
                         ->schema([
                             TextInput::make('footer_data.tagline')
@@ -779,7 +815,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                             // Promotion/Hero Tab (only for home)
                             Tabs\Tab::make('Promotion & Hero')
                                 ->schema([
-                                    Section::make('Promotion Carousel')
+                                    Section::make('Promotion Carousel')->collapsible()
                                         ->description('Upload images for the promotion carousel section')
                                         ->schema([
                                             FileUpload::make('hero_images')
@@ -796,7 +832,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                             // Booking Cards Tab (only for home)
                             Tabs\Tab::make('Booking Cards')
                                 ->schema([
-                                    Section::make('Travel Booking Options')
+                                    Section::make('Travel Booking Options')->collapsible()
                                         ->description('Manage the 6 booking cards displayed on home page')
                                         ->schema([
                                             Repeater::make('booking_cards')
@@ -832,7 +868,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                             // Welcome Section Tab (only for home)
                             Tabs\Tab::make('Welcome Section')
                                 ->schema([
-                                    Section::make('Welcome Message')
+                                    Section::make('Welcome Message')->collapsible()
                                         ->description('Customize the welcome text shown on home page')
                                         ->schema([
                                             TextInput::make('content.welcome_title')
@@ -849,7 +885,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->default('Your Journey Deserves More Than A Destination — It Deserves An Exceptional Experience')
                                                 ->maxLength(255),
                                         ]),
-                                    Section::make('Hero Cards')
+                                    Section::make('Hero Cards')->collapsible()
                                         ->description('Edit the text for the two hero cards shown on the home page.')
                                         ->schema([
                                             TextInput::make('content.hero_card_title_1')
@@ -879,7 +915,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->default('Check status →')
                                                 ->maxLength(50),
                                         ]),
-                                    Section::make('Booking Cards Section')
+                                    Section::make('Booking Cards Section')->collapsible()
                                         ->description('Customize the booking cards section shown on home page')
                                         ->schema([
                                             TextInput::make('content.booking_section_title')
@@ -922,7 +958,7 @@ class ManageWebsiteSettings extends Page implements HasForms
 
                             Tabs\Tab::make('SEO & Sharing')
                                 ->schema([
-                                    Section::make('Search Engine Metadata')
+                                    Section::make('Search Engine Metadata')->collapsible()
                                         ->description('Update the page metadata used for search engines and social sharing.')
                                         ->schema([
                                             TextInput::make('content.meta_title')
@@ -940,7 +976,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->image()
                                                 ->directory('website-settings/meta'),
                                         ]),
-                                    Section::make('Social Sharing')
+                                    Section::make('Social Sharing')->collapsible()
                                         ->description('Optional social media preview content.')
                                         ->schema([
                                             TextInput::make('content.og_title')
@@ -961,7 +997,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                             // Settings Tab
                             Tabs\Tab::make('Settings')
                                 ->schema([
-                                    Section::make('Page Settings')
+                                    Section::make('Page Settings')->collapsible()
                                         ->schema([
                                             Toggle::make('is_active')
                                                 ->label('Active')

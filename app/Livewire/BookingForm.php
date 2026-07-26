@@ -166,7 +166,8 @@ class BookingForm extends Component
             'trip_type','mode','operator','origin','destination','departure_date','return_date','duration_days','adults','children',
             'client_name','client_email','client_phone','hasAcceptedTerms','hasAcceptedPrivacy','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id'
         ];
-        $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $allowed));
+        $packageQueryKeys = ['tour_id','tour_date_id','package_name','price','available_dates'];
+        $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $packageQueryKeys));
 
         // If we have package/tour query params, ignore session draft entirely; otherwise load draft first
         $hasSessionDraft = session()->has('booking_draft');
@@ -187,6 +188,14 @@ class BookingForm extends Component
         } else {
             // If we have package params, clear the draft to avoid conflicts
             session()->forget('booking_draft');
+        }
+
+        $isOperatorLinkWithoutPackage = request()->query('operator') && empty(array_intersect(array_keys(request()->query()), $packageQueryKeys));
+        if ($isOperatorLinkWithoutPackage) {
+            $this->tour_id = null;
+            $this->tour = null;
+            $this->selectedTourDate = null;
+            $this->prefilled_from_package = false;
         }
 
         if ($this->selected_brand_id) {
@@ -247,13 +256,15 @@ class BookingForm extends Component
             }
         }
 
-        // Mark that the form has been prefilled from a package if any relevant query params exist
-        $prefillKeys = array_intersect(array_keys(request()->query()), $allowed);
-        if (! empty($prefillKeys)) {
+        // Mark that the form has been prefilled from a package only when actual package/tour params are present
+        $packagePrefillKeys = array_intersect(array_keys(request()->query()), $packageQueryKeys);
+        if (! empty($packagePrefillKeys)) {
             $this->prefilled_from_package = true;
             // also populate package_name and package_price if present
             $this->package_name = request()->query('package_name', $this->package_name);
             $this->package_price = request()->query('price', $this->package_price);
+        } else {
+            $this->prefilled_from_package = false;
         }
 
         // If API passed an available_dates list (comma-separated) or multiple params, parse them into array

@@ -122,7 +122,7 @@
                 100% { transform: translateX(-50%); }
             }
             .animate-marquee-infinite {
-                animation: marquee 20s linear infinite;
+                animation: marquee 50s linear infinite;
                 width: max-content;
             }
         </style>
@@ -191,23 +191,55 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         @php
             $bookingCards = data_get($pageContent, 'content.booking_cards', data_get($pageContent, 'booking_cards', []));
-            $totalCardsNeeded = 6;
-            $cards = [];
-            
-            // Add existing cards
-            foreach ($bookingCards as $card) {
-                if (count($cards) >= $totalCardsNeeded) {
-                    break;
-                }
-                $cards[] = $card;
-            }
-            
-            // Add placeholder cards if needed
+            $defaultBookingCards = [
+                [
+                    'title' => '2GO Travel',
+                    'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel.',
+                    'image' => 'images/2GO-Logo.png',
+                    'booking_button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('2GO Travel') . '&trip_type=one_way&mode=ferry',
+                ],
+                [
+                    'title' => 'Starlite Ferries Inc.',
+                    'description' => 'Affordable regional ferry departures between Batangas, Calapan, and Roxas.',
+                    'image' => 'images/starlite-Logo.jfif',
+                    'booking_button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('Starlite Ferries Inc.') . '&trip_type=one_way&mode=ferry',
+                ],
+                [
+                    'title' => 'Cebu Pacific',
+                    'description' => 'Search daily flights and budget fares across the Philippines and Asia.',
+                    'image' => 'images/CebuPecific-Logo.png',
+                    'booking_button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('Cebu Pacific') . '&trip_type=one_way&mode=airline',
+                ],
+                [
+                    'title' => 'Philippine Airlines',
+                    'description' => 'Book Philippine Airlines flights with premium support and flexible fare options.',
+                    'image' => 'images/Pal-Logo.jfif',
+                    'booking_button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('Philippine Airlines') . '&trip_type=one_way&mode=airline',
+                ],
+                [
+                    'title' => 'AirAsia',
+                    'description' => 'Find low-cost airline tickets and convenient domestic connections.',
+                    'image' => 'images/AirAsia-Logo.png',
+                    'booking_button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('AirAsia') . '&trip_type=one_way&mode=airline',
+                ],
+            ];
+
+            $totalCardsNeeded = 5;
+            $cards = ! empty($bookingCards) ? array_values($bookingCards) : $defaultBookingCards;
+            $cards = array_slice($cards, 0, $totalCardsNeeded);
+
             while (count($cards) < $totalCardsNeeded) {
                 $cards[] = [
                     'title' => 'Travel Booking',
                     'description' => 'Kasiyahan po namin ang paglingkuran kayo.',
                     'image' => null,
+                    'booking_button_text' => 'Book Now',
+                    'link' => '/book/new',
                 ];
             }
         @endphp
@@ -219,15 +251,18 @@
                 if (is_array($rawCardImage)) {
                     $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null;
                 }
-                
+
                 $cardImage = $rawCardImage
-                    ? asset('storage/' . $rawCardImage)
+                    ? (str_starts_with($rawCardImage, 'http') || str_starts_with($rawCardImage, '/'
+                        ) ? asset(ltrim($rawCardImage, '/')) : asset($rawCardImage))
                     : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
-                
+
                 $cardTitle = data_get($card, 'title', 'Travel Booking');
                 $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
+                $cardLink = data_get($card, 'link', '/book/new');
+                $bookingText = data_get($card, 'booking_button_text', 'Book Now');
             @endphp
-            <a href="{{ url('/book/new') }}" class="group rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col overflow-hidden">
+            <a href="{{ url($cardLink) }}" class="group rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col overflow-hidden">
                 <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="w-full aspect-video object-cover">
                 <div class="p-6 flex flex-col flex-grow">
                     <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-3">
@@ -239,7 +274,7 @@
                     <h3 class="text-lg font-bold text-slate-900 mb-2">{{ $cardTitle }}</h3>
                     <p class="text-sm text-slate-600 mb-4 flex-grow">{{ $cardDescription }}</p>
                     <button class="w-full bg-[#ee018d] text-white text-sm font-bold py-3 px-6 rounded-full hover:bg-pink-700 transition-colors">
-                        {{ data_get($card, 'booking_button_text', 'Book Now') }}
+                        {{ $bookingText }}
                     </button>
                 </div>
             </a>

@@ -45,11 +45,11 @@
                         </a>
                     </div>
                     <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
-                        <a href="{{ url('/') }}" class="border-b-2 {{ request()->is('/') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Home</a>
-                        <a href="{{ url('/about') }}" class="border-b-2 {{ request()->is('about') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">About</a>
-                        <a href="{{ url('/schedules') }}" class="border-b-2 {{ request()->is('schedules') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Schedules</a>
+                        <a href="{{ url('/') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('/') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">Home</a>
+                        <a href="{{ url('/about') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('about') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">About</a>
+                        <a href="{{ url('/schedules') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('schedules') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">Schedules</a>
                         <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                            <button class="border-b-2 {{ request()->is('services') || request()->is('tour-package') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition flex items-center gap-1">
+                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('services') || request()->is('tour-package') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition flex items-center gap-1">
                                 Discover
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
@@ -61,7 +61,7 @@
                             </div>
                         </div>
                         <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                            <button class="border-b-2 {{ request()->is('contact-us') || request()->is('faqs') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition flex items-center gap-1">
+                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('contact-us') || request()->is('faqs') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition flex items-center gap-1">
                                 Get Help
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
@@ -72,7 +72,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="{{ url('/download') }}" class="border-b-2 {{ request()->is('download') ? 'text-[#ee018d] border-[#ee018d]' : 'text-white border-transparent hover:text-[#ee018d] hover:border-[#ee018d]' }} pb-1 transition">Download App</a>
+                        <a href="{{ url('/download') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('download') ? 'border-[#ee018d] text-white' : 'text-white border-transparent hover:border-[#ffb6c1] hover:text-white' }} transition">Download App</a>
                     </nav>
 
                     <div class="flex items-center gap-4">

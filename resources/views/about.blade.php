@@ -3,6 +3,18 @@
 @section('content')
 <div class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-5xl mx-auto">
+        <style>
+            @keyframes infinite-scroll {
+                from { transform: translateX(0); }
+                to { transform: translateX(calc(-100% - 1.5rem)); }
+            }
+            .animate-infinite-scroll {
+                animation: infinite-scroll 25s linear infinite;
+            }
+            .pause-on-hover:hover .animate-infinite-scroll {
+                animation-play-state: paused;
+            }
+        </style>
         <!-- Hero Section -->
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">About Us</span>
@@ -89,38 +101,262 @@
                         {{ data_get($pageContent, 'booking_section_description') ?? 'Kay Amiga, Hassle Free Ka! Select a booking category to start your travel request.' }}
                     </p>
                 </div>
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach($aboutBookingCards as $card)
-                        @php
-                            $rawCardImage = data_get($card, 'image');
-                            $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
-                            $cardTitle = data_get($card, 'title', 'Travel Booking');
-                            $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
-                            $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
-                        @endphp
+                <div x-data="{
+                        selectedCard: null,
+                        openModal(card) { this.selectedCard = card; document.body.classList.add('overflow-hidden'); },
+                        closeModal() { this.selectedCard = null; document.body.classList.remove('overflow-hidden'); }
+                    }"
+                    class="w-full"
+                >
+                    @if(count($aboutBookingCards) > 3)
+                        <div class="pause-on-hover flex overflow-hidden gap-6 w-full py-4 -my-4 px-4 -mx-4">
+                            <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max">
+                                @foreach($aboutBookingCards as $card)
+                                    @php
+                                        $rawCardImage = data_get($card, 'image');
+                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                                        $cardTitle = data_get($card, 'title', 'Travel Booking');
+                                        $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
+                                        $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
+                                        $cardNote = data_get($card, 'note', 'Booking Details');
+                                    @endphp
+                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: @json($cardNote) })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                        <div class="aspect-[4/3] overflow-hidden">
+                                            <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                        </div>
+                                        <div class="p-6 flex flex-col gap-4 flex-grow">
+                                            <div>
+                                                <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d]">
+                                                    <span class="h-2.5 w-2.5 rounded-full bg-[#ee018d]"></span>
+                                                    About this booking
+                                                </span>
+                                                <h3 class="mt-4 text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                            <p class="text-sm text-slate-500 leading-relaxed">{{ $cardDetail }}</p>
+                                            <div class="mt-auto">
+                                                <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-green-800">
+                                                    {{ data_get($card, 'button_text', 'View Details') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                @endforeach
+                            </div>
+                            <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max" aria-hidden="true">
+                                @foreach($aboutBookingCards as $card)
+                                    @php
+                                        $rawCardImage = data_get($card, 'image');
+                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                                        $cardTitle = data_get($card, 'title', 'Travel Booking');
+                                        $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
+                                        $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
+                                        $cardNote = data_get($card, 'note', 'Booking Details');
+                                    @endphp
+                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: @json($cardNote) })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                        <div class="aspect-[4/3] overflow-hidden">
+                                            <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                        </div>
+                                        <div class="p-6 flex flex-col gap-4 flex-grow">
+                                            <div>
+                                                <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d]">
+                                                    <span class="h-2.5 w-2.5 rounded-full bg-[#ee018d]"></span>
+                                                    About this booking
+                                                </span>
+                                                <h3 class="mt-4 text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                            <p class="text-sm text-slate-500 leading-relaxed">{{ $cardDetail }}</p>
+                                            <div class="mt-auto">
+                                                <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-green-800">
+                                                    {{ data_get($card, 'button_text', 'View Details') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            @foreach($aboutBookingCards as $card)
+                                @php
+                                    $rawCardImage = data_get($card, 'image');
+                                    $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                                    $cardTitle = data_get($card, 'title', 'Travel Booking');
+                                    $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
+                                    $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
+                                    $cardNote = data_get($card, 'note', 'Booking Details');
+                                @endphp
+                                <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: @json($cardNote) })' class="group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                    <div class="aspect-[4/3] overflow-hidden">
+                                        <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                    </div>
+                                    <div class="p-6 flex flex-col gap-4 flex-grow">
+                                        <div>
+                                            <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d]">
+                                                <span class="h-2.5 w-2.5 rounded-full bg-[#ee018d]"></span>
+                                                About this booking
+                                            </span>
+                                            <h3 class="mt-4 text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                        </div>
+                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                        <p class="text-sm text-slate-500 leading-relaxed">{{ $cardDetail }}</p>
+                                        <div class="mt-auto">
+                                            <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-green-800">
+                                                {{ data_get($card, 'button_text', 'View Details') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
 
-                        <a href="{{ data_get($card, 'link', '/about') }}" class="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg">
-                            <div class="aspect-[4/3] overflow-hidden">
-                                <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                    <div x-show="selectedCard" x-cloak x-transition.opacity class="fixed inset-0 z-50 bg-slate-900/70 flex items-center justify-center p-4">
+                        <div class="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+                            <button type="button" @click="closeModal()" class="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-slate-700 hover:bg-white">
+                                <span class="sr-only">Close</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10 3.636 5.05a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
+                            </button>
+                            <img x-bind:src="selectedCard.image" x-bind:alt="selectedCard.title" class="w-full max-h-80 object-cover" />
+                            <div class="p-8">
+                                <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d] mb-4" x-text="selectedCard.note"></span>
+                                <h2 class="text-2xl font-bold text-slate-900 mb-3" x-text="selectedCard.title"></h2>
+                                <p class="text-sm text-slate-500 mb-4" x-text="selectedCard.description"></p>
+                                <p class="text-sm text-slate-600 leading-relaxed" x-text="selectedCard.detail"></p>
                             </div>
-                            <div class="p-6 flex flex-col gap-4">
-                                <div>
-                                    <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d]">
-                                        <span class="h-2.5 w-2.5 rounded-full bg-[#ee018d]"></span>
-                                        About this booking
-                                    </span>
-                                    <h3 class="mt-4 text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
-                                </div>
-                                <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
-                                <p class="text-sm text-slate-500 leading-relaxed">{{ $cardDetail }}</p>
-                                <div class="mt-auto">
-                                    <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-green-800">
-                                        {{ data_get($card, 'button_text', 'View Details') }}
-                                    </span>
-                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @php
+            $suggestedTrips = data_get($pageContent, 'suggested_trips', []);
+        @endphp
+
+        @if(!empty($suggestedTrips))
+            <div class="bg-white rounded-[2rem] p-8 shadow-xl mb-16">
+                <div class="max-w-3xl mx-auto text-center mb-8">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'suggested_trips_title') ? ucfirst(data_get($pageContent, 'suggested_trips_title')) : 'Suggested Trips' }}</p>
+                    <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'suggested_trips_title') ?? 'Suggested Trips' }}</h2>
+                    <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+                        {{ data_get($pageContent, 'suggested_trips_description') ?? 'Explore these suggested trips.' }}
+                    </p>
+                </div>
+                <div x-data="{
+                        selectedCard: null,
+                        openModal(card) { this.selectedCard = card; document.body.classList.add('overflow-hidden'); },
+                        closeModal() { this.selectedCard = null; document.body.classList.remove('overflow-hidden'); }
+                    }"
+                    class="w-full"
+                >
+                    @if(count($suggestedTrips) > 3)
+                        <div class="pause-on-hover flex overflow-hidden gap-6 w-full py-4 -my-4 px-4 -mx-4">
+                            <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max">
+                                @foreach($suggestedTrips as $card)
+                                    @php
+                                        $rawCardImage = data_get($card, 'image');
+                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                        $cardTitle = data_get($card, 'title', 'Trip');
+                                        $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                        $cardDetail = data_get($card, 'detail', '');
+                                        $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                    @endphp
+                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                        <div class="aspect-[4/3] overflow-hidden">
+                                            <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                        </div>
+                                        <div class="p-6 flex flex-col gap-4 flex-grow">
+                                            <div>
+                                                <h3 class="text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                            <div class="mt-auto pt-4">
+                                                <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 group-hover:bg-green-800">
+                                                    {{ $cardButtonText }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                @endforeach
                             </div>
-                        </a>
-                    @endforeach
+                            <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max" aria-hidden="true">
+                                @foreach($suggestedTrips as $card)
+                                    @php
+                                        $rawCardImage = data_get($card, 'image');
+                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                        $cardTitle = data_get($card, 'title', 'Trip');
+                                        $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                        $cardDetail = data_get($card, 'detail', '');
+                                        $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                    @endphp
+                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                        <div class="aspect-[4/3] overflow-hidden">
+                                            <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                        </div>
+                                        <div class="p-6 flex flex-col gap-4 flex-grow">
+                                            <div>
+                                                <h3 class="text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                            <div class="mt-auto pt-4">
+                                                <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 group-hover:bg-green-800">
+                                                    {{ $cardButtonText }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            @foreach($suggestedTrips as $card)
+                                @php
+                                    $rawCardImage = data_get($card, 'image');
+                                    $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                    $cardTitle = data_get($card, 'title', 'Trip');
+                                    $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                    $cardDetail = data_get($card, 'detail', '');
+                                    $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                @endphp
+                                <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                    <div class="aspect-[4/3] overflow-hidden">
+                                        <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                    </div>
+                                    <div class="p-6 flex flex-col gap-4 flex-grow">
+                                        <div>
+                                            <h3 class="text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                        </div>
+                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                        <div class="mt-auto pt-4">
+                                            <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 group-hover:bg-green-800">
+                                                {{ $cardButtonText }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <div x-show="selectedCard" x-cloak x-transition.opacity class="fixed inset-0 z-50 bg-slate-900/70 flex items-center justify-center p-4">
+                        <div class="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+                            <button type="button" @click="closeModal()" class="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-slate-700 hover:bg-white">
+                                <span class="sr-only">Close</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10 3.636 5.05a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
+                            </button>
+                            <img x-bind:src="selectedCard?.image" x-bind:alt="selectedCard?.title" class="w-full max-h-80 object-cover" />
+                            <div class="p-8">
+                                <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d] mb-4" x-text="selectedCard?.note"></span>
+                                <h2 class="text-2xl font-bold text-slate-900 mb-3" x-text="selectedCard?.title"></h2>
+                                <p class="text-sm text-slate-500 mb-4" x-text="selectedCard?.description"></p>
+                                <p class="text-sm text-slate-600 leading-relaxed" x-text="selectedCard?.detail"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         @endif

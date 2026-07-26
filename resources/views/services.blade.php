@@ -23,50 +23,55 @@
             // New Travel & Booking Services Cards
             $travelServiceCards = $pageContent['travel_service_cards'] ?? [
                 [
-                    'icon' => 'M13 5l7 7-7 7M5 5l7 7-7 7',
                     'title' => '2GO Travel Booking',
                     'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel. Ideal for family retreats, business logistics, and leisure trips.',
                     'note' => 'Available Online',
-                    'link' => '/book/new',
+                    'image' => 'images/2GO-Logo.png',
+                    'button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('2GO Travel') . '&trip_type=one_way&mode=ferry',
                     'color' => 'text-pink-600',
                 ],
                 [
-                    'icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z',
                     'title' => 'Starlite Ferries Inc.',
                     'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings and roll-on/roll-off (RoRo) cargo slots.',
                     'note' => 'Available Online',
-                    'link' => '/book/new',
+                    'image' => 'images/starlite-Logo.jfif',
+                    'button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('Starlite Ferries Inc.') . '&trip_type=one_way&mode=ferry',
                     'color' => 'text-emerald-700',
                 ],
                 [
-                    'icon' => 'M12 14l9-5-9-5-9 5 9 5z',
-                    'title' => 'Airline Ticketing',
+                    'title' => 'Cebu Pacific',
                     'description' => 'Domestic and international flights powered by leading carriers including AirAsia, Cebu Pacific, and Philippine Airlines (PAL). Hassle-free check-ins and seat bookings.',
                     'note' => 'PAL, CebuPac, AirAsia',
-                    'link' => '/book/new',
+                    'image' => 'images/CebuPecific-Logo.png',
+                    'button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('Cebu Pacific') . '&trip_type=one_way&mode=airline',
                     'color' => 'text-blue-600',
                 ],
                 [
-                    'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
-                    'title' => 'Tour Packages',
-                    'description' => 'Curated itineraries for local and international travel destinations, complete with accommodations and guides.',
-                    'note' => 'Local & International',
-                    'link' => '/tour-package',
+                    'title' => 'Philippine Airlines',
+                    'description' => 'Philippine Airlines flights with premium support and flexible fare options.',
+                    'note' => 'PAL & International',
+                    'image' => 'images/Pal-Logo.jfif',
+                    'button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('Philippine Airlines') . '&trip_type=one_way&mode=airline',
                     'color' => 'text-purple-600',
                 ],
                 [
-                    'icon' => 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8',
-                    'title' => 'Apprenticeships & Training',
-                    'description' => 'Custom-tailored hospitality training programs, onboard apprenticeship training options, and educational field trips in cooperation with 2GO.',
-                    'note' => 'For Academe & Students',
-                    'link' => '/contact-us',
+                    'title' => 'AirAsia',
+                    'description' => 'Find low-cost airline tickets and convenient domestic connections.',
+                    'note' => 'Low Fare Flights',
+                    'image' => 'images/AirAsia-Logo.png',
+                    'button_text' => 'Book Now',
+                    'link' => '/book/new?operator=' . urlencode('AirAsia') . '&trip_type=one_way&mode=airline',
                     'color' => 'text-orange-600',
                 ],
                 [
-                    'icon' => 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
                     'title' => 'Custom Travel Arrangements',
                     'description' => 'Tailored travel packages for corporate retreats, family reunions, and large groups. We handle flight connections, hotel accommodation blocks, and group transport.',
                     'note' => 'Tailored For Groups',
+                    'button_text' => 'Learn more',
                     'link' => '/contact-us',
                     'color' => 'text-teal-700',
                 ],
@@ -148,47 +153,100 @@
                 <p class="mt-3 text-slate-600 max-w-2xl mx-auto">Choose from our ferry, airline, tour, and custom travel arrangements.</p>
             </div>
             
+@php
+                $defaultServiceImage = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+            @endphp
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 @foreach($travelServiceCards as $card)
-                <div class="bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition duration-200">
-                    <div class="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-current mb-6 {{ data_get($card, 'color') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ data_get($card, 'icon') }}" />
-                        </svg>
+                @php
+                    $rawCardImage = data_get($card, 'image');
+                    if (is_array($rawCardImage)) {
+                        $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null;
+                    }
+                    $cardImage = $rawCardImage
+                        ? (str_starts_with($rawCardImage, 'http') || str_starts_with($rawCardImage, '/')
+                            ? asset(ltrim($rawCardImage, '/'))
+                            : asset($rawCardImage))
+                        : $defaultServiceImage;
+                    $cardLink = data_get($card, 'link', url('/book/new'));
+                    $buttonText = data_get($card, 'button_text', 'Learn more');
+                @endphp
+                <a href="{{ $cardLink }}" class="group overflow-hidden rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
+                    <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="w-full aspect-video object-cover transition duration-200 group-hover:scale-105" />
+                    <div class="p-6 flex flex-col flex-grow">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-7v4h4l-5 7z" />
+                            </svg>
+                            {{ data_get($card, 'note', 'Travel Service') }}
+                        </span>
+                        <h3 class="text-lg font-bold text-slate-900 mb-2">{{ data_get($card, 'title') }}</h3>
+                        <p class="text-sm text-slate-600 mb-4 flex-grow">{{ data_get($card, 'description') }}</p>
+                        <button class="w-full bg-[#ee018d] text-white text-sm font-bold py-3 px-6 rounded-full hover:bg-pink-700 transition-colors">
+                            {{ $buttonText }}
+                        </button>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900">{{ data_get($card, 'title') }}</h3>
-                    <p class="mt-3 text-slate-500 text-sm leading-relaxed flex-grow">
-                        {{ data_get($card, 'description') }}
-                    </p>
-                    <div class="mt-6 pt-6 border-t border-slate-100">
-                        <span class="text-xs font-semibold text-slate-400 block mb-3">{{ data_get($card, 'note') }}</span>
-                        <a href="{{ data_get($card, 'link') }}" class="text-sm font-bold {{ data_get($card, 'color') }} hover:opacity-80 transition inline-flex items-center gap-1">
-                            Learn more →
-                        </a>
-                    </div>
-                </div>
+                </a>
                 @endforeach
             </div>
         </div>
 
         <!-- Services Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            @foreach($serviceCards as $card)
-            <div class="bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition duration-200">
-                <div class="h-12 w-12 bg-slate-100 rounded-2xl flex items-center justify-center text-current mb-6 {{ data_get($card, 'color') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ data_get($card, 'icon') }}" />
-                    </svg>
+        <div x-data="{
+                selectedService: null,
+                openModal(service) { this.selectedService = service; },
+                closeModal() { this.selectedService = null; }
+            }"
+            class="relative"
+        >
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($serviceCards as $card)
+                @php
+                    $rawCardImage = data_get($card, 'image');
+                    if (is_array($rawCardImage)) {
+                        $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null;
+                    }
+                    $cardImage = $rawCardImage
+                        ? (str_starts_with($rawCardImage, 'http') || str_starts_with($rawCardImage, '/')
+                            ? asset(ltrim($rawCardImage, '/'))
+                            : asset($rawCardImage))
+                        : $defaultServiceImage;
+                    $modalData = json_encode(array_merge($card, ['image' => $cardImage]));
+                @endphp
+                <div class="group overflow-hidden rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
+                    <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="w-full aspect-video object-cover transition duration-200 group-hover:scale-105" />
+                    <div class="p-6 flex flex-col flex-grow">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#216417] uppercase tracking-wider mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-7v4h4l-5 7z" />
+                            </svg>
+                            {{ data_get($card, 'note', 'Service') }}
+                        </span>
+                        <h3 class="text-lg font-bold text-slate-900 mb-2">{{ data_get($card, 'title') }}</h3>
+                        <p class="text-sm text-slate-600 mb-4 flex-grow">{{ data_get($card, 'description') }}</p>
+                        <button type="button" @click.prevent="openModal({{ $modalData }})" class="w-full bg-[#216417] text-white text-sm font-bold py-3 px-6 rounded-full hover:bg-emerald-800 transition-colors">
+                            {{ data_get($card, 'button_text', 'Learn more') }}
+                        </button>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900">{{ data_get($card, 'title') }}</h3>
-                <p class="mt-3 text-slate-500 text-sm leading-relaxed flex-grow">
-                    {{ data_get($card, 'description') }}
-                </p>
-                <div class="mt-6 pt-6 border-t border-slate-100">
-                    <span class="text-xs font-semibold text-slate-400">{{ data_get($card, 'note') }}</span>
+                @endforeach
+            </div>
+
+            <div x-show="selectedService" x-cloak x-transition.opacity class="fixed inset-0 z-50 bg-slate-900/70 flex items-center justify-center p-4">
+                <div class="relative max-w-3xl w-full rounded-[2rem] bg-white shadow-2xl overflow-hidden">
+                    <button type="button" @click="closeModal()" class="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-slate-700 hover:bg-white">
+                        <span class="sr-only">Close</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10 3.636 5.05a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
+                    </button>
+                    <img x-bind:src="selectedService.image" x-bind:alt="selectedService.title" class="w-full max-h-80 object-cover" />
+                    <div class="p-8">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-3" x-text="selectedService.title"></h2>
+                        <p class="text-sm text-slate-500 mb-4" x-text="selectedService.note"></p>
+                        <p class="text-sm text-slate-600 leading-relaxed" x-text="selectedService.description"></p>
+                    </div>
                 </div>
             </div>
-            @endforeach
         </div>
     </div>
 @endsection
