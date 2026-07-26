@@ -58,32 +58,33 @@ class BookingForm extends Component
     public int $children = 0;
     public ?int $selected_schedule_id = null;
     public bool $showPassengerInfoModal = false;
-    public bool $showPwdTypeModal = false;
+    public bool $showMinorAgeWarning = false;
+    public bool $hasSeenMinorAgeWarning = false;
     public bool $showModeDropdown = false;
     public bool $showOperatorDropdown = false;
     public bool $showOriginDropdown = false;
     public bool $showDestinationDropdown = false;
     public string $originSearch = '';
     public string $destinationSearch = '';
-    public ?int $pwdTypeModalPassengerIndex = null;
-    public string $pwd_disability_other_tmp = '';
     public ?string $operator = null;
+    public bool $showPresentIdWarning = false;
+    public bool $hasSeenPresentIdWarning = false;
 
     // Each entry: ['type' => 'adult'|'child', 'name' => '', 'discount_id' => null]
     public array $passengers = [];
-    public array $studentIdProofs = [];
+    public array $studentIdProofFronts = [];
+    public array $studentIdProofBacks = [];
 
     protected $validationAttributes = [
         'passengers.*.first_name' => 'first name',
         'passengers.*.middle_name' => 'middle name',
         'passengers.*.last_name' => 'last name',
         'passengers.*.name' => 'full name',
+        'passengers.*.birthdate' => 'date of birth',
         'passengers.*.student_number' => 'student number',
-        'studentIdProofs.*' => 'school ID proof',
-        'passengers.*.senior_dob' => 'date of birth',
+        'studentIdProofFronts.*' => 'school ID proof front',
+        'studentIdProofBacks.*' => 'school ID proof back',
         'passengers.*.senior_osca_number' => 'OSCA number',
-        'passengers.*.pwd_disability_type' => 'type of disability',
-        'passengers.*.pwd_disability_other' => 'disability details',
         'passengers.*.pwd_id_number' => 'PWD ID number',
         'vehicle_type' => 'vehicle type',
         'vehicle_plate_number' => 'plate number',
@@ -120,6 +121,7 @@ class BookingForm extends Component
     public ?string $driver_birthday = null;
     public bool $showBaggageRules = false;
     public bool $hasExtraBaggage = false;
+    public ?float $extra_baggage_weight = null;
     // NOTE: use_promo_ticket is kept for ferry bookings (backward compat).
     // For airline bookings the per-passenger $passengers[n]['use_promo'] flag is used instead.
     public bool $use_promo_ticket = false;
@@ -128,8 +130,11 @@ class BookingForm extends Component
 
     public string $client_name = '';
     public string $client_email = '';
+    public string $client_phone = '';
     public bool $showTermsModal = false;
+    public bool $showPrivacyModal = false;
     public bool $hasAcceptedTerms = false;
+    public bool $hasAcceptedPrivacy = false;
     public bool $isSubmittingBooking = false;
     public \Illuminate\Support\Collection $discounts;
     public \Illuminate\Support\Collection $transportClassCatalog;
@@ -159,7 +164,7 @@ class BookingForm extends Component
         // Check if we have tour/package query params first
         $allowed = [
             'trip_type','mode','operator','origin','destination','departure_date','return_date','duration_days','adults','children',
-            'client_name','client_email','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id'
+            'client_name','client_email','client_phone','hasAcceptedTerms','hasAcceptedPrivacy','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id'
         ];
         $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $allowed));
 
@@ -175,6 +180,9 @@ class BookingForm extends Component
             // Manually map hasExtraBaggage since it's camelCase but stored as snake_case in draft
             if (isset($draft['has_extra_baggage'])) {
                 $this->hasExtraBaggage = $draft['has_extra_baggage'];
+            }
+            if (isset($draft['extra_baggage_weight'])) {
+                $this->extra_baggage_weight = $draft['extra_baggage_weight'];
             }
         } else {
             // If we have package params, clear the draft to avoid conflicts
@@ -835,23 +843,6 @@ public function selectedSchedule(): ?array
             $this->saveDraft();
             return;
         }
-        if (str_starts_with($propertyName, 'passengers.')) {
-            if (preg_match('/^passengers\.(\d+)\.(first_name|middle_name|last_name)$/', $propertyName, $matches)) {
-                $this->syncFullPassengerNames();
-            }
-
-            if (preg_match('/^passengers\.(\d+)\.pwd_disability_type$/', $propertyName, $matches)) {
-                $index = intval($matches[1]);
-                if (($this->passengers[$index]['pwd_disability_type'] ?? '') === 'other') {
-                    $this->openPwdTypeModal($index);
-                }
-            }
-
-            $this->saveDraft();
-
-            return;
-        }
-
         if (str_starts_with($propertyName, 'selected_accommodation_ids')) {
             $this->saveDraft();
 
@@ -878,8 +869,33 @@ public function selectedSchedule(): ?array
             $this->updateReturnDateFromDuration();
         }
 
+        if (str_starts_with($propertyName, 'passengers.')) {
+            if (preg_match('/^passengers\.(\d+)\.(first_name|middle_name|last_name)$/', $propertyName, $matches)) {
+                $this->syncFullPassengerNames();
+            }
+
+            if (preg_match('/^passengers\.(\d+)\.discount_id$/', $propertyName, $matches)) {
+                $discountId = $this->passengers[$matches[1]]['discount_id'] ?? null;
+                $discount = $this->discounts->firstWhere('id', $discountId);
+
+                if (! $this->hasSeenPresentIdWarning && $discount && preg_match('/student|senior|pwd/i', $discount->name)) {
+                    $this->showPresentIdWarning = true;
+                }
+            }
+
+            $this->saveDraft();
+
+            return;
+        }
+
         $this->validateOnly($propertyName, $this->allRules());
         $this->saveDraft();
+    }
+
+    public function closePresentIdWarning(): void
+    {
+        $this->showPresentIdWarning = false;
+        $this->hasSeenPresentIdWarning = true;
     }
 
     public function nextStep(): void
@@ -1091,6 +1107,10 @@ public function selectedSchedule(): ?array
 
     public function updatedHasExtraBaggage(bool $value): void
     {
+        if (! $value) {
+            $this->extra_baggage_weight = null;
+        }
+
         $this->saveDraft();
     }
 
@@ -1242,9 +1262,18 @@ public function selectedSchedule(): ?array
     {
         if ($this->selected_schedule_accommodation_id === $accommodationId) {
             $this->selected_schedule_accommodation_id = null;
-        $this->selected_return_schedule_accommodation_id = null;
         } else {
             $this->selected_schedule_accommodation_id = $accommodationId;
+        }
+        $this->saveDraft();
+    }
+
+    public function selectReturnScheduleAccommodation(int $accommodationId): void
+    {
+        if ($this->selected_return_schedule_accommodation_id === $accommodationId) {
+            $this->selected_return_schedule_accommodation_id = null;
+        } else {
+            $this->selected_return_schedule_accommodation_id = $accommodationId;
         }
         $this->saveDraft();
     }
@@ -1310,53 +1339,46 @@ public function selectedSchedule(): ?array
         $this->saveDraft();
     }
 
-    public function openPwdTypeModal(int $index): void
-    {
-        $this->pwdTypeModalPassengerIndex = $index;
-        $this->pwd_disability_other_tmp = $this->passengers[$index]['pwd_disability_other'] ?? '';
-        $this->showPwdTypeModal = true;
-    }
-
-    public function togglePwdTypeModal(): void
-    {
-        $this->showPwdTypeModal = ! $this->showPwdTypeModal;
-        if (! $this->showPwdTypeModal) {
-            $this->pwdTypeModalPassengerIndex = null;
-        }
-    }
-
-    public function savePwdDisabilityOther(): void
-    {
-        if ($this->pwdTypeModalPassengerIndex === null) {
-            return;
-        }
-
-        $index = $this->pwdTypeModalPassengerIndex;
-        $this->passengers[$index]['pwd_disability_other'] = $this->pwd_disability_other_tmp;
-        $this->showPwdTypeModal = false;
-        $this->pwdTypeModalPassengerIndex = null;
-    }
-
     public function submit()
     {
         $this->validate($this->allRules());
         $this->validatePassengerExtras();
         $this->assertSelectedScheduleIsValid();
 
-        if ($this->hasAcceptedTerms) {
-            return $this->confirmTermsAndContinue();
+        if (! $this->hasAcceptedTerms) {
+            $this->showTermsModal = true;
+            return;
         }
 
-        $this->showTermsModal = true;
+        if (! $this->hasAcceptedPrivacy) {
+            $this->showPrivacyModal = true;
+            return;
+        }
+
+        return $this->confirmTermsAndContinue();
     }
 
     public function confirmTermsAndContinue()
     {
         $this->validate([
-            'hasAcceptedTerms' => 'required|accepted'
+            'hasAcceptedTerms' => 'required|accepted',
         ]);
-        
+
+        $this->showTermsModal = false;
+
+        if (! $this->hasAcceptedPrivacy) {
+            $this->showPrivacyModal = true;
+            return;
+        }
+
+        return $this->processBooking();
+    }
+
+    protected function processBooking()
+    {
         $this->isSubmittingBooking = true;
+        $this->showTermsModal = false;
+        $this->showPrivacyModal = false;
         session()->forget('booking_draft');
 
         if ($this->tour_id && $this->tour) {
@@ -1446,6 +1468,7 @@ public function selectedSchedule(): ?array
                 'tour_inclusions' => $this->tour?->inclusions,
                 'client_name' => $this->client_name,
                 'client_email' => $this->client_email,
+                'client_phone' => $this->client_phone,
                 'total_price' => $this->calculateTotalPrice(),
                 'status' => 'pending',
                 'has_vehicle' => $this->has_vehicle,
@@ -1528,10 +1551,32 @@ public function selectedSchedule(): ?array
         return redirect()->route('payment.show', $transaction);
     }
 
+    public function confirmPrivacyAndContinue()
+    {
+        $this->validate([
+            'hasAcceptedPrivacy' => 'required|accepted',
+        ]);
+
+        $this->showPrivacyModal = false;
+
+        if (! $this->hasAcceptedTerms) {
+            $this->showTermsModal = true;
+            return;
+        }
+
+        return $this->confirmTermsAndContinue();
+    }
+
     public function cancelTermsModal()
     {
         $this->showTermsModal = false;
         $this->hasAcceptedTerms = false;
+    }
+
+    public function cancelPrivacyModal()
+    {
+        $this->showPrivacyModal = false;
+        $this->hasAcceptedPrivacy = false;
     }
 
     public function render()
@@ -1567,9 +1612,13 @@ public function selectedSchedule(): ?array
             'vehicle_plate_number' => $this->vehicle_plate_number,
             'vehicle_price' => $this->vehicle_price,
             'has_extra_baggage' => $this->hasExtraBaggage,
+            'extra_baggage_weight' => $this->extra_baggage_weight,
             'use_promo_ticket' => $this->use_promo_ticket, // retained for ferry mode
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
+            'client_phone' => $this->client_phone,
+            'hasAcceptedTerms' => $this->hasAcceptedTerms,
+            'hasAcceptedPrivacy' => $this->hasAcceptedPrivacy,
             'selected_hotel_id' => $this->selected_hotel_id,
             'tour_id' => $this->tour_id,
             'tour_date_id' => $this->tour_date_id,
@@ -1615,6 +1664,7 @@ public function selectedSchedule(): ?array
             'vehicle_type' => $this->vehicleRateCatalog->isNotEmpty() ? 'nullable|string|max:255' : 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
+            'extra_baggage_weight' => $this->hasExtraBaggage ? 'required|numeric|min:0|max:100' : 'nullable|numeric|min:0|max:100',
             ],
             2 => [
                 'selected_schedule_id' => $this->tour_id ? 'nullable' : 'required|integer|exists:schedules,id',
@@ -1625,15 +1675,18 @@ public function selectedSchedule(): ?array
                 'passengers.*.last_name' => 'required|string|max:255',
                 'passengers.*.name' => 'required|string|max:255',
                 'passengers.*.discount_id' => 'nullable|exists:discounts,id',
-                'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
-                'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
+                'passengers.*.birthdate' => 'required|date|before:today',
                 'passengers.*.pwd_id_number' => 'nullable|string|max:255',
-                'studentIdProofs.*' => 'nullable|image|max:2048',
+                'studentIdProofFronts.*' => 'nullable|image|max:2048',
+                'studentIdProofBacks.*' => 'nullable|image|max:2048',
             ],
             4 => [],
             5 => [
                 'client_name' => 'required|string|max:255',
                 'client_email' => 'required|email',
+                'client_phone' => 'required|string|max:25',
+                'hasAcceptedTerms' => 'required|accepted',
+                'hasAcceptedPrivacy' => 'required|accepted',
             ],
             default => [],
         };
@@ -1675,11 +1728,15 @@ public function selectedSchedule(): ?array
             'passengers.*.last_name' => 'required|string|max:255',
             'passengers.*.name' => 'required|string|max:255',
             'passengers.*.discount_id' => 'nullable|exists:discounts,id',
-            'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
-            'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
-            'studentIdProofs.*' => 'nullable|image|max:2048',
+            'passengers.*.birthdate' => 'required|date|before:today',
+            'passengers.*.pwd_id_number' => 'nullable|string|max:255',
+            'passengers.*.student_number' => 'nullable|string|max:255',
+            'passengers.*.senior_osca_number' => 'nullable|string|max:255',
+            'studentIdProofFronts.*' => 'nullable|image|max:2048',
+            'studentIdProofBacks.*' => 'nullable|image|max:2048',
             'client_name' => 'required|string|max:255',
             'client_email' => 'required|email',
+            'client_phone' => 'required|string|max:25',
             'has_vehicle' => 'boolean',
             'vehicle_booking_method' => 'required|string|in:category,brand_model',
             'driver_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
@@ -1690,6 +1747,7 @@ public function selectedSchedule(): ?array
             'vehicle_type' => $this->vehicleRateCatalog->isNotEmpty() ? 'nullable|string|max:255' : 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
+            'extra_baggage_weight' => $this->hasExtraBaggage ? 'required|numeric|min:0|max:100' : 'nullable|numeric|min:0|max:100',
         ];
     }
 
@@ -1996,6 +2054,11 @@ public function selectedSchedule(): ?array
         }
 
         $this->children++;
+
+        if (! $this->hasSeenMinorAgeWarning) {
+            $this->showMinorAgeWarning = true;
+            $this->hasSeenMinorAgeWarning = true;
+        }
     }
 
     public function decrementChildren(): void
@@ -2005,6 +2068,11 @@ public function selectedSchedule(): ?array
         }
 
         $this->children--;
+    }
+
+    public function closeMinorAgeWarning(): void
+    {
+        $this->showMinorAgeWarning = false;
     }
 
     protected function validatePassengerExtras(): void
@@ -2017,8 +2085,8 @@ public function selectedSchedule(): ?array
             'passengers.*.last_name' => 'required|string|max:255',
             'passengers.*.name' => 'required|string|max:255',
             'passengers.*.discount_id' => 'nullable|exists:discounts,id',
-            'passengers.*.pwd_disability_type' => 'nullable|string|max:255',
-            'passengers.*.pwd_disability_other' => 'nullable|string|max:255',
+            'passengers.*.birthdate' => 'required|date|before:today',
+            'passengers.*.pwd_id_number' => 'nullable|string|max:255',
         ]);
 
         $validator->after(function ($validator) {
@@ -2032,8 +2100,12 @@ public function selectedSchedule(): ?array
                 $discountKey = strtolower($discount->name);
 
                 if (str_contains($discountKey, 'student')) {
-                    if (blank($this->studentIdProofs[$index] ?? null)) {
-                        $validator->errors()->add("studentIdProofs.{$index}", 'School ID proof is required when Student discount is selected.');
+                    if (blank($this->studentIdProofFronts[$index] ?? null)) {
+                        $validator->errors()->add("studentIdProofFronts.{$index}", 'School ID proof (front) is required when Student discount is selected.');
+                    }
+
+                    if (blank($this->studentIdProofBacks[$index] ?? null)) {
+                        $validator->errors()->add("studentIdProofBacks.{$index}", 'School ID proof (back) is required when Student discount is selected.');
                     }
 
                     if (blank($passenger['student_number'] ?? null)) {
@@ -2042,26 +2114,12 @@ public function selectedSchedule(): ?array
                 }
 
                 if (str_contains($discountKey, 'senior')) {
-                    if (blank($passenger['senior_dob'] ?? null)) {
-                        $validator->errors()->add("passengers.{$index}.senior_dob", 'Date of birth is required when Senior Citizen discount is selected.');
-                    }
-
                     if (blank($passenger['senior_osca_number'] ?? null)) {
                         $validator->errors()->add("passengers.{$index}.senior_osca_number", 'OSCA number is required when Senior Citizen discount is selected.');
                     }
                 }
 
                 if (str_contains($discountKey, 'pwd')) {
-                    $type = $passenger['pwd_disability_type'] ?? null;
-
-                    if (blank($type)) {
-                        $validator->errors()->add("passengers.{$index}.pwd_disability_type", 'Type of disability is required when PWD Card discount is selected.');
-                    }
-
-                    if ($type === 'other' && blank($passenger['pwd_disability_other'] ?? null)) {
-                        $validator->errors()->add("passengers.{$index}.pwd_disability_other", 'Please specify the disability type when Others is selected.');
-                    }
-
                     if (blank($passenger['pwd_id_number'] ?? null)) {
                         $validator->errors()->add("passengers.{$index}.pwd_id_number", 'PWD ID number is required when PWD Card discount is selected.');
                     }

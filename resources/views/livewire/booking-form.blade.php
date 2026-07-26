@@ -405,7 +405,7 @@
                                     <div class="flex items-center justify-between gap-4">
                                         <div>
                                             <p class="text-slate-900 font-semibold">Adults</p>
-                                            <p class="mt-1 text-sm text-slate-500">Age 13 and up</p>
+                                            <p class="mt-1 text-sm text-slate-500">Age 11 and above</p>
                                         </div>
                                         <div class="flex items-center gap-2">
                                             <button type="button" wire:click.prevent="decrementAdults" @if($adults <= 1) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400">−</button>
@@ -419,8 +419,8 @@
                                 <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm" data-error="children">
                                     <div class="flex items-center justify-between gap-4">
                                         <div>
-                                            <p class="text-slate-900 font-semibold">Children</p>
-                                            <p class="mt-1 text-sm text-slate-500">Under 13 years old</p>
+                                            <p class="text-slate-900 font-semibold">Minor</p>
+                                            <p class="mt-1 text-sm text-slate-500">Age 2 to 11</p>
                                         </div>
                                         <div class="flex items-center gap-2">
                                             <button type="button" wire:click.prevent="decrementChildren" @if($children <= 0) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400">−</button>
@@ -545,21 +545,38 @@
                                         </button>
 
                                         <h2 class="text-xl font-bold text-slate-900">Passenger limits and guidance</h2>
-                                        <p class="mt-3 text-slate-600">You can book up to 8 travelers total. This includes both adults and children combined. Any discounts are applied per traveler on the next step.</p>
+                                        <p class="mt-3 text-slate-600">You can book up to 8 travelers total. This includes both adults and minors combined. Any discounts are applied per traveler on the next step.</p>
                                         <ul class="mt-4 space-y-3 text-slate-700">
                                             <li class="flex gap-3">
                                                 <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#db2777]/10 text-[#db2777] font-bold text-xs">1</span>
-                                                <span>Adults are counted separately from children, but both count toward the same 8-person total.</span>
+                                                <span>Adults are counted separately from minors, but both count toward the same 8-person total.</span>
                                             </li>
                                             <li class="flex gap-3">
                                                 <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#db2777]/10 text-[#db2777] font-bold text-xs">2</span>
-                                                <span>Children under 13 are still part of the booking capacity limit.</span>
+                                                <span>Minors aged 2 to 11 are still part of the booking capacity limit.</span>
                                             </li>
                                             <li class="flex gap-3">
                                                 <span class="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#db2777]/10 text-[#db2777] font-bold text-xs">3</span>
                                                 <span>Use the buttons to update counts. The form prevents totals above 8.</span>
                                             </li>
                                         </ul>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($showMinorAgeWarning)
+                                <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24 backdrop-blur-sm">
+                                    <div class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
+                                        <button type="button" wire:click.prevent="closeMinorAgeWarning" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
+                                            <span aria-hidden="true">×</span>
+                                            <span class="sr-only">Close</span>
+                                        </button>
+
+                                        <h2 class="text-xl font-bold text-slate-900">Minor age warning</h2>
+                                        <p class="mt-3 text-slate-600">23 months and under will be issued upon arrival at the port.</p>
+                                        <div class="mt-6 flex justify-end">
+                                            <button type="button" wire:click.prevent="closeMinorAgeWarning" class="inline-flex rounded-full bg-[#db2777] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#be185d]">Close</button>
+                                        </div>
                                     </div>
                                 </div>
                             @endif
@@ -614,9 +631,9 @@
                                                     @endif
                                                     @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage'))
                                                         <div>
-                                                            <h4 class="font-semibold text-slate-900 mb-2">Checked Baggage</h4>
+                                                            <h4 class="font-semibold text-slate-900 mb-2">Baggage Reminders</h4>
                                                             @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.free_allowance_kg'))
-                                                                <p class="text-sm text-slate-600 mb-2">Free allowance: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.free_allowance_kg') }}kg</p>
+                                                                <p class="text-sm text-slate-600 mb-2">Personal Baggage: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.free_allowance_kg') }}kg</p>
                                                             @endif
                                                             @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.max_single_bag_weight_kg'))
                                                                 <p class="text-sm text-slate-600 mb-2">Max single bag weight: {{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.max_single_bag_weight_kg') }}kg</p>
@@ -707,16 +724,31 @@
                                             @endphp
                                             @if($freeAllowance)
                                                 <div class="mt-6 border-t border-slate-200 pt-6">
-                                                    <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                                                        <div>
-                                                            <p class="text-slate-900 font-bold text-lg">Baggage Allowance</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Free baggage allowance: {{ $freeAllowance }}kg</p>
+                                                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                                                        <div class="flex flex-wrap items-center justify-between gap-4">
+                                                            <div>
+                                                                <p class="text-slate-900 font-bold text-lg">Baggage Reminders</p>
+                                                                <p class="mt-1 text-sm text-slate-600">Free Personal Allowance: {{ $freeAllowance }}kg</p>
+                                                            </div>
+                                                            <label class="relative inline-flex cursor-pointer items-center gap-3">
+                                                                <input type="checkbox" wire:model.live="hasExtraBaggage" class="peer sr-only">
+                                                                <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#db2777] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#db2777]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+                                                                <span class="text-sm font-semibold text-slate-700">{{ $hasExtraBaggage ? 'Add Extra Baggage' : 'No Extra Baggage' }}</span>
+                                                            </label>
                                                         </div>
-                                                        <label class="relative inline-flex cursor-pointer items-center gap-3">
-                                                            <input type="checkbox" wire:model.live="hasExtraBaggage" class="peer sr-only">
-                                                            <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#db2777] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#db2777]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
-                                                            <span class="text-sm font-semibold text-slate-700">{{ $hasExtraBaggage ? 'Add Extra Baggage' : 'No Extra Baggage' }}</span>
-                                                        </label>
+
+                                                        @if($hasExtraBaggage)
+                                                            <div class="mt-4 w-full">
+                                                                <label class="text-sm font-semibold text-slate-700">Extra baggage weight (kg)</label>
+                                                                <input type="number" min="0" step="0.5"
+                                                                       wire:model.live="extra_baggage_weight"
+                                                                       class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20"
+                                                                       placeholder="e.g. 10">
+                                                                @error('extra_baggage_weight')
+                                                                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                                                                @enderror
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             @endif
@@ -1076,6 +1108,12 @@
                                         </div>
                                     </label>
 
+                                    <label class="block min-w-0">
+                                        <span class="text-slate-900 font-bold text-sm">Date of birth</span>
+                                        <input type="date" wire:model.defer="passengers.{{ $index }}.birthdate" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
+                                        @error('passengers.' . $index . '.birthdate')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                    </label>
+
                                     {{-- Airline per-passenger promo toggle --}}
                                     @if($mode === 'airline')
                                         @php
@@ -1130,7 +1168,7 @@
                                             <select wire:model.number="passengers.{{ $index }}.discount_id" wire:change="$refresh" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all">
                                                 <option value="">No discount</option>
                                                 @foreach($availableDiscounts as $discount)
-                                                    <option value="{{ $discount->id }}">{{ $discount->name }} ({{ $discount->percentage }}%)</option>
+                                                    <option value="{{ $discount->id }}">{{ $discount->name }}</option>
                                                 @endforeach
                                             </select>
                                             @error('passengers.' . $index . '.discount_id')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -1144,9 +1182,15 @@
 
                                     @if($selectedDiscount && str_contains($discountKey, 'student'))
                                         <label class="block min-w-0">
-                                            <span class="text-slate-900 font-bold text-sm">Upload school ID</span>
-                                            <input type="file" wire:model="studentIdProofs.{{ $index }}" accept="image/*" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
-                                            @error('studentIdProofs.' . $index)<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                            <span class="text-slate-900 font-bold text-sm">Upload school ID (Front)</span>
+                                            <input type="file" wire:model="studentIdProofFronts.{{ $index }}" accept="image/*" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
+                                            @error('studentIdProofFronts.' . $index)<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                        </label>
+
+                                        <label class="block min-w-0">
+                                            <span class="text-slate-900 font-bold text-sm">Upload school ID (Back)</span>
+                                            <input type="file" wire:model="studentIdProofBacks.{{ $index }}" accept="image/*" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
+                                            @error('studentIdProofBacks.' . $index)<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
 
                                         <label class="block min-w-0">
@@ -1156,44 +1200,11 @@
                                         </label>
                                     @elseif($selectedDiscount && str_contains($discountKey, 'senior'))
                                         <label class="block min-w-0">
-                                            <span class="text-slate-900 font-bold text-sm">Date of birth</span>
-                                            <input type="date" wire:model.defer="passengers.{{ $index }}.senior_dob" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
-                                            @error('passengers.' . $index . '.senior_dob')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        </label>
-
-                                        <label class="block min-w-0">
                                             <span class="text-slate-900 font-bold text-sm">OSCA number</span>
                                             <input type="text" wire:model.defer="passengers.{{ $index }}.senior_osca_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="OSCA number" />
                                             @error('passengers.' . $index . '.senior_osca_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
                                     @elseif($selectedDiscount && str_contains($discountKey, 'pwd'))
-                                        <label class="block min-w-0">
-                                            <span class="text-slate-900 font-bold text-sm">Type of disability</span>
-                                            <select wire:model="passengers.{{ $index }}.pwd_disability_type" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all">
-                                                <option value="">Choose a disability type</option>
-                                                <option value="deaf_or_hard_of_hearing">Deaf or Hard of Hearing</option>
-                                                <option value="intellectual_disability">Intellectual Disability</option>
-                                                <option value="learning_disability">Learning Disability</option>
-                                                <option value="mental_disability">Mental Disability</option>
-                                                <option value="physical_disability_orthopedic">Physical Disability (Orthopedic)</option>
-                                                <option value="psychosocial_disability">Psychosocial Disability</option>
-                                                <option value="speech_and_language_impairment">Speech and Language Impairment</option>
-                                                <option value="visual_disability">Visual Disability</option>
-                                                <option value="cancer_ra_11215">Cancer (R.A. 11215)</option>
-                                                <option value="rare_disease_ra_10747">Rare Disease (R.A. 10747)</option>
-                                                <option value="other">Others</option>
-                                            </select>
-                                            @error('passengers.' . $index . '.pwd_disability_type')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        </label>
-
-                                        @if(($passenger['pwd_disability_type'] ?? '') === 'other')
-                                            <label class="block min-w-0">
-                                                <span class="text-slate-900 font-bold text-sm">Please specify</span>
-                                                <input type="text" wire:model.defer="passengers.{{ $index }}.pwd_disability_other" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Type of disability" />
-                                                @error('passengers.' . $index . '.pwd_disability_other')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                            </label>
-                                        @endif
-
                                         <label class="block min-w-0">
                                             <span class="text-slate-900 font-bold text-sm">PWD ID number</span>
                                             <input type="text" wire:model.defer="passengers.{{ $index }}.pwd_id_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="PWD ID number" />
@@ -1288,6 +1299,12 @@
                                 <span class="text-slate-900 font-bold text-sm">Email address</span>
                                 <input type="email" wire:model.defer="client_email" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="you@example.com" />
                                 @error('client_email')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                            </label>
+
+                            <label class="block lg:col-span-2" data-error="client_phone">
+                                <span class="text-slate-900 font-bold text-sm">Contact number</span>
+                                <input type="tel" wire:model.defer="client_phone" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="e.g. +63 912 345 6789" />
+                                @error('client_phone')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
                         </div>
 
@@ -1558,7 +1575,7 @@
                                 {{-- Fees --}}
                                 @if ($breakdown['fee_per_traveler'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
-                                        <span class="text-slate-700 font-medium">Service Fee ({{ $adults + $children }} traveler{{ $adults + $children !== 1 ? 's' : '' }})</span>
+                                        <span class="text-slate-700 font-medium">Web Admin Fee ({{ $adults + $children }} traveler{{ $adults + $children !== 1 ? 's' : '' }})</span>
                                         <span class="text-slate-900 font-bold">₱{{ number_format($breakdown['fee_per_traveler'], 2) }}</span>
                                     </div>
                                 @endif
@@ -1594,11 +1611,53 @@
                                 @error('hasAcceptedTerms')
                                     <p class="text-sm text-rose-600">{{ $message }}</p>
                                 @enderror
-                                <p class="text-sm text-slate-500">If you already agree, you may continue without opening the terms modal.</p>
+
+                                <button type="button" wire:click.prevent="$set('showPrivacyModal', true)" class="text-left w-full text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">
+                                    <h3 class="text-lg font-bold">Amiga Travel Agency Data Privacy Policy</h3>
+                                </button>
+                                <label class="flex items-start gap-3">
+                                    <input type="checkbox" wire:model="hasAcceptedPrivacy" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#db2777] focus:ring-[#db2777]">
+                                    <div class="text-sm text-slate-700">
+                                        I have read and agree to the <button type="button" wire:click.prevent="$set('showPrivacyModal', true)" class="font-semibold text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">Amiga Travel Agency Data Privacy Policy</button>.
+                                    </div>
+                                </label>
+                                @error('hasAcceptedPrivacy')
+                                    <p class="text-sm text-rose-600">{{ $message }}</p>
+                                @enderror
+                                <p class="text-sm text-slate-500">If you already agree, you may continue without opening the terms or privacy policy modals.</p>
                             </div>
                         </div>
 
+                        @if ($showPresentIdWarning)
+                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6">
+                                <div class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-200">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div>
+                                            <h2 class="text-xl font-semibold text-slate-900">Prepare valid ID for boarding</h2>
+                                            <p class="mt-3 text-sm leading-6 text-slate-600">Discounted passengers must present a valid ID during boarding. Please have your school ID, OSCA ID, or PWD ID ready.</p>
+                                        </div>
+                                        <button type="button" wire:click.prevent="closePresentIdWarning" class="rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200">
+                                            <span class="sr-only">Close</span>
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="mt-5 grid gap-4">
+                                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                            <p class="font-semibold text-slate-900">What to bring</p>
+                                            <ul class="mt-3 space-y-2 text-sm text-slate-700">
+                                                <li>• School ID for Student discounts</li>
+                                                <li>• OSCA ID for Senior Citizen discounts</li>
+                                                <li>• PWD ID for PWD discounts</li>
+                                            </ul>
+                                        </div>
+                                        <button type="button" wire:click.prevent="closePresentIdWarning" class="inline-flex w-full items-center justify-center rounded-xl bg-[#db2777] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#be185d]">
+                                            Got it, I will present my ID
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         @endif
+                    @endif
 
                         <div class="flex flex-col gap-4 sm:flex-row sm:justify-between mt-8 pt-6 border-t border-slate-200">
                             @if ($step > 1)
@@ -1671,34 +1730,7 @@
         </div>
     <!-- Terms and Conditions Modal -->
     @if ($showTermsModal)
-        <div x-data x-init="
-            $nextTick(() => {
-                const modal = $el;
-                const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])');
-                const firstFocusable = focusableElements[0];
-                const lastFocusable = focusableElements[focusableElements.length - 1];
-                
-                modal.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        e.preventDefault();
-                    } else if (e.key === 'Tab') {
-                        if (e.shiftKey) {
-                            if (document.activeElement === firstFocusable) {
-                                e.preventDefault();
-                                lastFocusable.focus();
-                            }
-                        } else {
-                            if (document.activeElement === lastFocusable) {
-                                e.preventDefault();
-                                firstFocusable.focus();
-                            }
-                        }
-                    }
-                });
-                
-                firstFocusable.focus();
-            });
-        " class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div x-data="{ accepted: @entangle('hasAcceptedTerms'), isSubmitting: @entangle('isSubmittingBooking') }" x-init="initBookingModal($el)" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
                     <h2 class="text-xl font-bold text-slate-900">Amiga Travel Agency Services Terms and Conditions</h2>
@@ -1807,7 +1839,7 @@
                 
                 <div class="flex flex-col gap-3 px-6 py-4 border-t border-slate-200">
                     <label class="flex items-start gap-3">
-                        <input type="checkbox" wire:model="hasAcceptedTerms" id="acceptTerms" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777]">
+                        <input type="checkbox" x-model="accepted" id="acceptTerms" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777]">
                         <span class="text-sm text-slate-700">I have read and agree to the Amiga Travel Agency Services Terms and Conditions.</span>
                     </label>
                     @error('hasAcceptedTerms')
@@ -1818,7 +1850,73 @@
                         <button type="button" wire:click.prevent="cancelTermsModal" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">
                             Cancel
                         </button>
-                        <button type="button" wire:click.prevent="confirmTermsAndContinue" @disabled($isSubmittingBooking || !$hasAcceptedTerms) class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="button" wire:click.prevent="confirmTermsAndContinue" :disabled="isSubmitting || !accepted" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            @if ($isSubmittingBooking)
+                                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                            @else
+                                Done & Continue
+                            @endif
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($showPrivacyModal)
+        <div x-data="{ accepted: @entangle('hasAcceptedPrivacy'), isSubmitting: @entangle('isSubmittingBooking') }" x-init="initBookingModal($el)" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-900">Amiga Travel Agency Data Privacy Policy</h2>
+                </div>
+
+                <div class="flex-1 overflow-y-auto px-6 py-4">
+                    <p class="text-sm text-slate-700 mb-6">
+                        Please review how Amiga Travel Agency collects, stores, and protects your personal data before continuing with your booking.
+                    </p>
+
+                    <div class="space-y-6 text-sm text-slate-700">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Personal Data Collection</h3>
+                            <p class="mb-2">We collect only the personal information necessary to process your booking, issue tickets, and contact you about your travel reservation.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Use of Personal Data</h3>
+                            <p class="mb-2">Your information is used to confirm your booking, communicate updates, send receipts, and comply with transportation partner requirements.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Data Security</h3>
+                            <p class="mb-2">We take reasonable technical and organizational measures to safeguard your personal data. Access is restricted to authorized personnel only.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Retention</h3>
+                            <p class="mb-2">We retain your booking details for as long as necessary to fulfill our services and comply with legal obligations.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-2">Your Rights</h3>
+                            <p class="mb-2">You have the right to access, correct, or request deletion of your personal data in accordance with applicable privacy laws.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 px-6 py-4 border-t border-slate-200">
+                    <label class="flex items-start gap-3">
+                        <input type="checkbox" x-model="accepted" id="acceptPrivacy" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777]">
+                        <span class="text-sm text-slate-700">I have read and agree to the Amiga Travel Agency Data Privacy Policy.</span>
+                    </label>
+                    @error('hasAcceptedPrivacy')
+                        <p class="text-sm text-rose-600">{{ $message }}</p>
+                    @enderror
+
+                    <div class="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+                        <button type="button" wire:click.prevent="cancelPrivacyModal" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">
+                            Cancel
+                        </button>
+                        <button type="button" wire:click.prevent="confirmPrivacyAndContinue" :disabled="isSubmitting || !accepted" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                             @if ($isSubmittingBooking)
                                 <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -1836,6 +1934,37 @@
     @endif
     
     <script>
+        function initBookingModal(modal) {
+            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (!focusableElements.length) {
+                return;
+            }
+
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+
+            const trapFocus = (event) => {
+                if (event.key !== 'Tab') {
+                    return;
+                }
+
+                if (event.shiftKey) {
+                    if (document.activeElement === firstFocusable) {
+                        event.preventDefault();
+                        lastFocusable.focus();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusable) {
+                        event.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            };
+
+            modal.addEventListener('keydown', trapFocus);
+            firstFocusable.focus();
+        }
+
         document.addEventListener('livewire:initialized', () => {
             Livewire.on('validation-error', () => {
                 setTimeout(() => {

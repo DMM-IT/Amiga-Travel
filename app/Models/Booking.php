@@ -41,6 +41,7 @@ class Booking extends Model
         'total_price',
         'client_email',
         'client_name',
+        'client_phone',
         'has_vehicle',
         'vehicle_type',
         'vehicle_plate_number',

@@ -13,6 +13,7 @@
             <li><strong>Origin:</strong> {{ $booking->origin }}</li>
             <li><strong>Destination:</strong> {{ $booking->destination }}</li>
             <li><strong>Departure:</strong> {{ $booking->departure_date }}</li>
+            <li><strong>Contact Number:</strong> {{ $booking->client_phone }}</li>
             <li><strong>Return:</strong> {{ $booking->return_date ?? 'One-way' }}</li>
             <li><strong>Adults:</strong> {{ $booking->passengers->where('type', 'adult')->count() }}</li>
             <li><strong>Children:</strong> {{ $booking->passengers->where('type', 'child')->count() }}</li>
