@@ -34,6 +34,43 @@
             .flatpickr-day.flatpickr-disabled { color:#e2e8f0; }
             .flatpickr-innerContainer { padding:6px 8px 8px; }
         </style>
+        <style>
+            /* Site background image shown behind content */
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                background-image: url('{{ asset('images/amiga-background.jpg') }}');
+                background-size: cover;
+                background-position: center center;
+                opacity: 0.45;
+                z-index: 0;
+                pointer-events: none;
+                filter: saturate(.95) brightness(.95) blur(0px);
+            }
+
+            /* Ensure content sits above the background */
+            body > * { position: relative; z-index: 10; }
+
+            /* Hide background for Filament admin pages (Filament root uses .fi-layout)
+               Also hide when body already has .fi-layout. Uses !important to override. */
+            body.fi-layout::before,
+            .fi-layout::before {
+                display: none !important;
+            }
+        </style>
+        <script>
+            // Add body.fi-layout when Filament root exists anywhere in DOM
+            document.addEventListener('DOMContentLoaded', function() {
+                try {
+                    if (document.querySelector('.fi-layout')) {
+                        document.body.classList.add('fi-layout');
+                    }
+                } catch (e) {
+                    // noop
+                }
+            });
+        </script>
     </head>
     <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
         <header class="bg-[#216417] text-white sticky top-0 z-50 shadow-md">

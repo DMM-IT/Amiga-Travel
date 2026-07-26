@@ -31,8 +31,8 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-1 scale-[0.98]"
-            class="fixed inset-x-3 top-[4.5rem] sm:absolute sm:inset-auto sm:right-0 sm:top-[calc(100%+10px)] sm:w-[420px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999] flex flex-col overflow-hidden"
-            style="max-height: min(92dvh, 560px);"
+            class="fixed inset-x-3 top-[4.5rem] sm:fixed sm:inset-auto sm:right-4 sm:left-auto sm:w-[400px] sm:max-w-[calc(100vw-1rem)] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999] flex flex-col overflow-hidden"
+            style="max-height: min(88dvh, 560px);"
         >
 
             {{-- ── Panel Header ── --}}
