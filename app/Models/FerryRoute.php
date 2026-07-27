@@ -123,8 +123,7 @@ class FerryRoute extends Model
                 $query->where('operator', $operator);
             })
             ->whereHas('schedules', function ($q) {
-                $q->active()
-                  ->where('departure_time', '>=', now()->startOfDay());
+                $q->active();
             })
             ->select('origin')
             ->distinct()
@@ -146,8 +145,7 @@ class FerryRoute extends Model
                 $query->where('operator', $operator);
             })
             ->whereHas('schedules', function ($q) {
-                $q->active()
-                  ->where('departure_time', '>=', now()->startOfDay());
+                $q->active();
             });
 
         if ($requireReturn) {
@@ -159,7 +157,6 @@ class FerryRoute extends Model
                     ->whereColumn('return_routes.destination', (new static)->getTable() . '.origin')
                     ->where('return_routes.is_active', true)
                     ->where('return_schedules.is_active', true)
-                    ->where('return_schedules.departure_time', '>=', now()->startOfDay())
                     ->when($mode, function ($q) use ($mode) {
                         $q->where('return_routes.mode', $mode);
                     })
@@ -188,8 +185,7 @@ class FerryRoute extends Model
             ->whereNotNull('operator')
             ->where('operator', '!=', '')
             ->whereHas('schedules', function ($q) {
-                $q->active()
-                  ->where('departure_time', '>=', now()->startOfDay());
+                $q->active();
             })
             ->select('operator')
             ->distinct()
@@ -208,7 +204,7 @@ class FerryRoute extends Model
             ->when($mode, fn ($q) => $q->where('mode', $mode))
             ->when($operator, fn ($q) => $q->where('operator', $operator))
             ->whereHas('schedules', function ($q) {
-                $q->active()->where('departure_time', '>=', now()->startOfDay());
+                $q->active();
             })
             ->exists();
 
@@ -223,7 +219,7 @@ class FerryRoute extends Model
             ->when($mode, fn ($q) => $q->where('mode', $mode))
             ->when($operator, fn ($q) => $q->where('operator', $operator))
             ->whereHas('schedules', function ($q) {
-                $q->active()->where('departure_time', '>=', now()->startOfDay());
+                $q->active();
             })
             ->exists();
     }

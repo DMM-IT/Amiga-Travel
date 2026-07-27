@@ -793,7 +793,6 @@ public function selectedSchedule(): ?array
                     $query->where('operator', $this->operator);
                 }
             })
-            ->where('departure_time', '>=', Carbon::today()->startOfDay())
             ->selectRaw('DATE(departure_time) as date')
             ->distinct()
             ->orderBy('date')
@@ -819,7 +818,6 @@ public function selectedSchedule(): ?array
                     $query->where('operator', $this->operator);
                 }
             })
-            ->where('departure_time', '>=', Carbon::today()->startOfDay())
             ->selectRaw('DATE(departure_time) as date')
             ->distinct()
             ->orderBy('date')
