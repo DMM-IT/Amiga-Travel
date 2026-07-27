@@ -22,6 +22,7 @@ class Transaction extends Model
 
     protected $casts = [
         'rebooking_fee' => 'decimal:2',
+        'verified_at' => 'datetime',
     ];
 
     public function booking(): BelongsTo

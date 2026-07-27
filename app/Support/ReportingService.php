@@ -190,7 +190,15 @@ class ReportingService
                             : "{$b->client_name} · {$b->origin} → {$b->destination}"),
                     'status' => $b->status,
                     'amount' => $b->total_price,
-                    'time' => ($b->verified_at ?? $b->updated_at ?? $b->created_at)?->toIso8601String(),
+                    'time' => with($b->verified_at ?? $b->updated_at ?? $b->created_at, function ($value) {
+                        if ($value === null) {
+                            return null;
+                        }
+
+                        return $value instanceof \DateTimeInterface
+                            ? $value->toIso8601String()
+                            : \Illuminate\Support\Carbon::parse($value)->toIso8601String();
+                    }),
                 ]);
 
             $transactions = Transaction::with('booking:id,transaction_number,client_name')
