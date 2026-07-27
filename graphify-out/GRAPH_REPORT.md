@@ -1,7 +1,7 @@
 # Graph Report - Amiga-Travel  (2026-07-28)
 
 ## Corpus Check
-- 477 files · ~1,511,216 words
+- 478 files · ~1,511,265 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `19f69c70`
+- Built from commit: `59b0bfcc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1609,11 +1609,11 @@ Nodes (3): baX(), gT3(), H6()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `ue()` connect `eX` to `main.dart.js`, `r`, `m`, `Rb`, `ii`, `a9y`, `sjo`, `r`, `cC`, `gaY`?**
-  _High betweenness centrality (0.110) - this node is a cross-community bridge._
+  _High betweenness centrality (0.111) - this node is a cross-community bridge._
 - **Why does `Ci()` connect `c` to `main.dart.js`, `r`, `sjo`?**
-  _High betweenness centrality (0.072) - this node is a cross-community bridge._
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
 - **Why does `constructor()` connect `r` to `sc`, `c`, `installInstanceTearOff`, `.fromWireType`, `eX`, `preload`, `requestRender`, `gO`, `aOv`, `qe`, `aI`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Are the 238 inferred relationships involving `a()` (e.g. with `loadEntrypoint()` and `_loadJSEntrypoint()`) actually correct?**
   _`a()` has 238 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 473 inferred relationships involving `c()` (e.g. with `main.dart.js` and `$0()`) actually correct?**
