@@ -45,23 +45,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/AccommodationResource.php": {
-    "mtime": 1784900517.587708,
-    "ast_hash": "1d82f03db32e6f0a4f37a42dab0f54a1",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/AccommodationResource/Pages/CreateAccommodation.php": {
-    "mtime": 1784467577.0827627,
-    "ast_hash": "bec4ca79e27ae90373c176fb566785b7",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/AccommodationResource/Pages/EditAccommodation.php": {
-    "mtime": 1784467577.0827627,
-    "ast_hash": "3f1a6ec61d07ab864ba090ac53e839d2",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/AccommodationResource/Pages/ListAccommodations.php": {
-    "mtime": 1784467577.0837884,
-    "ast_hash": "fe3e01f993f03ee84d2272b3e7ffb402",
+    "mtime": 1785160147.705642,
+    "ast_hash": "87b16e71570c4b7009d364193057217f",
     "semantic_hash": ""
   },
   "app/Filament/Resources/ApkUserResource.php": {
@@ -110,8 +95,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource.php": {
-    "mtime": 1785130805.1694949,
-    "ast_hash": "232dbe1db9bab60227d93a5b8d87c43e",
+    "mtime": 1785160147.705642,
+    "ast_hash": "f63bf9728661bdf5254424032bdd05c5",
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource/Pages/CreateBooking.php": {
@@ -170,8 +155,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource.php": {
-    "mtime": 1785154844.8303728,
-    "ast_hash": "44de17e5f8ebd2db34e8ecd60a110541",
+    "mtime": 1785160124.5621867,
+    "ast_hash": "99c5e998384191e975c4ff9b658565ea",
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource/Pages/CreateFerryRoute.php": {
@@ -254,36 +239,6 @@
     "ast_hash": "3f9c370e26a6e59c9281cebdc1acb316",
     "semantic_hash": ""
   },
-  "app/Filament/Resources/ScheduleResource.php": {
-    "mtime": 1785154844.829373,
-    "ast_hash": "c69fa56a914998789d9a3b8d776db388",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/ScheduleResource/Pages/CreateSchedule.php": {
-    "mtime": 1784467577.114906,
-    "ast_hash": "9056fb5cd1bb82931b4a0dddf8209abb",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/ScheduleResource/Pages/EditSchedule.php": {
-    "mtime": 1784467577.114906,
-    "ast_hash": "2052175476c82adf2a0a2860180562f4",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/ScheduleResource/Pages/ListSchedules.php": {
-    "mtime": 1784467577.1164083,
-    "ast_hash": "be522aefc03a63c0729765a0eb6549fc",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/ScheduleResource/RelationManagers/ScheduleAccommodationsRelationManager.php": {
-    "mtime": 1784467577.1164083,
-    "ast_hash": "6eb23ab1336924875786c89a4377939e",
-    "semantic_hash": ""
-  },
-  "app/Filament/Resources/ScheduleResource/RelationManagers/TransportClassesRelationManager.php": {
-    "mtime": 1784467577.1164083,
-    "ast_hash": "4ebcc46afb7ea126dc4865e85e4f7d79",
-    "semantic_hash": ""
-  },
   "app/Filament/Resources/TourResource.php": {
     "mtime": 1784900517.587708,
     "ast_hash": "7d48cc5453911c3193294f1fc343a26f",
@@ -310,8 +265,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource.php": {
-    "mtime": 1785130805.170591,
-    "ast_hash": "f1e157829f89387ce516f3bf8019ebee",
+    "mtime": 1785160147.7112517,
+    "ast_hash": "e237dd1700fd6ffabc082ada154d4d26",
     "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource/Pages/ListTransactions.php": {
@@ -695,8 +650,8 @@
     "semantic_hash": ""
   },
   "app/Models/Schedule.php": {
-    "mtime": 1785154844.91697,
-    "ast_hash": "3c48be75e43dbaf5dcc6642df669a5c4",
+    "mtime": 1785159899.9657533,
+    "ast_hash": "c38cc4718459f0d47ec3d5e46361f3ab",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -725,8 +680,8 @@
     "semantic_hash": ""
   },
   "app/Models/User.php": {
-    "mtime": 1784915117.830159,
-    "ast_hash": "7c235e306c37c72f4573317fc79073a8",
+    "mtime": 1785160147.7122483,
+    "ast_hash": "68ce4a7af59cf1089c402898eed85212",
     "semantic_hash": ""
   },
   "app/Models/UserLoginHistory.php": {
@@ -1670,13 +1625,13 @@
     "semantic_hash": ""
   },
   "resources/views/filament/admin/notification-bell.blade.php": {
-    "mtime": 1785130805.182923,
-    "ast_hash": "f1176bf0d150643ddf38931292fa5355",
+    "mtime": 1785160147.713245,
+    "ast_hash": "d91d74dde51a62faeab47abd5b6d16d3",
     "semantic_hash": ""
   },
   "resources/views/filament/admin/notification-scripts.blade.php": {
-    "mtime": 1784916923.9151332,
-    "ast_hash": "88a4ea27122889ff68648194d39bf91f",
+    "mtime": 1785160147.714242,
+    "ast_hash": "e9b8098a85f999657f874280df72e8f8",
     "semantic_hash": ""
   },
   "resources/views/filament/infolists/entries/proof-image.blade.php": {
@@ -1715,8 +1670,8 @@
     "semantic_hash": ""
   },
   "resources/views/filament/pages/overall-reports.blade.php": {
-    "mtime": 1785130805.1915927,
-    "ast_hash": "a55fcb876b3698c3dbccc20a5519a76e",
+    "mtime": 1785160147.7152386,
+    "ast_hash": "fcec9aa6ac8d5e58b1029cc23e9fcde9",
     "semantic_hash": ""
   },
   "resources/views/filament/pages/staff-performance.blade.php": {
@@ -2827,6 +2782,56 @@
   "resources/views/components/_schedule-card.blade.php": {
     "mtime": 1785149686.974812,
     "ast_hash": "988740541cd796e40bfb4d62f58255ec",
+    "semantic_hash": ""
+  },
+  "app/Models/ScheduleTransportClass.php": {
+    "mtime": 1785159183.609306,
+    "ast_hash": "199e54cf7f3fd7397083bc1fb0ad1f59",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_27_213930_add_tickets_available_to_schedules_table.php": {
+    "mtime": 1785159579.2157085,
+    "ast_hash": "76135f1b4e542a3c47aa569649a3b4e0",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_27_214324_drop_service_name_from_schedules_table.php": {
+    "mtime": 1785159885.6355717,
+    "ast_hash": "1c611fc94064be9d9aea322725be300c",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AccommodationResource/Pages/CreateAccommodation.php": {
+    "mtime": 1785160234.797043,
+    "ast_hash": "bec4ca79e27ae90373c176fb566785b7",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AccommodationResource/Pages/EditAccommodation.php": {
+    "mtime": 1785160242.4587126,
+    "ast_hash": "3f1a6ec61d07ab864ba090ac53e839d2",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AccommodationResource/Pages/ListAccommodations.php": {
+    "mtime": 1785160226.8565438,
+    "ast_hash": "fe3e01f993f03ee84d2272b3e7ffb402",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource.php": {
+    "mtime": 1785160147.705642,
+    "ast_hash": "5f83c5ab5d1c2329a4e1e74d932a6e37",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource/Pages/CreateHotel.php": {
+    "mtime": 1785160147.705642,
+    "ast_hash": "47f3e1f6dcffbe68a3404eeb87b26e24",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource/Pages/EditHotel.php": {
+    "mtime": 1785160147.709166,
+    "ast_hash": "29863142aa28885e11407768d73b6351",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource/Pages/ListHotels.php": {
+    "mtime": 1785160147.709166,
+    "ast_hash": "d7d6b446faacd4bbc313a14737fe26b4",
     "semantic_hash": ""
   }
 }

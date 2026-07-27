@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource.php": {
-    "mtime": 1785160124.5621867,
-    "ast_hash": "99c5e998384191e975c4ff9b658565ea",
+    "mtime": 1785161254.394339,
+    "ast_hash": "e50a859450a3398615e51b4ce6b80608",
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource/Pages/CreateFerryRoute.php": {
@@ -650,13 +650,13 @@
     "semantic_hash": ""
   },
   "app/Models/Schedule.php": {
-    "mtime": 1785159899.9657533,
-    "ast_hash": "c38cc4718459f0d47ec3d5e46361f3ab",
+    "mtime": 1785160940.5866199,
+    "ast_hash": "c0ebbd4911b9301cbaf25db9acaf5a5b",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
-    "mtime": 1784467577.1432967,
-    "ast_hash": "35225e66e4c4c357ad21d41cb7c973f2",
+    "mtime": 1785160849.9918065,
+    "ast_hash": "4838dc187ca6199108bdd51eb8ce2767",
     "semantic_hash": ""
   },
   "app/Models/Tour.php": {
@@ -2785,8 +2785,8 @@
     "semantic_hash": ""
   },
   "app/Models/ScheduleTransportClass.php": {
-    "mtime": 1785159183.609306,
-    "ast_hash": "199e54cf7f3fd7397083bc1fb0ad1f59",
+    "mtime": 1785160858.214177,
+    "ast_hash": "b0c8fc2bf0f6befcc0c4628255cf11a8",
     "semantic_hash": ""
   },
   "database/migrations/2026_07_27_213930_add_tickets_available_to_schedules_table.php": {
@@ -2832,6 +2832,16 @@
   "app/Filament/Resources/HotelResource/Pages/ListHotels.php": {
     "mtime": 1785160147.709166,
     "ast_hash": "d7d6b446faacd4bbc313a14737fe26b4",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_27_215858_add_tickets_available_to_schedule_accommodations_table.php": {
+    "mtime": 1785160747.2567425,
+    "ast_hash": "0eef19da7528c4c1000b496a7c9cdf26",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_27_220028_add_tickets_available_to_schedule_transport_class_table.php": {
+    "mtime": 1785160835.5913644,
+    "ast_hash": "e30c6099e0d3c8b8163b8401192ad537",
     "semantic_hash": ""
   }
 }
