@@ -105,6 +105,11 @@ class BookingReschedule extends Component
                     return $item->schedule && $item->schedule->ferryRoute
                         && $item->schedule->ferryRoute->origin === $this->booking->origin
                         && $item->schedule->ferryRoute->destination === $this->booking->destination;
+                })
+                ->map(function ($item) {
+                    // Convert Carbon date to string to avoid serialization issues in Livewire
+                    $item->replacement_date_formatted = $item->replacement_date->format('Y-m-d');
+                    return $item;
                 });
         }
 

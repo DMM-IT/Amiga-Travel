@@ -2,25 +2,33 @@
 <div wire:poll.3s="refreshData" class="space-y-6 w-full">
 
     {{-- ═══ Header: Period Selector + Custom Dates + Export ═══ --}}
-    <div class="rounded-[28px] border border-slate-800 bg-slate-950 p-4 ring-1 ring-white/5 shadow-sm">
-        <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div class="inline-flex min-w-0 flex-auto items-center gap-1 overflow-x-auto rounded-full border border-orange-400/25 bg-orange-400/10 px-2 py-2">
+    <div class="rounded-[28px] border border-slate-800 bg-slate-950 p-4">
+        <div class="flex items-center gap-3 justify-between" style="flex-wrap: nowrap;">
+            <div class="flex-1 min-w-0 inline-flex items-center gap-2 overflow-x-auto rounded-full px-2 py-1"
+                 style="white-space: nowrap; background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.24);">
                 @foreach(['today' => 'Today', 'week' => 'This Week', 'month' => 'This Month', 'year' => 'This Year', 'all' => 'All Time', 'custom' => 'Custom'] as $value => $label)
                     <button
                         wire:click="$set('period', '{{ $value }}')"
-                        class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition duration-200 {{ $period === $value ? 'bg-orange-500 text-slate-950 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/10' }}"
+                        @if($period === $value)
+                            class="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold transition duration-200"
+                            style="background: #f1f5f9; color: #0f172a; border: 1px solid rgba(148,163,184,0.35);"
+                        @else
+                            class="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold text-slate-300 transition duration-200 hover:text-white hover:bg-white/10"
+                        @endif
                     >
                         {{ $label }}
                     </button>
                 @endforeach
             </div>
 
-            <div class="flex items-center gap-3">
-                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-sm font-semibold text-orange-200 transition hover:bg-orange-500 hover:text-slate-950">
+            <div class="flex flex-none items-center gap-4 min-w-max" style="flex-shrink: 0;">
+                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition"
+                   style="background: #334155; border: 1px solid #475569; color: #cbd5e1;">
                     <x-heroicon-m-arrow-down-tray class="h-4 w-4" />
                     PDF
                 </a>
-                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-sm font-semibold text-orange-200 transition hover:bg-orange-500 hover:text-slate-950">
+                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition"
+                   style="background: #334155; border: 1px solid #475569; color: #cbd5e1;">
                     <x-heroicon-m-table-cells class="h-4 w-4" />
                     CSV
                 </a>
