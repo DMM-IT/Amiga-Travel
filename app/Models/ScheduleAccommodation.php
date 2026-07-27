@@ -12,6 +12,7 @@ class ScheduleAccommodation extends Model
         'name',
         'description',
         'price',
+        'tickets_available',
         'has_bed',
         'is_active',
         'sort_order',

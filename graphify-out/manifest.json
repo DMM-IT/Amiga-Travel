@@ -2798,5 +2798,40 @@
     "mtime": 1785159885.6355717,
     "ast_hash": "1c611fc94064be9d9aea322725be300c",
     "semantic_hash": ""
+  },
+  "app/Filament/Resources/AccommodationResource/Pages/CreateAccommodation.php": {
+    "mtime": 1785160234.797043,
+    "ast_hash": "bec4ca79e27ae90373c176fb566785b7",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AccommodationResource/Pages/EditAccommodation.php": {
+    "mtime": 1785160242.4587126,
+    "ast_hash": "3f1a6ec61d07ab864ba090ac53e839d2",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AccommodationResource/Pages/ListAccommodations.php": {
+    "mtime": 1785160226.8565438,
+    "ast_hash": "fe3e01f993f03ee84d2272b3e7ffb402",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource.php": {
+    "mtime": 1785160147.705642,
+    "ast_hash": "5f83c5ab5d1c2329a4e1e74d932a6e37",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource/Pages/CreateHotel.php": {
+    "mtime": 1785160147.705642,
+    "ast_hash": "47f3e1f6dcffbe68a3404eeb87b26e24",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource/Pages/EditHotel.php": {
+    "mtime": 1785160147.709166,
+    "ast_hash": "29863142aa28885e11407768d73b6351",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/HotelResource/Pages/ListHotels.php": {
+    "mtime": 1785160147.709166,
+    "ast_hash": "d7d6b446faacd4bbc313a14737fe26b4",
+    "semantic_hash": ""
   }
 }

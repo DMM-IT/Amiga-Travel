@@ -15,6 +15,7 @@ class ScheduleTransportClass extends Pivot
         'schedule_id',
         'transport_class_id',
         'additional_price',
+        'tickets_available',
     ];
 
     protected $casts = [

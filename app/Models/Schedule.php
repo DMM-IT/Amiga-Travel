@@ -21,7 +21,6 @@ class Schedule extends Model
         'arrival_time',
         'duration_minutes',
         'price',
-        'tickets_available',
         'availability_label',
         'seat_rows',
         'seat_columns',
@@ -115,7 +114,13 @@ class Schedule extends Model
         return $query->where(
             $query->getModel()->qualifyColumn('is_active'),
             true
-        )->where($query->getModel()->qualifyColumn('tickets_available'), '>', 0);
+        )->where(function (Builder $q) {
+            $q->whereHas('scheduleAccommodations', function (Builder $accQ) {
+                $accQ->where('is_active', true)->where('tickets_available', '>', 0);
+            })->orWhereHas('transportClasses', function (Builder $tcQ) {
+                $tcQ->where('schedule_transport_class.tickets_available', '>', 0);
+            });
+        });
     }
 
     public function scopeForRouteAndDate(Builder $query, string $origin, string $destination, string $date, ?string $mode = null, ?string $operator = null): Builder
@@ -439,13 +444,15 @@ class Schedule extends Model
         $mode = $this->ferryRoute?->mode ?? 'ferry';
 
         // Explicitly fetch accommodations and transport classes using eager loaded relations if available
-        $activeAccommodations = $this->relationLoaded('scheduleAccommodations')
+        $activeAccommodations = ($this->relationLoaded('scheduleAccommodations')
             ? $this->scheduleAccommodations->where('is_active', true)
-            : $this->activeScheduleAccommodations()->get();
+            : $this->activeScheduleAccommodations()->get())
+            ->filter(fn ($acc) => $acc->tickets_available > 0);
             
-        $activeTransportClasses = $this->relationLoaded('transportClasses')
+        $activeTransportClasses = ($this->relationLoaded('transportClasses')
             ? $this->transportClasses->where('is_active', true)->sortBy('sort_order')
-            : $this->transportClasses()->where('is_active', true)->orderBy('sort_order')->get();
+            : $this->transportClasses()->where('is_active', true)->orderBy('sort_order')->get())
+            ->filter(fn ($tc) => ($tc->pivot?->tickets_available ?? 0) > 0);
 
         return [
             'id' => $this->id,
@@ -465,6 +472,7 @@ class Schedule extends Model
                     'description' => $accommodation->description,
                     'price' => floatval($accommodation->price),
                     'has_bed' => $accommodation->has_bed,
+                    'tickets_available' => (int) $accommodation->tickets_available,
                 ])
                 ->values()
                 ->all(),
@@ -481,6 +489,7 @@ class Schedule extends Model
                         'is_on_sale' => (bool)$class->is_on_sale,
                         'sale_price' => $class->sale_price ? floatval($class->sale_price) : null,
                         'cover_image' => $class->cover_image ? asset('storage/' . $class->cover_image) : null,
+                        'tickets_available' => (int) ($class->pivot?->tickets_available ?? 0),
                     ];
                 })
                 ->values()

@@ -235,12 +235,6 @@ class FerryRouteResource extends Resource
                 ->minValue(0)
                 ->required(),
 
-            TextInput::make('tickets_available')
-                ->label('Tickets Available')
-                ->numeric()
-                ->minValue(0)
-                ->default(100)
-                ->required(),
 
             TextInput::make('availability_label')
                 ->label('Availability note')
@@ -288,6 +282,13 @@ class FerryRouteResource extends Resource
                         ->minValue(0)
                         ->required(),
 
+                    TextInput::make('tickets_available')
+                        ->label('Tickets Available')
+                        ->numeric()
+                        ->minValue(0)
+                        ->default(50)
+                        ->required(),
+
                     Toggle::make('has_bed')
                         ->label('Includes bed accommodation')
                         ->helperText('Enable for cabin or bunk options with sleeping berths.'),
@@ -331,6 +332,12 @@ class FerryRouteResource extends Resource
                         ->prefix('₱')
                         ->default(0)
                         ->minValue(0),
+                    TextInput::make('tickets_available')
+                        ->label('Tickets Available')
+                        ->numeric()
+                        ->minValue(0)
+                        ->default(50)
+                        ->required(),
                     // Hidden field to store name for Repeater item label
                     TextInput::make('transport_class_name')->hidden(),
                 ])
