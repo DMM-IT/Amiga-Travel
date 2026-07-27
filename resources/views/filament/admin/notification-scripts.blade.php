@@ -16,6 +16,8 @@ window.adminNotificationBell = function (config) {
         successMessage: '',
         bulkMode:      false,
         activeTab:     'all',
+        dropdownStyles: {},
+        updateDropdownPositionBound: null,
         busy:          false,
 
         formatTimeAgo(dateStr) {
@@ -143,7 +145,45 @@ window.adminNotificationBell = function (config) {
             this.confirmingDelete = true;
         },
 
-        toggleDropdown()            { this.dropdownOpen = !this.dropdownOpen; },
+        toggleDropdown() {
+            this.dropdownOpen = !this.dropdownOpen;
+
+            if (this.dropdownOpen) {
+                this.$nextTick(() => {
+                    this.updateDropdownPosition();
+                    this.updateDropdownPositionBound = this.updateDropdownPosition.bind(this);
+                    window.addEventListener('resize', this.updateDropdownPositionBound);
+                    window.addEventListener('scroll', this.updateDropdownPositionBound, true);
+                });
+            } else {
+                if (this.updateDropdownPositionBound) {
+                    window.removeEventListener('resize', this.updateDropdownPositionBound);
+                    window.removeEventListener('scroll', this.updateDropdownPositionBound, true);
+                    this.updateDropdownPositionBound = null;
+                }
+            }
+        },
+        updateDropdownPosition() {
+            const trigger = document.getElementById('adminNotificationBellBtn');
+            const panel = document.getElementById('adminNotificationDropdown');
+            if (!trigger || !panel) return;
+
+            const triggerRect = trigger.getBoundingClientRect();
+            const panelWidth = Math.min(340, window.innerWidth - 32);
+            const idealLeft = triggerRect.right - panelWidth;
+            const left = Math.max(16, Math.min(idealLeft, window.innerWidth - panelWidth - 16));
+            const rawTop = triggerRect.bottom + 8;
+            const top = rawTop + panel.clientHeight > window.innerHeight ? Math.max(16, triggerRect.top - panel.clientHeight - 8) : rawTop;
+
+            this.dropdownStyles = {
+                position: 'fixed',
+                left: `${left}px`,
+                top: `${top}px`,
+                width: `${panelWidth}px`,
+                maxHeight: 'min(88dvh, 560px)',
+                zIndex: 9999,
+            };
+        },
         openNotification(n)         { window.location.href = n.url; },
         showSuccess(msg) {
             this.successMessage = msg;

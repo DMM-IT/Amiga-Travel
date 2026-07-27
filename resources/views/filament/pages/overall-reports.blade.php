@@ -2,25 +2,25 @@
 <div wire:poll.3s="refreshData" class="space-y-6 w-full">
 
     {{-- ═══ Header: Period Selector + Custom Dates + Export ═══ --}}
-    <div class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-950/10 dark:bg-gray-900 dark:ring-white/10">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div class="flex flex-wrap items-center gap-2 rounded-full bg-slate-100 px-2 py-2 shadow-inner ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-white/10">
+    <div class="rounded-[28px] border border-slate-800 bg-slate-950 p-4 ring-1 ring-white/5 shadow-sm">
+        <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div class="inline-flex min-w-0 flex-auto items-center gap-1 overflow-x-auto rounded-full border border-orange-400/25 bg-orange-400/10 px-2 py-2">
                 @foreach(['today' => 'Today', 'week' => 'This Week', 'month' => 'This Month', 'year' => 'This Year', 'all' => 'All Time', 'custom' => 'Custom'] as $value => $label)
                     <button
                         wire:click="$set('period', '{{ $value }}')"
-                        class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 {{ $period === $value ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-gray-800 hover:bg-slate-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700' }}"
+                        class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition duration-200 {{ $period === $value ? 'bg-orange-500 text-slate-950 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/10' }}"
                     >
                         {{ $label }}
                     </button>
                 @endforeach
             </div>
 
-            <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500">
+            <div class="flex items-center gap-3">
+                <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-sm font-semibold text-orange-200 transition hover:bg-orange-500 hover:text-slate-950">
                     <x-heroicon-m-arrow-down-tray class="h-4 w-4" />
                     PDF
                 </a>
-                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white/10 dark:text-white dark:hover:bg-white/20">
+                <a href="{{ route('bookings.export.csv') }}" class="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-sm font-semibold text-orange-200 transition hover:bg-orange-500 hover:text-slate-950">
                     <x-heroicon-m-table-cells class="h-4 w-4" />
                     CSV
                 </a>
@@ -28,11 +28,11 @@
         </div>
 
         @if($period === 'custom')
-            <div class="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm ring-1 ring-gray-200 dark:border-slate-700 dark:bg-slate-900/90 dark:ring-white/10">
+            <div class="mt-4 rounded-[28px] border border-slate-800 bg-slate-950 p-5 ring-1 ring-white/5">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div class="min-w-0 lg:max-w-[320px]">
-                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Custom range</p>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Select both start and end dates to refresh the report.</p>
+                        <p class="text-sm font-semibold text-slate-100">Custom range</p>
+                        <p class="mt-1 text-sm text-slate-400">Select both start and end dates to refresh the report.</p>
                     </div>
                     <div class="grid w-full gap-4 sm:grid-cols-2 lg:max-w-[540px]">
                         {{ $this->form }}

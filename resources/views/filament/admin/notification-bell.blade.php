@@ -1,8 +1,10 @@
 <div x-data="adminNotificationBell({ initialNotifications: [], initialTotalCount: 0, initialUnreadCount: 0 })" x-init="fetchDropdown()" class="relative">
 
     {{-- ───── Bell Trigger Button ───── --}}
-    <div class="relative">
+    <div class="relative inline-flex">
         <button
+            id="adminNotificationBellBtn"
+            x-ref="trigger"
             type="button"
             @click.prevent="toggleDropdown()"
             class="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
@@ -22,6 +24,8 @@
 
         {{-- ───── Dropdown Panel ───── --}}
         <div
+            id="adminNotificationDropdown"
+            x-ref="dropdown"
             x-show="dropdownOpen"
             x-cloak
             @click.outside="dropdownOpen = false; actionMenuOpen = false; itemMenuOpen = null"
@@ -31,7 +35,8 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-1 scale-[0.98]"
-            class="fixed inset-x-3 top-[4.5rem] sm:fixed sm:inset-auto sm:right-4 sm:left-auto sm:w-[400px] sm:max-w-[calc(100vw-1rem)] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999] flex flex-col overflow-hidden"
+            x-bind:style="dropdownStyles"
+            class="fixed rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999] flex flex-col overflow-hidden"
             style="max-height: min(88dvh, 560px);"
         >
 

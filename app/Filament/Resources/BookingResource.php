@@ -104,8 +104,9 @@ class BookingResource extends Resource
                 Tables\Columns\TextColumn::make('schedule_service')
                     ->label('Schedule')
                     ->placeholder('—'),
-                Tables\Columns\TextColumn::make('departure_date')
-                    ->date()
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created Date')
+                    ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rebooking_departure_date')
                     ->label('Rebook Departure')
@@ -149,10 +150,6 @@ class BookingResource extends Resource
                 Tables\Columns\TextColumn::make('total_price')
                     ->money('PHP')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
