@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource.php": {
-    "mtime": 1785161254.394339,
-    "ast_hash": "e50a859450a3398615e51b4ce6b80608",
+    "mtime": 1785164007.7989588,
+    "ast_hash": "bb67c56e8d0ead37254f5a7ac0848a9e",
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource/Pages/CreateFerryRoute.php": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "app/Models/Schedule.php": {
-    "mtime": 1785160940.5866199,
-    "ast_hash": "c0ebbd4911b9301cbaf25db9acaf5a5b",
+    "mtime": 1785164537.7524438,
+    "ast_hash": "aea0cd2cacaf154e8db56319eec97fe6",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -1200,8 +1200,8 @@
     "semantic_hash": ""
   },
   "database/seeders/DatabaseSeeder.php": {
-    "mtime": 1784890123.033229,
-    "ast_hash": "3f662580c7ed7194b5aec79e855e2d56",
+    "mtime": 1785161799.0637205,
+    "ast_hash": "4482ccbb8dee393b83c627137e236761",
     "semantic_hash": ""
   },
   "database/seeders/DiscountSeeder.php": {
@@ -1209,19 +1209,9 @@
     "ast_hash": "6f924b95d8790ad70550343537134d8f",
     "semantic_hash": ""
   },
-  "database/seeders/FerryRouteSeeder.php": {
-    "mtime": 1785154844.807273,
-    "ast_hash": "75e1d780ba3c02c25fbde29abfb3c7c9",
-    "semantic_hash": ""
-  },
   "database/seeders/GraciaEarningRuleSeeder.php": {
     "mtime": 1784890097.6943882,
     "ast_hash": "1c480c06f54a98bcde575beb362529f4",
-    "semantic_hash": ""
-  },
-  "database/seeders/ScheduleAccommodationSeeder.php": {
-    "mtime": 1784620036.8259623,
-    "ast_hash": "49073ee57942e9c8da64b48a81f55b70",
     "semantic_hash": ""
   },
   "database/seeders/TourHotelsSeeder.php": {
@@ -1280,7 +1270,7 @@
     "semantic_hash": ""
   },
   "flutter_app/assets/tours.json": {
-    "mtime": 1785152364.7234812,
+    "mtime": 1785161834.6926882,
     "ast_hash": "ac8076c067f76f644e7ca7ed2f2f3527",
     "semantic_hash": ""
   },
@@ -2785,8 +2775,8 @@
     "semantic_hash": ""
   },
   "app/Models/ScheduleTransportClass.php": {
-    "mtime": 1785160858.214177,
-    "ast_hash": "b0c8fc2bf0f6befcc0c4628255cf11a8",
+    "mtime": 1785163665.741131,
+    "ast_hash": "88de171dbdf86531beee0d52b635f77f",
     "semantic_hash": ""
   },
   "database/migrations/2026_07_27_213930_add_tickets_available_to_schedules_table.php": {
@@ -2842,6 +2832,11 @@
   "database/migrations/2026_07_27_220028_add_tickets_available_to_schedule_transport_class_table.php": {
     "mtime": 1785160835.5913644,
     "ast_hash": "e30c6099e0d3c8b8163b8401192ad537",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_27_224719_add_details_to_schedule_transport_class_table.php": {
+    "mtime": 1785163650.9334123,
+    "ast_hash": "27e9134a3fb50e2dbd44c10d0caee389",
     "semantic_hash": ""
   }
 }

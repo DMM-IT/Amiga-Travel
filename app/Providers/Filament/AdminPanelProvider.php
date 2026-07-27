@@ -3,10 +3,12 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\ManageWebsiteSettings;
+use App\Filament\Pages\MyPage;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -71,6 +73,17 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
                 ManageWebsiteSettings::class,
+                MyPage::class,
+            ])
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label(fn () => auth()->user()?->name ?? 'Admin User')
+                    ->url(fn (): string => MyPage::getUrl())
+                    ->icon('heroicon-m-user-circle'),
+                MenuItem::make()
+                    ->label('My Page & Reports')
+                    ->url(fn (): string => MyPage::getUrl())
+                    ->icon('heroicon-o-chart-bar-square'),
             ])
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_AFTER, function (): View {
                 return view('filament.admin.notification-bell');
