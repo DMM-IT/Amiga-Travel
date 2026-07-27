@@ -37,13 +37,11 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             DiscountSeeder::class,
-            ScheduleAccommodationSeeder::class,
             TourHotelsSeeder::class,
             TransportClassSeeder::class,
             VehicleBrandModelSeeder::class,
             VehicleRateSeeder::class,
             VehicleSeeder::class,
-            FerryRouteSeeder::class,
             WebsiteSettingSeeder::class,
             GraciaEarningRuleSeeder::class,
         ]);

@@ -6,6 +6,7 @@ use App\Filament\Resources\FerryRouteResource\Pages;
 use App\Models\FerryRoute;
 use App\Models\User;
 use App\Models\Vehicle;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -149,6 +150,23 @@ class FerryRouteResource extends Resource
 
                 Section::make('Schedules for this Route')
                     ->description('Manage the schedules that belong to this route here. Changes are saved with the route.')
+                    ->headerActions([
+                        Action::make('add_schedule')
+                            ->label('Add schedule')
+                            ->icon('heroicon-m-plus')
+                            ->button()
+                            ->action(function (callable $get, callable $set) {
+                                $schedules = $get('schedules') ?? [];
+                                $vehicleId = $get('vehicle_id');
+                                $vehicleName = $vehicleId ? optional(Vehicle::find($vehicleId))->name : null;
+                                $key = \Illuminate\Support\Str::uuid()->toString();
+                                $schedules[$key] = [
+                                    'vehicle_name' => $vehicleName,
+                                    'is_active' => true,
+                                ];
+                                $set('schedules', $schedules);
+                            }),
+                    ])
                     ->schema([
                         Repeater::make('schedules')
                             ->relationship('schedules')
@@ -157,9 +175,72 @@ class FerryRouteResource extends Resource
                             ->defaultItems(0)
                             ->cloneable()
                             ->deletable()
+                            ->addable(false)
                             ->collapsible()
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['vehicle_name'] ?? 'New schedule')
+                            ->extraItemActions([
+                                Action::make('add_accommodation')
+                                    ->icon('heroicon-m-plus-circle')
+                                    ->label(fn (callable $get) => $get('../../mode') === 'airline' ? 'Add transport class' : 'Add accommodation')
+                                    ->tooltip(fn (callable $get) => $get('../../mode') === 'airline' ? 'Add transport class' : 'Add accommodation')
+                                    ->action(function (array $arguments, Repeater $component, callable $get): void {
+                                        $itemKey = $arguments['item'];
+                                        $state = $component->getState();
+                                        $mode = $get('../../mode');
+
+                                        if ($mode === 'airline') {
+                                            $classes = $state[$itemKey]['scheduleTransportClasses'] ?? [];
+                                            $classes[\Illuminate\Support\Str::uuid()->toString()] = [
+                                                'additional_price' => 0,
+                                                'tickets_available' => 50,
+                                                'is_active' => true,
+                                                'has_bed' => false,
+                                            ];
+                                            $state[$itemKey]['scheduleTransportClasses'] = $classes;
+                                        } else {
+                                            $accs = $state[$itemKey]['scheduleAccommodations'] ?? [];
+                                            $accs[\Illuminate\Support\Str::uuid()->toString()] = [
+                                                'price' => $state[$itemKey]['price'] ?? 0,
+                                                'tickets_available' => 50,
+                                                'is_active' => true,
+                                                'has_bed' => false,
+                                            ];
+                                            $state[$itemKey]['scheduleAccommodations'] = $accs;
+                                        }
+
+                                        $component->state($state);
+                                        $component->collapsed(false, shouldMakeComponentCollapsible: false);
+                                    }),
+                            ])
+                            ->itemLabel(function (array $state): ?string {
+                                $parts = [];
+                                $parts[] = $state['vehicle_name'] ?? 'New schedule';
+
+                                if (!empty($state['departure_time']) && !empty($state['arrival_time'])) {
+                                    $dep = \Carbon\Carbon::parse($state['departure_time'])->format('h:i A');
+                                    $arr = \Carbon\Carbon::parse($state['arrival_time'])->format('h:i A');
+                                    $parts[] = "{$dep} - {$arr}";
+                                } elseif (!empty($state['departure_time'])) {
+                                    $dep = \Carbon\Carbon::parse($state['departure_time'])->format('h:i A');
+                                    $parts[] = "Dep: {$dep}";
+                                }
+
+                                if (isset($state['price']) && $state['price'] !== '') {
+                                    $price = number_format((float) $state['price'], 2);
+                                    $parts[] = "₱{$price}";
+                                }
+
+                                $accCount = is_array($state['scheduleAccommodations'] ?? null) ? count($state['scheduleAccommodations']) : 0;
+                                $classCount = is_array($state['scheduleTransportClasses'] ?? null) ? count($state['scheduleTransportClasses']) : 0;
+
+                                if ($classCount > 0) {
+                                    $parts[] = "{$classCount} " . ($classCount === 1 ? 'Class' : 'Classes');
+                                } else {
+                                    $parts[] = "{$accCount} " . ($accCount === 1 ? 'Accommodation' : 'Accommodations');
+                                }
+
+                                return implode('  •  ', $parts);
+                            })
                             ->mutateRelationshipDataBeforeFillUsing(function (array $data, callable $get): array {
                                 if ($vehicleId = $get('../../vehicle_id')) {
                                     $vehicleName = optional(Vehicle::find($vehicleId))->name;
@@ -187,7 +268,6 @@ class FerryRouteResource extends Resource
 
                                 return $data;
                             })
-                            ->createItemButtonLabel('Add schedule')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
@@ -241,20 +321,6 @@ class FerryRouteResource extends Resource
                 ->placeholder('e.g. Available, Limited availability')
                 ->maxLength(255),
 
-            TextInput::make('seat_rows')
-                ->label('Seat rows (airline)')
-                ->helperText('Number of seat rows for the seat map. Leave blank for default (30).')
-                ->numeric()
-                ->minValue(1)
-                ->maxValue(60)
-                ->visible(fn (callable $get): bool => $get('../../mode') === 'airline'),
-
-            TagsInput::make('seat_columns')
-                ->label('Seat columns (airline)')
-                ->helperText('Column letters left to right, e.g. A, B, C, D, E, F. Leave blank for default.')
-                ->placeholder('A')
-                ->visible(fn (callable $get): bool => $get('../../mode') === 'airline'),
-
             Toggle::make('is_active')
                 ->label('Visible to clients when booking')
                 ->default(true),
@@ -293,12 +359,6 @@ class FerryRouteResource extends Resource
                         ->label('Includes bed accommodation')
                         ->helperText('Enable for cabin or bunk options with sleeping berths.'),
 
-                    TextInput::make('sort_order')
-                        ->label('Display order')
-                        ->numeric()
-                        ->default(0)
-                        ->minValue(0),
-
                     Toggle::make('is_active')
                         ->label('Visible to clients when booking')
                         ->default(true),
@@ -323,21 +383,43 @@ class FerryRouteResource extends Resource
                                 $tc = \App\Models\TransportClass::find($state);
                                 if ($tc) {
                                     $set('transport_class_name', $tc->name);
+                                    $price = ($tc->is_on_sale && $tc->sale_price !== null && $tc->sale_price > 0) ? $tc->sale_price : $tc->price;
+                                    $set('additional_price', $price ?? 0);
+                                    if ($tc->description) {
+                                        $set('description', $tc->description);
+                                    }
                                 }
                             }
-                        }),
+                        })
+                        ->columnSpanFull(),
+
+                    \Filament\Forms\Components\Textarea::make('description')
+                        ->placeholder('Details about this transport class option')
+                        ->rows(2)
+                        ->columnSpanFull(),
+
                     TextInput::make('additional_price')
                         ->label('Additional Price (₱)')
                         ->numeric()
                         ->prefix('₱')
                         ->default(0)
                         ->minValue(0),
+
                     TextInput::make('tickets_available')
                         ->label('Tickets Available')
                         ->numeric()
                         ->minValue(0)
                         ->default(50)
                         ->required(),
+
+                    Toggle::make('has_bed')
+                        ->label('Includes bed accommodation')
+                        ->helperText('Enable for cabin or bunk options with sleeping berths.'),
+
+                    Toggle::make('is_active')
+                        ->label('Visible to clients when booking')
+                        ->default(true),
+
                     // Hidden field to store name for Repeater item label
                     TextInput::make('transport_class_name')->hidden(),
                 ])
@@ -436,8 +518,10 @@ class FerryRouteResource extends Resource
                     }),
             ], layout: FiltersLayout::AboveContent)
             ->filtersFormColumns(4)
+            ->actionsColumnLabel('Action')
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
