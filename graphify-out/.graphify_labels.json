@@ -563,5 +563,13 @@
   "561": "aNF",
   "562": "aSz",
   "563": "aU4",
-  "564": "grq"
+  "564": "grq",
+  "565": "aYE",
+  "566": "aT_",
+  "567": "at8",
+  "568": "adI",
+  "569": "PromotionalTicket",
+  "570": "BelongsTo",
+  "571": "Builder",
+  "572": "HasMany"
 }
