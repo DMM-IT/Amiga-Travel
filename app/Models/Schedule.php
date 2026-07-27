@@ -49,7 +49,7 @@ class Schedule extends Model
     {
         return $this->belongsToMany(TransportClass::class, 'schedule_transport_class')
             ->using(ScheduleTransportClass::class)
-            ->withPivot('id', 'additional_price')
+            ->withPivot('id', 'additional_price', 'tickets_available', 'description', 'has_bed', 'is_active')
             ->withTimestamps();
     }
 
@@ -445,14 +445,16 @@ class Schedule extends Model
 
         // Explicitly fetch accommodations and transport classes using eager loaded relations if available
         $activeAccommodations = ($this->relationLoaded('scheduleAccommodations')
-            ? $this->scheduleAccommodations->where('is_active', true)
-            : $this->activeScheduleAccommodations()->get())
-            ->filter(fn ($acc) => $acc->tickets_available > 0);
+            ? $this->scheduleAccommodations->filter(fn ($acc) => $acc->is_active === null || (bool) $acc->is_active === true)
+            : $this->scheduleAccommodations()->where(function ($q) {
+                $q->where('is_active', true)->orWhereNull('is_active');
+            })->get())
+            ->filter(fn ($acc) => ($acc->tickets_available ?? 50) > 0);
             
         $activeTransportClasses = ($this->relationLoaded('transportClasses')
-            ? $this->transportClasses->where('is_active', true)->sortBy('sort_order')
-            : $this->transportClasses()->where('is_active', true)->orderBy('sort_order')->get())
-            ->filter(fn ($tc) => ($tc->pivot?->tickets_available ?? 0) > 0);
+            ? $this->transportClasses->filter(fn ($tc) => ($tc->pivot?->is_active === null || (bool) $tc->pivot->is_active === true) && ($tc->is_active === null || (bool) $tc->is_active === true))->sortBy('sort_order')
+            : $this->transportClasses()->where('transport_classes.is_active', true)->orderBy('sort_order')->get())
+            ->filter(fn ($tc) => ($tc->pivot?->tickets_available ?? 50) > 0);
 
         return [
             'id' => $this->id,
@@ -471,25 +473,27 @@ class Schedule extends Model
                     'name' => $accommodation->name,
                     'description' => $accommodation->description,
                     'price' => floatval($accommodation->price),
-                    'has_bed' => $accommodation->has_bed,
-                    'tickets_available' => (int) $accommodation->tickets_available,
+                    'has_bed' => (bool) $accommodation->has_bed,
+                    'tickets_available' => (int) ($accommodation->tickets_available ?? 50),
                 ])
                 ->values()
                 ->all(),
             'transport_classes' => $activeTransportClasses
                 ->map(function (TransportClass $class) {
                     $classCode = $this->inferTransportClassCode($class);
+                    $price = $class->pivot?->additional_price !== null ? $class->pivot->additional_price : ($class->is_on_sale && $class->sale_price ? $class->sale_price : $class->price);
 
                     return [
                         'id' => $class->id,
                         'code' => $classCode,
                         'name' => $class->name,
-                        'description' => $class->description,
-                        'price' => floatval($class->price),
-                        'is_on_sale' => (bool)$class->is_on_sale,
+                        'description' => $class->pivot?->description ?? $class->description,
+                        'price' => floatval($price),
+                        'has_bed' => (bool) ($class->pivot?->has_bed ?? false),
+                        'is_on_sale' => (bool) $class->is_on_sale,
                         'sale_price' => $class->sale_price ? floatval($class->sale_price) : null,
                         'cover_image' => $class->cover_image ? asset('storage/' . $class->cover_image) : null,
-                        'tickets_available' => (int) ($class->pivot?->tickets_available ?? 0),
+                        'tickets_available' => (int) ($class->pivot?->tickets_available ?? 50),
                     ];
                 })
                 ->values()
