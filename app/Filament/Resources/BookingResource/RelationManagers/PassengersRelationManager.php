@@ -28,15 +28,6 @@ class PassengersRelationManager extends RelationManager
                         'child' => 'Child',
                     ])
                     ->required(),
-                Forms\Components\TextInput::make('seat_number')
-                    ->label('Seat Number')
-                    ->nullable(),
-                Forms\Components\TextInput::make('seat_row')
-                    ->label('Seat Row')
-                    ->nullable(),
-                Forms\Components\TextInput::make('seat_section')
-                    ->label('Seat Section')
-                    ->nullable(),
             ])
             ->columns(2);
     }
@@ -49,15 +40,6 @@ class PassengersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type'),
-                Tables\Columns\TextColumn::make('seat_number')
-                    ->label('Seat')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('seat_row')
-                    ->label('Row')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('seat_section')
-                    ->label('Section')
-                    ->toggleable(),
             ])
             ->filters([
                 //

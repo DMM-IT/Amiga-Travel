@@ -83,15 +83,6 @@ class ViewBooking extends ViewRecord
                                 TextInput::make('discount')
                                     ->label('Discount')
                                     ->disabled(),
-                                TextInput::make('seat_number')
-                                    ->label('Seat')
-                                    ->disabled(),
-                                TextInput::make('seat_row')
-                                    ->label('Row')
-                                    ->disabled(),
-                                TextInput::make('seat_section')
-                                    ->label('Section')
-                                    ->disabled(),
                             ])
                             ->columns(2)
                             ->visible(fn (): bool => $this->record->passengers->isNotEmpty()),
@@ -126,9 +117,6 @@ class ViewBooking extends ViewRecord
                 'name' => $passenger->name,
                 'type' => $passenger->type,
                 'discount' => $passenger->discount?->name ?: 'None',
-                'seat_number' => $passenger->seat_number,
-                'seat_row' => $passenger->seat_row,
-                'seat_section' => $passenger->seat_section,
             ])->toArray(),
             'proof_url' => $this->record->transaction?->proof_url ? $this->record->transaction->proof_url : 'No proof uploaded',
         ];

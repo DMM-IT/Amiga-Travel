@@ -131,20 +131,6 @@ class ScheduleResource extends Resource
                     ->placeholder('e.g. Available, Limited availability')
                     ->maxLength(255),
 
-                TextInput::make('seat_rows')
-                    ->label('Seat rows (airline)')
-                    ->helperText('Number of seat rows for the seat map. Leave blank for default (30).')
-                    ->numeric()
-                    ->minValue(1)
-                    ->maxValue(60)
-                    ->visible(fn (?Schedule $record) => $record?->ferryRoute?->mode === 'airline'),
-
-                TagsInput::make('seat_columns')
-                    ->label('Seat columns (airline)')
-                    ->helperText('Column letters left to right, e.g. A, B, C, D, E, F. Leave blank for default.')
-                    ->placeholder('A')
-                    ->visible(fn (?Schedule $record) => $record?->ferryRoute?->mode === 'airline'),
-
                 Toggle::make('is_active')
                     ->label('Visible to clients when booking')
                     ->default(true),

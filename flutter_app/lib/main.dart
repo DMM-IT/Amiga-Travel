@@ -159,8 +159,8 @@ class BookingData {
   String vehiclePlateNumber = '';
   double vehiclePrice = 0.0;
 
-  // Step 3 — Passengers with discounts and seat selections
-  // Each passenger: {'type': 'adult'|'child', 'name': '', 'discount_id': int?, 'seat_number': String?, 'seat_row': int?, 'seat_section': String?}
+  // Step 3 — Passengers with discounts
+  // Each passenger: {'type': 'adult'|'child', 'name': '', 'discount_id': int?}
   List<Map<String, dynamic>> passengers = [];
 
   // Step 4 — Stay (accommodations)
@@ -3592,9 +3592,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     widget.booking.selectedSchedule = Map<String, dynamic>.from(s);
     widget.booking.passengers = [
       for (int i = 0; i < widget.booking.adults; i++)
-        {'type': 'adult', 'name': '', 'discount_id': null, 'seat_number': null, 'seat_row': null, 'seat_section': null},
+        {'type': 'adult', 'name': '', 'discount_id': null},
       for (int i = 0; i < widget.booking.children; i++)
-        {'type': 'child', 'name': '', 'discount_id': null, 'seat_number': null, 'seat_row': null, 'seat_section': null},
+        {'type': 'child', 'name': '', 'discount_id': null},
     ];
 
     final isAirline = widget.booking.mode == 'airline';
@@ -3659,9 +3659,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                             widget.booking.selectedScheduleAccommodation = null;
                             Navigator.pop(context);
                             if (widget.booking.tripType != 'round_trip' || (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)) {
-                                widget.booking.savedStep = 2; // We treat seat selection as part of step 2 transition
+                                widget.booking.savedStep = 2;
                                 widget.booking.saveToPrefs(2);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => SeatSelectionScreen(booking: widget.booking))).then((_) {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
                                   if (mounted) {
                                     widget.booking.savedStep = 1;
                                     widget.booking.saveToPrefs(1);
@@ -3983,9 +3983,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                       widget.booking.selectedSchedule = Map<String, dynamic>.from(s);
                       widget.booking.passengers = [
                         for (int i = 0; i < widget.booking.adults; i++)
-                          {'type': 'adult', 'name': '', 'discount_id': null, 'seat_number': null, 'seat_row': null, 'seat_section': null},
+                          {'type': 'adult', 'name': '', 'discount_id': null},
                         for (int i = 0; i < widget.booking.children; i++)
-                          {'type': 'child', 'name': '', 'discount_id': null, 'seat_number': null, 'seat_row': null, 'seat_section': null},
+                          {'type': 'child', 'name': '', 'discount_id': null},
                       ];
                       
                       if (widget.booking.mode != 'airline') {
@@ -4067,280 +4067,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
   }
 }
 
-// ==========================================
-// SEAT SELECTION (Airlines Only)
-// ==========================================
-class SeatSelectionScreen extends StatefulWidget {
-  final BookingData booking;
-  const SeatSelectionScreen({super.key, required this.booking});
 
-  @override
-  State<SeatSelectionScreen> createState() => _SeatSelectionScreenState();
-}
-
-class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
-  int _activePassengerIndex = 0;
-  late List<dynamic> _seatRows;
-  late List<dynamic> _occupiedSeats;
-
-  @override
-  void initState() {
-    super.initState();
-    final tc = widget.booking.selectedTransportClass;
-    _seatRows = tc?['seat_rows'] as List<dynamic>? ?? [];
-    _occupiedSeats = widget.booking.selectedSchedule?['occupied_seats'] as List<dynamic>? ?? [];
-  }
-
-  bool _isSeatSelectedByOther(String seatId) {
-    for (int i = 0; i < widget.booking.passengers.length; i++) {
-      if (i != _activePassengerIndex && widget.booking.passengers[i]['seat_number'] == seatId) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final passengers = widget.booking.passengers;
-    final activePassenger = passengers[_activePassengerIndex];
-    final allAssigned = passengers.every((p) => p['seat_number'] != null);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Select Seats')),
-      body: Column(
-        children: [
-          // Passenger selector row
-          Container(
-            height: 80,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            color: Colors.white,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: passengers.length,
-              itemBuilder: (context, idx) {
-                final p = passengers[idx];
-                final isSelected = _activePassengerIndex == idx;
-                final seatStr = p['seat_number'] ?? 'None';
-                return Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: ChoiceChip(
-                    label: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Pax ${idx + 1} (${p['type']})', style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.white : kSlate700)),
-                        Text('Seat: $seatStr', style: TextStyle(fontSize: 11, color: isSelected ? Colors.white.withOpacity(0.8) : kSlate500)),
-                      ],
-                    ),
-                    selected: isSelected,
-                    selectedColor: kGreen,
-                    backgroundColor: kBgLight,
-                    onSelected: (val) {
-                      if (val) setState(() => _activePassengerIndex = idx);
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-          
-          // Guide / Front of Aircraft
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            color: kGreen.withOpacity(0.05),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.arrow_upward, size: 16, color: kGreen),
-                SizedBox(width: 6),
-                Text('FRONT OF AIRCRAFT', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12)),
-              ],
-            ),
-          ),
-
-          // Seat Grid
-          Expanded(
-            child: _seatRows.isEmpty
-                ? const Center(child: Text('No seating layout available for this cabin.'))
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _seatRows.length,
-                    itemBuilder: (context, rIdx) {
-                      final row = _seatRows[rIdx];
-                      final rowLabel = row['label'].toString();
-                      final leftSeats = row['left'] as List<dynamic>? ?? [];
-                      final rightSeats = row['right'] as List<dynamic>? ?? [];
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Left Column seats
-                            Row(
-                              children: leftSeats.map((s) {
-                                final seatId = s['id'].toString();
-                                final label = s['label'].toString();
-                                final isOccupied = _occupiedSeats.contains(seatId) || _isSeatSelectedByOther(seatId);
-                                final isSelected = activePassenger['seat_number'] == seatId;
-
-                                return _buildSeatButton(seatId, label, isOccupied, isSelected);
-                              }).toList(),
-                            ),
-                            
-                            // Aisle spacer
-                            Container(
-                              width: 32,
-                              alignment: Alignment.center,
-                              child: Text(rowLabel, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate400, fontSize: 13)),
-                            ),
-
-                            // Right Column seats
-                            Row(
-                              children: rightSeats.map((s) {
-                                final seatId = s['id'].toString();
-                                final label = s['label'].toString();
-                                final isOccupied = _occupiedSeats.contains(seatId) || _isSeatSelectedByOther(seatId);
-                                final isSelected = activePassenger['seat_number'] == seatId;
-
-                                return _buildSeatButton(seatId, label, isOccupied, isSelected);
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-          ),
-
-          // Legend
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _LegendItem(color: Colors.white, borderColor: kSlate300, label: 'Available'),
-                _LegendItem(color: kGreen, borderColor: kGreen, label: 'Selected'),
-                _LegendItem(color: kSlate200, borderColor: kSlate200, label: 'Occupied'),
-              ],
-            ),
-          ),
-
-          // Bottom Bar
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: allAssigned
-                    ? () {
-                        widget.booking.savedStep = 2;
-                        widget.booking.saveToPrefs(2);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
-                          if (mounted) {
-                            widget.booking.savedStep = 1; // Or whatever step SeatSelection is logically part of, but SeatSelection leads to DiscountScreen. Wait, SeatSelection Screen pushes DiscountScreen!
-                            // Ah! Let's check SeatSelectionScreen!
-                            widget.booking.saveToPrefs(1);
-                          }
-                        });
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kPink,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Next: Passenger Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSeatButton(String seatId, String label, bool isOccupied, bool isSelected) {
-    Color bg = Colors.white;
-    Color border = kSlate300;
-    Color text = kSlate800;
-
-    if (isOccupied) {
-      bg = kSlate200;
-      border = kSlate200;
-      text = kSlate400;
-    } else if (isSelected) {
-      bg = kGreen;
-      border = kGreen;
-      text = Colors.white;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: SizedBox(
-        width: 42,
-        height: 42,
-        child: OutlinedButton(
-          onPressed: isOccupied
-              ? null
-              : () {
-                  setState(() {
-                    widget.booking.passengers[_activePassengerIndex]['seat_number'] = seatId;
-                    widget.booking.passengers[_activePassengerIndex]['seat_row'] = int.tryParse(seatId.replaceAll(RegExp(r'[^0-9]'), ''));
-                    widget.booking.passengers[_activePassengerIndex]['seat_section'] = widget.booking.selectedTransportClass?['name'] ?? 'Economy';
-                    
-                    // Auto advance to next passenger without seat
-                    for (int i = 0; i < widget.booking.passengers.length; i++) {
-                      if (widget.booking.passengers[i]['seat_number'] == null) {
-                        _activePassengerIndex = i;
-                        break;
-                      }
-                    }
-                  });
-                },
-          style: OutlinedButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: bg,
-            side: BorderSide(color: border, width: 1.5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          child: Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: text)),
-        ),
-      ),
-    );
-  }
-}
-
-class _LegendItem extends StatelessWidget {
-  final Color color;
-  final Color borderColor;
-  final String label;
-
-  const _LegendItem({required this.color, required this.borderColor, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 18,
-          height: 18,
-          decoration: BoxDecoration(
-            color: color,
-            border: Border.all(color: borderColor, width: 1.5),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 12, color: kSlate600)),
-      ],
-    );
-  }
-}
 
 // ==========================================
 // STEP 3: DISCOUNT (Passenger Details + Discount)

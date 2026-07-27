@@ -49,9 +49,6 @@ class BookingController extends Controller
             'passengers.*.discount_id' => 'nullable|integer|exists:discounts,id',
             'passengers.*.school_name' => 'nullable|string|max:255',
             'passengers.*.id_number' => 'nullable|string|max:255',
-            'passengers.*.seat_number' => 'nullable|string|max:255',
-            'passengers.*.seat_row' => 'nullable|integer',
-            'passengers.*.seat_section' => 'nullable|string|max:255',
             'accommodation_ids' => 'nullable|array',
             'accommodation_ids.*' => 'integer|exists:accommodations,id',
             'voucher_code' => 'nullable|string|max:50',
@@ -183,9 +180,6 @@ class BookingController extends Controller
                     'discount_id' => $passengerData['discount_id'] ?? null,
                     'school_name' => $passengerData['school_name'] ?? null,
                     'id_number' => $passengerData['id_number'] ?? null,
-                    'seat_number' => $passengerData['seat_number'] ?? null,
-                    'seat_row' => $passengerData['seat_row'] ?? null,
-                    'seat_section' => $passengerData['seat_section'] ?? null,
                 ]);
             }
 

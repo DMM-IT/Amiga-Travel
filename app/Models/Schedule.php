@@ -430,9 +430,6 @@ class Schedule extends Model
     public function toBookingArray(?string $departureDate = null, ?array $occupiedSeats = null): array
     {
         $mode = $this->ferryRoute?->mode ?? 'ferry';
-        $occupiedSeats = $occupiedSeats ?? ($departureDate ? $this->getOccupiedSeatsForDate($departureDate) : []);
-        $airlineSeatingProfile = $mode === 'airline' ? $this->getAirlineSeatingProfile() : null;
-        $cabinLayouts = $airlineSeatingProfile ? $this->buildCabinLayouts($airlineSeatingProfile) : [];
 
         // Explicitly fetch accommodations and transport classes using eager loaded relations if available
         $activeAccommodations = $this->relationLoaded('scheduleAccommodations')
@@ -465,9 +462,8 @@ class Schedule extends Model
                 ->values()
                 ->all(),
             'transport_classes' => $activeTransportClasses
-                ->map(function (TransportClass $class) use ($cabinLayouts) {
+                ->map(function (TransportClass $class) {
                     $classCode = $this->inferTransportClassCode($class);
-                    $cabinLayout = $cabinLayouts[$classCode] ?? null;
 
                     return [
                         'id' => $class->id,
@@ -478,18 +474,10 @@ class Schedule extends Model
                         'is_on_sale' => (bool)$class->is_on_sale,
                         'sale_price' => $class->sale_price ? floatval($class->sale_price) : null,
                         'cover_image' => $class->cover_image ? asset('storage/' . $class->cover_image) : null,
-                        'seat_capacity' => $cabinLayout['seat_capacity'] ?? null,
-                        'row_start' => $cabinLayout['row_start'] ?? null,
-                        'row_end' => $cabinLayout['row_end'] ?? null,
-                        'seat_rows' => $cabinLayout['seat_rows'] ?? [],
                     ];
                 })
                 ->values()
                 ->all(),
-            'seat_rows' => $this->seat_row_count,
-            'seat_columns' => $this->seat_column_letters,
-            'occupied_seats' => $occupiedSeats,
-            'aircraft_capacity' => $airlineSeatingProfile['capacity'] ?? null,
         ];
     }
 }

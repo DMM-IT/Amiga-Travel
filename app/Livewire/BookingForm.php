@@ -100,8 +100,6 @@ class BookingForm extends Component
     public ?int $selected_return_schedule_id = null;
     public ?int $selected_return_schedule_accommodation_id = null;
     public ?int $selected_transport_class_id = null;
-    public ?int $selectingSeatForPassengerIndex = null;
-    public ?int $selectingReturnSeatForPassengerIndex = null;
 
     public ?int $tour_id = null;
     public ?int $tour_date_id = null;
@@ -974,18 +972,6 @@ public function selectedSchedule(): ?array
     {
         $this->selected_schedule_id = $scheduleId;
         $this->selected_transport_class_id = null;
-        $this->selectingSeatForPassengerIndex = null;
-        $this->selectingReturnSeatForPassengerIndex = null;
-
-        foreach ($this->passengers as $index => $passenger) {
-            $this->passengers[$index]['seat_number'] = null;
-            $this->passengers[$index]['seat_row'] = null;
-            $this->passengers[$index]['seat_section'] = null;
-            $this->passengers[$index]['return_seat_number'] = null;
-            $this->passengers[$index]['return_seat_row'] = null;
-            $this->passengers[$index]['return_seat_section'] = null;
-        }
-
         $this->saveDraft();
     }
     
@@ -1002,10 +988,8 @@ public function selectedSchedule(): ?array
             ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
             ->get();
 
-        $occupiedSeatsMap = $this->loadOccupiedSeatsForSchedules($schedules->pluck('id')->all(), $this->departure_date);
-
         return $schedules
-            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date, $occupiedSeatsMap[$schedule->id] ?? []))
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date, []))
             ->values()
             ->all();
     }
@@ -1022,32 +1006,10 @@ public function selectedSchedule(): ?array
             ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode, $this->operator)
             ->get();
 
-        $occupiedSeatsMap = $this->loadOccupiedSeatsForSchedules($schedules->pluck('id')->all(), $this->return_date);
-
         return $schedules
-            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date, $occupiedSeatsMap[$schedule->id] ?? []))
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date, []))
             ->values()
             ->all();
-    }
-
-    protected function loadOccupiedSeatsForSchedules(array $scheduleIds, ?string $departureDate): array
-    {
-        if (empty($scheduleIds) || empty($departureDate)) {
-            return [];
-        }
-
-        $rows = 
-            \App\Models\Passenger::query()
-                ->select('passengers.seat_number', 'bookings.schedule_id')
-                ->join('bookings', 'bookings.id', '=', 'passengers.booking_id')
-                ->whereNotNull('passengers.seat_number')
-                ->whereIn('bookings.schedule_id', $scheduleIds)
-                ->where('bookings.departure_date', $departureDate)
-                ->where('bookings.status', '!=', 'cancelled')
-                ->get()
-                ->groupBy('schedule_id');
-
-        return $rows->map(fn ($group) => $group->pluck('seat_number')->filter()->values()->all())->toArray();
     }
 
     /**
@@ -1072,12 +1034,6 @@ public function selectedSchedule(): ?array
                     'middle_name' => '',
                     'last_name' => '',
                     'discount_id' => null,
-                    'seat_number' => null,
-                    'seat_row' => null,
-                    'seat_section' => null,
-                    'return_seat_number' => null,
-                    'return_seat_row' => null,
-                    'return_seat_section' => null,
                     'use_promo' => false,
                     'promo_cleared_discount' => false,
                 ]);
@@ -1091,12 +1047,6 @@ public function selectedSchedule(): ?array
                     'middle_name' => $nameParts['middle_name'],
                     'last_name' => $nameParts['last_name'],
                     'discount_id' => $passenger['discount_id'] ?? null,
-                    'seat_number' => $passenger['seat_number'] ?? null,
-                    'seat_row' => $passenger['seat_row'] ?? null,
-                    'seat_section' => $passenger['seat_section'] ?? null,
-                    'return_seat_number' => $passenger['return_seat_number'] ?? null,
-                    'return_seat_row' => $passenger['return_seat_row'] ?? null,
-                    'return_seat_section' => $passenger['return_seat_section'] ?? null,
                     'use_promo' => $passenger['use_promo'] ?? false,
                     'promo_cleared_discount' => $passenger['promo_cleared_discount'] ?? false,
                 ], $passenger);
@@ -1321,16 +1271,6 @@ public function selectedSchedule(): ?array
         } else {
             $this->selected_schedule_accommodation_id = $accommodationId;
         }
-        $this->selectingSeatForPassengerIndex = null;
-        $this->selectingReturnSeatForPassengerIndex = null;
-        foreach ($this->passengers as $index => $passenger) {
-            $this->passengers[$index]['seat_number'] = null;
-            $this->passengers[$index]['seat_row'] = null;
-            $this->passengers[$index]['seat_section'] = null;
-            $this->passengers[$index]['return_seat_number'] = null;
-            $this->passengers[$index]['return_seat_row'] = null;
-            $this->passengers[$index]['return_seat_section'] = null;
-        }
         $this->saveDraft();
     }
 
@@ -1341,144 +1281,12 @@ public function selectedSchedule(): ?array
         } else {
             $this->selected_return_schedule_accommodation_id = $accommodationId;
         }
-        $this->selectingSeatForPassengerIndex = null;
-        $this->selectingReturnSeatForPassengerIndex = null;
-        foreach ($this->passengers as $index => $passenger) {
-            $this->passengers[$index]['seat_number'] = null;
-            $this->passengers[$index]['seat_row'] = null;
-            $this->passengers[$index]['seat_section'] = null;
-            $this->passengers[$index]['return_seat_number'] = null;
-            $this->passengers[$index]['return_seat_row'] = null;
-            $this->passengers[$index]['return_seat_section'] = null;
-        }
         $this->saveDraft();
-    }
-
-    public function selectSeatForPassenger(string $seat): void
-    {
-        // Find the passenger to assign the seat to
-        $indexToAssign = $this->selectingSeatForPassengerIndex;
-        if ($indexToAssign === null) {
-            // Find first passenger without a seat
-            foreach ($this->passengers as $idx => $passenger) {
-                if (empty($passenger['seat_number'])) {
-                    $indexToAssign = $idx;
-                    break;
-                }
-            }
-        }
-
-        if ($indexToAssign !== null) {
-            // Get selected transport class name for seat section
-            $seatSection = 'Economy';
-            if ($this->selected_transport_class_id) {
-                $selectedClass = $this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id);
-                if ($selectedClass) {
-                    $seatSection = $selectedClass->name;
-                }
-            }
-
-            $this->passengers[$indexToAssign]['seat_number'] = $seat;
-            $this->passengers[$indexToAssign]['seat_row'] = preg_replace('/[^0-9]/', '', $seat);
-            $this->passengers[$indexToAssign]['seat_section'] = $seatSection;
-            $this->selectingSeatForPassengerIndex = null;
-            $this->saveDraft();
-        }
     }
 
     public function selectTransportClass(?int $classId): void
     {
         $this->selected_transport_class_id = $this->selected_transport_class_id === $classId ? null : $classId;
-        $this->selectingSeatForPassengerIndex = null;
-        $this->selectingReturnSeatForPassengerIndex = null;
-
-        foreach ($this->passengers as $index => $passenger) {
-            $this->passengers[$index]['seat_number'] = null;
-            $this->passengers[$index]['seat_row'] = null;
-            $this->passengers[$index]['seat_section'] = null;
-            $this->passengers[$index]['return_seat_number'] = null;
-            $this->passengers[$index]['return_seat_row'] = null;
-            $this->passengers[$index]['return_seat_section'] = null;
-        }
-
-        $this->saveDraft();
-    }
-
-    public function chooseSeatForPassenger(int $index): void
-    {
-        $this->selectingSeatForPassengerIndex = $index;
-        $this->saveDraft();
-    }
-
-    public function clearSeatForPassenger(int $index): void
-    {
-        $this->passengers[$index]['seat_number'] = null;
-        $this->passengers[$index]['seat_row'] = null;
-        $this->passengers[$index]['seat_section'] = null;
-        $this->selectingSeatForPassengerIndex = $index;
-        $this->saveDraft();
-    }
-
-    public function selectReturnSeatForPassenger(string $seat): void
-    {
-        $indexToAssign = $this->selectingReturnSeatForPassengerIndex;
-        if ($indexToAssign === null) {
-            foreach ($this->passengers as $idx => $passenger) {
-                if (empty($passenger['return_seat_number'])) {
-                    $indexToAssign = $idx;
-                    break;
-                }
-            }
-        }
-
-        if ($indexToAssign !== null) {
-            $seatSection = '';
-            if ($this->mode === 'airline') {
-                if ($this->selected_return_transport_class_id) {
-                    $class = $this->transportClassCatalog->firstWhere('id', $this->selected_return_transport_class_id);
-                    if ($class) {
-                        $seatSection = $class->name;
-                    }
-                }
-            } else {
-                if ($this->selected_return_schedule_accommodation_id) {
-                    $acc = $this->accommodationCatalog->firstWhere('id', $this->selected_return_schedule_accommodation_id);
-                    if ($acc) {
-                        $seatSection = $acc->name;
-                    }
-                }
-            }
-            $this->passengers[$indexToAssign]['return_seat_number'] = $seat;
-            $this->passengers[$indexToAssign]['return_seat_row'] = preg_replace('/[^0-9]/', '', $seat);
-            $this->passengers[$indexToAssign]['return_seat_section'] = $seatSection;
-            $this->selectingReturnSeatForPassengerIndex = null;
-            $this->saveDraft();
-        }
-    }
-
-    public function clearReturnSeatSelection(): void
-    {
-        $this->selectingReturnSeatForPassengerIndex = null;
-        foreach ($this->passengers as $index => $passenger) {
-            $this->passengers[$index]['return_seat_number'] = null;
-            $this->passengers[$index]['return_seat_row'] = null;
-            $this->passengers[$index]['return_seat_section'] = null;
-        }
-        $this->saveDraft();
-    }
-
-    public function chooseReturnSeatForPassenger(int $index): void
-    {
-        $this->selectingReturnSeatForPassengerIndex = $index;
-        $this->saveDraft();
-    }
-
-    public function clearReturnSeatForPassenger(int $index): void
-    {
-        $this->passengers[$index]['return_seat_number'] = null;
-        $this->passengers[$index]['return_seat_row'] = null;
-        $this->passengers[$index]['return_seat_section'] = null;
-        $this->selectingReturnSeatForPassengerIndex = $index;
         $this->saveDraft();
     }
 
@@ -1730,12 +1538,6 @@ public function selectedSchedule(): ?array
                         'type' => $passenger['type'],
                         'name' => $passenger['name'] ?: null,
                         'discount_id' => $isPromo ? null : ($passenger['discount_id'] ?: null),
-                        'seat_number' => $passenger['seat_number'] ?? null,
-                        'seat_row' => $passenger['seat_row'] ?? null,
-                        'seat_section' => $passenger['seat_section'] ?? null,
-                        'return_seat_number' => $passenger['return_seat_number'] ?? null,
-                        'return_seat_row' => $passenger['return_seat_row'] ?? null,
-                        'return_seat_section' => $passenger['return_seat_section'] ?? null,
                         'promotional_ticket_id' => $isPromo ? $usedPromoTicket->id : null,
                         'is_promo' => $isPromo,
                         'promo_price' => $isPromo ? floatval($usedPromoTicket->promo_price) : null,

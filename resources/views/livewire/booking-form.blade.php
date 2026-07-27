@@ -24,56 +24,40 @@
                         $isTourPackage = $tour_id || $prefilled_from_package;
                         $steps = $isTourPackage ? ['Route','Discount','Stay','Submit'] : ['Route','Schedule','Discount','Stay','Submit'];
 
-                        if ($isTourPackage && $step >= 2) {
-                            $adjustedStep = $step - 1;
-                        } else {
-                            $adjustedStep = $step;
-                        }
-                        $progressClass = $isTourPackage ? match ($adjustedStep) {
-                            1 => 'w-0',
-                            2 => 'w-1/3',
-                            3 => 'w-2/3',
-                            4 => 'w-full',
-                            default => 'w-0',
-                        } : match ($step) {
-                            1 => 'w-0',
-                            2 => 'w-1/4',
-                            3 => 'w-1/2',
-                            4 => 'w-3/4',
-                            5 => 'w-full',
-                            default => 'w-0',
-                        };
-
                         $getIcon = function($label) {
                             return match($label) {
-                                'Route' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" /></svg>',
-                                'Schedule' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>',
-                                'Discount' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" /></svg>',
-                                'Stay' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" /></svg>',
-                                'Submit' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+                                'Route' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" /></svg>',
+                                'Schedule' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>',
+                                'Discount' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" /></svg>',
+                                'Stay' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" /></svg>',
+                                'Submit' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
                                 default => ''
                             };
                         };
                     @endphp
                     <div class="relative pt-4 pb-6">
-                        <!-- track container spans from first circle center to last circle center -->
-                        <div class="absolute left-[1.5rem] sm:left-[2.25rem] right-[1.5rem] sm:right-[2.25rem] top-[2rem] sm:top-[2.5rem] -translate-y-1/2 h-[3px] sm:h-[4px] rounded-full bg-slate-200">
-                            <!-- progress line -->
-                            <div class="absolute top-0 left-0 bottom-0 rounded-full bg-[#216417] transition-all duration-500 {{ $progressClass }}"></div>
-                        </div>
                         <div class="relative z-10 flex w-full items-start justify-between">
                             @foreach($steps as $index => $label)
-                                <div class="flex flex-col items-center justify-center text-center" style="min-width:0;flex:1">
-                                    <div class="relative z-10 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-full border-2 transition-colors duration-500 {{ $step === $index + 1 ? 'border-[#216417] bg-[#216417] text-white shadow-lg shadow-black/10' : ($step > $index + 1 ? 'border-[#216417] bg-white text-[#216417]' : 'border-slate-600 bg-white text-black font-bold') }}">
+                                @php $isLast = $index === count($steps) - 1; @endphp
+                                <div class="relative flex flex-col items-center justify-center text-center" style="min-width:0;flex:1">
+                                    {{-- Connector line to next step -- renders behind circle via z-0 --}}
+                                    @if(!$isLast)
+                                        <div class="absolute left-1/2 top-[1.125rem] sm:top-[1.5rem] w-full h-[3px] sm:h-[4px] -translate-y-1/2 z-0">
+                                            <div class="h-full w-full bg-slate-200"></div>
+                                            {{-- Green fill: active when the NEXT step is reached or passed --}}
+                                            <div class="absolute inset-y-0 left-0 h-full bg-[#216417] transition-all duration-500 {{ $step >= $index + 2 ? 'w-full' : 'w-0' }}"></div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Circle with icon or check --}}
+                                    <div class="relative z-10 flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-full border-2 transition-colors duration-500 {{ $step === $index + 1 ? 'border-[#216417] bg-[#216417] text-white shadow-lg shadow-black/10' : ($step > $index + 1 ? 'border-[#216417] bg-white text-[#216417]' : 'border-slate-600 bg-white text-black') }}">
                                         @if($step > $index + 1)
-                                            <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                         @else
-                                            <span class="block sm:hidden text-[11px] font-black">{{ $index + 1 }}</span>
-                                            <span class="hidden sm:block">{!! $getIcon($label) !!}</span>
+                                            {!! $getIcon($label) !!}
                                         @endif
                                     </div>
                                     <div class="mt-1.5 sm:mt-3 text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider leading-tight {{ $step === $index + 1 ? 'text-black' : ($step > $index + 1 ? 'text-[#216417]' : 'text-slate-400 sm:text-black') }} {{ $step === $index + 1 ? '' : 'hidden sm:block' }}">{{ $label }}</div>
-                                    {{-- Always show active label on mobile --}}
                                     @if($step === $index + 1)
                                         <div class="mt-1.5 text-[9px] font-extrabold uppercase tracking-wider leading-tight text-black sm:hidden">{{ $label }}</div>
                                     @endif
@@ -89,7 +73,7 @@
                                 <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Selected Package</div>
                                 <div class="font-bold text-xl text-slate-900 mt-1">{{ $package_name }}</div>
                                 @if(!empty($package_price))
-                                    <div class="text-sm font-medium text-slate-500 mt-1">Starting from â‚±{{ $package_price }}</div>
+                                    <div class="text-sm font-medium text-slate-500 mt-1">Starting from &#8369;{{ $package_price }}</div>
                                 @endif
                             </div>
                             <div>
@@ -415,7 +399,7 @@
                                             <p class="mt-1 text-sm text-slate-500">Age 11 and above</p>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <button type="button" wire:click.prevent="decrementAdults" @if($adults <= 1) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400">âˆ’</button>
+                                            <button type="button" wire:click.prevent="decrementAdults" @if($adults <= 1) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg></button>
                                             <span class="min-w-[3rem] text-center text-lg font-semibold text-slate-900">{{ $adults }}</span>
                                             <button type="button" wire:click.prevent="incrementAdults" @if($adults + $children >= 8) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400">+</button>
                                         </div>
@@ -430,7 +414,7 @@
                                             <p class="mt-1 text-sm text-slate-500">Age 2 to 11</p>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <button type="button" wire:click.prevent="decrementChildren" @if($children <= 0) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400">âˆ’</button>
+                                            <button type="button" wire:click.prevent="decrementChildren" @if($children <= 0) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg></button>
                                             <span class="min-w-[3rem] text-center text-lg font-semibold text-slate-900">{{ $children }}</span>
                                             <button type="button" wire:click.prevent="incrementChildren" @if($adults + $children >= 8) disabled @endif class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400">+</button>
                                         </div>
@@ -520,7 +504,7 @@
                                                 <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                     <p class="text-sm font-semibold text-slate-900">Cargo Rate</p>
                                                     <div class="mt-3 flex h-14 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 text-lg font-bold text-slate-900">
-                                                        â‚±{{ number_format($vehicle_price ?? 0, 2) }}
+                                                        &#8369;{{ number_format($vehicle_price ?? 0, 2) }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -547,7 +531,7 @@
                                 <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24 backdrop-blur-sm">
                                     <div class="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
                                         <button type="button" wire:click.prevent="togglePassengerInfoModal" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
-                                            <span aria-hidden="true">Ã—</span>
+                                            <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                                             <span class="sr-only">Close</span>
                                         </button>
 
@@ -575,7 +559,7 @@
                                 <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24 backdrop-blur-sm">
                                     <div class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
                                         <button type="button" wire:click.prevent="closeMinorAgeWarning" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
-                                            <span aria-hidden="true">Ã—</span>
+                                            <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                                             <span class="sr-only">Close</span>
                                         </button>
 
@@ -593,9 +577,9 @@
 
                     @if ($step === 2 && !$tour_id && !$prefilled_from_package)
                         <div class="space-y-4">
-                            <div class="flex flex-col lg:grid lg:gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
+                            <div class="flex flex-col lg:grid lg:gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(340px,1fr)] lg:items-start">
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
-                                <div class="space-y-6 mt-6 lg:mt-0">
+                                <div class="space-y-6 mt-6 lg:mt-0 min-w-0">
                                     <p class="text-black font-bold">Choose the schedule that works best for your trip.</p>
                                     @if($this->baggageRules)
                                         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -669,7 +653,7 @@
                                                                 <p class="text-sm text-slate-600 mt-2">Prepaid online (domestic 20kg): {{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.prepaid_online.domestic_20kg_php', '') }}</p>
                                                             @endif
                                                             @if(\Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.excess_rate_php_per_kg'))
-                                                                <p class="text-sm text-slate-600 mt-2">Excess rate: â‚±{{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.excess_rate_php_per_kg') }}/kg</p>
+                                                                <p class="text-sm text-slate-600 mt-2">Excess rate: &#8369;{{ \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.excess_rate_php_per_kg') }}/kg</p>
                                                             @endif
                                                             <p class="text-xs text-slate-500 mt-3">Rates subject to change - confirm at booking</p>
                                                         </div>
@@ -801,11 +785,11 @@
                                                         <div class="flex flex-wrap items-center justify-between gap-4">
                                                             <div>
                                                                 <p class="font-bold text-lg text-slate-900 flex items-center gap-2">
-                                                                    <span class="text-xl">âœ¨</span> Promotional Fare Available!
+                                                                    <span class="text-xl">&#x2728;</span> Promotional Fare Available!
                                                                 </p>
                                                                 <p class="mt-1 text-sm text-slate-600">
-                                                                    Promo price: <span class="font-bold text-[#db2777]">â‚±{{ number_format($activePromo->promo_price, 2) }}</span>
-                                                                    &nbsp;Â·&nbsp;
+                                                                    Promo price: <span class="font-bold text-[#db2777]">&#8369;{{ number_format($activePromo->promo_price, 2) }}</span>
+                                                                    &nbsp;&middot;&nbsp;
                                                                     <span class="font-semibold">{{ $activePromo->remaining_quantity }}</span> ticket(s) remaining
                                                                 </p>
                                                                 <p class="mt-2 text-xs text-slate-500">Select which passenger(s) below will use this promotional fare.</p>
@@ -826,7 +810,7 @@
                                                         <div>
                                                             <p class="text-slate-900 font-bold text-lg">Promotional Ticket Available!</p>
                                                             <p class="mt-1 text-sm text-slate-600">
-                                                                Promo price: <span class="font-bold text-[#db2777]">â‚±{{ number_format($activePromo->promo_price, 2) }}</span>
+                                                                Promo price: <span class="font-bold text-[#db2777]">&#8369;{{ number_format($activePromo->promo_price, 2) }}</span>
                                                                 &nbsp;|&nbsp; Remaining: {{ $activePromo->remaining_quantity }} of {{ $activePromo->quantity_available }}
                                                             </p>
                                                         </div>
@@ -848,7 +832,7 @@
                                         ? collect($selectedSchedule['transport_classes'])->firstWhere('id', $selected_transport_class_id)
                                         : null;
                                 @endphp
-                                <div class="flex flex-col gap-6 lg:sticky lg:top-6">
+                                <div class="flex flex-col gap-6 lg:sticky lg:top-6 min-w-0 w-full">
                                     @if($mode === 'airline')
                                         {{-- Airline booking details little ticket --}}
                                         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm order-3 lg:order-1">
@@ -866,18 +850,18 @@
                                                         <div class="flex items-center justify-between mb-2">
                                                             <p class="text-slate-900 font-bold">Selected flight @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         </div>
-                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} Â· {{ $selectedSchedule['departure'] }} â†’ {{ $selectedSchedule['arrival'] }}</p>
+                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} &rarr; {{ $selectedSchedule['arrival'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedSchedule['duration'] }}</p>
-                                                        <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: â‚±{{ number_format($selectedSchedule['price'], 2) }}</p>
+                                                        <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
                                                     </div>
 
                                                     <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                         <p class="text-slate-900 font-bold">Travel Class @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         @if($selectedClass)
                                                             <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedClass['name'] }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Class Fare: â‚±{{ number_format($selectedClass['price'], 2) }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Flight fare: â‚±{{ number_format($selectedSchedule['price'], 2) }}</p>
-                                                            <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: â‚±{{ number_format($selectedSchedule['price'] + $selectedClass['price'], 2) }}</p>
+                                                            <p class="mt-1 text-sm text-slate-600">Class Fare: &#8369;{{ number_format($selectedClass['price'], 2) }}</p>
+                                                            <p class="mt-1 text-sm text-slate-600">Flight fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
+                                                            <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedSchedule['price'] + $selectedClass['price'], 2) }}</p>
                                                             @if(!empty($selectedClass['description']))
                                                                 <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedClass['description'] }}</p>
                                                             @endif
@@ -893,9 +877,9 @@
                                                                 <div class="flex items-center justify-between mb-2">
                                                                     <p class="text-slate-900 font-bold">Selected flight (Returning)</p>
                                                                 </div>
-                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} Â· {{ $selectedReturnSchedule['departure'] }} â†’ {{ $selectedReturnSchedule['arrival'] }}</p>
+                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} &rarr; {{ $selectedReturnSchedule['arrival'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedReturnSchedule['duration'] }}</p>
-                                                                <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: â‚±{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
+                                                                <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
                                                             </div>
 
                                                             @php $selectedReturnClass = collect($selectedReturnSchedule['transport_classes'] ?? [])->firstWhere('id', $selected_return_transport_class_id ?? null); @endphp
@@ -904,9 +888,9 @@
                                                                 <p class="text-slate-900 font-bold">Travel Class (Returning)</p>
                                                                 @if($selectedReturnClass)
                                                                     <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedReturnClass['name'] }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Class Fare: â‚±{{ number_format($selectedReturnClass['price'], 2) }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Flight fare: â‚±{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
-                                                                    <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: â‚±{{ number_format($selectedReturnSchedule['price'] + $selectedReturnClass['price'], 2) }}</p>
+                                                                    <p class="mt-1 text-sm text-slate-600">Class Fare: &#8369;{{ number_format($selectedReturnClass['price'], 2) }}</p>
+                                                                    <p class="mt-1 text-sm text-slate-600">Flight fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
+                                                                    <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedReturnSchedule['price'] + $selectedReturnClass['price'], 2) }}</p>
                                                                     @if(!empty($selectedReturnClass['description']))
                                                                         <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedReturnClass['description'] }}</p>
                                                                     @endif
@@ -928,162 +912,7 @@
                                             </div>
                                         </div>
 
-                                        @if($selectedSchedule && $selectedClass)
-                                            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm order-1 lg:order-2">
-                                            <div class="flex flex-wrap items-start justify-between gap-4">
-                                                <div>
-                                                    <h3 class="text-lg font-semibold text-slate-900">Seat Assignment</h3>
-                                                    <p class="mt-1 text-sm text-slate-600">Select a passenger, then choose an available seat in the selected cabin.</p>
-                                                </div>
-                                                @if(!empty($selectedSchedule['aircraft_capacity']))
-                                                    <span class="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
-                                                        Aircraft capacity: {{ number_format($selectedSchedule['aircraft_capacity']) }} seats
-                                                    </span>
-                                                @endif
-                                            </div>
 
-                                            <div class="mt-5 grid gap-3">
-                                                @foreach($passengers as $index => $passenger)
-                                                    @php
-                                                        $isChoosingPassenger = $selectingSeatForPassengerIndex === $index;
-                                                        $passengerSeat = $passenger['seat_number'] ?? null;
-                                                    @endphp
-                                                    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition-colors {{ $isChoosingPassenger ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white' }}">
-                                                        <div>
-                                                            <p class="font-bold text-slate-900">{{ ucfirst($passenger['type']) }} {{ $index + 1 }}</p>
-                                                            <p class="text-sm text-slate-600 font-medium">
-                                                                {{ $passengerSeat ? 'Seat ' . $passengerSeat . ' â€¢ ' . ($passenger['seat_section'] ?? $selectedClass['name']) : 'No seat selected yet' }}
-                                                            </p>
-                                                        </div>
-                                                        <div class="flex items-center gap-2">
-                                                            <button type="button" wire:click.prevent="chooseSeatForPassenger({{ $index }})" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-[#db2777] hover:text-[#db2777] hover:bg-slate-50">
-                                                                {{ $passengerSeat ? 'Change Seat' : 'Choose Seat' }}
-                                                            </button>
-                                                            @if($passengerSeat)
-                                                                <button type="button" wire:click.prevent="clearSeatForPassenger({{ $index }})" class="rounded-full border border-rose-200 px-4 py-2 text-sm font-bold text-rose-600 transition hover:bg-rose-50">
-                                                                    Clear
-                                                                </button>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-
-                                        @if($selectingSeatForPassengerIndex !== null)
-                                            <div class="rounded-2xl border border-[#db2777]/30 bg-[#db2777]/10 p-4 shadow-sm">
-                                                <p class="text-[#db2777] font-bold">
-                                                    Selecting seat for {{ ucfirst($passengers[$selectingSeatForPassengerIndex]['type']) }} {{ $selectingSeatForPassengerIndex + 1 }}
-                                                </p>
-                                            </div>
-                                        @endif
-                                        
-                                        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm order-2 lg:order-3">
-                                            <div class="mb-6">
-                                                <h3 class="text-lg font-bold text-slate-900 mb-1">{{ $selectedClass['name'] }} Seats</h3>
-                                                <p class="text-sm text-slate-600">{{ $selectedClass['description'] ?? '' }}</p>
-                                                @if(!empty($selectedClass['row_start']) && !empty($selectedClass['row_end']))
-                                                    <p class="mt-2 text-sm text-slate-500 font-medium">Cabin rows {{ $selectedClass['row_start'] }}-{{ $selectedClass['row_end'] }}</p>
-                                                @endif
-                                            </div>
-                                            
-                                            <div class="flex justify-center mb-6">
-                                                <div class="flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 border border-slate-200">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                                                    </svg>
-                                                    <span class="text-slate-700 font-bold text-sm">Front of Aircraft</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="overflow-x-auto pb-2" style="max-height: 500px; overflow-y: auto;">
-                                                <div class="space-y-3">
-                                                    @foreach($selectedClass['seat_rows'] as $row)
-                                                        <div class="flex justify-center items-center gap-3">
-                                                            <span class="text-sm font-bold text-slate-400 w-8 text-right">{{ $row['label'] }}</span>
-
-                                                            <div class="flex items-center gap-2">
-                                                                @foreach($row['left'] as $seatMeta)
-                                                                    @php
-                                                                        $seat = $seatMeta['id'];
-                                                                        $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
-                                                                        $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
-                                                                    @endphp
-                                                                    <button type="button"
-                                                                        @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
-                                                                            wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
-                                                                        @endif
-                                                                        @disabled($isOccupied || $selectingSeatForPassengerIndex === null)
-                                                                        class="w-14 h-14 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all duration-200
-                                                                            @if($isOccupied)
-                                                                                bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed
-                                                                            @elseif($isSelectedForPassenger)
-                                                                                bg-[#db2777] text-white border-[#db2777] shadow-md scale-105
-                                                                            @elseif($selectingSeatForPassengerIndex === null)
-                                                                                bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed
-                                                                            @else
-                                                                                bg-white text-slate-700 border-slate-300 hover:border-[#db2777] hover:text-[#db2777] hover:bg-slate-50
-                                                                            @endif
-                                                                        "
-                                                                    >
-                                                                        {{ $seatMeta['label'] }}
-                                                                    </button>
-                                                                @endforeach
-                                                            </div>
-
-                                                            <div class="w-6"></div>
-
-                                                            <div class="flex items-center gap-2">
-                                                                @foreach($row['right'] as $seatMeta)
-                                                                    @php
-                                                                        $seat = $seatMeta['id'];
-                                                                        $isOccupied = in_array($seat, $selectedSchedule['occupied_seats']);
-                                                                        $isSelectedForPassenger = collect($passengers)->contains(fn ($p) => $p['seat_number'] === $seat);
-                                                                    @endphp
-                                                                    <button type="button"
-                                                                        @if(!$isOccupied && $selectingSeatForPassengerIndex !== null)
-                                                                            wire:click.prevent="selectSeatForPassenger('{{ $seat }}')"
-                                                                        @endif
-                                                                        @disabled($isOccupied || $selectingSeatForPassengerIndex === null)
-                                                                        class="w-14 h-14 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all duration-200
-                                                                            @if($isOccupied)
-                                                                                bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed
-                                                                            @elseif($isSelectedForPassenger)
-                                                                                bg-[#db2777] text-white border-[#db2777] shadow-md scale-105
-                                                                            @elseif($selectingSeatForPassengerIndex === null)
-                                                                                bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed
-                                                                            @else
-                                                                                bg-white text-slate-700 border-slate-300 hover:border-[#db2777] hover:text-[#db2777] hover:bg-slate-50
-                                                                            @endif
-                                                                        "
-                                                                    >
-                                                                        {{ $seatMeta['label'] }}
-                                                                    </button>
-                                                                @endforeach
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mt-8 pt-6 border-t border-slate-200">
-                                                <div class="flex flex-wrap justify-center gap-8 text-sm">
-                                                    <div class="flex items-center gap-3">
-                                                        <span class="w-8 h-8 rounded-lg bg-white border-2 border-slate-300"></span>
-                                                        <span class="text-slate-700 font-bold">Available</span>
-                                                    </div>
-                                                    <div class="flex items-center gap-3">
-                                                        <span class="w-8 h-8 rounded-lg bg-[#db2777] border-2 border-[#db2777]"></span>
-                                                        <span class="text-slate-900 font-bold">Selected</span>
-                                                    </div>
-                                                    <div class="flex items-center gap-3">
-                                                        <span class="w-8 h-8 rounded-lg bg-slate-100 border-2 border-slate-200"></span>
-                                                        <span class="text-slate-400 font-bold">Occupied</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @endif
                                     
 @elseif($mode === 'ferry')
                                         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm order-3 lg:order-1">
@@ -1101,9 +930,9 @@
                                                         <div class="flex items-center justify-between mb-2">
                                                             <p class="text-slate-900 font-bold">Selected schedule @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         </div>
-                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} Â· {{ $selectedSchedule['departure'] }} â†’ {{ $selectedSchedule['arrival'] }}</p>
+                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} &rarr; {{ $selectedSchedule['arrival'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedSchedule['duration'] }}</p>
-                                                        <p class="mt-1 text-sm text-slate-600 font-bold">Fare: â‚±{{ number_format($selectedSchedule['price'], 2) }}</p>
+                                                        <p class="mt-1 text-sm text-slate-600 font-bold">Fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
                                                     </div>
 
                                                     @php $selectedAccommodation = collect($selectedSchedule['accommodations'] ?? [])->firstWhere('id', $selected_schedule_accommodation_id); @endphp
@@ -1112,9 +941,9 @@
                                                         <p class="text-slate-900 font-bold">Accommodation @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         @if($selectedAccommodation)
                                                             <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedAccommodation['name'] }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Accommodation: â‚±{{ number_format($selectedAccommodation['price'], 2) }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Ticket fare: â‚±{{ number_format($selectedSchedule['price'], 2) }}</p>
-                                                            <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: â‚±{{ number_format($selectedSchedule['price'] + $selectedAccommodation['price'], 2) }}</p>
+                                                            <p class="mt-1 text-sm text-slate-600">Accommodation: &#8369;{{ number_format($selectedAccommodation['price'], 2) }}</p>
+                                                            <p class="mt-1 text-sm text-slate-600">Ticket fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
+                                                            <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedSchedule['price'] + $selectedAccommodation['price'], 2) }}</p>
                                                             @if(!empty($selectedAccommodation['description']))
                                                                 <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedAccommodation['description'] }}</p>
                                                             @endif
@@ -1130,9 +959,9 @@
                                                                 <div class="flex items-center justify-between mb-2">
                                                                     <p class="text-slate-900 font-bold">Selected schedule (Returning)</p>
                                                                 </div>
-                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} Â· {{ $selectedReturnSchedule['departure'] }} â†’ {{ $selectedReturnSchedule['arrival'] }}</p>
+                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} &rarr; {{ $selectedReturnSchedule['arrival'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedReturnSchedule['duration'] }}</p>
-                                                                <p class="mt-1 text-sm text-slate-600 font-bold">Fare: â‚±{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
+                                                                <p class="mt-1 text-sm text-slate-600 font-bold">Fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
                                                             </div>
 
                                                             @php $selectedReturnAccommodation = collect($selectedReturnSchedule['accommodations'] ?? [])->firstWhere('id', $selected_return_schedule_accommodation_id); @endphp
@@ -1141,9 +970,9 @@
                                                                 <p class="text-slate-900 font-bold">Accommodation (Returning)</p>
                                                                 @if($selectedReturnAccommodation)
                                                                     <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedReturnAccommodation['name'] }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Accommodation: â‚±{{ number_format($selectedReturnAccommodation['price'], 2) }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Ticket fare: â‚±{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
-                                                                    <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: â‚±{{ number_format($selectedReturnSchedule['price'] + $selectedReturnAccommodation['price'], 2) }}</p>
+                                                                    <p class="mt-1 text-sm text-slate-600">Accommodation: &#8369;{{ number_format($selectedReturnAccommodation['price'], 2) }}</p>
+                                                                    <p class="mt-1 text-sm text-slate-600">Ticket fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
+                                                                    <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedReturnSchedule['price'] + $selectedReturnAccommodation['price'], 2) }}</p>
                                                                     @if(!empty($selectedReturnAccommodation['description']))
                                                                         <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedReturnAccommodation['description'] }}</p>
                                                                     @endif
@@ -1167,7 +996,7 @@
                                     @else
                                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center shadow-sm">
                                             <h3 class="text-lg font-bold text-slate-900 mb-2">Pick a schedule to continue</h3>
-                                            <p class="text-slate-600 font-medium">When you select a schedule, the next step will show the available class, seat, or accommodation options.</p>
+                                            <p class="text-slate-600 font-medium">When you select a schedule, the next step will show the available class or accommodation options.</p>
                                         </div>
                                     @endif
                                 </div>
@@ -1240,9 +1069,9 @@
                                                             <svg class="h-5 w-5 text-[#db2777] shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                                             <div>
                                                                 <p class="font-bold text-sm text-[#db2777]">Promotional Fare Applied</p>
-                                                                <p class="text-xs text-slate-600">â‚±{{ number_format($passengerActivePromo->promo_price, 2) }}/pax Â· Discounts are not combinable with a promo fare.</p>
+                                                                <p class="text-xs text-slate-600">&#8369;{{ number_format($passengerActivePromo->promo_price, 2) }}/pax &middot; Discounts are not combinable with a promo fare.</p>
                                                                 @if($discountClearedByPromo)
-                                                                    <p class="mt-1 text-xs text-amber-600 font-medium">âš  Your discount selection was removed because promo fares cannot be combined with other discounts.</p>
+                                                                    <p class="mt-1 text-xs text-amber-600 font-medium">&#x26A0;&#xFE0F; Your discount selection was removed because promo fares cannot be combined with other discounts.</p>
                                                                 @endif
                                                             </div>
                                                         </div>
@@ -1265,14 +1094,14 @@
                                         @endif
                                     @endif
 
-                                    {{-- Discount select â€” hidden when promo is active for this passenger --}}
+                                    {{-- Discount select &mdash; hidden when promo is active for this passenger --}}
                                     @php
                                         $passengerHasPromoForDiscount = ($mode === 'airline') && ! empty($passenger['use_promo']);
                                     @endphp
                                     <label class="block min-w-0 {{ $passengerHasPromoForDiscount ? 'opacity-40 pointer-events-none select-none' : '' }}">
                                         <span class="text-slate-900 font-bold text-sm">Discount</span>
                                         @if($passengerHasPromoForDiscount)
-                                            <p class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-400">No discount â€” promo fare applied</p>
+                                            <p class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-400">No discount &mdash; promo fare applied</p>
                                         @else
                                             <select wire:model.number="passengers.{{ $index }}.discount_id" wire:change="$refresh" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all">
                                                 <option value="">No discount</option>
@@ -1321,27 +1150,7 @@
                                         </label>
                                     @endif
 
-                                    @if ($mode === 'airline')
-                                        <div class="space-y-3 pt-3">
-                                            <div class="flex items-center justify-between">
-                                                <span class="text-slate-900 font-bold text-sm">Seat Number</span>
-                                                @if(!empty($passenger['seat_number']))
-                                                    <button type="button" wire:click.prevent="clearSeatForPassenger({{ $index }})" class="text-sm text-[#db2777] hover:text-[#db2777]/80 font-bold underline">Change Seat</button>
-                                                @endif
-                                            </div>
-                                            <input type="text" wire:model="passengers.{{ $index }}.seat_number" class="mt-2 block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus:outline-none text-slate-700" placeholder="Select seat from the seat map" readonly />
 
-                                            <label class="block min-w-0">
-                                                <span class="text-slate-900 font-bold text-sm">Seat Row</span>
-                                                <input type="text" wire:model="passengers.{{ $index }}.seat_row" class="mt-2 block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus:outline-none text-slate-700" placeholder="Auto-populated" readonly />
-                                            </label>
-
-                                            <label class="block min-w-0">
-                                                <span class="text-slate-900 font-bold text-sm">Seat Section</span>
-                                                <input type="text" wire:model="passengers.{{ $index }}.seat_section" class="mt-2 block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus:outline-none text-slate-700" placeholder="Auto-populated" readonly />
-                                            </label>
-                                        </div>
-                                    @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -1386,7 +1195,7 @@
                                                     @if($hotel->description)
                                                         <p class="mt-2 text-sm text-slate-600 line-clamp-2 leading-relaxed">{{ $hotel->description }}</p>
                                                     @endif
-                                                    <p class="mt-4 text-xl font-extrabold text-[#db2777]">â‚±{{ number_format($hotel->price, 2) }}</p>
+                                                    <p class="mt-4 text-xl font-extrabold text-[#db2777]">&#8369;{{ number_format($hotel->price, 2) }}</p>
                                                 </div>
                                             </button>
                                         @endforeach
@@ -1421,15 +1230,15 @@
                             <h2 class="text-lg font-bold text-slate-900">Review</h2>
                             <div class="mt-4 grid gap-4 sm:grid-cols-2">
                                 <div class="space-y-3">
-                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Route:</span> {{ $origin }} â†’ {{ $destination }}</p>
-                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Dates:</span> {{ $departure_date }}{{ $return_date ? ' â†’ ' . $return_date : '' }}</p>
+                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Route:</span> {{ $origin }} &rarr; {{ $destination }}</p>
+                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Dates:</span> {{ $departure_date }}{{ $return_date ? ' &rarr; ' . $return_date : '' }}</p>
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Passengers:</span> {{ $adults }} adults, {{ $children }} children</p>
                                     @if ($selected_transport_class_id)
                                         @php $selectedClass = $transportClassCatalog->firstWhere('id', $selected_transport_class_id); @endphp
                                         <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Transport Class:</span> {{ $selectedClass->name }}</p>
                                     @endif
                                     @if ($has_vehicle)
-                                        <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Vehicle:</span> {{ $vehicle_type }} ({{ $vehicle_plate_number }}) â€” â‚±{{ number_format($vehicle_price ?? 0, 2) }}</p>
+                                        <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Vehicle:</span> {{ $vehicle_type }} ({{ $vehicle_plate_number }}) &mdash; &#8369;{{ number_format($vehicle_price ?? 0, 2) }}</p>
                                     @endif
                                 </div>
 
@@ -1447,7 +1256,7 @@
                                     @endif
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Discounted travelers:</span> {{ $discountedCount }} of {{ count($passengers) }}</p>
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Accommodation selected:</span> {{ $selectedAccommodation ? $selectedAccommodation['name'] : 'None' }}</p>
-                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Estimated total:</span> <span class="font-extrabold text-[#db2777]">â‚±{{ number_format($this->calculateTotalPrice(), 2) }}</span></p>
+                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Estimated total:</span> <span class="font-extrabold text-[#db2777]">&#8369;{{ number_format($this->calculateTotalPrice(), 2) }}</span></p>
                                 </div>
 
                             </div>
@@ -1462,24 +1271,17 @@
                                     @endphp
                                     <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm transition-shadow hover:shadow-md">
                                         <div class="flex items-center justify-between">
-                                            <span class="text-slate-900 font-bold text-sm">{{ ucfirst($passenger['type']) }}{{ $passenger['name'] ? ' â€” ' . $passenger['name'] : '' }}</span>
+                                            <span class="text-slate-900 font-bold text-sm">{{ ucfirst($passenger['type']) }}{{ $passenger['name'] ? ' &mdash; ' . $passenger['name'] : '' }}</span>
                                             @if($summaryIsPromo)
                                                 <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 bg-[#db2777]/10 text-[#db2777] rounded-full">
                                                     <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                                                    Promotional Fare â€” â‚±{{ number_format($summaryPromoTicket->promo_price, 2) }}
+                                                    Promotional Fare &mdash; &#8369;{{ number_format($summaryPromoTicket->promo_price, 2) }}
                                                 </span>
                                             @else
                                                 <span class="text-slate-500 text-xs font-semibold px-2 py-1 bg-slate-100 rounded-full">{{ optional($discounts->firstWhere('id', $passenger['discount_id']))->name ?? 'No discount' }}</span>
                                             @endif
                                         </div>
-                                        @if (isset($passenger['seat_number']) || isset($passenger['seat_section']))
-                                            <div class="mt-3 text-sm text-slate-600 font-medium">
-                                                Seat: <span class="text-[#db2777] font-bold">{{ isset($passenger['seat_number']) ? $passenger['seat_number'] . (isset($passenger['seat_row']) ? ' (Row ' . $passenger['seat_row'] . ')' : '') : 'Not selected' }}</span>
-                                                @if (isset($passenger['seat_section']))
-                                                    â€¢ {{ $passenger['seat_section'] }}
-                                                @endif
-                                            </div>
-                                        @endif
+
                                     </div>
                                 @empty
                                     <p class="text-slate-500 italic">No passengers added yet.</p>
@@ -1494,26 +1296,26 @@
                                             <p class="text-slate-900 font-bold text-sm">Vehicle: <span class="text-[#db2777]">{{ $vehicle_type }}</span></p>
                                             <p class="text-slate-500 text-xs">Plate: {{ $vehicle_plate_number }}</p>
                                         </div>
-                                        <p class="text-slate-900 font-bold">â‚±{{ number_format($vehicle_price ?? 0, 2) }}</p>
+                                        <p class="text-slate-900 font-bold">&#8369;{{ number_format($vehicle_price ?? 0, 2) }}</p>
                                     </div>
                                 @endif
                                 @if ($selected_transport_class_id)
                                     <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm flex justify-between items-center">
                                         <p class="text-slate-900 font-bold text-sm">Transport Class: <span class="text-[#db2777]">{{ $selectedClass->name }}</span></p>
-                                        <p class="text-slate-900 font-bold">â‚±{{ number_format($selectedClass->price, 2) }}</p>
+                                        <p class="text-slate-900 font-bold">&#8369;{{ number_format($selectedClass->price, 2) }}</p>
                                     </div>
                                 @endif
                                 @if ($selectedAccommodation)
                                     <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm flex justify-between items-center">
                                         <p class="text-slate-900 font-bold text-sm">Accommodation: <span class="text-[#db2777]">{{ $selectedAccommodation['name'] }}</span></p>
-                                        <p class="text-slate-900 font-bold">â‚±{{ number_format($selectedAccommodation['price'], 2) }}</p>
+                                        <p class="text-slate-900 font-bold">&#8369;{{ number_format($selectedAccommodation['price'], 2) }}</p>
                                     </div>
                                 @endif
                                 @if ($selected_hotel_id)
                                     @php $selectedHotel = $accommodationCatalog->firstWhere('id', $selected_hotel_id); @endphp
                                     <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm flex justify-between items-center">
                                         <p class="text-slate-900 font-bold text-sm">Hotel: <span class="text-[#db2777]">{{ $selectedHotel->name }}</span></p>
-                                        <p class="text-slate-900 font-bold">â‚±{{ number_format($selectedHotel->price, 2) }}</p>
+                                        <p class="text-slate-900 font-bold">&#8369;{{ number_format($selectedHotel->price, 2) }}</p>
                                     </div>
                                 @endif
                             </div>
@@ -1550,7 +1352,7 @@
                                             </div>
                                         @endif
                                         <div class="flex-1">
-                                            <p class="text-slate-500 text-xs font-semibold">{{ $origin }} â†’ {{ $destination }}</p>
+                                            <p class="text-slate-500 text-xs font-semibold">{{ $origin }} &rarr; {{ $destination }}</p>
                                             <p class="text-slate-900 font-bold text-sm mt-1">{{ $operator ?: 'Ferry Service' }}</p>
                                         </div>
                                     </div>
@@ -1558,10 +1360,10 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <p class="text-[#db2777] font-extrabold text-lg">{{ $departureSchedule['service'] }}</p>
-                                            <p class="text-slate-600 font-medium mt-1">{{ $departureSchedule['departure'] }} â†’ {{ $departureSchedule['arrival'] }}</p>
+                                            <p class="text-slate-600 font-medium mt-1">{{ $departureSchedule['departure'] }} &rarr; {{ $departureSchedule['arrival'] }}</p>
                                         </div>
                                         <div class="text-right">
-                                            <p class="text-slate-900 font-bold text-lg">â‚±{{ number_format($departureSchedule['price'], 2) }}</p>
+                                            <p class="text-slate-900 font-bold text-lg">&#8369;{{ number_format($departureSchedule['price'], 2) }}</p>
                                             <p class="text-slate-500 text-sm">Duration: {{ $departureSchedule['duration'] }}</p>
                                         </div>
                                     </div>
@@ -1600,7 +1402,7 @@
                                                 </div>
                                             @endif
                                             <div class="flex-1">
-                                                <p class="text-slate-500 text-xs font-semibold">{{ $destination }} â†’ {{ $origin }}</p>
+                                                <p class="text-slate-500 text-xs font-semibold">{{ $destination }} &rarr; {{ $origin }}</p>
                                                 <p class="text-slate-900 font-bold text-sm mt-1">{{ $operator ?: 'Ferry Service' }}</p>
                                             </div>
                                         </div>
@@ -1608,10 +1410,10 @@
                                         <div class="flex justify-between items-start">
                                             <div>
                                                 <p class="text-[#db2777] font-extrabold text-lg">{{ $returnSchedule['service'] }}</p>
-                                                <p class="text-slate-600 font-medium mt-1">{{ $returnSchedule['departure'] }} â†’ {{ $returnSchedule['arrival'] }}</p>
+                                                <p class="text-slate-600 font-medium mt-1">{{ $returnSchedule['departure'] }} &rarr; {{ $returnSchedule['arrival'] }}</p>
                                             </div>
                                             <div class="text-right">
-                                                <p class="text-slate-900 font-bold text-lg">â‚±{{ number_format($returnSchedule['price'], 2) }}</p>
+                                                <p class="text-slate-900 font-bold text-lg">&#8369;{{ number_format($returnSchedule['price'], 2) }}</p>
                                                 <p class="text-slate-500 text-sm">Duration: {{ $returnSchedule['duration'] }}</p>
                                             </div>
                                         </div>
@@ -1638,14 +1440,14 @@
                                 @if ($breakdown['departure_ticket'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Departure Ticket ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['departure_ticket'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['departure_ticket'], 2) }}</span>
                                     </div>
                                 @endif
 
                                 @if ($trip_type === 'round_trip' && $breakdown['return_ticket'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Return Ticket ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['return_ticket'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['return_ticket'], 2) }}</span>
                                     </div>
                                 @endif
 
@@ -1653,7 +1455,7 @@
                                 @if ($breakdown['accommodation'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Schedule Accommodation</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['accommodation'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['accommodation'], 2) }}</span>
                                     </div>
                                 @endif
 
@@ -1661,7 +1463,7 @@
                                 @if ($breakdown['transport_class'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Transport Class</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['transport_class'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['transport_class'], 2) }}</span>
                                     </div>
                                 @endif
 
@@ -1669,7 +1471,7 @@
                                 @if ($breakdown['vehicle'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Vehicle</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['vehicle'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['vehicle'], 2) }}</span>
                                     </div>
                                 @endif
 
@@ -1677,7 +1479,7 @@
                                 @if ($breakdown['hotel'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Hotel</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['hotel'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['hotel'], 2) }}</span>
                                     </div>
                                 @endif
 
@@ -1685,14 +1487,14 @@
                                 @if ($breakdown['fee_per_traveler'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Web Admin Fee ({{ $adults + $children }} traveler{{ $adults + $children !== 1 ? 's' : '' }})</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['fee_per_traveler'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['fee_per_traveler'], 2) }}</span>
                                     </div>
                                 @endif
 
                                 @if ($breakdown['fee_per_accommodation'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
                                         <span class="text-slate-700 font-medium">Accommodation Service Fee</span>
-                                        <span class="text-slate-900 font-bold">â‚±{{ number_format($breakdown['fee_per_accommodation'], 2) }}</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['fee_per_accommodation'], 2) }}</span>
                                     </div>
                                 @endif
 
@@ -1700,7 +1502,7 @@
                                 <div class="mt-4 pt-4 border-t-2 border-slate-300 rounded-lg bg-gradient-to-r from-[#db2777]/5 to-[#216417]/5 p-4 border border-slate-300">
                                     <div class="flex justify-between items-center">
                                         <span class="text-slate-900 font-bold text-lg">Grand Total</span>
-                                        <span class="text-[#db2777] font-extrabold text-2xl">â‚±{{ number_format($breakdown['total'], 2) }}</span>
+                                        <span class="text-[#db2777] font-extrabold text-2xl">&#8369;{{ number_format($breakdown['total'], 2) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1754,9 +1556,9 @@
                                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                             <p class="font-semibold text-slate-900">What to bring</p>
                                             <ul class="mt-3 space-y-2 text-sm text-slate-700">
-                                                <li>â€¢ School ID for Student discounts</li>
-                                                <li>â€¢ OSCA ID for Senior Citizen discounts</li>
-                                                <li>â€¢ PWD ID for PWD discounts</li>
+                                                <li>&bull; School ID for Student discounts</li>
+                                                <li>&bull; OSCA ID for Senior Citizen discounts</li>
+                                                <li>&bull; PWD ID for PWD discounts</li>
                                             </ul>
                                         </div>
                                         <button type="button" wire:click.prevent="closePresentIdWarning" class="inline-flex w-full items-center justify-center rounded-xl bg-[#db2777] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#be185d]">
@@ -1860,7 +1662,7 @@
                             <ul class="list-disc pl-5 space-y-1">
                                 <li>One printed copy of the eTicket Itinerary Receipt.</li>
                                 <li>Presentation of each passenger's valid ID.</li>
-                                <li>Passengers must arrive at the terminal 3â€“4 hours before departure. Boarding gates close 1 hour before departure.</li>
+                                <li>Passengers must arrive at the terminal 3&ndash;4 hours before departure. Boarding gates close 1 hour before departure.</li>
                                 <li>The operating ferry carrier reserves the right to refuse boarding if a passenger cannot present the required documents upon request.</li>
                             </ul>
                         </div>
@@ -1887,7 +1689,7 @@
                             <div class="mt-4">
                                 <h4 class="text-sm font-bold text-slate-900 mb-1">Infants</h4>
                                 <p class="mb-2">Infants below 2 years old and below 1 meter in height may be allowed to board. A medical certificate and documentation proving the infant's relationship to the accompanying passenger may be required.</p>
-                                <p class="mb-2">A fixed rate of â‚±500.00 applies per infant regardless of destination or accommodation, subject to carrier policy.</p>
+                                <p class="mb-2">A fixed rate of &#8369;500.00 applies per infant regardless of destination or accommodation, subject to carrier policy.</p>
                                 <p class="mb-2">A separate ticket may be issued for each infant, and the infant may share the parent's or guardian's bunk or room.</p>
                                 <p class="mb-2">No more than two infants are allowed per adult passenger. Additional infants may be charged the applicable promotional fare or 75% off the base rate, plus auxiliary charges.</p>
                                 <p>Infants must be accompanied by an adult parent or guardian.</p>
@@ -1929,13 +1731,13 @@
                             </ul>
                             <p class="mb-2">Refunds are subject to the following surcharge:</p>
                             <ul class="list-disc pl-5 space-y-1 mb-2">
-                                <li>Before vessel departure: â‚±600.00 plus the applicable Web Admin Fee per ticket.</li>
+                                <li>Before vessel departure: &#8369;600.00 plus the applicable Web Admin Fee per ticket.</li>
                             </ul>
                             <p class="mb-2">No partial refunds are available for tickets purchased under room rates. Refunds are released only after surrendering all tickets issued for the relevant room.</p>
                             <p class="mb-2">Unused and unscanned eTickets may be revalidated during the ticket-validity period. Revalidation means changing ticket details other than the passenger name or age, and the trip origin or destination. Revalidation is processed only through corporate ticketing outlets. Passengers must present the eTicket Itinerary Receipt and a valid ID.</p>
                             <p class="mb-2">Revalidation is subject to the following surcharge:</p>
                             <ul class="list-disc pl-5 space-y-1 mb-2">
-                                <li>Before vessel departure: â‚±600.00 + â‚±36.00 revalidation fee + fare difference.</li>
+                                <li>Before vessel departure: &#8369;600.00 + &#8369;36.00 revalidation fee + fare difference.</li>
                             </ul>
                             <p class="mb-2">Refund and revalidation surcharges may be waived if a trip is affected by typhoon, force majeure, technical problems, emergency or extended dry-docking, preventive maintenance, or carrier-initiated trip changes.</p>
                             <p class="mb-2">The Web Admin Fee is non-refundable.</p>
