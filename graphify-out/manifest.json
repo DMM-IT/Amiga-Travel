@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1785130805.1804512,
-    "ast_hash": "649a16b5293bd52c812493acae40aa00",
+    "mtime": 1785142494.9736407,
+    "ast_hash": "9f31f07ae067d159f42e4f79412fdb76",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -680,8 +680,8 @@
     "semantic_hash": ""
   },
   "app/Models/Passenger.php": {
-    "mtime": 1784915117.829361,
-    "ast_hash": "5163c50955e63a2deceed19159ff1733",
+    "mtime": 1785142412.894778,
+    "ast_hash": "e54e492c7f5ffb118f54ed2880415c49",
     "semantic_hash": ""
   },
   "app/Models/PaymentSetting.php": {
@@ -1610,8 +1610,8 @@
     "semantic_hash": ""
   },
   "resources/views/components/schedule-carousel.blade.php": {
-    "mtime": 1784907895.3993618,
-    "ast_hash": "42bd031b98b4e05951160c141913bea6",
+    "mtime": 1785141144.3311977,
+    "ast_hash": "55a1ca7081fba83f42db98f98aaf0852",
     "semantic_hash": ""
   },
   "resources/views/contact.blade.php": {
@@ -1770,8 +1770,8 @@
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1785133536.7805457,
-    "ast_hash": "604ca83d1bfbd7b8f9122377a3427b0f",
+    "mtime": 1785142852.060684,
+    "ast_hash": "1b209fb5b80277dbd556654b939fba09",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
@@ -2797,6 +2797,31 @@
   "public/images/tribal-pattern.svg": {
     "mtime": 1785136423.2512233,
     "ast_hash": "5340063936d22724ea5c6c0e3d927aad",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_27_165250_add_return_seat_fields_to_passengers_table.php": {
+    "mtime": 1785142390.207017,
+    "ast_hash": "d0a036f112ecf7cf9c9d6fc595d31c7d",
+    "semantic_hash": ""
+  },
+  "resources/views/livewire/ferry_ret_seat_block_temp.txt": {
+    "mtime": 1785142541.5803428,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "resources/views/livewire/ferry_seat_block_temp.txt": {
+    "mtime": 1785142541.5803428,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "resources/views/livewire/ret_seat_block_temp.txt": {
+    "mtime": 1785142541.5803428,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "resources/views/livewire/seat_block_temp.txt": {
+    "mtime": 1785142529.4280205,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   }
 }
