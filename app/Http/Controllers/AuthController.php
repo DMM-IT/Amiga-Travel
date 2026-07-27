@@ -114,6 +114,8 @@ class AuthController extends Controller
             'Successful web login.'
         );
 
+        $this->backfillBookingUserIds(Auth::user());
+
         return redirect()->intended(route('dashboard'));
     }
 
@@ -131,6 +133,13 @@ class AuthController extends Controller
                 'remember' => $request->boolean('remember'),
             ],
         ]);
+    }
+
+    protected function backfillBookingUserIds(User $user): void
+    {
+        Booking::whereNull('user_id')
+            ->where('client_email', $user->email)
+            ->update(['user_id' => $user->id]);
     }
 
     public function showRegister(): View
@@ -159,6 +168,8 @@ class AuthController extends Controller
             true,
             'Successful web registration.'
         );
+
+        $this->backfillBookingUserIds($user);
 
         return redirect()->route('dashboard');
     }
@@ -206,6 +217,8 @@ class AuthController extends Controller
             'Successful API login.'
         );
 
+        $this->backfillBookingUserIds($user);
+
         return response()->json([
             'status' => 'success',
             'user' => [
@@ -237,6 +250,8 @@ class AuthController extends Controller
             true,
             'Successful API registration.'
         );
+
+        $this->backfillBookingUserIds($user);
 
         return response()->json([
             'status' => 'success',
@@ -337,6 +352,8 @@ class AuthController extends Controller
             true,
             'Successful OTP-verified API registration.'
         );
+
+        $this->backfillBookingUserIds($user);
 
         return response()->json([
             'status'  => 'success',

@@ -28,7 +28,6 @@ return new class extends Migration
             $table->foreignId('eligible_schedule_id')->nullable()->constrained('schedules')->nullOnDelete();
             $table->timestamps();
             
-            $table->index('code');
             $table->index(['is_active', 'start_at', 'end_at']);
         });
     }

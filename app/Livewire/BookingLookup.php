@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Mail\BookingCancellation;
 use App\Mail\RebookingRequested;
 use App\Models\Booking;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -34,6 +35,8 @@ class BookingLookup extends Component
     public bool $isUploadingRebooking = false;
     public ?string $rebooking_departure_date = null;
     public ?string $rebooking_return_date = null;
+    public bool $showCancellationWarning = false;
+    public bool $showRebookingWarning = false;
 
     protected $rules = [
         'rebookingProof' => 'nullable|image|max:2048',
@@ -68,25 +71,28 @@ class BookingLookup extends Component
         $this->resetCancellationState();
         $this->resetRebookingState();
 
+        $transactionNumber = trim($this->transaction_number);
+
         $this->booking = Booking::with(['passengers.discount', 'accommodations', 'transaction'])
-            ->where('transaction_number', trim($this->transaction_number))
+            ->where('transaction_number', $transactionNumber)
             ->first();
+
+        if (! $this->booking && ctype_digit($transactionNumber)) {
+            $transaction = Transaction::with('booking.passengers.discount', 'booking.accommodations', 'booking.transaction')
+                ->find($transactionNumber);
+
+            if ($transaction && $transaction->booking) {
+                $this->booking = $transaction->booking;
+            }
+        }
 
         $this->loadCancellationWindowFromSession();
     }
 
-    public function requestCancellation(): void
+    public function showCancellationWarning(): void
     {
-        // If the cancellation window has ever expired for this booking, block it permanently
-        if ($this->cancellationExpired || session($this->getCancellationExpiredKey())) {
-            $this->cancellationExpired = true;
-            $this->feedback = 'The 5-minute cancellation window has expired. This booking can no longer be cancelled.';
-            return;
-        }
-
         if (! $this->booking) {
             $this->feedback = 'Booking not found.';
-
             return;
         }
 
@@ -97,11 +103,23 @@ class BookingLookup extends Component
 
         if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
-
             return;
         }
 
         $this->resetRebookingState();
+        $this->showCancellationWarning = true;
+        $this->feedback = 'Please confirm that you want to start cancellation. This will begin a 5-minute confirmation timer and lock in a 50% refund.';
+    }
+
+    public function requestCancellation(): void
+    {
+        $this->showCancellationWarning();
+    }
+
+    public function confirmCancellationRequest(): void
+    {
+        $this->resetRebookingState();
+        $this->showCancellationWarning = false;
         $this->cancellationRequested = true;
         $this->cancellationWindowActive = false;
         $this->cancelCountdown = 300;
@@ -277,11 +295,16 @@ class BookingLookup extends Component
         $this->feedback = 'Cancellation request cancelled. Your proof-upload timer will remain active if it has not yet expired.';
     }
 
-    public function requestRebooking(): void
+    public function cancelRebookingWarning(): void
+    {
+        $this->showRebookingWarning = false;
+        $this->feedback = null;
+    }
+
+    public function showRebookingWarning(): void
     {
         if (! $this->booking) {
             $this->feedback = 'Booking not found.';
-
             return;
         }
 
@@ -290,13 +313,30 @@ class BookingLookup extends Component
             return;
         }
 
+        if ($this->booking->departure_date->isToday()) {
+            $this->feedback = 'Rebooking cannot be requested for same-day departures. Please contact support for urgent changes.';
+            return;
+        }
+
         if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             $this->feedback = 'This booking cannot be rebooked because it has already been verified or completed.';
-
             return;
         }
 
         $this->resetCancellationState();
+        $this->showRebookingWarning = true;
+        $this->feedback = 'Please confirm that you want to start rebooking. Rebooking requires a new travel date selection and proof of payment for the 30% fee.';
+    }
+
+    public function requestRebooking(): void
+    {
+        $this->showRebookingWarning();
+    }
+
+    public function confirmRebookingRequest(): void
+    {
+        $this->resetCancellationState();
+        $this->showRebookingWarning = false;
         $this->rebookingRequested = true;
         $this->rebooking_is_round_trip = filled($this->booking->return_date);
         $this->rebooking_departure_date = $this->booking->departure_date?->format('Y-m-d');
@@ -395,6 +435,7 @@ class BookingLookup extends Component
         $this->refund_bank_name = '';
         $this->refund_account_number = '';
         $this->refund_account_name = '';
+        $this->showCancellationWarning = false;
         // NOTE: do NOT delete the cancellation_expired session key here.
         // It must survive page refreshes. Only startCancellationWindow() clears it
         // when the user explicitly begins a fresh cancellation attempt.

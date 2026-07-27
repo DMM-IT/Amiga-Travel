@@ -169,17 +169,28 @@ class ReportingService
     public function getRecentActivity(int $limit = 10): array
     {
         return Cache::remember("recent_activity_{$limit}", self::CACHE_TTL, function () use ($limit) {
-            $bookings = Booking::latest('created_at')
+            $bookings = Booking::query()
+                ->orderByDesc(DB::raw('COALESCE(verified_at, updated_at, created_at)'))
                 ->take($limit)
-                ->get(['id', 'transaction_number', 'client_name', 'origin', 'destination', 'status', 'total_price', 'created_at'])
+                ->get(['id', 'transaction_number', 'client_name', 'origin', 'destination', 'status', 'total_price', 'created_at', 'updated_at', 'verified_at', 'is_rebooked', 'rebooking_status'])
                 ->map(fn (Booking $b) => [
                     'type' => 'booking',
                     'icon' => 'heroicon-o-ticket',
-                    'title' => "New booking {$b->transaction_number}",
-                    'description' => "{$b->client_name} · {$b->origin} → {$b->destination}",
+                    'title' => $b->status === 'cancelled'
+                        ? "Booking cancelled {$b->transaction_number}"
+                        : ($b->is_rebooked && $b->rebooking_status === 'pending'
+                            ? "Rebooking request for {$b->transaction_number}"
+                            : ($b->status === 'confirmed' && $b->verified_at
+                                ? "Booking verified {$b->transaction_number}"
+                                : "New booking {$b->transaction_number}")),
+                    'description' => $b->status === 'cancelled'
+                        ? "{$b->client_name} cancelled {$b->origin} → {$b->destination}"
+                        : ($b->status === 'confirmed' && $b->verified_at
+                            ? "Booking confirmed for {$b->client_name} · {$b->origin} → {$b->destination}"
+                            : "{$b->client_name} · {$b->origin} → {$b->destination}"),
                     'status' => $b->status,
                     'amount' => $b->total_price,
-                    'time' => $b->created_at,
+                    'time' => $b->verified_at ?? $b->updated_at ?? $b->created_at,
                 ]);
 
             $transactions = Transaction::with('booking:id,transaction_number,client_name')

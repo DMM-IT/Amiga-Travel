@@ -13,6 +13,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -88,6 +89,8 @@ class BookingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query)
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('transaction_number')
                     ->searchable()
@@ -156,7 +159,30 @@ class BookingResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label('Booking status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'confirmed' => 'Confirmed',
+                        'cancelled' => 'Cancelled',
+                    ]),
+                SelectFilter::make('transaction_payment_status')
+                    ->label('Payment status')
+                    ->options([
+                        'unpaid' => 'Unpaid',
+                        'pending' => 'Pending verification',
+                        'paid' => 'Paid',
+                        'cancelled' => 'Cancelled',
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        if (blank($data['value'] ?? null)) {
+                            return $query;
+                        }
+
+                        return $query->whereHas('transaction', function (Builder $q) use ($data) {
+                            $q->where('payment_status', $data['value']);
+                        });
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -176,6 +202,10 @@ class BookingResource extends Resource
                             ->maxSize(10240),
                     ])
                     ->visible(fn (Booking $record): bool => $record->status === 'pending')
+                    ->disabled(fn (Booking $record): bool => ! $record->transaction || $record->transaction->created_at->greaterThan(now()->subMinutes(10)))
+                    ->tooltip(fn (Booking $record): ?string => $record->transaction && $record->transaction->created_at->greaterThan(now()->subMinutes(10))
+                        ? 'This booking can be verified after 10 minutes from payment submission.'
+                        : null)
                     ->requiresConfirmation()
                     ->action(function (Booking $record, array $data): void {
                         if (empty($data['confirmation_url']) && empty($data['confirmation_pdf'])) {
@@ -221,6 +251,21 @@ class BookingResource extends Resource
                         }
                      })
                      ->color('success'),
+
+                Tables\Actions\Action::make('verifyRebooking')
+                    ->label('Verify rebooking')
+                    ->icon('heroicon-m-arrow-path')
+                    ->button()
+                    ->visible(fn (Booking $record): bool => $record->is_rebooked && $record->rebooking_status === 'pending')
+                    ->requiresConfirmation()
+                    ->action(function (Booking $record): void {
+                        $record->verifyRebooking(
+                            $record->transaction?->confirmation_url,
+                            $record->transaction?->confirmation_pdf ? Storage::disk('public')->path($record->transaction->confirmation_pdf) : null,
+                            $record->transaction?->confirmation_pdf ? 'public' : null,
+                        );
+                    })
+                    ->color('secondary'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -236,6 +281,16 @@ class BookingResource extends Resource
             AccommodationsRelationManager::class,
             PassengersRelationManager::class,
         ];
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ])
+            ->with(['transaction', 'user'])
+            ->reorder();
     }
 
     public static function getPages(): array

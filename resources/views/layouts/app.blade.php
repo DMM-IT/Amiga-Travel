@@ -50,7 +50,8 @@
             }
 
             /* Ensure content sits above the background */
-            body > * { position: relative; z-index: 10; }
+            body > * { position: relative; }
+            header { z-index: 20; }
 
             /* Hide background for Filament admin pages (Filament root uses .fi-layout)
                Also hide when body already has .fi-layout. Uses !important to override. */
@@ -90,7 +91,7 @@
                                 Discover
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 z-50 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
                                     <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Services</a>
                                     <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Tour Package</a>
@@ -102,7 +103,7 @@
                                 Get Help
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 z-50 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
                                     <a href="{{ url('/contact-us') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Contact Us</a>
                                     <a href="{{ url('/faqs') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">FAQs</a>
@@ -172,6 +173,9 @@
         </header>
 
         <main class="flex-grow">
+            @unless(request()->routeIs('book.new') || request()->is('book/new'))
+                @include('partials.global-skeleton')
+            @endunless
             @yield('content')
         </main>
 

@@ -12,8 +12,13 @@ class UserDashboard extends Component
 
     public function mount()
     {
+        $user = Auth::user();
+
         $this->bookings = Booking::with(['transaction', 'passengers', 'accommodations'])
-            ->where('client_email', Auth::user()->email)
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->orWhere('client_email', $user->email);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
     }

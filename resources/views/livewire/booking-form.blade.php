@@ -23,7 +23,8 @@
                     @php
                         $isTourPackage = $tour_id || $prefilled_from_package;
                         $steps = $isTourPackage ? ['Route','Discount','Stay','Submit'] : ['Route','Schedule','Discount','Stay','Submit'];
-                        if ($isTourPackage && $step >=2) {
+
+                        if ($isTourPackage && $step >= 2) {
                             $adjustedStep = $step - 1;
                         } else {
                             $adjustedStep = $step;
@@ -142,10 +143,11 @@
                         }
                     </style>
                     @if ($step === 1)
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-3">
-                                <div class="relative inline-grid grid-cols-2 bg-slate-100 rounded-full p-1 border border-slate-200 shadow-inner w-full sm:w-auto">
-                                    <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-[#216417] shadow-sm transition-all duration-300 ease-in-out z-0 {{ $trip_type === 'round_trip' ? 'left-[calc(50%+2px)]' : 'left-1' }}"></div>
+                        <div class="relative">
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="relative inline-grid grid-cols-2 bg-slate-100 rounded-full p-1 border border-slate-200 shadow-inner w-full sm:w-auto">
+                                        <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-[#216417] shadow-sm transition-all duration-300 ease-in-out z-0 {{ $trip_type === 'round_trip' ? 'left-[calc(50%+2px)]' : 'left-1' }}"></div>
                                     
                                     <button type="button" wire:click="setTripType('one_way')" @disabled($prefilled_from_package || $tour_id) class="relative z-10 px-4 sm:px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-300 {{ $trip_type === 'one_way' ? 'text-white' : 'text-slate-500 hover:text-slate-900' }} {{ ($prefilled_from_package || $tour_id) ? 'opacity-50 cursor-not-allowed' : '' }}">
                                         One-way Trip
@@ -1669,13 +1671,16 @@
                                 <div></div>
                             @endif
 
-                            @if ($step < 5)
+                            @php
+                                $currentMaxStep = $maxStep ?? ($this->maxStep ?? 5);
+                            @endphp
+                            @if ($step < $currentMaxStep)
                                 <button type="button" wire:click.prevent="nextStep" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg">
                                     Next
                                     <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                 </button>
                             @else
-                                <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg ring-4 ring-[#db2777]/20">
+                                <button type="submit" wire:loading.attr="disabled" wire:target="submit,confirmTermsAndContinue,confirmPrivacyAndContinue" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg ring-4 ring-[#db2777]/20 disabled:opacity-50 disabled:cursor-not-allowed">
                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     Complete Booking
                                 </button>

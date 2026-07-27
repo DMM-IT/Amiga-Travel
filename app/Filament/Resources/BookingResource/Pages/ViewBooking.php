@@ -147,7 +147,19 @@ class ViewBooking extends ViewRecord
                 ->action(function () {
                     $booking = $this->record;
 
-                    $booking->update(['status' => 'confirmed']);
+                    $booking->update([
+                        'status' => 'confirmed',
+                        'verified_by_user_id' => Auth::id(),
+                        'verified_at' => now(),
+                    ]);
+
+                    if ($booking->transaction && $booking->transaction->payment_status !== 'paid') {
+                        $booking->transaction->update([
+                            'payment_status' => 'paid',
+                            'verified_by_user_id' => Auth::id(),
+                            'verified_at' => now(),
+                        ]);
+                    }
 
                     $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
                     if (! file_exists($receiptPath)) {

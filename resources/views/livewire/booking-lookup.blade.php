@@ -41,6 +41,62 @@
                             </div>
                         @endif
 
+                        @if($showCancellationWarning || $showRebookingWarning)
+                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+                                <div class="w-full max-w-xl rounded-[2rem] bg-white p-6 shadow-2xl ring-1 ring-slate-200">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div>
+                                            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{{ $showCancellationWarning ? 'Confirm Cancellation' : 'Confirm Rebooking' }}</p>
+                                            <h2 class="mt-2 text-2xl font-semibold text-slate-900">{{ $showCancellationWarning ? 'Cancel your booking?' : 'Proceed with rebooking?' }}</h2>
+                                        </div>
+                                        @if($showCancellationWarning)
+                                            <button wire:click.prevent="cancelCancellationRequest" type="button" class="rounded-full bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200">
+                                                <span class="sr-only">Close</span>
+                                                ×
+                                            </button>
+                                        @else
+                                            <button wire:click.prevent="cancelRebookingWarning" type="button" class="rounded-full bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200">
+                                                <span class="sr-only">Close</span>
+                                                ×
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <div class="mt-4 space-y-4 text-sm text-slate-700">
+                                        @if($showCancellationWarning)
+                                            <p>This booking is eligible for cancellation. Confirming will start a 5-minute confirmation timer and lock in a 50% refund. You will then need to complete refund details.</p>
+                                            <div class="rounded-2xl border border-pink-100 bg-pink-50 p-3 text-sm text-pink-700">
+                                                Cancellation fee: 50% of total price.
+                                            </div>
+                                        @else
+                                            <p>Rebooking requires a new travel date selection and proof of payment for the 30% rebooking fee. Same-day departures cannot be rebooked online.</p>
+                                            <div class="rounded-2xl border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
+                                                Rebooking fee: 30% of total price.
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                                        @if($showCancellationWarning)
+                                            <button wire:click.prevent="cancelCancellationRequest" type="button" class="rounded-3xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                No, go back
+                                            </button>
+                                            <button wire:click.prevent="confirmCancellationRequest" type="button" class="rounded-3xl bg-pink-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-pink-700">
+                                                Yes, continue
+                                            </button>
+                                        @else
+                                            <button wire:click.prevent="cancelRebookingWarning" type="button" class="rounded-3xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                No, go back
+                                            </button>
+                                            <button wire:click.prevent="confirmRebookingRequest" type="button" class="rounded-3xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                                                Yes, continue
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 space-y-6">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>

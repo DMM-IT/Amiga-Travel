@@ -81,6 +81,9 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::BODY_END, function (): View {
                 return view('filament.partials.scroll-validation');
             })
+            ->renderHook(PanelsRenderHook::BODY_END, function (): View {
+                return view('partials.global-skeleton');
+            })
 
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

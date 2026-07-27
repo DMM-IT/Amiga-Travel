@@ -7,16 +7,26 @@ use App\Models\Booking;
 use App\Models\Inquiry;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class AdminNotificationFeed
 {
+    private const CACHE_TTL = 30;
+
+    protected array $notificationsByUser = [];
+    protected array $statusesByUser = [];
+
     public function getForUser(User $user): Collection
     {
+        return Cache::remember($this->cacheKey($user), self::CACHE_TTL, function () use ($user) {
+            return $this->buildForUser($user);
+        });
+    }
+
+    protected function buildForUser(User $user): Collection
+    {
         $notifications = $this->collectNotifications();
-        $statuses = AdminNotificationStatus::withTrashed()
-            ->where('user_id', $user->id)
-            ->get()
-            ->keyBy('notification_id');
+        $statuses = $this->getStatusesForUser($user);
 
         return $notifications
             ->map(function (array $notification) use ($statuses): array {
@@ -34,6 +44,33 @@ class AdminNotificationFeed
             })
             ->sortByDesc('created_at')
             ->values();
+    }
+
+    protected function getStatusesForUser(User $user): Collection
+    {
+        return Cache::remember($this->statusCacheKey($user), self::CACHE_TTL, function () use ($user) {
+            return AdminNotificationStatus::withTrashed()
+                ->where('user_id', $user->id)
+                ->get()
+                ->keyBy('notification_id');
+        });
+    }
+
+    protected function clearCacheForUser(User $user): void
+    {
+        Cache::forget($this->cacheKey($user));
+        Cache::forget($this->statusCacheKey($user));
+        unset($this->notificationsByUser[$user->id], $this->statusesByUser[$user->id]);
+    }
+
+    protected function cacheKey(User $user): string
+    {
+        return "admin_notification_feed:{$user->id}";
+    }
+
+    protected function statusCacheKey(User $user): string
+    {
+        return "admin_notification_feed_statuses:{$user->id}";
     }
 
     public function getUnreadCountForUser(User $user): int
@@ -62,6 +99,8 @@ class AdminNotificationFeed
             }
         }
 
+        $this->clearCacheForUser($user);
+
         return $updated;
     }
 
@@ -81,6 +120,8 @@ class AdminNotificationFeed
             }
         }
 
+        $this->clearCacheForUser($user);
+
         return $updated;
     }
 
@@ -99,6 +140,8 @@ class AdminNotificationFeed
                 $deleted++;
             }
         }
+
+        $this->clearCacheForUser($user);
 
         return $deleted;
     }

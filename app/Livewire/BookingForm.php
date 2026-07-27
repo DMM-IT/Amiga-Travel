@@ -32,6 +32,8 @@ use Carbon\Carbon;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class BookingForm extends Component
 {
@@ -444,6 +446,8 @@ class BookingForm extends Component
         return null;
     }
 
+    public int $maxStep = 5;
+
     #[Computed]
 public function selectedSchedule(): ?array
 {
@@ -728,65 +732,55 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        $schedules = Schedule::active()
+        $departureDates = Schedule::active()
             ->whereHas('ferryRoute', function ($query) {
                 $query->where('origin', $this->origin)
                       ->where('destination', $this->destination)
                       ->where('mode', $this->mode)
                       ->where('is_active', true);
-                
+
                 if (! empty($this->operator)) {
                     $query->where('operator', $this->operator);
                 }
             })
-            ->select('departure_time')
-            ->get();
-
-        if ($schedules->isEmpty()) {
-            $this->available_schedule_dates = [];
-            return;
-        }
-
-        $dates = $schedules->pluck('departure_time')
+            ->where('departure_time', '>=', Carbon::today()->startOfDay())
+            ->selectRaw('DATE(departure_time) as date')
+            ->distinct()
+            ->orderBy('date')
+            ->pluck('date')
             ->filter()
-            ->map(fn ($date) => Carbon::parse($date)->format('Y-m-d'))
-            ->unique()
             ->values()
             ->all();
 
-        $this->available_schedule_dates = $dates;
-        
-        if ($this->departure_date && !in_array($this->departure_date, $this->available_schedule_dates)) {
+        $this->available_schedule_dates = $departureDates;
+
+        if ($this->departure_date && ! in_array($this->departure_date, $this->available_schedule_dates, true)) {
             $this->departure_date = null;
         }
 
-        // Now calculate return schedule dates (reverse origin/destination)
-        $returnSchedules = Schedule::active()
+        $returnDates = Schedule::active()
             ->whereHas('ferryRoute', function ($query) {
                 $query->where('origin', $this->destination)
                       ->where('destination', $this->origin)
                       ->where('mode', $this->mode)
                       ->where('is_active', true);
-                
+
                 if (! empty($this->operator)) {
                     $query->where('operator', $this->operator);
                 }
             })
-            ->select('departure_time')
-            ->get();
+            ->where('departure_time', '>=', Carbon::today()->startOfDay())
+            ->selectRaw('DATE(departure_time) as date')
+            ->distinct()
+            ->orderBy('date')
+            ->pluck('date')
+            ->filter()
+            ->values()
+            ->all();
 
-        if ($returnSchedules->isEmpty()) {
-            $this->available_return_schedule_dates = [];
-        } else {
-            $this->available_return_schedule_dates = $returnSchedules->pluck('departure_time')
-                ->filter()
-                ->map(fn ($date) => Carbon::parse($date)->format('Y-m-d'))
-                ->unique()
-                ->values()
-                ->all();
-        }
+        $this->available_return_schedule_dates = $returnDates;
 
-        if ($this->return_date && !in_array($this->return_date, $this->available_return_schedule_dates)) {
+        if ($this->return_date && ! in_array($this->return_date, $this->available_return_schedule_dates, true)) {
             $this->return_date = null;
         }
     }
@@ -988,11 +982,15 @@ public function selectedSchedule(): ?array
 
     protected function getAvailableSchedules(): array
     {
-        return Schedule::query()
+        $schedules = Schedule::query()
             ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
             ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
-            ->get()
-            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date))
+            ->get();
+
+        $occupiedSeatsMap = $this->loadOccupiedSeatsForSchedules($schedules->pluck('id')->all(), $this->departure_date);
+
+        return $schedules
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date, $occupiedSeatsMap[$schedule->id] ?? []))
             ->values()
             ->all();
     }
@@ -1002,15 +1000,39 @@ public function selectedSchedule(): ?array
         if ($this->trip_type !== 'round_trip' || !$this->return_date) {
             return [];
         }
-        
-        return Schedule::query()
+
+        $schedules = Schedule::query()
             ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
             // Reverse origin and destination for return trip
             ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode, $this->operator)
-            ->get()
-            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date))
+            ->get();
+
+        $occupiedSeatsMap = $this->loadOccupiedSeatsForSchedules($schedules->pluck('id')->all(), $this->return_date);
+
+        return $schedules
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date, $occupiedSeatsMap[$schedule->id] ?? []))
             ->values()
             ->all();
+    }
+
+    protected function loadOccupiedSeatsForSchedules(array $scheduleIds, ?string $departureDate): array
+    {
+        if (empty($scheduleIds) || empty($departureDate)) {
+            return [];
+        }
+
+        $rows = 
+            \App\Models\Passenger::query()
+                ->select('passengers.seat_number', 'bookings.schedule_id')
+                ->join('bookings', 'bookings.id', '=', 'passengers.booking_id')
+                ->whereNotNull('passengers.seat_number')
+                ->whereIn('bookings.schedule_id', $scheduleIds)
+                ->where('bookings.departure_date', $departureDate)
+                ->where('bookings.status', '!=', 'cancelled')
+                ->get()
+                ->groupBy('schedule_id');
+
+        return $rows->map(fn ($group) => $group->pluck('seat_number')->filter()->values()->all())->toArray();
     }
 
     /**
@@ -1352,28 +1374,94 @@ public function selectedSchedule(): ?array
 
     public function submit()
     {
-        $this->validate($this->allRules());
-        $this->validatePassengerExtras();
-        $this->assertSelectedScheduleIsValid();
+        try {
+            $this->syncFullPassengerNames();
 
-        if (! $this->hasAcceptedTerms) {
-            $this->showTermsModal = true;
-            return;
+            $this->validate([
+                'client_name' => 'required|string|max:255',
+                'client_email' => 'required|email',
+                'client_phone' => 'required|string|max:25',
+                'hasAcceptedTerms' => 'required|accepted',
+                'hasAcceptedPrivacy' => 'required|accepted',
+            ]);
+
+            $this->validatePassengerExtras();
+            $this->assertSelectedScheduleIsValid();
+
+            if (! $this->hasAcceptedTerms) {
+                $this->showTermsModal = true;
+                $this->dispatch('notify', [
+                    'type' => 'warning',
+                    'message' => 'Please accept the Terms and Conditions to continue.',
+                ]);
+                return;
+            }
+
+            if (! $this->hasAcceptedPrivacy) {
+                $this->showPrivacyModal = true;
+                $this->dispatch('notify', [
+                    'type' => 'warning',
+                    'message' => 'Please accept the Data Privacy Policy to continue.',
+                ]);
+                return;
+            }
+        } catch (ValidationException $e) {
+            $this->dispatch('validation-error');
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Please review the highlighted fields and try again.',
+            ]);
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('submit() pre-flight error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->dispatch('validation-error');
+            throw ValidationException::withMessages([
+                'step' => 'Could not validate booking: ' . $e->getMessage(),
+            ]);
         }
 
-        if (! $this->hasAcceptedPrivacy) {
-            $this->showPrivacyModal = true;
-            return;
+        try {
+            $this->isSubmittingBooking = true;
+            $transaction = $this->processBookingInternal();
+            if (! $transaction) {
+                $this->isSubmittingBooking = false;
+                throw ValidationException::withMessages([
+                    'step' => 'Booking could not be processed at this time. Please try again.',
+                ]);
+            }
+            $this->isSubmittingBooking = false;
+            $this->redirect(route('payment.show', $transaction), navigate: false);
+            return null;
+        } catch (ValidationException $e) {
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('submit() processBooking fatal', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw ValidationException::withMessages([
+                'step' => 'Booking failed to save. Please review and try again. Error: ' . $e->getMessage(),
+            ]);
         }
-
-        return $this->confirmTermsAndContinue();
     }
 
     public function confirmTermsAndContinue()
     {
-        $this->validate([
-            'hasAcceptedTerms' => 'required|accepted',
-        ]);
+        try {
+            $this->validate([
+                'hasAcceptedTerms' => 'required|accepted',
+            ]);
+        } catch (ValidationException $e) {
+            $this->dispatch('validation-error');
+            throw $e;
+        }
 
         $this->showTermsModal = false;
 
@@ -1382,12 +1470,34 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        return $this->processBooking();
+        try {
+            $this->isSubmittingBooking = true;
+            $transaction = $this->processBookingInternal();
+            if (! $transaction) {
+                $this->isSubmittingBooking = false;
+                throw ValidationException::withMessages([
+                    'step' => 'Booking could not be processed at this time. Please try again.',
+                ]);
+            }
+            $this->isSubmittingBooking = false;
+            $this->redirect(route('payment.show', $transaction), navigate: false);
+            return null;
+        } catch (\Throwable $e) {
+            Log::error('confirmTermsAndContinue fatal', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw ValidationException::withMessages([
+                'step' => 'Booking failed to save: ' . $e->getMessage(),
+            ]);
+        }
     }
 
-    protected function processBooking()
+    protected function processBookingInternal(): ?Transaction
     {
-        $this->isSubmittingBooking = true;
+        $this->syncFullPassengerNames();
         $this->showTermsModal = false;
         $this->showPrivacyModal = false;
         session()->forget('booking_draft');
@@ -1396,9 +1506,16 @@ public function selectedSchedule(): ?array
             $schedule = null;
             $scheduleAccommodation = null;
         } else {
-            $schedule = Schedule::query()
-                ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
-                ->findOrFail($this->selected_schedule_id);
+            try {
+                $schedule = Schedule::query()
+                    ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode)
+                    ->findOrFail($this->selected_schedule_id);
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                $this->dispatch('validation-error');
+                throw ValidationException::withMessages([
+                    'selected_schedule_id' => 'The selected schedule is no longer available. Please review and try again.',
+                ]);
+            }
 
             $scheduleAccommodation = $this->selected_schedule_accommodation_id
                 ? ScheduleAccommodation::find($this->selected_schedule_accommodation_id)
@@ -1406,167 +1523,211 @@ public function selectedSchedule(): ?array
         }
 
         $transaction = null;
+        $booking = null;
 
-        DB::transaction(function () use (&$transaction, $schedule, $scheduleAccommodation) {
-            $usedPromoTicket = null;
-            $promoTicketCount = 0;
+        try {
+            DB::transaction(function () use (&$transaction, &$booking, $schedule, $scheduleAccommodation) {
+                $usedPromoTicket = null;
+                $promoTicketCount = 0;
 
-            if ($this->mode === 'airline' && $schedule) {
-                // ── Airline: per-passenger promo assignment ──────────────────
-                $promoPassengerIndices = collect($this->passengers)
-                    ->keys()
-                    ->filter(fn ($i) => ! empty($this->passengers[$i]['use_promo']))
-                    ->values();
+                if ($this->mode === 'airline' && $schedule) {
+                    $promoPassengerIndices = collect($this->passengers)
+                        ->keys()
+                        ->filter(fn ($i) => ! empty($this->passengers[$i]['use_promo']))
+                        ->values();
 
-                $promoTicketCount = $promoPassengerIndices->count();
+                    $promoTicketCount = $promoPassengerIndices->count();
 
-                if ($promoTicketCount > 0) {
-                    // Lock the promo ticket row before any increment
+                    if ($promoTicketCount > 0) {
+                        $usedPromoTicket = $schedule->promotionalTickets()
+                            ->activeAndAvailable()
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (! $usedPromoTicket || $usedPromoTicket->remaining_quantity < $promoTicketCount) {
+                            throw new \RuntimeException(
+                                'Not enough promotional ticket slots remaining. Please review your selection and try again.'
+                            );
+                        }
+
+                        $usedPromoTicket->increment('quantity_sold', $promoTicketCount);
+                    }
+                } elseif ($this->use_promo_ticket && $schedule) {
                     $usedPromoTicket = $schedule->promotionalTickets()
                         ->activeAndAvailable()
                         ->lockForUpdate()
                         ->first();
 
-                    if (! $usedPromoTicket || $usedPromoTicket->remaining_quantity < $promoTicketCount) {
-                        // Not enough promo slots — abort cleanly
-                        throw new \RuntimeException(
-                            'Not enough promotional ticket slots remaining. Please review your selection and try again.'
-                        );
+                    if ($usedPromoTicket && $usedPromoTicket->quantity_sold < $usedPromoTicket->quantity_available) {
+                        $usedPromoTicket->increment('quantity_sold');
+                        $promoTicketCount = 1;
+                    } else {
+                        $this->use_promo_ticket = false;
+                        $usedPromoTicket = null;
                     }
-
-                    $usedPromoTicket->increment('quantity_sold', $promoTicketCount);
                 }
-            } elseif ($this->use_promo_ticket && $schedule) {
-                // ── Ferry / other modes: existing booking-level promo logic ──
-                $usedPromoTicket = $schedule->promotionalTickets()
-                    ->activeAndAvailable()
-                    ->lockForUpdate()
-                    ->first();
 
-                if ($usedPromoTicket && $usedPromoTicket->quantity_sold < $usedPromoTicket->quantity_available) {
-                    $usedPromoTicket->increment('quantity_sold');
-                    $promoTicketCount = 1;
-                } else {
-                    $this->use_promo_ticket = false;
-                    $usedPromoTicket = null;
+                $usedSchedulePrice = $this->getSelectedSchedulePrice();
+
+                $termsVersion = 'amiga-terms-2026-07-24';
+                $termsAcceptedAt = now();
+                $termsAcceptedIp = request()->ip();
+                $termsAcceptedUserAgent = request()->userAgent();
+
+                $booking = Booking::create([
+                    'user_id' => auth()->check() ? auth()->id() : null,
+                    'transaction_number' => $this->generateTransactionNumber(),
+                    'origin' => $this->origin,
+                    'destination' => $this->destination,
+                    'departure_date' => $this->departure_date,
+                    'return_date' => $this->return_date,
+                    'schedule_id' => $schedule?->id,
+                    'schedule_service' => $schedule?->service_name,
+                    'schedule_departure_time' => $schedule?->formatted_departure,
+                    'schedule_arrival_time' => $schedule?->formatted_arrival,
+                    'schedule_price' => $usedSchedulePrice,
+                    'schedule_accommodation_id' => $scheduleAccommodation?->id,
+                    'schedule_accommodation_name' => $scheduleAccommodation?->name,
+                    'schedule_accommodation_price' => $scheduleAccommodation?->price,
+                    'tour_id' => $this->tour_id,
+                    'tour_date_id' => $this->tour_date_id,
+                    'tour_inclusions' => $this->tour?->inclusions,
+                    'client_name' => $this->client_name,
+                    'client_email' => $this->client_email,
+                    'client_phone' => $this->client_phone,
+                    'total_price' => $this->calculateTotalPrice(),
+                    'status' => 'pending',
+                    'has_vehicle' => $this->has_vehicle,
+                    'vehicle_type' => $this->vehicle_type,
+                    'vehicle_plate_number' => $this->vehicle_plate_number,
+                    'vehicle_price' => $this->vehicle_price,
+                    'driver_name' => $this->driver_name,
+                    'driver_birthday' => $this->driver_birthday,
+                    'promotional_ticket_id' => $usedPromoTicket?->id,
+                    'promo_ticket_count' => $promoTicketCount,
+                    'terms_accepted_at' => $termsAcceptedAt,
+                    'terms_version' => $termsVersion,
+                    'terms_accepted_ip' => $termsAcceptedIp,
+                    'terms_accepted_user_agent' => $termsAcceptedUserAgent,
+                ]);
+
+                foreach ($this->passengers as $passenger) {
+                    $isPromo = $this->mode === 'airline' && ! empty($passenger['use_promo']) && $usedPromoTicket;
+
+                    Passenger::create([
+                        'booking_id' => $booking->id,
+                        'type' => $passenger['type'],
+                        'name' => $passenger['name'] ?: null,
+                        'discount_id' => $isPromo ? null : ($passenger['discount_id'] ?: null),
+                        'seat_number' => $passenger['seat_number'] ?? null,
+                        'seat_row' => $passenger['seat_row'] ?? null,
+                        'seat_section' => $passenger['seat_section'] ?? null,
+                        'promotional_ticket_id' => $isPromo ? $usedPromoTicket->id : null,
+                        'is_promo' => $isPromo,
+                        'promo_price' => $isPromo ? floatval($usedPromoTicket->promo_price) : null,
+                    ]);
                 }
-            }
 
-            // Calculate the schedule price to use (promo if applicable)
-            $usedSchedulePrice = $this->getSelectedSchedulePrice();
+                if ($this->selected_transport_class_id) {
+                    $transportClass = TransportClass::query()->find($this->selected_transport_class_id);
+                    if ($transportClass) {
+                        $booking->transportClasses()->attach($transportClass->id, [
+                            'price' => $transportClass->price,
+                        ]);
+                    }
+                }
 
-            $termsVersion = 'amiga-terms-2026-07-24';
-            $termsAcceptedAt = now();
-            $termsAcceptedIp = request()->ip();
-            $termsAcceptedUserAgent = request()->userAgent();
+                if ($this->selected_hotel_id) {
+                    $hotel = Accommodation::query()->find($this->selected_hotel_id);
+                    if ($hotel) {
+                        $booking->accommodations()->attach($hotel->id, [
+                            'price' => $hotel->price,
+                        ]);
+                    }
+                }
 
-            $booking = Booking::create([
-                'transaction_number' => $this->generateTransactionNumber(),
-                'origin' => $this->origin,
-                'destination' => $this->destination,
-                'departure_date' => $this->departure_date,
-                'return_date' => $this->return_date,
-                'schedule_id' => $schedule?->id,
-                'schedule_service' => $schedule?->service_name,
-                'schedule_departure_time' => $schedule?->formatted_departure,
-                'schedule_arrival_time' => $schedule?->formatted_arrival,
-                'schedule_price' => $usedSchedulePrice,
-                'schedule_accommodation_id' => $scheduleAccommodation?->id,
-                'schedule_accommodation_name' => $scheduleAccommodation?->name,
-                'schedule_accommodation_price' => $scheduleAccommodation?->price,
-                'tour_id' => $this->tour_id,
-                'tour_date_id' => $this->tour_date_id,
-                'tour_inclusions' => $this->tour?->inclusions,
-                'client_name' => $this->client_name,
-                'client_email' => $this->client_email,
-                'client_phone' => $this->client_phone,
-                'total_price' => $this->calculateTotalPrice(),
-                'status' => 'pending',
-                'has_vehicle' => $this->has_vehicle,
-                'vehicle_type' => $this->vehicle_type,
-                'vehicle_plate_number' => $this->vehicle_plate_number,
-                'vehicle_price' => $this->vehicle_price,
-                'driver_name' => $this->driver_name,
-                'driver_birthday' => $this->driver_birthday,
-                'promotional_ticket_id' => $usedPromoTicket?->id,
-                'promo_ticket_count' => $promoTicketCount,
-                'terms_accepted_at' => $termsAcceptedAt,
-                'terms_version' => $termsVersion,
-                'terms_accepted_ip' => $termsAcceptedIp,
-                'terms_accepted_user_agent' => $termsAcceptedUserAgent,
-            ]);
-
-            foreach ($this->passengers as $passenger) {
-                $isPromo = $this->mode === 'airline' && ! empty($passenger['use_promo']) && $usedPromoTicket;
-
-                Passenger::create([
+                $transaction = Transaction::create([
                     'booking_id' => $booking->id,
-                    'type' => $passenger['type'],
-                    'name' => $passenger['name'] ?: null,
-                    // A promo passenger cannot have a discount
-                    'discount_id' => $isPromo ? null : ($passenger['discount_id'] ?: null),
-                    'seat_number' => $passenger['seat_number'] ?? null,
-                    'seat_row' => $passenger['seat_row'] ?? null,
-                    'seat_section' => $passenger['seat_section'] ?? null,
-                    'promotional_ticket_id' => $isPromo ? $usedPromoTicket->id : null,
-                    'is_promo' => $isPromo,
-                    'promo_price' => $isPromo ? floatval($usedPromoTicket->promo_price) : null,
+                    'payment_status' => 'unpaid',
                 ]);
-            }
-
-            if ($this->selected_transport_class_id) {
-                $transportClass = TransportClass::query()->find($this->selected_transport_class_id);
-                if ($transportClass) {
-                    $booking->transportClasses()->attach($transportClass->id, [
-                        'price' => $transportClass->price,
-                    ]);
-                }
-            }
-
-            if ($this->selected_hotel_id) {
-                $hotel = Accommodation::query()->find($this->selected_hotel_id);
-                if ($hotel) {
-                    $booking->accommodations()->attach($hotel->id, [
-                        'price' => $hotel->price,
-                    ]);
-                }
-            }
-
-            $transaction = Transaction::create([
-                'booking_id' => $booking->id,
-                'payment_status' => 'unpaid',
+            });
+        } catch (\RuntimeException $e) {
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw ValidationException::withMessages([
+                'selected_schedule_id' => $e->getMessage(),
             ]);
+        } catch (\Throwable $e) {
+            Log::error('Booking creation failed in DB transaction', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'client_email' => $this->client_email ?? null,
+            ]);
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw ValidationException::withMessages([
+                'step' => 'Booking could not be saved. Please review your details and try again. (' . $e->getMessage() . ')',
+            ]);
+        }
 
-            $booking->load('passengers.discount', 'scheduleAccommodation', 'transportClasses', 'transaction', 'schedule');
+        if (! $booking || ! $transaction) {
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw ValidationException::withMessages([
+                'step' => 'Booking could not be created. Please try again.',
+            ]);
+        }
 
-            $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
+        $booking->load('passengers.discount', 'scheduleAccommodation', 'transportClasses', 'transaction', 'schedule');
+
+        $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
+        try {
             if (! file_exists(dirname($receiptPath))) {
-                mkdir(dirname($receiptPath), 0755, true);
+                @mkdir(dirname($receiptPath), 0755, true);
             }
+            $pdfOptions = new Options();
+            $pdfOptions->set('isRemoteEnabled', false);
+            $pdfOptions->set('isHtml5ParserEnabled', true);
+            $pdfOptions->set('defaultFont', 'Arial');
+            $dompdf = new Dompdf($pdfOptions);
+            $dompdf->loadHtml(view('pdf.receipt', ['booking' => $booking])->render());
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+            @file_put_contents($receiptPath, $dompdf->output());
+        } catch (\Throwable $e) {
+            Log::warning('Receipt PDF generation failed (non-fatal)', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
-            Pdf::driver('dompdf')
-                ->view('pdf.receipt', ['booking' => $booking])
-                ->save($receiptPath);
-
-            try {
+        try {
+            if (file_exists($receiptPath)) {
                 Mail::to($booking->client_email)->send(new BookingCreated($booking, $receiptPath));
-            } catch (Throwable $e) {
-                Log::error('Failed sending booking created email', [
-                    'booking_id' => $booking->id ?? null,
-                    'email' => $booking->client_email ?? null,
-                    'error' => $e->getMessage(),
-                ]);
+            } else {
+                Mail::to($booking->client_email)->send(new BookingCreated($booking, null));
             }
-        });
+        } catch (Throwable $e) {
+            Log::error('Failed sending booking created email', [
+                'booking_id' => $booking->id ?? null,
+                'email' => $booking->client_email ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
-        return redirect()->route('payment.show', $transaction);
+        return $transaction;
     }
 
     public function confirmPrivacyAndContinue()
     {
-        $this->validate([
-            'hasAcceptedPrivacy' => 'required|accepted',
-        ]);
+        try {
+            $this->validate([
+                'hasAcceptedPrivacy' => 'required|accepted',
+            ]);
+        } catch (ValidationException $e) {
+            $this->dispatch('validation-error');
+            throw $e;
+        }
 
         $this->showPrivacyModal = false;
 
@@ -1575,7 +1736,33 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        return $this->confirmTermsAndContinue();
+        try {
+            $this->isSubmittingBooking = true;
+            $transaction = $this->processBookingInternal();
+            if (! $transaction) {
+                $this->isSubmittingBooking = false;
+                throw ValidationException::withMessages([
+                    'step' => 'Booking could not be processed at this time. Please try again.',
+                ]);
+            }
+            $this->isSubmittingBooking = false;
+            $this->redirect(route('payment.show', $transaction), navigate: false);
+            return null;
+        } catch (ValidationException $e) {
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('confirmPrivacyAndContinue fatal', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw ValidationException::withMessages([
+                'step' => 'Booking failed to save: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     public function cancelTermsModal()
