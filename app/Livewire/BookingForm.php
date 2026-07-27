@@ -91,6 +91,8 @@ class BookingForm extends Component
         'vehicle_type' => 'vehicle type',
         'vehicle_plate_number' => 'plate number',
         'vehicle_price' => 'vehicle price',
+        'extra_baggage_type' => 'baggage item category',
+        'extra_baggage_specify' => 'specified baggage details',
     ];
 
     // Selected schedule accommodation id
@@ -99,6 +101,7 @@ class BookingForm extends Component
     public ?int $selected_return_schedule_accommodation_id = null;
     public ?int $selected_transport_class_id = null;
     public ?int $selectingSeatForPassengerIndex = null;
+    public ?int $selectingReturnSeatForPassengerIndex = null;
 
     public ?int $tour_id = null;
     public ?int $tour_date_id = null;
@@ -124,6 +127,8 @@ class BookingForm extends Component
     public bool $showBaggageRules = false;
     public bool $hasExtraBaggage = false;
     public ?float $extra_baggage_weight = null;
+    public ?string $extra_baggage_type = '';
+    public ?string $extra_baggage_specify = '';
     // NOTE: use_promo_ticket is kept for ferry bookings (backward compat).
     // For airline bookings the per-passenger $passengers[n]['use_promo'] flag is used instead.
     public bool $use_promo_ticket = false;
@@ -186,6 +191,12 @@ class BookingForm extends Component
             }
             if (isset($draft['extra_baggage_weight'])) {
                 $this->extra_baggage_weight = $draft['extra_baggage_weight'];
+            }
+            if (isset($draft['extra_baggage_type'])) {
+                $this->extra_baggage_type = $draft['extra_baggage_type'];
+            }
+            if (isset($draft['extra_baggage_specify'])) {
+                $this->extra_baggage_specify = $draft['extra_baggage_specify'];
             }
         } else {
             // If we have package params, clear the draft to avoid conflicts
@@ -964,11 +975,15 @@ public function selectedSchedule(): ?array
         $this->selected_schedule_id = $scheduleId;
         $this->selected_transport_class_id = null;
         $this->selectingSeatForPassengerIndex = null;
+        $this->selectingReturnSeatForPassengerIndex = null;
 
         foreach ($this->passengers as $index => $passenger) {
             $this->passengers[$index]['seat_number'] = null;
             $this->passengers[$index]['seat_row'] = null;
             $this->passengers[$index]['seat_section'] = null;
+            $this->passengers[$index]['return_seat_number'] = null;
+            $this->passengers[$index]['return_seat_row'] = null;
+            $this->passengers[$index]['return_seat_section'] = null;
         }
 
         $this->saveDraft();
@@ -1060,6 +1075,9 @@ public function selectedSchedule(): ?array
                     'seat_number' => null,
                     'seat_row' => null,
                     'seat_section' => null,
+                    'return_seat_number' => null,
+                    'return_seat_row' => null,
+                    'return_seat_section' => null,
                     'use_promo' => false,
                     'promo_cleared_discount' => false,
                 ]);
@@ -1076,6 +1094,9 @@ public function selectedSchedule(): ?array
                     'seat_number' => $passenger['seat_number'] ?? null,
                     'seat_row' => $passenger['seat_row'] ?? null,
                     'seat_section' => $passenger['seat_section'] ?? null,
+                    'return_seat_number' => $passenger['return_seat_number'] ?? null,
+                    'return_seat_row' => $passenger['return_seat_row'] ?? null,
+                    'return_seat_section' => $passenger['return_seat_section'] ?? null,
                     'use_promo' => $passenger['use_promo'] ?? false,
                     'promo_cleared_discount' => $passenger['promo_cleared_discount'] ?? false,
                 ], $passenger);
@@ -1142,6 +1163,8 @@ public function selectedSchedule(): ?array
     {
         if (! $value) {
             $this->extra_baggage_weight = null;
+            $this->extra_baggage_type = '';
+            $this->extra_baggage_specify = '';
         }
 
         $this->saveDraft();
@@ -1298,6 +1321,16 @@ public function selectedSchedule(): ?array
         } else {
             $this->selected_schedule_accommodation_id = $accommodationId;
         }
+        $this->selectingSeatForPassengerIndex = null;
+        $this->selectingReturnSeatForPassengerIndex = null;
+        foreach ($this->passengers as $index => $passenger) {
+            $this->passengers[$index]['seat_number'] = null;
+            $this->passengers[$index]['seat_row'] = null;
+            $this->passengers[$index]['seat_section'] = null;
+            $this->passengers[$index]['return_seat_number'] = null;
+            $this->passengers[$index]['return_seat_row'] = null;
+            $this->passengers[$index]['return_seat_section'] = null;
+        }
         $this->saveDraft();
     }
 
@@ -1307,6 +1340,16 @@ public function selectedSchedule(): ?array
             $this->selected_return_schedule_accommodation_id = null;
         } else {
             $this->selected_return_schedule_accommodation_id = $accommodationId;
+        }
+        $this->selectingSeatForPassengerIndex = null;
+        $this->selectingReturnSeatForPassengerIndex = null;
+        foreach ($this->passengers as $index => $passenger) {
+            $this->passengers[$index]['seat_number'] = null;
+            $this->passengers[$index]['seat_row'] = null;
+            $this->passengers[$index]['seat_section'] = null;
+            $this->passengers[$index]['return_seat_number'] = null;
+            $this->passengers[$index]['return_seat_row'] = null;
+            $this->passengers[$index]['return_seat_section'] = null;
         }
         $this->saveDraft();
     }
@@ -1347,11 +1390,15 @@ public function selectedSchedule(): ?array
     {
         $this->selected_transport_class_id = $this->selected_transport_class_id === $classId ? null : $classId;
         $this->selectingSeatForPassengerIndex = null;
+        $this->selectingReturnSeatForPassengerIndex = null;
 
         foreach ($this->passengers as $index => $passenger) {
             $this->passengers[$index]['seat_number'] = null;
             $this->passengers[$index]['seat_row'] = null;
             $this->passengers[$index]['seat_section'] = null;
+            $this->passengers[$index]['return_seat_number'] = null;
+            $this->passengers[$index]['return_seat_row'] = null;
+            $this->passengers[$index]['return_seat_section'] = null;
         }
 
         $this->saveDraft();
@@ -1371,6 +1418,70 @@ public function selectedSchedule(): ?array
         $this->selectingSeatForPassengerIndex = $index;
         $this->saveDraft();
     }
+
+    public function selectReturnSeatForPassenger(string $seat): void
+    {
+        $indexToAssign = $this->selectingReturnSeatForPassengerIndex;
+        if ($indexToAssign === null) {
+            foreach ($this->passengers as $idx => $passenger) {
+                if (empty($passenger['return_seat_number'])) {
+                    $indexToAssign = $idx;
+                    break;
+                }
+            }
+        }
+
+        if ($indexToAssign !== null) {
+            $seatSection = '';
+            if ($this->mode === 'airline') {
+                if ($this->selected_return_transport_class_id) {
+                    $class = $this->transportClassCatalog->firstWhere('id', $this->selected_return_transport_class_id);
+                    if ($class) {
+                        $seatSection = $class->name;
+                    }
+                }
+            } else {
+                if ($this->selected_return_schedule_accommodation_id) {
+                    $acc = $this->accommodationCatalog->firstWhere('id', $this->selected_return_schedule_accommodation_id);
+                    if ($acc) {
+                        $seatSection = $acc->name;
+                    }
+                }
+            }
+            $this->passengers[$indexToAssign]['return_seat_number'] = $seat;
+            $this->passengers[$indexToAssign]['return_seat_row'] = preg_replace('/[^0-9]/', '', $seat);
+            $this->passengers[$indexToAssign]['return_seat_section'] = $seatSection;
+            $this->selectingReturnSeatForPassengerIndex = null;
+            $this->saveDraft();
+        }
+    }
+
+    public function clearReturnSeatSelection(): void
+    {
+        $this->selectingReturnSeatForPassengerIndex = null;
+        foreach ($this->passengers as $index => $passenger) {
+            $this->passengers[$index]['return_seat_number'] = null;
+            $this->passengers[$index]['return_seat_row'] = null;
+            $this->passengers[$index]['return_seat_section'] = null;
+        }
+        $this->saveDraft();
+    }
+
+    public function chooseReturnSeatForPassenger(int $index): void
+    {
+        $this->selectingReturnSeatForPassengerIndex = $index;
+        $this->saveDraft();
+    }
+
+    public function clearReturnSeatForPassenger(int $index): void
+    {
+        $this->passengers[$index]['return_seat_number'] = null;
+        $this->passengers[$index]['return_seat_row'] = null;
+        $this->passengers[$index]['return_seat_section'] = null;
+        $this->selectingReturnSeatForPassengerIndex = $index;
+        $this->saveDraft();
+    }
+
 
     public function submit()
     {
@@ -1622,6 +1733,9 @@ public function selectedSchedule(): ?array
                         'seat_number' => $passenger['seat_number'] ?? null,
                         'seat_row' => $passenger['seat_row'] ?? null,
                         'seat_section' => $passenger['seat_section'] ?? null,
+                        'return_seat_number' => $passenger['return_seat_number'] ?? null,
+                        'return_seat_row' => $passenger['return_seat_row'] ?? null,
+                        'return_seat_section' => $passenger['return_seat_section'] ?? null,
                         'promotional_ticket_id' => $isPromo ? $usedPromoTicket->id : null,
                         'is_promo' => $isPromo,
                         'promo_price' => $isPromo ? floatval($usedPromoTicket->promo_price) : null,
@@ -1811,6 +1925,8 @@ public function selectedSchedule(): ?array
             'vehicle_price' => $this->vehicle_price,
             'has_extra_baggage' => $this->hasExtraBaggage,
             'extra_baggage_weight' => $this->extra_baggage_weight,
+            'extra_baggage_type' => $this->extra_baggage_type,
+            'extra_baggage_specify' => $this->extra_baggage_specify,
             'use_promo_ticket' => $this->use_promo_ticket, // retained for ferry mode
             'client_name' => $this->client_name,
             'client_email' => $this->client_email,
@@ -1862,7 +1978,9 @@ public function selectedSchedule(): ?array
             'vehicle_type' => $this->vehicleRateCatalog->isNotEmpty() ? 'nullable|string|max:255' : 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
-            'extra_baggage_weight' => $this->hasExtraBaggage ? 'required|numeric|min:0|max:100' : 'nullable|numeric|min:0|max:100',
+            'extra_baggage_type' => $this->hasExtraBaggage ? 'required|string|max:255' : 'nullable|string|max:255',
+            'extra_baggage_specify' => $this->hasExtraBaggage ? 'required|string|max:255' : 'nullable|string|max:255',
+            'extra_baggage_weight' => 'nullable|numeric|min:0|max:100',
             ],
             2 => [
                 'selected_schedule_id' => $this->tour_id ? 'nullable' : 'required|integer|exists:schedules,id',
@@ -1945,7 +2063,9 @@ public function selectedSchedule(): ?array
             'vehicle_type' => $this->vehicleRateCatalog->isNotEmpty() ? 'nullable|string|max:255' : 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
-            'extra_baggage_weight' => $this->hasExtraBaggage ? 'required|numeric|min:0|max:100' : 'nullable|numeric|min:0|max:100',
+            'extra_baggage_type' => $this->hasExtraBaggage ? 'required|string|max:255' : 'nullable|string|max:255',
+            'extra_baggage_specify' => $this->hasExtraBaggage ? 'required|string|max:255' : 'nullable|string|max:255',
+            'extra_baggage_weight' => 'nullable|numeric|min:0|max:100',
         ];
     }
 

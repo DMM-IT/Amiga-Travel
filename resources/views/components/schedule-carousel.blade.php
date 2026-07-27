@@ -29,27 +29,42 @@
     @if(count($schedules) === 0)
         <p class="rounded-xl border border-slate-200 bg-slate-50 p-6 text-slate-600 text-sm">No schedules are available for this route on the selected date.</p>
     @else
-        <!-- Alpine Carousel -->
-        <div x-data="{ currentSlide: 0, slides: {{ count($schedules) }}, itemsPerSlide: 3 }" class="relative">
+        <!-- Alpine Carousel: 2 cards on mobile, 3 on sm+ -->
+        <div
+            x-data="{
+                currentSlide: 0,
+                slides: {{ count($schedules) }},
+                itemsPerSlide: window.innerWidth >= 640 ? 3 : 2,
+                init() {
+                    const update = () => {
+                        const newItems = window.innerWidth >= 640 ? 3 : 2;
+                        if (newItems !== this.itemsPerSlide) {
+                            this.itemsPerSlide = newItems;
+                            this.currentSlide = 0;
+                        }
+                    };
+                    window.addEventListener('resize', update);
+                }
+            }"
+            class="relative group"
+        >
             <!-- Navigation -->
-            <div class="absolute top-1/2 -left-4 -translate-y-1/2 z-10" x-show="currentSlide > 0">
-                <button @click="currentSlide = Math.max(0, currentSlide - 1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow border border-slate-200 hover:bg-slate-50">
-                    &lt;
-                </button>
-            </div>
-            <div class="absolute top-1/2 -right-4 -translate-y-1/2 z-10" x-show="currentSlide < Math.ceil(slides / itemsPerSlide) - 1">
-                <button @click="currentSlide = Math.min(Math.ceil(slides / itemsPerSlide) - 1, currentSlide + 1)" class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow border border-slate-200 hover:bg-slate-50">
-                    &gt;
-                </button>
-            </div>
+            <button x-show="currentSlide > 0" @click="currentSlide = Math.max(0, currentSlide - 1)" class="absolute -left-3 sm:-left-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.15)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all sm:opacity-0 sm:group-hover:opacity-100">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 pr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            
+            <button x-show="currentSlide < Math.ceil(slides / itemsPerSlide) - 1" @click="currentSlide = Math.min(Math.ceil(slides / itemsPerSlide) - 1, currentSlide + 1)" class="absolute -right-3 sm:-right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.15)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all sm:opacity-0 sm:group-hover:opacity-100">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 pl-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
 
             <!-- Slides Container -->
             <div class="overflow-hidden py-2 -mx-2 px-2">
-                <div class="flex transition-transform duration-300" :style="'transform: translateX(calc(-' + (currentSlide * 100) + '%))'">
+                <div class="flex transition-transform duration-300" :style="'transform: translateX(calc(-' + (currentSlide * 100) + '%))'" >
                     @foreach($schedules as $schedule)
-                        <div class="w-1/3 flex-shrink-0 px-2">
-                            <button type="button" wire:click.prevent="{{ $selectMethod }}({{ $schedule['id'] }})" class="w-full h-full rounded-2xl border p-4 text-left transition duration-200 flex flex-col {{ (int)$selectedId === (int)$schedule['id'] ? 'border-[#db2777] bg-[#db2777] text-white shadow-md' : 'border-slate-200 bg-white text-slate-900 hover:border-[#db2777]/50 hover:shadow-sm' }}">
-                                <div class="flex items-start justify-between mb-2">
+                        {{-- w-1/2 on mobile (2 per slide), w-1/3 on sm+ (3 per slide) --}}
+                        <div class="w-1/2 sm:w-1/3 flex-shrink-0 px-1.5 sm:px-2">
+                            <button type="button" wire:click.prevent="{{ $selectMethod }}({{ $schedule['id'] }})" class="w-full h-full rounded-xl sm:rounded-2xl border p-3 sm:p-4 text-left transition duration-200 flex flex-col {{ (int)$selectedId === (int)$schedule['id'] ? 'border-[#db2777] bg-[#db2777] text-white shadow-md' : 'border-slate-200 bg-white text-slate-900 hover:border-[#db2777]/50 hover:shadow-sm' }}">
+                                <div class="flex items-start justify-between mb-2 gap-1">
                                     @php
                                         $opName = $schedule['operator'] ?? '';
                                         $opLogo = null;
@@ -60,20 +75,20 @@
                                         elseif (stripos($opName, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
                                     @endphp
                                     @if($opLogo)
-                                        <div class="w-10 h-10 shrink-0 bg-white rounded border {{ (int)$selectedId === (int)$schedule['id'] ? 'border-white/30 shadow' : 'border-slate-200' }} flex items-center justify-center p-1 overflow-hidden">
+                                        <div class="w-8 h-8 sm:w-10 sm:h-10 shrink-0 bg-white rounded border {{ (int)$selectedId === (int)$schedule['id'] ? 'border-white/30 shadow' : 'border-slate-200' }} flex items-center justify-center p-1 overflow-hidden">
                                             <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $opName }}" class="w-full h-full object-contain">
                                         </div>
                                     @endif
-                                    <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider {{ (int)$selectedId === (int)$schedule['id'] ? 'border-white/30 bg-white/20 text-white' : 'border-slate-200 bg-slate-50 text-slate-600' }}">{{ $schedule['availability'] }}</span>
+                                    <span class="rounded-full border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ml-auto {{ (int)$selectedId === (int)$schedule['id'] ? 'border-white/30 bg-white/20 text-white' : 'border-slate-200 bg-slate-50 text-slate-600' }}">{{ $schedule['availability'] }}</span>
                                 </div>
-                                <h3 class="text-base font-bold">{{ $schedule['service'] }}</h3>
+                                <h3 class="text-sm sm:text-base font-bold leading-tight">{{ $schedule['service'] }}</h3>
                                 @if ($schedule['operator'])
-                                    <p class="mt-1 text-xs font-medium {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">{{ $schedule['operator'] }}</p>
+                                    <p class="mt-0.5 text-[10px] sm:text-xs font-medium {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white/80' : 'text-slate-600' }}">{{ $schedule['operator'] }}</p>
                                 @endif
-                                <p class="mt-2 text-xs font-semibold {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white' : 'text-slate-900' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
-                                <div class="mt-auto pt-3 border-t {{ (int)$selectedId === (int)$schedule['id'] ? 'border-white/20' : 'border-slate-100' }}">
-                                    <p class="text-xs font-medium {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white/90' : 'text-slate-600' }}">Duration: {{ $schedule['duration'] }}</p>
-                                    <p class="text-sm font-bold {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white' : 'text-slate-900' }}">Fare: ₱{{ number_format($schedule['price'], 2) }}</p>
+                                <p class="mt-1.5 text-[10px] sm:text-xs font-semibold {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white' : 'text-slate-900' }}">{{ $schedule['departure'] }} → {{ $schedule['arrival'] }}</p>
+                                <div class="mt-auto pt-2 sm:pt-3 border-t {{ (int)$selectedId === (int)$schedule['id'] ? 'border-white/20' : 'border-slate-100' }}">
+                                    <p class="text-[10px] sm:text-xs font-medium {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white/90' : 'text-slate-600' }}">{{ $schedule['duration'] }}</p>
+                                    <p class="text-xs sm:text-sm font-bold {{ (int)$selectedId === (int)$schedule['id'] ? 'text-white' : 'text-slate-900' }}">₱{{ number_format($schedule['price'], 2) }}</p>
                                 </div>
                             </button>
                         </div>
