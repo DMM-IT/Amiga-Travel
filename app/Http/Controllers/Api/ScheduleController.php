@@ -13,7 +13,7 @@ class ScheduleController extends Controller
     {
         $mode = $request->input('mode', '');
         $operator = $request->input('operator', '');
-        $origins = FerryRoute::activeOrigins($mode ?: null, $operator ?: null);
+        $origins = FerryRoute::scheduleOrigins($mode ?: null, $operator ?: null);
         return response()->json([
             'status' => 'success',
             'origins' => $origins
@@ -23,7 +23,7 @@ class ScheduleController extends Controller
     public function operators(Request $request)
     {
         $mode = $request->input('mode', '');
-        $operators = FerryRoute::activeOperatorsFor($mode ?: null);
+        $operators = FerryRoute::scheduleOperatorsFor($mode ?: null);
         return response()->json([
             'status' => 'success',
             'operators' => $operators
@@ -35,9 +35,12 @@ class ScheduleController extends Controller
         $request->validate([
             'origin' => 'required|string',
         ]);
+        $origin = $request->input('origin');
         $mode = $request->input('mode', '');
         $operator = $request->input('operator', '');
-        $destinations = FerryRoute::activeDestinationsFor($request->input('origin'), $mode ?: null, $operator ?: null);
+        $tripType = $request->input('trip_type', 'one_way');
+        $requireReturn = $tripType === 'round_trip';
+        $destinations = FerryRoute::scheduleDestinationsFor($origin, $mode ?: null, $operator ?: null, $requireReturn);
         return response()->json([
             'status' => 'success',
             'destinations' => $destinations

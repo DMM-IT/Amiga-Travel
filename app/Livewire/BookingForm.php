@@ -375,7 +375,7 @@ class BookingForm extends Component
             return [];
         }
 
-        return FerryRoute::activeOrigins($this->mode);
+        return FerryRoute::scheduleOrigins($this->mode, $this->operator);
     }
 
     #[Computed]
@@ -385,7 +385,9 @@ class BookingForm extends Component
             return [];
         }
 
-        return FerryRoute::activeDestinationsFor($this->origin, $this->mode);
+        $requireReturn = $this->trip_type === 'round_trip';
+
+        return FerryRoute::scheduleDestinationsFor($this->origin, $this->mode, $this->operator, $requireReturn);
     }
 
     #[Computed]
@@ -421,7 +423,7 @@ class BookingForm extends Component
             return [];
         }
 
-        return FerryRoute::activeOperatorsFor($this->mode);
+        return FerryRoute::scheduleOperatorsFor($this->mode);
     }
     
     #[Computed]
@@ -469,28 +471,46 @@ public function selectedSchedule(): ?array
 
     public function updatedTripType(string $value): void
     {
-        // If it's a tour package, lock to round trip
         if ($this->prefilled_from_package || $this->tour_id) {
             $this->trip_type = 'round_trip';
         } else {
             $this->trip_type = $value;
         }
+
+        if ($this->trip_type === 'round_trip' && !empty($this->destination)) {
+            $hasReturn = FerryRoute::hasBidirectionalSchedules(
+                $this->origin,
+                $this->destination,
+                $this->mode,
+                $this->operator
+            );
+            if (! $hasReturn) {
+                $this->destination = '';
+                $this->return_date = null;
+                $this->selected_return_schedule_id = null;
+                $this->selected_return_schedule_accommodation_id = null;
+                $this->availableReturnSchedules = [];
+            }
+        }
         
         if ($this->trip_type === 'one_way') {
             $this->return_date = null;
+            $this->selected_return_schedule_id = null;
+            $this->selected_return_schedule_accommodation_id = null;
+            $this->availableReturnSchedules = [];
+            $this->available_return_schedule_dates = [];
             $this->saveDraft();
             return;
         }
         
-        // Try to set from duration first (packages), otherwise set default return date
         if (!$this->updateReturnDateFromDuration() && !empty($this->departure_date) && empty($this->return_date)) {
             try {
                 $dt = Carbon::parse($this->departure_date);
                 $this->return_date = $dt->addDay()->format('Y-m-d');
             } catch (\Throwable $e) {
-                // ignore parse errors
             }
         }
+        $this->updateAvailableScheduleDates();
         $this->saveDraft();
     }
 
@@ -500,28 +520,46 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        // If it's a tour package, lock to round trip
         if ($this->prefilled_from_package || $this->tour_id) {
             $this->trip_type = 'round_trip';
         } else {
             $this->trip_type = $type;
         }
+
+        if ($this->trip_type === 'round_trip' && !empty($this->destination)) {
+            $hasReturn = FerryRoute::hasBidirectionalSchedules(
+                $this->origin,
+                $this->destination,
+                $this->mode,
+                $this->operator
+            );
+            if (! $hasReturn) {
+                $this->destination = '';
+                $this->return_date = null;
+                $this->selected_return_schedule_id = null;
+                $this->selected_return_schedule_accommodation_id = null;
+                $this->availableReturnSchedules = [];
+            }
+        }
         
         if ($this->trip_type === 'one_way') {
             $this->return_date = null;
+            $this->selected_return_schedule_id = null;
+            $this->selected_return_schedule_accommodation_id = null;
+            $this->availableReturnSchedules = [];
+            $this->available_return_schedule_dates = [];
             $this->saveDraft();
             return;
         }
         
-        // Try to set from duration first (packages), otherwise set default return date
         if (!$this->updateReturnDateFromDuration() && !empty($this->departure_date) && empty($this->return_date)) {
             try {
                 $dt = Carbon::parse($this->departure_date);
                 $this->return_date = $dt->addDay()->format('Y-m-d');
             } catch (\Throwable $e) {
-                // ignore parse errors
             }
         }
+        $this->updateAvailableScheduleDates();
         $this->saveDraft();
     }
 
@@ -732,8 +770,11 @@ public function selectedSchedule(): ?array
     {
         if ($this->prefilled_from_package || $this->tour_id) {
             $this->available_schedule_dates = [];
+            $this->available_return_schedule_dates = [];
             return;
         }
+
+        $this->available_package_dates = [];
 
         if (empty($this->mode) || empty($this->origin) || empty($this->destination)) {
             $this->available_schedule_dates = [];

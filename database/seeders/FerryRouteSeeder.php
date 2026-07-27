@@ -56,38 +56,45 @@ class FerryRouteSeeder extends Seeder
 
         foreach ($ferries as $index => $ferry) {
             $routePair = $ferryRoutes[$index % count($ferryRoutes)];
-            
-            $route = FerryRoute::updateOrCreate(
-                [
-                    'origin' => $routePair[0],
-                    'destination' => $routePair[1],
-                    'mode' => 'ferry',
-                    'operator' => $ferry->operator,
-                ],
-                [
-                    'vehicle_id' => $ferry->id,
-                    'is_active' => true,
-                ]
-            );
 
-            foreach ($ferryTemplates as $template) {
-                for ($i = 0; $i < 7; $i++) {
-                    $date = Carbon::today()->addDays($i)->format('Y-m-d');
-                    $depTime = Carbon::parse($date . ' ' . $template['departure_time']);
-                    $arrTime = Carbon::parse($date . ' ' . $template['arrival_time']);
-                    
-                    if ($arrTime->lessThan($depTime)) {
-                        $arrTime->addDay();
-                    }
-                    
-                    Schedule::create(array_merge($template, [
-                        'ferry_route_id' => $route->id,
-                        'service_name' => $ferry->name,
-                        'vehicle_name' => $ferry->vehicle_id,
-                        'departure_time' => $depTime,
-                        'arrival_time' => $arrTime,
+            $directionalPairs = [
+                [$routePair[0], $routePair[1]],
+                [$routePair[1], $routePair[0]],
+            ];
+
+            foreach ($directionalPairs as [$origin, $destination]) {
+                $route = FerryRoute::updateOrCreate(
+                    [
+                        'origin' => $origin,
+                        'destination' => $destination,
+                        'mode' => 'ferry',
+                        'operator' => $ferry->operator,
+                    ],
+                    [
+                        'vehicle_id' => $ferry->id,
                         'is_active' => true,
-                    ]));
+                    ]
+                );
+
+                foreach ($ferryTemplates as $template) {
+                    for ($i = 0; $i < 7; $i++) {
+                        $date = Carbon::today()->addDays($i)->format('Y-m-d');
+                        $depTime = Carbon::parse($date . ' ' . $template['departure_time']);
+                        $arrTime = Carbon::parse($date . ' ' . $template['arrival_time']);
+
+                        if ($arrTime->lessThan($depTime)) {
+                            $arrTime->addDay();
+                        }
+
+                        Schedule::create(array_merge($template, [
+                            'ferry_route_id' => $route->id,
+                            'service_name' => $ferry->name,
+                            'vehicle_name' => $ferry->vehicle_id,
+                            'departure_time' => $depTime,
+                            'arrival_time' => $arrTime,
+                            'is_active' => true,
+                        ]));
+                    }
                 }
             }
         }
@@ -119,40 +126,47 @@ class FerryRouteSeeder extends Seeder
 
         foreach ($airlines as $index => $airline) {
             $routePair = $airlineRoutes[$index % count($airlineRoutes)];
-            
-            $route = FerryRoute::updateOrCreate(
-                [
-                    'origin' => $routePair[0],
-                    'destination' => $routePair[1],
-                    'mode' => 'airline',
-                    'operator' => $airline->operator,
-                ],
-                [
-                    'vehicle_id' => $airline->id,
-                    'is_active' => true,
-                ]
-            );
 
-            foreach ($airlineTemplates as $template) {
-                for ($i = 0; $i < 7; $i++) {
-                    $date = Carbon::today()->addDays($i)->format('Y-m-d');
-                    $depTime = Carbon::parse($date . ' ' . $template['departure_time']);
-                    $arrTime = Carbon::parse($date . ' ' . $template['arrival_time']);
-                    
-                    if ($arrTime->lessThan($depTime)) {
-                        $arrTime->addDay();
-                    }
-                    
-                    Schedule::create(array_merge($template, [
-                        'ferry_route_id' => $route->id,
-                        'service_name' => $airline->name,
-                        'vehicle_name' => $airline->vehicle_id,
-                        'departure_time' => $depTime,
-                        'arrival_time' => $arrTime,
-                        'seat_rows' => null,
-                        'seat_columns' => null,
+            $directionalPairs = [
+                [$routePair[0], $routePair[1]],
+                [$routePair[1], $routePair[0]],
+            ];
+
+            foreach ($directionalPairs as [$origin, $destination]) {
+                $route = FerryRoute::updateOrCreate(
+                    [
+                        'origin' => $origin,
+                        'destination' => $destination,
+                        'mode' => 'airline',
+                        'operator' => $airline->operator,
+                    ],
+                    [
+                        'vehicle_id' => $airline->id,
                         'is_active' => true,
-                    ]));
+                    ]
+                );
+
+                foreach ($airlineTemplates as $template) {
+                    for ($i = 0; $i < 7; $i++) {
+                        $date = Carbon::today()->addDays($i)->format('Y-m-d');
+                        $depTime = Carbon::parse($date . ' ' . $template['departure_time']);
+                        $arrTime = Carbon::parse($date . ' ' . $template['arrival_time']);
+
+                        if ($arrTime->lessThan($depTime)) {
+                            $arrTime->addDay();
+                        }
+
+                        Schedule::create(array_merge($template, [
+                            'ferry_route_id' => $route->id,
+                            'service_name' => $airline->name,
+                            'vehicle_name' => $airline->vehicle_id,
+                            'departure_time' => $depTime,
+                            'arrival_time' => $arrTime,
+                            'seat_rows' => null,
+                            'seat_columns' => null,
+                            'is_active' => true,
+                        ]));
+                    }
                 }
             }
         }

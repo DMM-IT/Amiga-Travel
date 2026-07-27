@@ -1578,7 +1578,17 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _tripTabController = TabController(length: 2, vsync: this);
-    _tripTabController.addListener(() => setState(() {}));
+    _tripTabController.addListener(() {
+      if (_tripTabController.indexIsChanging) return;
+      setState(() {});
+      if (_origin != null) {
+        if (_tripTabController.index == 1 && _destination != null) {
+          _verifyBidirectionalAndClearIfNeeded();
+        } else {
+          _fetchDestinations(_origin!);
+        }
+      }
+    });
     _mode = widget.initialMode ?? 'ferry';
     _fetchOperators();
     _fetchVehicleRates();
@@ -1663,12 +1673,19 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     try {
       final baseUrl = UserSession.getBaseUrl();
       final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
-      final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(origin)}&mode=$_mode$operatorQuery'));
+      final tripType = _tripTabController.index == 1 ? 'round_trip' : 'one_way';
+      final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(origin)}&mode=$_mode&trip_type=$tripType$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _destinations = List<String>.from(data['destinations']);
-          _destination = null;
+          if (_destination != null && !_destinations.contains(_destination)) {
+            _destination = null;
+            _departureDate = null;
+            _returnDate = null;
+            _availableDepartureDates = [];
+            _availableReturnDates = [];
+          }
         });
       }
     } catch (e) {
@@ -1701,6 +1718,41 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       }
     } catch (e) {
       debugPrint('Error fetching available dates: $e');
+    }
+  }
+
+  Future<void> _verifyBidirectionalAndClearIfNeeded() async {
+    if (_origin == null || _destination == null) return;
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
+      final tripType = 'round_trip';
+      final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(_origin!)}&mode=$_mode&trip_type=$tripType$operatorQuery'));
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        final filtered = List<String>.from(data['destinations']);
+        if (!filtered.contains(_destination)) {
+          setState(() {
+            _destination = null;
+            _returnDate = null;
+            _departureDate = null;
+            _destinations = filtered;
+            _availableDepartureDates = [];
+            _availableReturnDates = [];
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No return schedule exists for this route in Round Trip mode. Please select a different destination.'),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 4),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error verifying bidirectional schedules: $e');
     }
   }
 

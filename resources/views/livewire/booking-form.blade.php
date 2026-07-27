@@ -335,11 +335,15 @@
                                     <label class="block text-black font-extrabold text-sm">Departure Date</label>
                                         <div class="mt-2">
                                             @php
+                                                $isPackage = $prefilled_from_package || $tour_id;
                                                 $restrictDepartureDates = false;
                                                 $enabledDepartureDates = [];
-                                                if (!empty($available_package_dates) || !empty($available_schedule_dates)) {
+                                                if ($isPackage && !empty($available_package_dates)) {
                                                     $restrictDepartureDates = true;
-                                                    $enabledDepartureDates = !empty($available_package_dates) ? $available_package_dates : $available_schedule_dates;
+                                                    $enabledDepartureDates = $available_package_dates;
+                                                } elseif (!$isPackage && !empty($available_schedule_dates)) {
+                                                    $restrictDepartureDates = true;
+                                                    $enabledDepartureDates = $available_schedule_dates;
                                                 } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
                                                     $restrictDepartureDates = true;
                                                     $enabledDepartureDates = [];
@@ -361,9 +365,9 @@
                                             @php
                                                 $restrictReturnDates = false;
                                                 $enabledReturnDates = [];
-                                                if (!empty($available_package_dates) || !empty($available_return_schedule_dates)) {
+                                                if (!empty($available_return_schedule_dates)) {
                                                     $restrictReturnDates = true;
-                                                    $enabledReturnDates = !empty($available_package_dates) ? $available_package_dates : $available_return_schedule_dates;
+                                                    $enabledReturnDates = $available_return_schedule_dates;
                                                 } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
                                                     $restrictReturnDates = true;
                                                     $enabledReturnDates = [];
