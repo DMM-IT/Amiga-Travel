@@ -195,6 +195,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Booking::class, 'client_email', 'email');
     }
 
+    public function verifiedBookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'verified_by_user_id');
+    }
+
     public function graciaBalance(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(GraciaUserBalance::class);
