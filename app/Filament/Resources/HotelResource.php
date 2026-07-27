@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AccommodationResource\Pages;
+use App\Filament\Resources\HotelResource\Pages;
 use App\Models\Accommodation;
 use App\Models\User;
 use Filament\Forms\Components\FileUpload;
@@ -18,7 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
-class AccommodationResource extends Resource
+class HotelResource extends Resource
 {
     protected static ?string $model = Accommodation::class;
 
@@ -26,6 +26,8 @@ class AccommodationResource extends Resource
 
     protected static ?string $navigationGroup = 'Travel';
     protected static ?int $navigationSort = 1;
+    protected static ?string $label = 'Hotel';
+    protected static ?string $pluralLabel = 'Hotels';
 
     public static function canAccess(): bool
     {
@@ -61,7 +63,7 @@ class AccommodationResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')
-                    ->label('Accommodation name')
+                    ->label('Hotel name')
                     ->placeholder('e.g. Deluxe Beachfront Room')
                     ->required()
                     ->maxLength(255)
@@ -148,9 +150,9 @@ class AccommodationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAccommodations::route('/'),
-            'create' => Pages\CreateAccommodation::route('/create'),
-            'edit' => Pages\EditAccommodation::route('/{record}/edit'),
+            'index' => Pages\ListHotels::route('/'),
+            'create' => Pages\CreateHotel::route('/create'),
+            'edit' => Pages\EditHotel::route('/{record}/edit'),
         ];
     }
 }
