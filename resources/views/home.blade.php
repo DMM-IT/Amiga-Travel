@@ -20,25 +20,6 @@
         </div>
     </div>
 @endif
-@if(session()->has('booking_draft'))
-    <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="rounded-[1.5rem] border border-pink-200 bg-pink-50 p-4 text-slate-900 shadow-sm">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-pink-700">You have a pending booking in progress.</p>
-                    <p class="mt-1 text-xs text-slate-600">Return to complete your booking or cancel the draft to start a new one.</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <a href="{{ url('/book/new') }}" class="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-pink-700">Return to booking</a>
-                    <form method="POST" action="{{ route('booking.draft.cancel') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center justify-center rounded-full border border-pink-600 px-4 py-2 text-xs font-semibold text-pink-700 transition hover:bg-pink-100">Cancel draft</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-@endif
 <div class="max-w-7xl mx-auto px-0 lg:px-4 py-0 lg:py-6 flex flex-col lg:flex-row items-start gap-0 lg:gap-6">
     <!-- Left Column: Scrolling Image Carousel -->
     <div class="w-full lg:w-4/12 rounded-none lg:rounded-[2rem] overflow-hidden shadow-none lg:shadow-xl ring-0 lg:ring-1 ring-slate-200 relative bg-white flex items-center justify-center min-h-[280px] sm:min-h-[360px] lg:min-h-[520px]"

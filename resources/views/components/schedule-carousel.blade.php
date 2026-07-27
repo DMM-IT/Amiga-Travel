@@ -80,7 +80,7 @@
                     @foreach($mobileChunks as $pageIdx => $pageSchedules)
                         <div class="w-full flex-shrink-0 flex">
                             @foreach($pageSchedules as $schedule)
-                                <div class="w-1/2 flex-shrink-0 px-1.5">
+                                <div class="w-1/2 flex-shrink-0 px-2">
                                     @include('components._schedule-card', [
                                         'schedule' => $schedule,
                                         'selectedId' => $selectedId,
@@ -90,7 +90,7 @@
                             @endforeach
                             {{-- Pad partial last page with empty spacer so cards keep same width as other pages --}}
                             @for($i = $pageSchedules->count(); $i < 2; $i++)
-                                <div class="w-1/2 flex-shrink-0 px-1.5 invisible">
+                                <div class="w-1/2 flex-shrink-0 px-2 invisible">
                                     <div class="rounded-xl border p-3 flex flex-col min-h-[168px] sm:min-h-[190px]"></div>
                                 </div>
                             @endfor
@@ -154,9 +154,9 @@
 
         {{-- Ferry: Show accommodations --}}
         @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']))
-            <div class="mt-4 border-t border-slate-200 pt-4">
-                <p class="text-slate-900 font-bold mb-3 text-sm">Select accommodation for this trip:</p>
-                <div class="grid gap-4 sm:grid-cols-2">
+            <div class="mt-5 sm:mt-4 border-t border-slate-200 pt-5 sm:pt-4">
+                <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select accommodation for this trip:</p>
+                <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
                     @foreach($selectedSchedule['accommodations'] as $accommodation)
                         <button type="button" wire:click.prevent="{{ $selectAccommodationMethod }}({{ $accommodation['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 {{ (int)$selectedAccommodationId === (int)$accommodation['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -174,9 +174,9 @@
 
         {{-- Airline: Show transport classes --}}
         @if($mode === 'airline' && $selectedSchedule && !empty($selectedSchedule['transport_classes']))
-            <div class="mt-4 border-t border-slate-200 pt-4">
-                <p class="text-slate-900 font-bold mb-3 text-sm">Select travel class for this trip:</p>
-                <div class="grid gap-4 sm:grid-cols-2">
+            <div class="mt-5 sm:mt-4 border-t border-slate-200 pt-5 sm:pt-4">
+                <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select travel class for this trip:</p>
+                <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
                     @foreach($selectedSchedule['transport_classes'] as $class)
                         <button type="button" wire:click.prevent="{{ $selectClassMethod }}({{ $class['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 overflow-hidden {{ (int)$selectedClassId === (int)$class['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <h4 class="font-bold text-slate-900 text-sm">{{ $class['name'] }}</h4>
