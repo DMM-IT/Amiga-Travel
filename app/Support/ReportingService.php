@@ -190,7 +190,15 @@ class ReportingService
                             : "{$b->client_name} · {$b->origin} → {$b->destination}"),
                     'status' => $b->status,
                     'amount' => $b->total_price,
-                    'time' => $b->verified_at ?? $b->updated_at ?? $b->created_at,
+                    'time' => with($b->verified_at ?? $b->updated_at ?? $b->created_at, function ($value) {
+                        if ($value === null) {
+                            return null;
+                        }
+
+                        return $value instanceof \DateTimeInterface
+                            ? $value->toIso8601String()
+                            : \Illuminate\Support\Carbon::parse($value)->toIso8601String();
+                    }),
                 ]);
 
             $transactions = Transaction::with('booking:id,transaction_number,client_name')
@@ -204,7 +212,7 @@ class ReportingService
                     'description' => $t->booking?->transaction_number . ' · ' . ($t->booking?->client_name ?? 'Unknown'),
                     'status' => $t->payment_status,
                     'amount' => $t->rebooking_fee,
-                    'time' => $t->created_at,
+                    'time' => $t->created_at->toIso8601String(),
                 ]);
 
             $inquiries = Inquiry::latest('created_at')
@@ -217,7 +225,7 @@ class ReportingService
                     'description' => $i->name . ' · ' . $i->email,
                     'status' => 'new',
                     'amount' => null,
-                    'time' => $i->created_at,
+                    'time' => $i->created_at->toIso8601String(),
                 ]);
 
             return $bookings->concat($transactions)->concat($inquiries)

@@ -101,6 +101,7 @@ class Booking extends Model
         'voucher_discount_amount' => 'decimal:2',
         'subtotal_before_voucher' => 'decimal:2',
         'terms_accepted_at' => 'datetime',
+        'verified_at' => 'datetime',
     ];
 
     public function serviceCancellation(): BelongsTo

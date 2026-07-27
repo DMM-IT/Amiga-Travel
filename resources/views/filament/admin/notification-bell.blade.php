@@ -36,8 +36,8 @@
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-1 scale-[0.98]"
             x-bind:style="dropdownStyles"
-            class="fixed rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[9999] flex flex-col overflow-hidden"
-            style="max-height: min(88dvh, 560px);"
+            class="fixed rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[11000] flex flex-col overflow-hidden"
+            style="max-height: min(88dvh, 560px); background-color: rgba(255,255,255,1);"
         >
 
             {{-- ── Panel Header ── --}}
@@ -138,22 +138,22 @@
                 </div>
 
                 {{-- Tab bar --}}
-                <div class="flex border-b border-gray-100 dark:border-gray-800 -mx-5 px-5">
+                <div class="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 -mx-5 px-5 pb-3 bg-white dark:bg-gray-900">
                     <button
                         type="button"
                         @click="activeTab = 'all'"
                         :class="activeTab === 'all'
-                            ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400 font-semibold'
-                            : 'border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
-                        class="mr-5 pb-3 pt-0.5 text-sm transition-colors"
+                            ? 'border border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 font-semibold'
+                            : 'border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                        class="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-all"
                     >All</button>
                     <button
                         type="button"
                         @click="activeTab = 'unread'"
                         :class="activeTab === 'unread'
-                            ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400 font-semibold'
-                            : 'border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
-                        class="mr-5 pb-3 pt-0.5 text-sm transition-colors flex items-center gap-1.5"
+                            ? 'border border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 font-semibold'
+                            : 'border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                        class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm transition-all"
                     >
                         Unread
                         <span
@@ -171,6 +171,7 @@
                         <input
                             type="checkbox"
                             class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800"
+                            style="accent-color: #0ea5e9;"
                             @click="toggleSelectAll()"
                             :checked="allSelected"
                             :indeterminate="selectedCount > 0 && !allSelected"
@@ -213,6 +214,7 @@
                             <input
                                 type="checkbox"
                                 class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800"
+                                style="accent-color: #0ea5e9;"
                                 :value="notification.id"
                                 @change="toggleSelection(notification.id)"
                                 :checked="selectedIds.includes(notification.id)"

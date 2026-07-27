@@ -115,11 +115,11 @@
                     @foreach($eligibleReplacements as $item)
                         @php
                             $sch = $item->schedule;
-                            $repDate = \Carbon\Carbon::parse($item->replacement_date);
-                            $isSelected = $selected_schedule_id === $sch->id && $selected_date === $item->replacement_date->format('Y-m-d');
+                            $repDate = \Carbon\Carbon::parse($item->replacement_date_formatted);
+                            $isSelected = $selected_schedule_id === $sch->id && $selected_date === $item->replacement_date_formatted;
                         @endphp
                         <div
-                            wire:click="selectOption({{ $sch->id }}, '{{ $item->replacement_date->format('Y-m-d') }}')"
+                            wire:click="selectOption({{ $sch->id }}, '{{ $item->replacement_date_formatted }}')"
                             class="group relative rounded-2xl border p-5 cursor-pointer transition-all {{ $isSelected ? 'border-2 border-[#216417] bg-emerald-50/50 shadow-md' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm' }}"
                         >
                             <div class="flex items-start justify-between gap-3">

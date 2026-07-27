@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\ApkUserResource;
-use App\Filament\Resources\ScheduleResource;
+use App\Filament\Resources\FerryRouteResource;
 use App\Filament\Resources\VehicleResource;
 use App\Models\Schedule;
 use App\Models\User;
@@ -41,7 +41,7 @@ class SystemStatsOverview extends BaseWidget
                 ->description('Active departures')
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('warning')
-                ->url(ScheduleResource::getUrl('index')),
+                ->url(FerryRouteResource::getUrl('index')),
 
             Stat::make('APK Users', number_format($apkUsersCount))
                 ->description('Registered via mobile')
