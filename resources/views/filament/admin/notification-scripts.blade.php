@@ -16,7 +16,7 @@ window.adminNotificationBell = function (config) {
         successMessage: '',
         bulkMode:      false,
         activeTab:     'all',
-        dropdownStyles: {},
+        dropdownStyles: { position: 'fixed', left: '-9999px', top: '-9999px', width: '340px', opacity: 0, pointerEvents: 'none' },
         updateDropdownPositionBound: null,
         busy:          false,
 
@@ -181,7 +181,9 @@ window.adminNotificationBell = function (config) {
                 top: `${top}px`,
                 width: `${panelWidth}px`,
                 maxHeight: 'min(88dvh, 560px)',
-                zIndex: 9999,
+                zIndex: 11000,
+                opacity: 1,
+                pointerEvents: 'auto',
             };
         },
         openNotification(n)         { window.location.href = n.url; },

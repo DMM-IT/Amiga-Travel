@@ -50,22 +50,22 @@
             <div class="border-b border-gray-100 dark:border-gray-800">
 
                 {{-- Tab bar --}}
-                <div class="flex" style="display:flex; align-items:center; gap:0.75rem; border-bottom:1px solid rgba(226,232,240,0.7); padding-left:1.5rem; padding-right:1.5rem; padding-bottom:0.75rem;">
+                <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 px-6 pb-3">
                     <button
                         type="button"
                         @click="switchTab('all')"
-                        :style="activeTab === 'all'
-                            ? 'background: rgba(59,130,246,0.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.25);'
-                            : 'background: transparent; color: #6b7280; border: 1px solid transparent;'"
-                        style="display:inline-flex; align-items:center; justify-content:center; gap:0.375rem; border-radius:9999px; padding:0.5rem 0.75rem; font-size:0.875rem; transition:color 200ms ease, background-color 200ms ease;"
+                        :class="activeTab === 'all'
+                            ? 'border border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 font-semibold shadow-sm'
+                            : 'border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                        class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary-400/40 ring-offset-0"
                     >All</button>
                     <button
                         type="button"
                         @click="switchTab('unread')"
-                        :style="activeTab === 'unread'
-                            ? 'background: rgba(59,130,246,0.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.25);'
-                            : 'background: transparent; color: #6b7280; border: 1px solid transparent;'"
-                        style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; border-radius:9999px; padding:0.5rem 0.75rem; font-size:0.875rem; transition:color 200ms ease, background-color 200ms ease;"
+                        :class="activeTab === 'unread'
+                            ? 'border border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 font-semibold shadow-sm'
+                            : 'border border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                        class="inline-flex items-center justify-center gap-2 rounded-full px-3 py-2 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary-400/40 ring-offset-0"
                     >
                         Unread
                         <span
@@ -84,8 +84,7 @@
                         <label class="inline-flex items-center gap-2.5 cursor-pointer select-none text-sm font-medium text-gray-700 dark:text-gray-300">
                             <input
                                 type="checkbox"
-                                class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800"
-                                style="accent-color: #0ea5e9;"
+                                class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800 accent-primary-500"
                                 @click="toggleSelectAll()"
                                 :checked="allSelected"
                                 :indeterminate="selectedCount > 0 && !allSelected"
@@ -181,8 +180,7 @@
                         <div class="shrink-0 pt-0.5">
                             <input
                                 type="checkbox"
-                                class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800"
-                                style="accent-color: #0ea5e9;"
+                                class="h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 focus:ring-offset-0 dark:border-gray-600 dark:bg-gray-800 accent-primary-500"
                                 :value="notification.id"
                                 @change="toggleSelection(notification.id)"
                                 :checked="selectedIds.includes(notification.id)"
