@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+<div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ $pageContent['badge'] ?? 'Services' }}</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ $pageContent['title'] ?? 'Our Travel Services' }}</h1>
-            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+            <p class="mt-4 text-lg text-black font-semibold max-w-2xl mx-auto">
                 {{ $pageContent['description'] ?? 'Explore a full range of reliable travel, transit ticketing, and customizable packages designed to make your journey completely hassle-free.' }}
             </p>
         </div>
@@ -150,14 +150,14 @@
         <div class="mb-16">
             <div class="text-center mb-10">
                 <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Travel & Booking Services</h2>
-                <p class="mt-3 text-slate-600 max-w-2xl mx-auto">Choose from our ferry, airline, tour, and custom travel arrangements.</p>
+                <p class="mt-3 text-black font-semibold max-w-2xl mx-auto">Choose from our ferry, airline, tour, and custom travel arrangements.</p>
             </div>
             
 @php
                 $defaultServiceImage = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
             @endphp
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                 @foreach($travelServiceCards as $card)
                 @php
                     $rawCardImage = data_get($card, 'image');
@@ -172,18 +172,20 @@
                     $cardLink = data_get($card, 'link', url('/book/new'));
                     $buttonText = data_get($card, 'button_text', 'Learn more');
                 @endphp
-                <a href="{{ $cardLink }}" class="group overflow-hidden rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
-                    <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="w-full aspect-video object-cover transition duration-200 group-hover:scale-105" />
-                    <div class="p-6 flex flex-col flex-grow">
-                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                <a href="{{ $cardLink }}" class="group overflow-hidden rounded-xl sm:rounded-[2rem] bg-white/85 backdrop-blur-md border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
+                    <div class="h-20 sm:h-36 w-full bg-white/80 flex items-center justify-center p-2 sm:p-8 border-b border-slate-100">
+                        <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="max-h-full max-w-full object-contain transition duration-200 group-hover:scale-105" />
+                    </div>
+                    <div class="p-2.5 sm:p-6 flex flex-col flex-grow">
+                        <span class="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-1 sm:mb-3 leading-tight truncate">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-7v4h4l-5 7z" />
                             </svg>
-                            {{ data_get($card, 'note', 'Travel Service') }}
+                            <span class="truncate">{{ data_get($card, 'note', 'Travel Service') }}</span>
                         </span>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">{{ data_get($card, 'title') }}</h3>
-                        <p class="text-sm text-slate-600 mb-4 flex-grow">{{ data_get($card, 'description') }}</p>
-                        <button class="w-full bg-[#ee018d] text-white text-sm font-bold py-3 px-6 rounded-full hover:bg-pink-700 transition-colors">
+                        <h3 class="text-xs sm:text-lg font-bold text-slate-900 mb-1 sm:mb-2 leading-tight truncate">{{ data_get($card, 'title') }}</h3>
+                        <p class="text-[9px] sm:text-sm text-slate-600 mb-2 sm:mb-4 flex-grow line-clamp-2 sm:line-clamp-none leading-tight">{{ data_get($card, 'description') }}</p>
+                        <button class="w-full bg-[#ee018d] text-white text-[10px] sm:text-sm font-bold py-1.5 px-2 sm:py-3 sm:px-6 rounded-full hover:bg-pink-700 transition-colors leading-tight">
                             {{ $buttonText }}
                         </button>
                     </div>
@@ -200,7 +202,7 @@
             }"
             class="relative"
         >
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                 @foreach($serviceCards as $card)
                 @php
                     $rawCardImage = data_get($card, 'image');
@@ -214,18 +216,18 @@
                         : $defaultServiceImage;
                     $modalData = json_encode(array_merge($card, ['image' => $cardImage]));
                 @endphp
-                <div class="group overflow-hidden rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
+                <div class="group overflow-hidden rounded-xl sm:rounded-[2rem] bg-white/85 backdrop-blur-md border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
                     <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="w-full aspect-video object-cover transition duration-200 group-hover:scale-105" />
-                    <div class="p-6 flex flex-col flex-grow">
-                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#216417] uppercase tracking-wider mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="p-2.5 sm:p-6 flex flex-col flex-grow">
+                        <span class="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold text-[#216417] uppercase tracking-wider mb-1 sm:mb-3 leading-tight truncate">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-7v4h4l-5 7z" />
                             </svg>
-                            {{ data_get($card, 'note', 'Service') }}
+                            <span class="truncate">{{ data_get($card, 'note', 'Service') }}</span>
                         </span>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">{{ data_get($card, 'title') }}</h3>
-                        <p class="text-sm text-slate-600 mb-4 flex-grow">{{ data_get($card, 'description') }}</p>
-                        <button type="button" @click.prevent="openModal({{ $modalData }})" class="w-full bg-[#216417] text-white text-sm font-bold py-3 px-6 rounded-full hover:bg-emerald-800 transition-colors">
+                        <h3 class="text-xs sm:text-lg font-bold text-slate-900 mb-1 sm:mb-2 leading-tight truncate">{{ data_get($card, 'title') }}</h3>
+                        <p class="text-[9px] sm:text-sm text-slate-600 mb-2 sm:mb-4 flex-grow line-clamp-2 sm:line-clamp-none leading-tight">{{ data_get($card, 'description') }}</p>
+                        <button type="button" @click.prevent="openModal({{ $modalData }})" class="w-full bg-[#216417] text-white text-[10px] sm:text-sm font-bold py-1.5 px-2 sm:py-3 sm:px-6 rounded-full hover:bg-emerald-800 transition-colors leading-tight">
                             {{ data_get($card, 'button_text', 'Learn more') }}
                         </button>
                     </div>

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-slate-50 min-h-screen">
+<div class="bg-transparent min-h-screen">
 
     <!-- Script for PWA Install Prompt -->
     <script>
@@ -294,7 +294,7 @@
     @endphp
     @if(!empty($downloadFeatures))
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8 sm:p-12">
+        <div class="bg-white/85 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-100 p-8 sm:p-12">
             <div class="text-center mb-10">
                 <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #ee018d; background: #fce7f3;">{{ data_get($pageContent, 'apk_benefits_label', 'Exclusive App Benefits') }}</span>
                 <h2 class="mt-4 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'apk_benefits_title', 'Why download the app?') }}</h2>
@@ -326,7 +326,7 @@
 
         <div class="grid sm:grid-cols-3 gap-8">
             @foreach($downloadSteps as $step)
-                <div class="relative bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition">
+                <div class="relative bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition">
                     <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: {{ data_get($step, 'icon_color') }};">{{ data_get($step, 'number') }}</div>
                     <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: {{ data_get($step, 'bg_color') }};">
                         <svg class="h-8 w-8" style="color: {{ data_get($step, 'icon_color') }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

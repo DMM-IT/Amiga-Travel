@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8" x-data="{ 
+<div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8" x-data="{ 
     submitted: false,
     name: '',
     email: '',
@@ -48,7 +48,7 @@
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">Contact Us</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ $pageContent['title'] ?? 'Ready To Explore? Let\'s Connect and Start Planning Your Next Adventure' }}</h1>
-            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+            <p class="mt-4 text-lg text-black font-semibold max-w-2xl mx-auto">
                 {{ $pageContent['description'] ?? 'Have questions about routes, ticketing, or custom tour packages? Drop us a message, and our travel specialists will get back to you shortly.' }}
             </p>
         </div>
@@ -57,7 +57,7 @@
             <!-- Contact Info Sidebar -->
             <div class="lg:col-span-1 space-y-6">
                 <!-- Phone -->
-                <div class="bg-white p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -71,7 +71,7 @@
                 </div>
 
                 <!-- Email -->
-                <div class="bg-white p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-700 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -89,7 +89,7 @@
                 </div>
 
                 <!-- Location -->
-                <div class="bg-white p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -105,7 +105,7 @@
                 </div>
 
                 <!-- Socials -->
-                <div class="bg-white p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
@@ -121,7 +121,7 @@
             </div>
 
             <!-- Contact Form -->
-            <div class="lg:col-span-2 bg-white rounded-[2rem] p-8 sm:p-10 shadow-md ring-1 ring-slate-100 flex flex-col justify-between">
+            <div class="lg:col-span-2 bg-white/85 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-md ring-1 ring-slate-100 flex flex-col justify-between">
                 <div class="relative">
                     <h2 class="text-2xl font-bold text-slate-900 mb-6">Send an Inquiry</h2>
 
@@ -178,7 +178,7 @@
         </div>
 
         <!-- Embedded Map -->
-        <div class="mt-12 bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100">
+        <div class="mt-12 bg-white/85 backdrop-blur-md rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100">
             <div class="flex flex-col gap-4 p-4 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>

@@ -122,7 +122,7 @@
 {{-- Search + Filter --}}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-10">
     {{-- Date Search Bar --}}
-    <form action="{{ route('schedules') }}" method="GET" class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden mb-4 p-4 flex flex-col sm:flex-row gap-4 items-end">
+    <form action="{{ route('schedules') }}" method="GET" class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden mb-4 p-4 flex flex-col sm:flex-row gap-4 items-end">
         <div class="flex-1 w-full">
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Start Date</label>
             <input type="date" name="start_date" value="{{ $startDate }}" class="w-full rounded-xl border-slate-200 text-sm focus:ring-[#216417] focus:border-[#216417]">
@@ -137,7 +137,7 @@
     </form>
 
     {{-- Mode Filter Tabs --}}
-    <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-2 flex flex-wrap gap-2">
+    <div class="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 p-2 flex flex-wrap gap-2">
         <button @click="activeFilter = 'all'" :class="activeFilter === 'all' ? 'bg-[#216417] text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'" class="flex-1 sm:flex-none rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 min-w-[100px]">
             All Routes
         </button>
@@ -168,10 +168,10 @@
                     x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="opacity-0 translate-y-2"
                     x-transition:enter-end="opacity-100 translate-y-0"
-                    class="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                    class="rounded-2xl border border-slate-200 bg-white/75 backdrop-blur-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
                 >
                     {{-- Route Header --}}
-                    <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+                    <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50/70 to-white/70">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div class="flex items-center gap-4">
                                 {{-- Mode Badge --}}
@@ -259,7 +259,7 @@
                                 <div x-ref="slider" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 hide-scroll" style="scrollbar-width: none;">
                                     @foreach($route->schedules as $schedule)
                                         <div class="snap-start shrink-0 w-full md:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.67rem)]">
-                                            <div class="h-full group relative rounded-xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:border-[#216417]/30 hover:shadow-md">
+                                            <div class="h-full group relative rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm p-4 transition-all duration-200 hover:border-[#216417]/30 hover:shadow-md">
                                                 {{-- Service Name & Time --}}
                                                 <div class="flex items-start justify-between mb-3">
                                                     <div class="flex items-center gap-3">

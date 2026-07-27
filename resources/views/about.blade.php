@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+<div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-5xl mx-auto">
         <style>
             @keyframes infinite-scroll {
@@ -21,7 +21,7 @@
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
                 {{ $pageContent['title'] ?? 'Our Journey' }}
             </h1>
-            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+            <p class="mt-4 text-lg text-black font-semibold max-w-2xl mx-auto">
                 {{ $pageContent['description'] ?? 'Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free and memorable.' }}
             </p>
         </div>
@@ -32,18 +32,18 @@
                 <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
                     Backed by Experience, Driven by Excellence
                 </h2>
-                <p class="text-slate-600 leading-relaxed">
+                <p class="text-black font-semibold leading-relaxed">
                     Amiga Gracia was established in <strong>July 2017</strong>. Its humble beginning was born from the dedication of its founder, <strong>Mrs. MGA-Ting</strong>, whose extensive experience with 2GO laid the foundation for the company's first-class standard of service.
                 </p>
-                <p class="text-slate-600 leading-relaxed">
+                <p class="text-black font-semibold leading-relaxed">
                     What started in the municipality of Roxas, Oriental Mindoro has expanded. Following the challenges of the pandemic, our main office relocated to the thriving <strong>City of Calapan</strong>, positioned to serve travelers better than ever.
                 </p>
-                <p class="text-slate-600 leading-relaxed">
+                <p class="text-black font-semibold leading-relaxed">
                     Our core ambition remains unchanged: to be recognized as the premier travel agency providing outstanding travel solutions and apprenticeship programs, both in Oriental Mindoro and nationwide.
                 </p>
             </div>
             
-            <div class="bg-white rounded-[2rem] p-8 shadow-xl ring-1 ring-slate-100 relative overflow-hidden">
+            <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl ring-1 ring-slate-100 relative overflow-hidden">
                 <div class="absolute top-0 right-0 h-40 w-40 bg-emerald-50 rounded-full -mr-16 -mt-16 z-0"></div>
                 <div class="relative z-10 space-y-6">
                     <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -93,11 +93,11 @@
         @endphp
 
         @if(!empty($aboutBookingCards))
-            <div class="bg-white rounded-[2rem] p-8 shadow-xl mb-16">
+            <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl mb-16">
                 <div class="max-w-3xl mx-auto text-center mb-8">
                     <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'booking_section_title') ? ucfirst(data_get($pageContent, 'booking_section_title')) : 'Request Travel Bookings' }}</p>
                     <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'booking_section_title') ?? 'Request Travel Bookings' }}</h2>
-                    <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+                    <p class="mt-4 text-base sm:text-lg text-black font-semibold max-w-2xl mx-auto">
                         {{ data_get($pageContent, 'booking_section_description') ?? 'Kay Amiga, Hassle Free Ka! Select a booking category to start your travel request.' }}
                     </p>
                 </div>
@@ -237,7 +237,7 @@
         @endphp
 
         @if(!empty($suggestedTrips))
-            <div class="bg-white rounded-[2rem] p-8 shadow-xl mb-16">
+            <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl mb-16">
                 <div class="max-w-3xl mx-auto text-center mb-8">
                     <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'suggested_trips_title') ? ucfirst(data_get($pageContent, 'suggested_trips_title')) : 'Suggested Trips' }}</p>
                     <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'suggested_trips_title') ?? 'Suggested Trips' }}</h2>
@@ -391,7 +391,7 @@
         <!-- Call to Action -->
         <div class="text-center">
             <h3 class="text-xl font-bold text-slate-900">Kay Amiga, Hassle Free Ka!</h3>
-            <p class="text-sm text-slate-500 mt-2">Ready to plan your next travel or educational tour? Let's connect.</p>
+            <p class="text-sm text-black font-semibold mt-2">Ready to plan your next travel or educational tour? Let's connect.</p>
             <div class="mt-6 flex justify-center gap-4">
                 <a href="{{ url('/book/new') }}" class="px-6 py-3 bg-[#216417] text-white font-semibold rounded-full shadow-lg hover:bg-green-800 transition">
                     Book Now

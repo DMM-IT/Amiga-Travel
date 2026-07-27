@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-slate-50 p-6">
+<div class="min-h-screen bg-transparent p-6">
     <div class="mx-auto max-w-6xl space-y-6">
-        <div class="rounded-3xl bg-white p-6 shadow-sm">
+        <div class="rounded-3xl bg-white/85 backdrop-blur-md p-6 shadow-sm">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="text-3xl font-semibold">Welcome back, {{ auth()->user()->name }}</h1>

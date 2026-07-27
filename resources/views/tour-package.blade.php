@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'domestic' }">
+<div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'domestic' }">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-16">
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ $pageContent['badge'] ?? 'Tour Packages' }}</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ $pageContent['title'] ?? 'Explore Our Packages' }}</h1>
-            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                {{ $pageContent['description'] ?? 'Affordable, reliable, and handpicked local and international tour arrangements designed for unforgettable travel memories.' }}
+            <p class="mt-4 text-lg text-black font-semibold max-w-2xl mx-auto">
+                {{ $pageContent['description'] ?? 'Discover carefully curated domestic and international travel packages tailored to your budget and adventure style.' }}
             </p>
 
         @php
@@ -128,12 +128,12 @@
             <!-- Interactive Tab Buttons -->
             <div class="mt-10 inline-flex p-1 bg-slate-200/80 rounded-2xl">
                 <button @click="activeTab = 'domestic'" 
-                        :class="activeTab === 'domestic' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+                        :class="activeTab === 'domestic' ? 'bg-white text-slate-900 shadow-sm' : 'text-black font-semibold hover:text-slate-900'"
                         class="px-6 py-2.5 rounded-xl font-bold text-sm transition cursor-pointer">
                     Domestic Packages
                 </button>
                 <button @click="activeTab = 'international'" 
-                        :class="activeTab === 'international' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+                        :class="activeTab === 'international' ? 'bg-white text-slate-900 shadow-sm' : 'text-black font-semibold hover:text-slate-900'"
                         class="px-6 py-2.5 rounded-xl font-bold text-sm transition cursor-pointer">
                     International Packages
                 </button>
@@ -144,7 +144,7 @@
         <div id="domestic-packages" x-show="activeTab === 'domestic'" x-transition class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {{-- Server-side fallback packages (will be replaced by client-side JS when available) --}}
             @foreach(data_get($tourPackages, 'domestic', []) as $package)
-                <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition">
+                <div class="bg-white/85 backdrop-blur-md rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition">
                     <div class="aspect-video relative overflow-hidden bg-slate-200">
                         <img src="{{ data_get($package, 'image') }}" alt="{{ data_get($package, 'alt') }}" class="w-full h-full object-cover">
                         @if(data_get($package, 'label'))
@@ -179,7 +179,7 @@
         <div id="international-packages" x-show="activeTab === 'international'" x-transition class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" style="display:none;">
             {{-- Server-side fallback packages (will be replaced by client-side JS when available) --}}
             @foreach(data_get($tourPackages, 'international', []) as $package)
-                <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition">
+                <div class="bg-white/85 backdrop-blur-md rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition">
                     <div class="aspect-video relative overflow-hidden bg-slate-200">
                         <img src="{{ data_get($package, 'image') }}" alt="{{ data_get($package, 'alt') }}" class="w-full h-full object-cover">
                         @if(data_get($package, 'label'))
@@ -211,7 +211,7 @@
         </div>
 
         <!-- Additional List of Supported Destinations -->
-        <div class="mt-16 bg-white rounded-[2rem] p-8 sm:p-12 shadow-md ring-1 ring-slate-100">
+        <div class="mt-16 bg-white/85 backdrop-blur-md rounded-[2rem] p-8 sm:p-12 shadow-md ring-1 ring-slate-100">
             <h3 class="text-xl font-bold text-slate-900 text-center mb-8">{{ data_get($pageContent, 'supported_destinations_title', 'All Supported Destinations') }}</h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 @foreach($supportedDestinations as $group)

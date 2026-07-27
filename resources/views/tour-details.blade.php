@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+<div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
         <!-- Back Button -->
         <div class="mb-8">
@@ -14,7 +14,7 @@
         </div>
 
         <!-- Tour Header -->
-        <div class="bg-white rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100">
+        <div class="bg-white/85 backdrop-blur-md rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100">
             <div class="grid md:grid-cols-2 gap-0">
                 <!-- Image -->
                 <div class="aspect-video md:aspect-auto bg-slate-200">
@@ -56,14 +56,14 @@
             <div class="md:col-span-2 space-y-8">
                 <!-- Highlights -->
                 @if($tour->highlights)
-                    <div class="bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100">
+                    <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100">
                         <h2 class="text-xl font-black text-slate-900 mb-4">Highlights</h2>
                         <p class="text-slate-600 leading-relaxed">{{ $tour->highlights }}</p>
                     </div>
                 @endif
 
                 <!-- Day by Day Itinerary -->
-                <div class="bg-white rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100">
+                <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100">
                     <h2 class="text-xl font-black text-slate-900 mb-6">Day by Day Itinerary</h2>
                     <div class="space-y-4">
                         @for($i = 1; $i <= 6; $i++)
@@ -80,7 +80,7 @@
                 <!-- Inclusions & Exclusions -->
                 <div class="grid sm:grid-cols-2 gap-6">
                     @if($tour->inclusions)
-                        <div class="bg-white rounded-[2rem] p-6 shadow-md ring-1 ring-slate-100">
+                        <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-6 shadow-md ring-1 ring-slate-100">
                             <h3 class="font-black text-slate-900 mb-4 flex items-center">
                                 <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -91,7 +91,7 @@
                         </div>
                     @endif
                     @if($tour->exclusions)
-                        <div class="bg-white rounded-[2rem] p-6 shadow-md ring-1 ring-slate-100">
+                        <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-6 shadow-md ring-1 ring-slate-100">
                             <h3 class="font-black text-slate-900 mb-4 flex items-center">
                                 <svg class="w-5 h-5 mr-2 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -107,7 +107,7 @@
             <!-- Quick Info Sidebar -->
             <div class="space-y-6">
                 <!-- Quick Details -->
-                <div class="bg-white rounded-[2rem] p-6 shadow-md ring-1 ring-slate-100 sticky top-8">
+                <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-6 shadow-md ring-1 ring-slate-100 sticky top-8">
                     <h3 class="font-black text-slate-900 mb-4">Quick Details</h3>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center py-2 border-b border-slate-100">

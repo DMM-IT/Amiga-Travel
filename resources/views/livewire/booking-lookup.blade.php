@@ -1,6 +1,6 @@
-<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-transparent py-8 px-4 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-3xl">
-        <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
+        <div class="rounded-[2rem] bg-white/85 backdrop-blur-md shadow-xl ring-1 ring-slate-200 overflow-hidden">
             <div class="px-6 py-8 sm:px-10" style="background: linear-gradient(135deg, #ee018d 0%, #b1015d 100%);">
                 <a href="{{ url('/book') }}" class="text-white/80 text-sm hover:text-white">← Back</a>
                 <h1 class="mt-2 text-2xl sm:text-3xl font-semibold text-white">Check My Booking</h1>

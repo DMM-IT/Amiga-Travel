@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6">
-    <div class="max-w-3xl w-full bg-white rounded-3xl shadow-md p-4 sm:p-8 space-y-6">
+<div class="min-h-screen bg-transparent flex items-center justify-center p-4 sm:p-6">
+    <div class="max-w-3xl w-full bg-white/85 backdrop-blur-md rounded-3xl shadow-md p-4 sm:p-8 space-y-6">
         <div class="text-center mb-2">
             <h1 class="text-xl sm:text-2xl font-semibold">Payment QR Code</h1>
             <p class="text-slate-600 mt-2">Transaction <span class="font-medium">{{ $transaction->booking->transaction_number }}</span></p>

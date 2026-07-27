@@ -34,27 +34,77 @@
             .flatpickr-day.flatpickr-disabled { color:#e2e8f0; }
             .flatpickr-innerContainer { padding:6px 8px 8px; }
         </style>
+
+        @php
+            $bgMap = [
+                '' => 'bg-1.jpg',
+                '/' => 'bg-1.jpg',
+                'home' => 'bg-1.jpg',
+                'about' => 'bg-2.jpg',
+                'schedules' => 'bg-3.jpg',
+                'services' => 'bg-4.jpg',
+                'tour-package' => 'bg-5.jpg',
+                'contact-us' => 'bg-6.jpg',
+                'faqs' => 'bg-7.jpg',
+                'download' => 'bg-8.jpg',
+            ];
+
+            $currentPath = trim(request()->path(), '/');
+            $bgImage = 'bg-1.jpg';
+
+            if (isset($bgMap[$currentPath])) {
+                $bgImage = $bgMap[$currentPath];
+            } elseif (request()->is('about*')) {
+                $bgImage = 'bg-2.jpg';
+            } elseif (request()->is('book*')) {
+                $bgImage = null;
+            } elseif (request()->is('schedules*')) {
+                $bgImage = 'bg-3.jpg';
+            } elseif (request()->is('services*')) {
+                $bgImage = 'bg-4.jpg';
+            } elseif (request()->is('tour*') || request()->is('tours*')) {
+                $bgImage = 'bg-5.jpg';
+            } elseif (request()->is('contact*')) {
+                $bgImage = 'bg-6.jpg';
+            } elseif (request()->is('faq*')) {
+                $bgImage = 'bg-7.jpg';
+            } elseif (request()->is('download*')) {
+                $bgImage = 'bg-8.jpg';
+            } elseif (request()->is('login*') || request()->is('register*')) {
+                $bgImage = 'bg-2.jpg';
+            }
+        @endphp
+        @if($bgImage)
         <style>
-            /* Site background image shown behind content */
+            /* Dynamic page background image with opacity */
             body::before {
                 content: "";
                 position: fixed;
                 inset: 0;
-                background-image: url('{{ asset('images/amiga-background.jpg') }}');
+                background-image: url('{{ asset('images/amiga-backgrounds/' . $bgImage) }}');
                 background-size: cover;
                 background-position: center center;
-                opacity: 0.45;
+                opacity: 0.35;
                 z-index: 0;
                 pointer-events: none;
-                filter: saturate(.95) brightness(.95) blur(0px);
+                filter: saturate(0.95) brightness(0.95);
             }
+        </style>
+        @endif
+        <style>
 
             /* Ensure content sits above the background */
-            body > * { position: relative; }
-            header { z-index: 20; }
+            body > *:not(header) { position: relative; z-index: 10; }
+            header { 
+                position: fixed !important; 
+                top: 0; 
+                left: 0; 
+                right: 0; 
+                width: 100%; 
+                z-index: 9999 !important; 
+            }
 
-            /* Hide background for Filament admin pages (Filament root uses .fi-layout)
-               Also hide when body already has .fi-layout. Uses !important to override. */
+            /* Hide background for Filament admin pages */
             body.fi-layout::before,
             .fi-layout::before {
                 display: none !important;
@@ -74,8 +124,11 @@
         </script>
     </head>
     <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
-        <header class="bg-[#216417] text-white sticky top-0 z-50 shadow-md">
-            <div class="max-w-full mx-auto px-3 sm:px-4 lg:px-5">
+        <header class="bg-[#216417] text-white fixed top-0 left-0 right-0 w-full z-50 shadow-md">
+            <div class="absolute inset-0 h-20 overflow-hidden pointer-events-none z-0">
+                <div class="absolute inset-0 pointer-events-none" style="background-image: url('{{ asset('images/tribal-pattern.svg') }}'); background-repeat: repeat; opacity: 0.15;"></div>
+            </div>
+            <div class="relative z-10 max-w-full mx-auto px-3 sm:px-4 lg:px-5">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center gap-2">
                         <a href="{{ url('/') }}" class="flex items-center gap-2">
@@ -134,7 +187,7 @@
                 </div>
             </div>
 
-            <div id="mobile-menu" class="md:hidden hidden bg-[#1e4c21] border-t border-white/10">
+            <div id="mobile-menu" class="md:hidden hidden bg-[#1e4c21] border-t border-white/10 relative z-10">
                 <div class="max-w-full mx-auto px-4 py-4 space-y-3">
                     <a href="{{ url('/') }}" class="block rounded-xl px-4 py-3 {{ request()->is('/') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Home</a>
                     <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">About</a>
@@ -172,7 +225,7 @@
             </div>
         </header>
 
-        <main class="flex-grow">
+        <main class="flex-grow pt-20">
             @unless(request()->routeIs('book.new') || request()->is('book/new'))
                 @include('partials.global-skeleton')
             @endunless

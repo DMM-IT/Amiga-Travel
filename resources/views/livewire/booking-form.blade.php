@@ -1,5 +1,5 @@
-<div class="min-h-screen bg-slate-50">
-    <div class="min-h-screen w-full bg-slate-50 overflow-visible">
+<div class="min-h-screen bg-transparent">
+    <div class="min-h-screen w-full bg-transparent overflow-visible">
             {{-- Modern Gradient Header --}}
             <div class="relative bg-pink-600 px-4 sm:px-6 lg:px-10 py-8 sm:py-10 overflow-hidden">
                 <div class="absolute inset-0 opacity-10">
@@ -64,14 +64,14 @@
                         <div class="relative z-10 flex w-full items-start justify-between">
                             @foreach($steps as $index => $label)
                                 <div class="flex min-w-[4.5rem] flex-col items-center justify-center text-center">
-                                    <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-500 {{ $step === $index + 1 ? 'border-[#216417] bg-[#216417] text-white shadow-lg shadow-black/10' : ($step > $index + 1 ? 'border-[#216417] bg-white text-[#216417]' : 'border-slate-300 bg-white text-slate-400') }}">
+                                    <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-500 {{ $step === $index + 1 ? 'border-[#216417] bg-[#216417] text-white shadow-lg shadow-black/10' : ($step > $index + 1 ? 'border-[#216417] bg-white text-[#216417]' : 'border-slate-600 bg-white text-black font-bold') }}">
                                         @if($step > $index + 1)
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                         @else
                                             {!! $getIcon($label) !!}
                                         @endif
                                     </div>
-                                    <div class="mt-3 text-[10px] font-bold uppercase tracking-wider {{ $step === $index + 1 ? 'text-slate-900' : ($step > $index + 1 ? 'text-[#216417]' : 'text-slate-400') }}">{{ $label }}</div>
+                                    <div class="mt-3 text-[10px] font-extrabold uppercase tracking-wider {{ $step === $index + 1 ? 'text-black' : ($step > $index + 1 ? 'text-[#216417]' : 'text-black') }}">{{ $label }}</div>
                                 </div>
                             @endforeach
                         </div>
@@ -149,11 +149,11 @@
                                     <div class="relative inline-grid grid-cols-2 bg-slate-100 rounded-full p-1 border border-slate-200 shadow-inner w-full sm:w-auto">
                                         <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-[#216417] shadow-sm transition-all duration-300 ease-in-out z-0 {{ $trip_type === 'round_trip' ? 'left-[calc(50%+2px)]' : 'left-1' }}"></div>
                                     
-                                    <button type="button" wire:click="setTripType('one_way')" @disabled($prefilled_from_package || $tour_id) class="relative z-10 px-4 sm:px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-300 {{ $trip_type === 'one_way' ? 'text-white' : 'text-slate-500 hover:text-slate-900' }} {{ ($prefilled_from_package || $tour_id) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                                    <button type="button" wire:click="setTripType('one_way')" @disabled($prefilled_from_package || $tour_id) class="relative z-10 px-4 sm:px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-300 {{ $trip_type === 'one_way' ? 'text-white' : 'text-black hover:text-slate-900 font-extrabold' }} {{ ($prefilled_from_package || $tour_id) ? 'opacity-50 cursor-not-allowed' : '' }}">
                                         One-way Trip
                                     </button>
                                     
-                                    <button type="button" wire:click="setTripType('round_trip')" @disabled($prefilled_from_package || $tour_id) class="relative z-10 px-4 sm:px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-300 {{ $trip_type === 'round_trip' ? 'text-white' : 'text-slate-500 hover:text-slate-900' }} {{ ($prefilled_from_package || $tour_id) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                                    <button type="button" wire:click="setTripType('round_trip')" @disabled($prefilled_from_package || $tour_id) class="relative z-10 px-4 sm:px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-300 {{ $trip_type === 'round_trip' ? 'text-white' : 'text-black hover:text-slate-900 font-extrabold' }} {{ ($prefilled_from_package || $tour_id) ? 'opacity-50 cursor-not-allowed' : '' }}">
                                         Round Trip
                                     </button>
                                 </div>
@@ -165,7 +165,7 @@
 
                             <div class="grid gap-6 lg:grid-cols-4 mt-4">
                                 <label class="relative block" data-error="mode">
-                                    <span class="text-slate-700 font-semibold text-sm">Mode</span>
+                                    <span class="text-black font-extrabold text-sm">Mode</span>
                                     <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
                                         <div class="flex items-center gap-2">
                                             @if($mode === 'ferry')
@@ -211,7 +211,7 @@
                                 </label>
 
                                 <label class="relative block">
-                                    <span class="text-slate-700 font-semibold text-sm">Operator</span>
+                                    <span class="text-black font-extrabold text-sm">Operator</span>
                                     <button type="button" wire:click.prevent="toggleOperatorDropdown" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                         <div class="flex items-center gap-2">
                                             @php
@@ -279,7 +279,7 @@
                             <div class="lg:col-span-2">
                             <div class="grid gap-6 lg:grid-cols-2">
                             <label class="relative block" data-error="origin">
-                                <span class="text-slate-700 font-semibold text-sm">Origin</span>
+                                <span class="text-black font-extrabold text-sm">Origin</span>
                                 <button type="button" wire:click.prevent="toggleOriginDropdown" @if($prefilled_from_package || $mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $origin ?: ($mode === '' ? 'Select mode first' : 'Select origin') }}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
@@ -309,7 +309,7 @@
                             </label>
 
                             <label class="relative block" data-error="destination">
-                                <span class="text-slate-700 font-semibold text-sm">Destination</span>
+                                <span class="text-black font-extrabold text-sm">Destination</span>
                                 <button type="button" wire:click.prevent="toggleDestinationDropdown" @if($prefilled_from_package || $mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $destination ?: (blank($origin) ? 'Select origin first' : 'Select destination') }}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
@@ -343,7 +343,7 @@
 
                         <div class="grid gap-6 lg:grid-cols-2">
                             <div class="block" data-error="departure_date">
-                                    <label class="block text-slate-700 font-semibold text-sm">Departure Date</label>
+                                    <label class="block text-black font-extrabold text-sm">Departure Date</label>
                                         <div class="mt-2">
                                             @php
                                                 $restrictDepartureDates = false;
@@ -367,7 +367,7 @@
 
                                 @if($trip_type === 'round_trip')
                                     <div class="block" data-error="return_date">
-                                        <label class="block text-slate-700 font-semibold text-sm">Return Date</label>
+                                        <label class="block text-black font-extrabold text-sm">Return Date</label>
                                         <div class="mt-2">
                                             @php
                                                 $restrictReturnDates = false;
@@ -591,7 +591,7 @@
                             <div class="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
                                 <div class="space-y-6">
-                                    <p class="text-slate-700 font-semibold">Choose the schedule that works best for your trip.</p>
+                                    <p class="text-black font-bold">Choose the schedule that works best for your trip.</p>
                                     @if($this->baggageRules)
                                         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                             <button type="button" wire:click.prevent="$toggle('showBaggageRules')" class="flex items-center justify-between w-full text-left">
@@ -1070,7 +1070,7 @@
 
                     @if ($step === 3)
                         <div class="space-y-4">
-                            <p class="text-slate-700 font-semibold">Each traveler can have their own discount, if eligible. Name is required, discount is optional.</p>
+                            <p class="text-black font-bold">Each traveler can have their own discount, if eligible. Name is required, discount is optional.</p>
 
                             @php
                                 $typeLabels = ['adult' => 'Adult', 'child' => 'Child'];
@@ -1244,7 +1244,7 @@
                     @if ($step === 4)
                         <div class="space-y-6">
                             <div class="space-y-4">
-                                <p class="text-slate-700 font-semibold">Choose a place to stay in {{ $destination }} (optional).</p>
+                                <p class="text-black font-bold">Choose a place to stay in {{ $destination }} (optional).</p>
                                 @php
                                     $currentDestination = $destination;
                                     $filteredHotels = $accommodationCatalog->filter(function ($acc) use ($currentDestination) {

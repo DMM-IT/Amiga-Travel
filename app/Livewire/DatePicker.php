@@ -100,8 +100,8 @@ class DatePicker extends Component
         $this->isOpen = false;
 
         \Illuminate\Support\Facades\Log::info('[DatePicker] selectDate', ['field' => $this->field, 'value' => $this->value]);
-        // The parent component should be bound with `wire:model` to receive
-        // the updated `$value`. Avoid emitting events from PHP here.
+        $this->dispatch('datePickerUpdated', $this->field, $this->value);
+        $this->dispatch('input', $this->value);
     }
 
     public function getCalendarDaysProperty(): array

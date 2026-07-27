@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
+<div class="min-h-screen bg-transparent flex items-center justify-center px-4 py-12">
     <div class="w-full max-w-md">
-        <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden">
+        <div class="rounded-[2rem] bg-white/85 backdrop-blur-md shadow-xl ring-1 ring-slate-200 overflow-hidden">
             <div class="px-6 py-8 sm:px-10 text-center" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
                 <h1 class="text-2xl font-semibold text-white">Sign in</h1>
                 <p class="mt-2 text-sm text-white/85">View your bookings and payment status.</p>

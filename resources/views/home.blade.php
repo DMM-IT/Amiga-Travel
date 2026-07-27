@@ -144,9 +144,28 @@
         </div>
 
         <div class="rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-200 overflow-hidden flex-grow flex flex-col">
-            <div class="px-6 py-8 sm:px-10 sm:py-10 text-center flex-shrink-0" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
-                <h1 class="text-xl sm:text-2xl font-semibold text-white">{{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia Travel Services' }}</h1>
-                <p class="mt-3 text-sm sm:text-base text-white/85 max-w-lg mx-auto">{{ $pageContent['welcome_subtitle'] ?? 'Your Journey Deserves More Than A Destination — It Deserves An Exceptional Experience' }}</p>
+            <div class="relative px-6 py-8 sm:px-10 sm:py-10 text-center flex-shrink-0 overflow-hidden" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">
+                <!-- Subtle Tribal Pattern Overlay -->
+                <div class="absolute inset-0 pointer-events-none" style="background-image: url('{{ asset('images/tribal-pattern.svg') }}'); background-repeat: repeat; opacity: 0.12;"></div>
+
+                <!-- Minimalist Geometric Decorative SVG (Left) -->
+                <svg class="absolute -left-10 -top-10 w-44 h-44 text-white/10 pointer-events-none" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" stroke="currentColor" stroke-width="2" stroke-dasharray="8 8" />
+                    <circle cx="100" cy="100" r="50" stroke="currentColor" stroke-width="1.5" />
+                    <circle cx="100" cy="100" r="20" fill="currentColor" fill-opacity="0.5" />
+                </svg>
+
+                <!-- Minimalist Geometric Decorative SVG (Right) -->
+                <svg class="absolute -right-12 -bottom-12 w-52 h-52 text-white/10 pointer-events-none" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="90" stroke="currentColor" stroke-width="2" />
+                    <circle cx="100" cy="100" r="65" stroke="currentColor" stroke-width="1.5" stroke-dasharray="12 6" />
+                    <path d="M20 100 H180 M100 20 V180" stroke="currentColor" stroke-width="1" stroke-opacity="0.6" />
+                </svg>
+
+                <div class="relative z-10">
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-wide">{{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia Travel Services' }}</h1>
+                    <p class="mt-3 text-sm sm:text-base text-white/90 max-w-lg mx-auto font-medium">{{ $pageContent['welcome_subtitle'] ?? 'Your Journey Deserves More Than A Destination — It Deserves An Exceptional Experience' }}</p>
+                </div>
             </div>
  
             <div class="p-5 sm:p-7 grid gap-5 sm:grid-cols-2 flex-grow">
@@ -183,12 +202,12 @@
             {{ data_get($pageContent, 'booking_section_title', 'Request Travel Bookings') }}
         </h2>
 
-        <p class="text-xs text-slate-500 mt-2">
+        <p class="text-sm text-black font-semibold mt-2">
             {{ data_get($pageContent, 'booking_section_description', 'Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.') }}
         </p>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
         @php
             $bookingCards = data_get($pageContent, 'content.booking_cards', data_get($pageContent, 'booking_cards', []));
             $defaultBookingCards = [
@@ -262,18 +281,20 @@
                 $cardLink = data_get($card, 'link', '/book/new');
                 $bookingText = data_get($card, 'booking_button_text', 'Book Now');
             @endphp
-            <a href="{{ url($cardLink) }}" class="group rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col overflow-hidden">
-                <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="w-full aspect-video object-cover">
-                <div class="p-6 flex flex-col flex-grow">
-                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+            <a href="{{ url($cardLink) }}" class="group rounded-xl sm:rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col overflow-hidden">
+                <div class="h-20 sm:h-36 w-full bg-white flex items-center justify-center p-2 sm:p-8 border-b border-slate-100">
+                    <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                </div>
+                <div class="p-2.5 sm:p-6 flex flex-col flex-grow">
+                    <span class="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-1 sm:mb-3 leading-tight truncate">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-7v4h4l-5 7z"/>
                         </svg>
-                        Amiga - Best Travel Buddy
+                        <span class="truncate">Amiga - Best Travel Buddy</span>
                     </span>
-                    <h3 class="text-lg font-bold text-slate-900 mb-2">{{ $cardTitle }}</h3>
-                    <p class="text-sm text-slate-600 mb-4 flex-grow">{{ $cardDescription }}</p>
-                    <button class="w-full bg-[#ee018d] text-white text-sm font-bold py-3 px-6 rounded-full hover:bg-pink-700 transition-colors">
+                    <h3 class="text-xs sm:text-lg font-bold text-slate-900 mb-1 sm:mb-2 leading-tight truncate">{{ $cardTitle }}</h3>
+                    <p class="text-[9px] sm:text-sm text-slate-600 mb-2 sm:mb-4 flex-grow line-clamp-2 sm:line-clamp-none leading-tight">{{ $cardDescription }}</p>
+                    <button class="w-full bg-[#ee018d] text-white text-[10px] sm:text-sm font-bold py-1.5 px-2 sm:py-3 sm:px-6 rounded-full hover:bg-pink-700 transition-colors leading-tight">
                         {{ $bookingText }}
                     </button>
                 </div>

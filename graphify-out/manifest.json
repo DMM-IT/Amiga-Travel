@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Pages/ManageWebsiteSettings.php": {
-    "mtime": 1784916938.2443473,
-    "ast_hash": "31dbda814bf6d92986d9a4dbb7e0de50",
+    "mtime": 1785076538.7376268,
+    "ast_hash": "6c04554a4f38de2ca5c29cf79b7e1bdb",
     "semantic_hash": ""
   },
   "app/Filament/Pages/OverallReports.php": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource.php": {
-    "mtime": 1784900517.587708,
-    "ast_hash": "246a0e5099666d7f7e1ca23c4a771747",
+    "mtime": 1785130805.1694949,
+    "ast_hash": "232dbe1db9bab60227d93a5b8d87c43e",
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource/Pages/CreateBooking.php": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource/Pages/ViewBooking.php": {
-    "mtime": 1784954196.930663,
-    "ast_hash": "f38ad9ed47a3cc65cc22037bd9f7cb26",
+    "mtime": 1785130805.170591,
+    "ast_hash": "a6b0f9d77028a152806afbd4d8f12023",
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource/RelationManagers/AccommodationsRelationManager.php": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource.php": {
-    "mtime": 1784954196.9326742,
-    "ast_hash": "2e511bcc89f3bd850f87b0a295ac324b",
+    "mtime": 1785130805.170591,
+    "ast_hash": "f1e157829f89387ce516f3bf8019ebee",
     "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource/Pages/ListTransactions.php": {
@@ -470,33 +470,33 @@
     "semantic_hash": ""
   },
   "app/Filament/Widgets/BookingStatusChart.php": {
-    "mtime": 1784706039.6666012,
-    "ast_hash": "cdb10030c88b2a03198a6f3aec37cfde",
+    "mtime": 1785130805.1727097,
+    "ast_hash": "f133d1fc8ed45d16e2f5849b1e860456",
     "semantic_hash": ""
   },
   "app/Filament/Widgets/DashboardStatsOverview.php": {
-    "mtime": 1784706039.6678433,
-    "ast_hash": "eb6786dbd23c811132a661aafeacbab8",
+    "mtime": 1785130805.1740155,
+    "ast_hash": "27d6a3c78a8b160b292c2b59203b85f7",
     "semantic_hash": ""
   },
   "app/Filament/Widgets/RecentActivityWidget.php": {
-    "mtime": 1784706039.666033,
-    "ast_hash": "198f01e5e84ce07a8f6843c3d50a6060",
+    "mtime": 1785130805.1749275,
+    "ast_hash": "62e8348953255ab714b6545214cd0b4e",
     "semantic_hash": ""
   },
   "app/Filament/Widgets/RevenueChartWidget.php": {
-    "mtime": 1784872832.0257041,
-    "ast_hash": "ea1c145932b00869e7d0e1ddfa1949cd",
+    "mtime": 1785130805.1771674,
+    "ast_hash": "66b06dcc9d7828c287b13db5c81b383f",
     "semantic_hash": ""
   },
   "app/Filament/Widgets/SystemStatsOverview.php": {
-    "mtime": 1784707160.0327716,
-    "ast_hash": "9821127b84a9013c8729e4d9b3d3623f",
+    "mtime": 1785130805.1781774,
+    "ast_hash": "f2f033f6d35d7303902b9ef9e3100fbd",
     "semantic_hash": ""
   },
   "app/Filament/Widgets/TopRoutesWidget.php": {
-    "mtime": 1784706039.6655192,
-    "ast_hash": "1c29c572d54928f14279d7e1d5f66e52",
+    "mtime": 1785130805.1781774,
+    "ast_hash": "82aee28d4a618f67bdffbbc9f3eeeda1",
     "semantic_hash": ""
   },
   "app/Http/Controllers/AdminNotificationController.php": {
@@ -545,8 +545,8 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/AuthController.php": {
-    "mtime": 1784730736.9752948,
-    "ast_hash": "10de3ab4a754b1cd68e8b0096667e01a",
+    "mtime": 1785130805.1804512,
+    "ast_hash": "bd4c49e1a6ae6103ad755ad142520608",
     "semantic_hash": ""
   },
   "app/Http/Controllers/BookingExportController.php": {
@@ -575,13 +575,13 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1784954196.9331765,
-    "ast_hash": "c23439080b5f213fe1bc9aad30b3999c",
+    "mtime": 1785130805.1804512,
+    "ast_hash": "649a16b5293bd52c812493acae40aa00",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
-    "mtime": 1784954196.9351857,
-    "ast_hash": "6ede5aa99f85603204ccaeca12ab9497",
+    "mtime": 1785130805.1804512,
+    "ast_hash": "712df919ddcd32aeea41d5da012e4535",
     "semantic_hash": ""
   },
   "app/Livewire/DatePicker.php": {
@@ -595,8 +595,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/UserDashboard.php": {
-    "mtime": 1784467577.1340835,
-    "ast_hash": "9f92ab4f74d424cb96fc59a154accf31",
+    "mtime": 1785130805.1804512,
+    "ast_hash": "d09dda7e0fa121fb18595905e33c27fb",
     "semantic_hash": ""
   },
   "app/Mail/BookingCancellation.php": {
@@ -645,8 +645,8 @@
     "semantic_hash": ""
   },
   "app/Models/Booking.php": {
-    "mtime": 1784954196.9351857,
-    "ast_hash": "0cd1f18d901128a926b59c8c647ac30d",
+    "mtime": 1785076538.741203,
+    "ast_hash": "a10852cc305be8d69f37e065687bf95f",
     "semantic_hash": ""
   },
   "app/Models/Discount.php": {
@@ -695,8 +695,8 @@
     "semantic_hash": ""
   },
   "app/Models/Schedule.php": {
-    "mtime": 1784876607.9878123,
-    "ast_hash": "69f84616701732726dc750392f9aa8eb",
+    "mtime": 1785130805.182923,
+    "ast_hash": "52431b417cb3f6853ecf8590aee7d8fc",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -775,8 +775,8 @@
     "semantic_hash": ""
   },
   "app/Providers/Filament/AdminPanelProvider.php": {
-    "mtime": 1784908354.755663,
-    "ast_hash": "d38e58401e9a0dcfb151f2afe5a62dac",
+    "mtime": 1785130805.182923,
+    "ast_hash": "e57171b6913b98ea7bac83bea277b4c8",
     "semantic_hash": ""
   },
   "app/Services/GraciaPointsService.php": {
@@ -790,13 +790,13 @@
     "semantic_hash": ""
   },
   "app/Support/AdminNotificationFeed.php": {
-    "mtime": 1784900517.6026835,
-    "ast_hash": "81300b909e41df367cc5c16be174e1e3",
+    "mtime": 1785130805.182923,
+    "ast_hash": "0ec0652b89079d38f5d422e4e5f93e4c",
     "semantic_hash": ""
   },
   "app/Support/ReportingService.php": {
-    "mtime": 1784704822.9061987,
-    "ast_hash": "420558f862a538709c324da5aa0e0a23",
+    "mtime": 1785130805.182923,
+    "ast_hash": "f742912aae3c390400dac455a4a2b2ed",
     "semantic_hash": ""
   },
   "artisan": {
@@ -1205,8 +1205,8 @@
     "semantic_hash": ""
   },
   "database/migrations/2026_07_24_000001_create_vouchers_table.php": {
-    "mtime": 1784872832.0374813,
-    "ast_hash": "7d22d608e2a925129bd635a3c7bc92a9",
+    "mtime": 1785130805.182923,
+    "ast_hash": "55d64412ea6e0f66726ca5dbfad33f83",
     "semantic_hash": ""
   },
   "database/migrations/2026_07_24_000002_create_voucher_redemptions_table.php": {
@@ -1485,8 +1485,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1784883961.343916,
-    "ast_hash": "4625b99fe5bbb39809aa470b3a8e7d78",
+    "mtime": 1785130805.182923,
+    "ast_hash": "f3d2af50509ec6fffdaaa18b5f5493b2",
     "semantic_hash": ""
   },
   "public/index.php": {
@@ -1585,8 +1585,8 @@
     "semantic_hash": ""
   },
   "resources/js/app.js": {
-    "mtime": 1784883961.34443,
-    "ast_hash": "dbc275677cd9bcaf687af8b0aa4ccb71",
+    "mtime": 1785130805.182923,
+    "ast_hash": "685f1df71b0a2d5f68107a54d36157e3",
     "semantic_hash": ""
   },
   "resources/js/filament-charts.js": {
@@ -1595,8 +1595,8 @@
     "semantic_hash": ""
   },
   "resources/views/about.blade.php": {
-    "mtime": 1784901638.6467855,
-    "ast_hash": "244bc7dbf18fcf8b64e8b15f01522855",
+    "mtime": 1785076538.7447808,
+    "ast_hash": "771d6f113e72e7ab1b3feb1cd9d7232d",
     "semantic_hash": ""
   },
   "resources/views/book-status.blade.php": {
@@ -1635,8 +1635,8 @@
     "semantic_hash": ""
   },
   "resources/views/emails/booking-confirmation.blade.php": {
-    "mtime": 1784467577.43612,
-    "ast_hash": "54d26ac518c3073e3d31662ec3c8197a",
+    "mtime": 1785076538.7447808,
+    "ast_hash": "5fe627195a9152ea58fedfdd416dfbeb",
     "semantic_hash": ""
   },
   "resources/views/emails/booking-created.blade.php": {
@@ -1670,8 +1670,8 @@
     "semantic_hash": ""
   },
   "resources/views/filament/admin/notification-bell.blade.php": {
-    "mtime": 1784916928.6132076,
-    "ast_hash": "798567f7492e63fcc13cdda1b727d38f",
+    "mtime": 1785130805.182923,
+    "ast_hash": "f1176bf0d150643ddf38931292fa5355",
     "semantic_hash": ""
   },
   "resources/views/filament/admin/notification-scripts.blade.php": {
@@ -1715,8 +1715,8 @@
     "semantic_hash": ""
   },
   "resources/views/filament/pages/overall-reports.blade.php": {
-    "mtime": 1784954196.9375129,
-    "ast_hash": "5ae30e257037df086174f0a845bbfba0",
+    "mtime": 1785130805.1915927,
+    "ast_hash": "a55fcb876b3698c3dbccc20a5519a76e",
     "semantic_hash": ""
   },
   "resources/views/filament/pages/staff-performance.blade.php": {
@@ -1760,23 +1760,23 @@
     "semantic_hash": ""
   },
   "resources/views/home.blade.php": {
-    "mtime": 1784878614.022864,
-    "ast_hash": "b1e751631fcd3821fb7739ccf42a5699",
+    "mtime": 1785076538.7455866,
+    "ast_hash": "2d221664f9d0baf55a356426ad48b2a8",
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1784911215.700313,
-    "ast_hash": "3f855b9a66155aeae283e8a8c17ebbad",
+    "mtime": 1785132527.6086862,
+    "ast_hash": "d17f5ca64b464fcfc99c7c7385d08d43",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1784954196.9395213,
-    "ast_hash": "8536b22dd58a96879db85c324e4dc74c",
+    "mtime": 1785130805.1937864,
+    "ast_hash": "237da549a673ad671bfd6a7900dad861",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
-    "mtime": 1784915117.9279087,
-    "ast_hash": "846fea4e02c5f8d364a921064962f2f5",
+    "mtime": 1785130805.1951807,
+    "ast_hash": "ba6f78c146486ffbb1bde20507b76a3a",
     "semantic_hash": ""
   },
   "resources/views/livewire/date-picker.blade.php": {
@@ -1820,8 +1820,8 @@
     "semantic_hash": ""
   },
   "resources/views/services.blade.php": {
-    "mtime": 1784878614.0257761,
-    "ast_hash": "2f5e9d40446264d6f0c6fb44b73285d2",
+    "mtime": 1785076538.7455866,
+    "ast_hash": "9b50c9c9368694f70c511882d2691c47",
     "semantic_hash": ""
   },
   "resources/views/tour-details.blade.php": {
@@ -2727,6 +2727,71 @@
   "public/app/icons/Icon-maskable-512.png": {
     "mtime": 1784467577.412856,
     "ast_hash": "eef6341acda9d41456a82fb1c75c93ce",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_26_000001_add_client_phone_to_bookings_table.php": {
+    "mtime": 1785076538.741713,
+    "ast_hash": "8ff396680fc0f51357385b4eebd7f9d5",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_27_000001_add_database_indexes.php": {
+    "mtime": 1785130805.182923,
+    "ast_hash": "b2054ad15c3baf46ab58b73eca3b4409",
+    "semantic_hash": ""
+  },
+  "resources/views/partials/global-skeleton.blade.php": {
+    "mtime": 1785130805.1964033,
+    "ast_hash": "d82824911f603937a41f1ef29002e30f",
+    "semantic_hash": ""
+  },
+  "scratch/check_blade.php": {
+    "mtime": 1785076538.7455866,
+    "ast_hash": "8fa37314fe793fabf809244519cbff63",
+    "semantic_hash": ""
+  },
+  "DEPLOYMENT_SECURITY_AND_ROUTES.md": {
+    "mtime": 1785130805.1673405,
+    "ast_hash": "2a5a8e9493da794fa2de8efd0ef73d91",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-1.jpg": {
+    "mtime": 1785131423.2458396,
+    "ast_hash": "834bb8b4cc4aec8e163cf0d52b181f83",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-2.jpg": {
+    "mtime": 1785131492.6654518,
+    "ast_hash": "5ba8ab2cb43d8c475db1642190b7cfad",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-3.jpg": {
+    "mtime": 1785131548.967105,
+    "ast_hash": "1060cf46c8621d05e769ea23cc2b7c95",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-4.jpg": {
+    "mtime": 1785131579.069312,
+    "ast_hash": "f8917fdea28605d369e79acdb660835e",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-5.jpg": {
+    "mtime": 1785131621.8867166,
+    "ast_hash": "d322fc10a8f3d00ef792537bb64b9a26",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-6.jpg": {
+    "mtime": 1785131906.3183875,
+    "ast_hash": "b20c1113829c6044b9a0a369fb1ed4b2",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-7.jpg": {
+    "mtime": 1785131976.4566858,
+    "ast_hash": "3fec846ff8f7c31d6829050e1b0bda19",
+    "semantic_hash": ""
+  },
+  "public/images/amiga-backgrounds/bg-8.jpg": {
+    "mtime": 1785132043.3437972,
+    "ast_hash": "abf5ce741440d87fa2bf2b57c7b6f0e6",
     "semantic_hash": ""
   }
 }
