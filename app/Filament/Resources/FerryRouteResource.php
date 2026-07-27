@@ -20,6 +20,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\Filter;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Enums\FiltersLayout;
 
 class FerryRouteResource extends Resource
 {
@@ -57,9 +60,9 @@ class FerryRouteResource extends Resource
         return static::canAccess();
     }
 
-    protected static ?string $navigationLabel = 'Travel Routes';
+    protected static ?string $navigationLabel = 'Routes and Schedule';
 
-    protected static ?string $modelLabel = 'route';
+    protected static ?string $modelLabel = 'Route and Schedule';
 
     public static function form(Form $form): Form
     {
@@ -156,24 +159,30 @@ class FerryRouteResource extends Resource
                             ->deletable()
                             ->collapsible()
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['vehicle_name'] ?? $state['service_name'] ?? 'New schedule')
+                            ->itemLabel(fn (array $state): ?string => $state['vehicle_name'] ?? 'New schedule')
                             ->mutateRelationshipDataBeforeFillUsing(function (array $data, callable $get): array {
                                 if ($vehicleId = $get('../../vehicle_id')) {
-                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
+                                    $vehicleName = optional(Vehicle::find($vehicleId))->name;
+                                    $data['vehicle_name'] = $vehicleName;
+                                    $data['service_name'] = $data['service_name'] ?? $vehicleName;
                                 }
 
                                 return $data;
                             })
                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data, callable $get): array {
                                 if ($vehicleId = $get('../../vehicle_id')) {
-                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
+                                    $vehicleName = optional(Vehicle::find($vehicleId))->name;
+                                    $data['vehicle_name'] = $vehicleName;
+                                    $data['service_name'] = $data['service_name'] ?? $vehicleName;
                                 }
 
                                 return $data;
                             })
                             ->mutateRelationshipDataBeforeSaveUsing(function (array $data, callable $get): array {
                                 if ($vehicleId = $get('../../vehicle_id')) {
-                                    $data['vehicle_name'] = optional(Vehicle::find($vehicleId))->name;
+                                    $vehicleName = optional(Vehicle::find($vehicleId))->name;
+                                    $data['vehicle_name'] = $vehicleName;
+                                    $data['service_name'] = $data['service_name'] ?? $vehicleName;
                                 }
 
                                 return $data;
@@ -189,12 +198,6 @@ class FerryRouteResource extends Resource
     protected static function scheduleFormSchema(): array
     {
         return [
-            TextInput::make('service_name')
-                ->label('Name/Model')
-                ->placeholder('e.g. Fast Ferry')
-                ->required()
-                ->maxLength(255),
-
             TextInput::make('vehicle_name')
                 ->label('Vehicle')
                 ->disabled()
@@ -232,6 +235,13 @@ class FerryRouteResource extends Resource
                 ->minValue(0)
                 ->required(),
 
+            TextInput::make('tickets_available')
+                ->label('Tickets Available')
+                ->numeric()
+                ->minValue(0)
+                ->default(100)
+                ->required(),
+
             TextInput::make('availability_label')
                 ->label('Availability note')
                 ->placeholder('e.g. Available, Limited availability')
@@ -254,6 +264,81 @@ class FerryRouteResource extends Resource
             Toggle::make('is_active')
                 ->label('Visible to clients when booking')
                 ->default(true),
+                
+            Repeater::make('scheduleAccommodations')
+                ->relationship('scheduleAccommodations')
+                ->label('Onboard Accommodations')
+                ->schema([
+                    TextInput::make('name')
+                        ->label('Accommodation name')
+                        ->placeholder('e.g. Tourist Class, Bed Cabin')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+
+                    \Filament\Forms\Components\Textarea::make('description')
+                        ->placeholder('Details about this accommodation option')
+                        ->rows(2)
+                        ->columnSpanFull(),
+
+                    TextInput::make('price')
+                        ->label('Price per passenger (₱)')
+                        ->numeric()
+                        ->prefix('₱')
+                        ->minValue(0)
+                        ->required(),
+
+                    Toggle::make('has_bed')
+                        ->label('Includes bed accommodation')
+                        ->helperText('Enable for cabin or bunk options with sleeping berths.'),
+
+                    TextInput::make('sort_order')
+                        ->label('Display order')
+                        ->numeric()
+                        ->default(0)
+                        ->minValue(0),
+
+                    Toggle::make('is_active')
+                        ->label('Visible to clients when booking')
+                        ->default(true),
+                ])
+                ->columns(2)
+                ->collapsible()
+                ->columnSpanFull()
+                ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                ->visible(fn (callable $get): bool => $get('../../mode') === 'ferry'),
+
+            Repeater::make('scheduleTransportClasses')
+                ->relationship('scheduleTransportClasses')
+                ->label('Transport Classes')
+                ->schema([
+                    Select::make('transport_class_id')
+                        ->label('Transport Class')
+                        ->options(fn () => \App\Models\TransportClass::where('is_active', true)->pluck('name', 'id'))
+                        ->required()
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if ($state) {
+                                $tc = \App\Models\TransportClass::find($state);
+                                if ($tc) {
+                                    $set('transport_class_name', $tc->name);
+                                }
+                            }
+                        }),
+                    TextInput::make('additional_price')
+                        ->label('Additional Price (₱)')
+                        ->numeric()
+                        ->prefix('₱')
+                        ->default(0)
+                        ->minValue(0),
+                    // Hidden field to store name for Repeater item label
+                    TextInput::make('transport_class_name')->hidden(),
+                ])
+                ->columns(2)
+                ->collapsible()
+                ->columnSpanFull()
+                ->itemLabel(fn (array $state): ?string => $state['transport_class_name'] ?? null)
+                ->visible(fn (callable $get): bool => $get('../../mode') === 'airline'),
         ];
     }
 
@@ -262,19 +347,15 @@ class FerryRouteResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('origin')
-                    ->searchable()
                     ->sortable(),
                 TextColumn::make('destination')
-                    ->searchable()
                     ->sortable(),
                 TextColumn::make('vehicle.full_name')
                     ->label('Vehicle')
-                    ->searchable(['name', 'vehicle_id'])
                     ->sortable(['name', 'vehicle_id']),
                 TextColumn::make('operator')
                     ->label('Operator')
                     ->getStateUsing(fn (FerryRoute $record): ?string => $record->vehicle?->operator ?: $record->operator)
-                    ->searchable()
                     ->sortable(),
                 TextColumn::make('mode')
                     ->label('Mode')
@@ -290,8 +371,64 @@ class FerryRouteResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+                Filter::make('global_search')
+                    ->form([
+                        TextInput::make('search')
+                            ->placeholder('Search...')
+                            ->prefixIcon('heroicon-m-magnifying-glass')
+                            ->hiddenLabel(),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['search'],
+                            function (Builder $query, $search): Builder {
+                                return $query->where(function ($q) use ($search) {
+                                    $q->where('origin', 'like', "%{$search}%")
+                                      ->orWhere('destination', 'like', "%{$search}%")
+                                      ->orWhere('operator', 'like', "%{$search}%")
+                                      ->orWhereHas('vehicle', fn($qv) => $qv->where('name', 'like', "%{$search}%")->orWhere('vehicle_id', 'like', "%{$search}%"));
+                                });
+                            }
+                        );
+                    }),
+                Filter::make('origin_filter')
+                    ->form([
+                        TextInput::make('origin')
+                            ->placeholder('Search origin...')
+                            ->hiddenLabel(),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['origin'],
+                            fn (Builder $query, $origin): Builder => $query->where('origin', 'like', "%{$origin}%"),
+                        );
+                    }),
+                Filter::make('destination_filter')
+                    ->form([
+                        TextInput::make('destination')
+                            ->placeholder('Search destination...')
+                            ->hiddenLabel(),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['destination'],
+                            fn (Builder $query, $destination): Builder => $query->where('destination', 'like', "%{$destination}%"),
+                        );
+                    }),
+                Filter::make('vehicle_filter')
+                    ->form([
+                        TextInput::make('vehicle')
+                            ->placeholder('Search vehicle...')
+                            ->hiddenLabel(),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['vehicle'],
+                            fn (Builder $query, $vehicle): Builder => $query->whereHas('vehicle', fn ($q) => $q->where('name', 'like', "%{$vehicle}%")->orWhere('vehicle_id', 'like', "%{$vehicle}%")),
+                        );
+                    }),
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormColumns(4)
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

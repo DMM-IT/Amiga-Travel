@@ -21,6 +21,7 @@ class Schedule extends Model
         'arrival_time',
         'duration_minutes',
         'price',
+        'tickets_available',
         'availability_label',
         'seat_rows',
         'seat_columns',
@@ -48,8 +49,14 @@ class Schedule extends Model
     public function transportClasses(): BelongsToMany
     {
         return $this->belongsToMany(TransportClass::class, 'schedule_transport_class')
-            ->withPivot('additional_price')
+            ->using(ScheduleTransportClass::class)
+            ->withPivot('id', 'additional_price')
             ->withTimestamps();
+    }
+
+    public function scheduleTransportClasses(): HasMany
+    {
+        return $this->hasMany(ScheduleTransportClass::class);
     }
 
     public function scheduleAccommodations(): HasMany
@@ -107,8 +114,8 @@ class Schedule extends Model
     {
         return $query->where(
             $query->getModel()->qualifyColumn('is_active'),
-            true,
-        );
+            true
+        )->where($query->getModel()->qualifyColumn('tickets_available'), '>', 0);
     }
 
     public function scopeForRouteAndDate(Builder $query, string $origin, string $destination, string $date, ?string $mode = null, ?string $operator = null): Builder
