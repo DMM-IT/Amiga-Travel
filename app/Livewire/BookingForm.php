@@ -995,15 +995,17 @@ public function selectedSchedule(): ?array
 
     protected function getAvailableSchedules(): array
     {
-        $schedules = Schedule::query()
-            ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
-            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
-            ->get();
+        $cacheKey = 'livewire:schedules:' . md5(serialize([$this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator]));
 
-        return $schedules
-            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date, []))
-            ->values()
-            ->all();
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(3), function () {
+            return Schedule::query()
+                ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
+                ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
+                ->get()
+                ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date, []))
+                ->values()
+                ->all();
+        });
     }
 
     protected function getAvailableReturnSchedules(): array
@@ -1012,16 +1014,18 @@ public function selectedSchedule(): ?array
             return [];
         }
 
-        $schedules = Schedule::query()
-            ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
-            // Reverse origin and destination for return trip
-            ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode, $this->operator)
-            ->get();
+        $cacheKey = 'livewire:return_schedules:' . md5(serialize([$this->destination, $this->origin, $this->return_date, $this->mode, $this->operator]));
 
-        return $schedules
-            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date, []))
-            ->values()
-            ->all();
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(3), function () {
+            return Schedule::query()
+                ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
+                // Reverse origin and destination for return trip
+                ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode, $this->operator)
+                ->get()
+                ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date, []))
+                ->values()
+                ->all();
+        });
     }
 
     /**
@@ -1707,36 +1711,46 @@ public function selectedSchedule(): ?array
     #[Computed]
     public function discounts()
     {
-        return Discount::all()->sortBy('name')->values();
+        return \Illuminate\Support\Facades\Cache::remember('catalog:discounts', now()->addHours(6), function () {
+            return Discount::all()->sortBy('name')->values();
+        });
     }
 
     #[Computed]
     public function transportClassCatalog()
     {
-        return TransportClass::query()->where('is_active', true)->orderBy('name')->get();
+        return \Illuminate\Support\Facades\Cache::remember('catalog:transport_classes', now()->addHours(6), function () {
+            return TransportClass::query()->where('is_active', true)->orderBy('name')->get();
+        });
     }
 
     #[Computed]
     public function vehicleRateCatalog()
     {
-        return VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        return \Illuminate\Support\Facades\Cache::remember('api:vehicle_rates', now()->addHours(6), function () {
+            return VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        });
     }
 
     #[Computed]
     public function vehicleBrandCatalog()
     {
-        return VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->get();
+        return \Illuminate\Support\Facades\Cache::remember('catalog:vehicle_brands', now()->addHours(6), function () {
+            return VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->get();
+        });
     }
 
     #[Computed]
     public function vehicleModelCatalog()
     {
         if ($this->selected_brand_id) {
-            return VehicleModel::query()
-                ->where('vehicle_brand_id', (int) $this->selected_brand_id)
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->get();
+            return \Illuminate\Support\Facades\Cache::remember('catalog:vehicle_models:' . (int) $this->selected_brand_id, now()->addHours(6), function () {
+                return VehicleModel::query()
+                    ->where('vehicle_brand_id', (int) $this->selected_brand_id)
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get();
+            });
         }
         return collect();
     }
@@ -1744,7 +1758,9 @@ public function selectedSchedule(): ?array
     #[Computed]
     public function accommodationCatalog()
     {
-        return Accommodation::query()->where('is_active', true)->orderBy('name')->get();
+        return \Illuminate\Support\Facades\Cache::remember('api:accommodations', now()->addHours(6), function () {
+            return Accommodation::query()->where('is_active', true)->orderBy('name')->get();
+        });
     }
 
     public function render()

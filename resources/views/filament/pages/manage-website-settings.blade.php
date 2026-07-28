@@ -550,47 +550,6 @@
                 <button class="ws-add" wire:click="addQuickFact">+ Add Quick Fact</button>
 
             {{-- ======================================= --}}
-            {{-- GALLERY HEADER                           --}}
-            {{-- ======================================= --}}
-            @elseif($activeSection === 'gallery_header')
-                <div class="ws-field">
-                    <label class="ws-label">Page Badge</label>
-                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.badge" placeholder="Gallery">
-                </div>
-                <div class="ws-field">
-                    <label class="ws-label">Page Title</label>
-                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.title" placeholder="Our Gallery">
-                </div>
-                <div class="ws-field">
-                    <label class="ws-label">Page Description</label>
-                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.description" rows="3"></textarea>
-                </div>
-
-            {{-- ======================================= --}}
-            {{-- GALLERY ITEMS                            --}}
-            {{-- ======================================= --}}
-            @elseif($activeSection === 'gallery_items')
-                @php $gc = count($content['gallery_items'] ?? []); @endphp
-                <div class="ws-note">{{ $gc }} gallery {{ $gc === 1 ? 'item' : 'items' }} configured.</div>
-                @if($gc > 0)
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;margin-bottom:.75rem;">
-                        @foreach(array_slice($content['gallery_items'] ?? [], 0, 9) as $gi)
-                            @if(data_get($gi, 'image'))
-                                <div style="border-radius:.5rem;overflow:hidden;aspect-ratio:1;">
-                                    <img src="{{ $imageUrl(data_get($gi, 'image')) }}" alt="{{ data_get($gi, 'alt') }}" style="width:100%;height:100%;object-fit:cover;">
-                                </div>
-                            @else
-                                <div style="border-radius:.5rem;background:rgba(255,255,255,.04);aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:rgba(255,255,255,.18);">No img</div>
-                            @endif
-                        @endforeach
-                    </div>
-                    @if($gc > 9)
-                        <div style="text-align:center;color:rgba(255,255,255,.25);font-size:.65rem;margin-bottom:.75rem;">+{{ $gc - 9 }} more items</div>
-                    @endif
-                @endif
-                <div class="ws-lock-note">💡 To add / remove / reorder gallery images, use <em>Advanced Settings</em> below.</div>
-
-            {{-- ======================================= --}}
             {{-- SERVICES HEADER                          --}}
             {{-- ======================================= --}}
             @elseif($activeSection === 'services_header')

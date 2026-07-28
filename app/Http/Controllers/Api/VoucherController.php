@@ -10,7 +10,8 @@ class VoucherController extends Controller
 {
     public function index(Request $request)
     {
-        $vouchersQuery = \App\Models\Voucher::where('is_active', true)
+        $vouchersQuery = \App\Models\Voucher::withCount('redemptions')
+            ->where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('start_at')->orWhere('start_at', '<=', now());
             })
@@ -34,15 +35,16 @@ class VoucherController extends Controller
         $vouchers = $vouchersQuery->orderBy('created_at', 'desc')->get();
 
         // Filter out vouchers that have reached their total_usage_limit
+        // redemptions_count is loaded via withCount — no extra queries.
         $vouchers = $vouchers->filter(function ($voucher) {
             if ($voucher->total_usage_limit !== null) {
-                return $voucher->redemptions()->count() < $voucher->total_usage_limit;
+                return $voucher->redemptions_count < $voucher->total_usage_limit;
             }
             return true;
         })->values();
 
         return response()->json([
-            'status' => 'success',
+            'status'   => 'success',
             'vouchers' => $vouchers,
         ]);
     }

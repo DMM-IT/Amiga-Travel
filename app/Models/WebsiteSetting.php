@@ -22,7 +22,6 @@ class WebsiteSetting extends Model
         'footer' => 'Footer',
         'home' => 'Home',
         'about' => 'About',
-        'gallery' => 'Gallery',
         'services' => 'Services',
         'tour_package' => 'Tour Package',
         'schedules' => 'Schedules',
@@ -39,6 +38,25 @@ class WebsiteSetting extends Model
         'Philippine Airlines' => 'Philippine Airlines',
         'Travel With Us' => 'Travel With Us',
     ];
+
+    protected static function booted()
+    {
+        $flushCache = function ($setting) {
+            \Illuminate\Support\Facades\Cache::forget('website_settings:' . $setting->page);
+            \Illuminate\Support\Facades\Cache::forget('website_settings:page:' . $setting->page);
+            \Illuminate\Support\Facades\Cache::forget('website_settings:header');
+            \Illuminate\Support\Facades\Cache::forget('website_settings:footer');
+            if ($setting->page === 'services') {
+                \Illuminate\Support\Facades\Cache::forget('api:services');
+            }
+            if ($setting->page === 'home') {
+                \Illuminate\Support\Facades\Cache::forget('api:promotions');
+            }
+        };
+
+        static::saved($flushCache);
+        static::deleted($flushCache);
+    }
 
     public static function getPageOptions()
     {

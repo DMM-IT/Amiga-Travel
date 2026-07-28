@@ -118,62 +118,79 @@ class ScheduleController extends Controller
             'date' => 'required|date_format:Y-m-d',
         ]);
 
-        $origin = $request->input('origin');
+        $origin      = $request->input('origin');
         $destination = $request->input('destination');
-        $date = $request->input('date');
-        $mode = $request->input('mode', null);
-        $operator = $request->input('operator', null);
+        $date        = $request->input('date');
+        $mode        = $request->input('mode', null);
+        $operator    = $request->input('operator', null);
 
-        $activeRule = \App\Models\GraciaEarningRule::where('is_active', true)
-            ->where(function ($query) {
-                $query->whereNull('starts_at')->orWhere('starts_at', '<=', now());
-            })
-            ->where(function ($query) {
-                $query->whereNull('ends_at')->orWhere('ends_at', '>=', now());
-            })
-            ->latest('id')
-            ->first();
+        // Cache the active earning rule — it rarely changes during the day.
+        $activeRule = \Illuminate\Support\Facades\Cache::remember(
+            'gracia:active_earning_rule',
+            now()->addHour(),
+            fn () => \App\Models\GraciaEarningRule::where('is_active', true)
+                ->where(function ($q) { $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()); })
+                ->where(function ($q) { $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()); })
+                ->latest('id')
+                ->first()
+        );
 
-        $schedules = Schedule::forRouteAndDate($origin, $destination, $date, $mode, $operator)
-            ->get()
-            ->map(function ($schedule) use ($date, $activeRule) {
-                $arr = $schedule->toBookingArray($date);
-                $pts = 0;
-                if ($activeRule && $activeRule->spend_threshold_centavos > 0) {
-                    $pts = (int) floor(($arr['price'] * 100) / $activeRule->spend_threshold_centavos) * $activeRule->points_awarded;
-                }
-                $arr['gracia_points'] = $pts;
-                return $arr;
-            });
+        // Cache schedule search results per route/date/mode/operator.
+        // 5-minute TTL is safe: schedules don't change mid-day but we need
+        // near-real-time ticket availability after busy booking windows.
+        $cacheKey = 'api:schedule:search:'
+            . md5("{$origin}:{$destination}:{$date}:{$mode}:{$operator}");
+
+        $schedules = \Illuminate\Support\Facades\Cache::remember(
+            $cacheKey,
+            now()->addMinutes(5),
+            function () use ($origin, $destination, $date, $mode, $operator, $activeRule) {
+                return Schedule::forRouteAndDate($origin, $destination, $date, $mode, $operator)
+                    ->get()
+                    ->map(function ($schedule) use ($date, $activeRule) {
+                        $arr = $schedule->toBookingArray($date);
+                        $pts = 0;
+                        if ($activeRule && $activeRule->spend_threshold_centavos > 0) {
+                            $pts = (int) floor(($arr['price'] * 100) / $activeRule->spend_threshold_centavos)
+                                * $activeRule->points_awarded;
+                        }
+                        $arr['gracia_points'] = $pts;
+                        return $arr;
+                    });
+            }
+        );
 
         return response()->json([
-            'status' => 'success',
-            'schedules' => $schedules
+            'status'    => 'success',
+            'schedules' => $schedules,
         ]);
     }
     public function allSchedules(Request $request)
     {
         $startDate = $request->query('start_date', \Carbon\Carbon::today()->format('Y-m-d'));
-        $endDate = $request->query('end_date', \Carbon\Carbon::today()->addDays(6)->format('Y-m-d'));
+        $endDate   = $request->query('end_date',   \Carbon\Carbon::today()->addDays(6)->format('Y-m-d'));
 
-        $routes = FerryRoute::with([
-            'schedules' => function ($query) use ($startDate, $endDate) {
-                $query->where('is_active', true)
-                      ->whereBetween('departure_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-                      ->orderBy('departure_time');
-            },
-            'schedules.scheduleAccommodations',
-            'schedules.transportClasses',
-        ])->where('is_active', true)->orderBy('origin')->orderBy('destination')->get();
-        
-        // Filter out routes that have no schedules in this date range
-        $routes = $routes->filter(fn ($route) => $route->schedules->isNotEmpty())->values();
+        $cacheKey = 'api:all_schedules:' . $startDate . ':' . $endDate;
+
+        $routes = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(10), function () use ($startDate, $endDate) {
+            return FerryRoute::with([
+                'schedules' => function ($query) use ($startDate, $endDate) {
+                    $query->where('is_active', true)
+                          ->whereBetween('departure_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                          ->orderBy('departure_time');
+                },
+                'schedules.scheduleAccommodations',
+                'schedules.transportClasses',
+            ])->where('is_active', true)->orderBy('origin')->orderBy('destination')->get()
+              ->filter(fn ($route) => $route->schedules->isNotEmpty())
+              ->values();
+        });
 
         return response()->json([
-            'status' => 'success',
+            'status'     => 'success',
             'start_date' => $startDate,
-            'end_date' => $endDate,
-            'routes' => $routes
+            'end_date'   => $endDate,
+            'routes'     => $routes,
         ]);
     }
 }
