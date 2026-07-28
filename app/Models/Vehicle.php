@@ -18,6 +18,17 @@ class Vehicle extends Model
         'is_active',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+        });
+    }
+
     protected $casts = [
         'is_active' => 'boolean',
         'capacity' => 'integer',

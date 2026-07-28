@@ -112,22 +112,47 @@ class FerryRoute extends Model
             ->all();
     }
 
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+        });
+    }
+
+    public static function operators(?string $mode = null): array
+    {
+        return static::query()
+            ->active()
+            ->when($mode, fn ($query) => $query->where('mode', $mode))
+            ->whereNotNull('operator')
+            ->where('operator', '!=', '')
+            ->select('operator')
+            ->distinct()
+            ->orderBy('operator')
+            ->pluck('operator')
+            ->values()
+            ->all();
+    }
+
     public static function scheduleOrigins(?string $mode = null, ?string $operator = null): array
     {
-        $cacheKey = 'ferry_route:schedule_origins:' . md5(serialize([$mode, $operator]));
+        $cacheKey = 'ferry_route:schedule_origins_v4:' . md5(serialize([$mode, $operator]));
 
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(2), function () use ($mode, $operator) {
             return static::query()
                 ->active()
-                ->when($mode, function ($query, $mode) {
-                    $query->where('mode', $mode);
-                })
+                ->when($mode, fn ($query) => $query->where('mode', $mode))
                 ->when($operator, function ($query, $operator) {
-                    $query->where('operator', $operator);
+                    $query->where(function ($q) use ($operator) {
+                        $q->where('operator', $operator)
+                          ->orWhereHas('vehicle', fn ($vq) => $vq->where('operator', $operator));
+                    });
                 })
-                ->whereHas('schedules', function ($q) {
-                    $q->active();
-                })
+                ->whereHas('schedules', fn ($q) => $q->active())
                 ->select('origin')
                 ->distinct()
                 ->orderBy('origin')
@@ -139,21 +164,20 @@ class FerryRoute extends Model
 
     public static function scheduleDestinationsFor(string $origin, ?string $mode = null, ?string $operator = null, bool $requireReturn = false): array
     {
-        $cacheKey = 'ferry_route:schedule_destinations:' . md5(serialize([$origin, $mode, $operator, $requireReturn]));
+        $cacheKey = 'ferry_route:schedule_destinations_v4:' . md5(serialize([$origin, $mode, $operator, $requireReturn]));
 
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(2), function () use ($origin, $mode, $operator, $requireReturn) {
             $query = static::query()
                 ->active()
                 ->where('origin', $origin)
-                ->when($mode, function ($query, $mode) {
-                    $query->where('mode', $mode);
-                })
+                ->when($mode, fn ($query) => $query->where('mode', $mode))
                 ->when($operator, function ($query, $operator) {
-                    $query->where('operator', $operator);
+                    $query->where(function ($q) use ($operator) {
+                        $q->where('operator', $operator)
+                          ->orWhereHas('vehicle', fn ($vq) => $vq->where('operator', $operator));
+                    });
                 })
-                ->whereHas('schedules', function ($q) {
-                    $q->active();
-                });
+                ->whereHas('schedules', fn ($q) => $q->active());
 
             if ($requireReturn) {
                 $query->whereExists(function ($sub) use ($origin, $mode, $operator) {
@@ -164,11 +188,17 @@ class FerryRoute extends Model
                         ->whereColumn('return_routes.destination', (new static)->getTable() . '.origin')
                         ->where('return_routes.is_active', true)
                         ->where('return_schedules.is_active', true)
-                        ->when($mode, function ($q) use ($mode) {
-                            $q->where('return_routes.mode', $mode);
-                        })
+                        ->when($mode, fn ($q) => $q->where('return_routes.mode', $mode))
                         ->when($operator, function ($q) use ($operator) {
-                            $q->where('return_routes.operator', $operator);
+                            $q->where(function ($opq) use ($operator) {
+                                $opq->where('return_routes.operator', $operator)
+                                    ->orWhereExists(function ($vsub) use ($operator) {
+                                        $vsub->selectRaw('1')
+                                            ->from('vehicles')
+                                            ->whereColumn('vehicles.id', 'return_routes.vehicle_id')
+                                            ->where('vehicles.operator', $operator);
+                                    });
+                            });
                         });
                 });
             }
@@ -185,23 +215,32 @@ class FerryRoute extends Model
 
     public static function scheduleOperatorsFor(?string $mode = null): array
     {
-        $cacheKey = 'ferry_route:schedule_operators:' . md5(serialize([$mode]));
+        $cacheKey = 'ferry_route:schedule_operators_v4:' . md5(serialize([$mode]));
 
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(2), function () use ($mode) {
-            return static::query()
+            $routeOperators = static::query()
                 ->active()
-                ->when($mode, function ($query, $mode) {
-                    $query->where('mode', $mode);
-                })
+                ->when($mode, fn ($query) => $query->where('mode', $mode))
                 ->whereNotNull('operator')
                 ->where('operator', '!=', '')
-                ->whereHas('schedules', function ($q) {
-                    $q->active();
-                })
-                ->select('operator')
-                ->distinct()
-                ->orderBy('operator')
+                ->whereHas('schedules', fn ($q) => $q->active())
                 ->pluck('operator')
+                ->all();
+
+            $vehicleOperators = static::query()
+                ->active()
+                ->when($mode, fn ($query) => $query->where('mode', $mode))
+                ->whereHas('vehicle', fn ($q) => $q->whereNotNull('operator')->where('operator', '!=', ''))
+                ->whereHas('schedules', fn ($q) => $q->active())
+                ->get()
+                ->map(fn ($r) => $r->vehicle?->operator)
+                ->filter()
+                ->all();
+
+            return collect(array_merge($routeOperators, $vehicleOperators))
+                ->filter()
+                ->unique()
+                ->sort()
                 ->values()
                 ->all();
         });
