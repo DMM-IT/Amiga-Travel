@@ -91,6 +91,7 @@ class ManageProofs extends Page implements HasActions, HasForms
         PaymentSetting::current()->update([
             'proof_retention_days' => (int) $state['proof_retention_days'],
         ]);
+        PaymentSetting::bust(); // Clear cached payment settings
 
         Notification::make()
             ->title('Proof settings saved')

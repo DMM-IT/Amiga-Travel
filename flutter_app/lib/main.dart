@@ -2348,6 +2348,194 @@ class _CounterButton extends StatelessWidget {
   }
 }
 
+void showTermsModal(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) => Container(
+      height: MediaQuery.of(ctx).size.height * 0.8,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Text(
+                  'Amiga Travel Agency Services Terms & Conditions',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+          const Divider(),
+          const Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Boarding Requirements',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '• One printed copy of the eTicket Itinerary Receipt.\n'
+                    '• Presentation of each passenger\'s valid ID.\n'
+                    '• Passengers must arrive at the terminal 3–4 hours before departure. Boarding gates close 1 hour before departure.\n'
+                    '• The operating ferry carrier reserves the right to refuse boarding if a passenger cannot present the required documents upon request.',
+                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'eTicket Itinerary Receipt',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'The eTicket Itinerary Receipt is non-transferable. It is valid only until the date and time of departure printed on the ticket. Unused or expired eTickets are non-refundable and cannot be revalidated, subject to applicable return policies.',
+                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Government-Mandated Discounts',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '• Senior Citizens: Applicable to passengers aged 60 or above with valid OSCA or government-issued ID. A 20% discount applies to the base rate.\n'
+                    '• Infants: Infants below 2 years old and below 1 meter in height may be allowed to board. A fixed rate of ₱500.00 applies per infant regardless of destination or accommodation.',
+                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kPink,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Got It', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+void showPrivacyModal(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) => Container(
+      height: MediaQuery.of(ctx).size.height * 0.75,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Text(
+                  'Amiga Travel Agency Data Privacy Policy',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+          const Divider(),
+          const Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Personal Data Collection',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'We collect only the personal information necessary to process your booking, issue tickets, and contact you about your travel reservation.',
+                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Use of Personal Data',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Your information is used to confirm your booking, communicate updates, send receipts, and comply with transportation partner requirements.',
+                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Data Security & Retention',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'We take technical and organizational measures to safeguard your personal data. We retain booking details only as long as necessary to fulfill our services and comply with legal obligations.',
+                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Your Rights',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'You have the right to access, correct, or request deletion of your personal data in accordance with applicable privacy laws.',
+                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kPink,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Got It', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 // ==========================================
 // 3. ACTIVITY SCREEN
 // ==========================================
@@ -2367,6 +2555,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool _isLoading = false;
   bool _obscure = true;
   bool _isSignUp = false;
+  bool _agreeTerms = false;
+  bool _agreePrivacy = false;
 
   // OTP registration state
   String? _pendingRegisterEmail;  // non-null when OTP step is active
@@ -2662,6 +2852,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
       );
       return;
     }
+    if (!_agreeTerms || !_agreePrivacy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must agree to the Terms & Conditions and Data Privacy Policy to register.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
     try {
@@ -2793,6 +2992,240 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
   }
 
+  void _showForgotPasswordSheet() {
+    final emailController = TextEditingController(text: _emailCtrl.text.trim());
+    final otpController = TextEditingController();
+    final passController = TextEditingController();
+    final confirmPassController = TextEditingController();
+    bool isOtpSent = false;
+    bool modalLoading = false;
+    bool obscurePass = true;
+    bool obscureConfirm = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20, right: 20, top: 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isOtpSent ? 'Reset Your Password' : 'Forgot Password',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kSlate800),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isOtpSent
+                        ? 'Enter the 6-digit code sent to ${emailController.text.trim()} and set your new password.'
+                        : 'Enter your registered email address to receive a 6-digit password reset code.',
+                    style: const TextStyle(color: kSlate600, fontSize: 13),
+                  ),
+                  const SizedBox(height: 16),
+                  if (!isOtpSent) ...[
+                    TextField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: 'Registered Email Address',
+                        prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity, height: 50,
+                      child: ElevatedButton(
+                        onPressed: modalLoading ? null : () async {
+                          final email = emailController.text.trim();
+                          if (email.isEmpty || !email.contains('@')) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter a valid email address.'), backgroundColor: Colors.red),
+                            );
+                            return;
+                          }
+                          setModalState(() => modalLoading = true);
+                          try {
+                            final res = await http.post(
+                              Uri.parse('${UserSession.getBaseUrl()}/api/forgot-password/request-otp'),
+                              headers: {'Accept': 'application/json'},
+                              body: {'email': email},
+                            );
+                            final data = jsonDecode(res.body);
+                            if (res.statusCode == 200 && data['status'] == 'success') {
+                              setModalState(() {
+                                isOtpSent = true;
+                                modalLoading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(data['message'] ?? 'Reset code sent! Check your email.'), backgroundColor: kGreen),
+                              );
+                            } else {
+                              final msg = data['message'] ?? 'Failed to send verification code.';
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(msg), backgroundColor: Colors.red),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
+                            );
+                          } finally {
+                            if (context.mounted) setModalState(() => modalLoading = false);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPink,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: modalLoading
+                            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                            : const Text('Send Reset Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ),
+                    ),
+                  ] else ...[
+                    TextField(
+                      controller: otpController,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      decoration: InputDecoration(
+                        labelText: '6-Digit Verification Code',
+                        prefixIcon: const Icon(Icons.pin_outlined, color: kGreen),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: passController,
+                      obscureText: obscurePass,
+                      decoration: InputDecoration(
+                        labelText: 'New Password',
+                        prefixIcon: const Icon(Icons.lock_outline, color: kGreen),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscurePass ? Icons.visibility_off : Icons.visibility, color: kSlate400),
+                          onPressed: () => setModalState(() => obscurePass = !obscurePass),
+                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: confirmPassController,
+                      obscureText: obscureConfirm,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm New Password',
+                        prefixIcon: const Icon(Icons.lock_outline, color: kGreen),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscureConfirm ? Icons.visibility_off : Icons.visibility, color: kSlate400),
+                          onPressed: () => setModalState(() => obscureConfirm = !obscureConfirm),
+                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity, height: 50,
+                      child: ElevatedButton(
+                        onPressed: modalLoading ? null : () async {
+                          final otp = otpController.text.trim();
+                          final newPass = passController.text;
+                          final confirmPass = confirmPassController.text;
+                          if (otp.length != 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter the 6-digit code.'), backgroundColor: Colors.red),
+                            );
+                            return;
+                          }
+                          if (newPass.length < 8) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Password must be at least 8 characters.'), backgroundColor: Colors.red),
+                            );
+                            return;
+                          }
+                          if (newPass != confirmPass) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Passwords do not match.'), backgroundColor: Colors.red),
+                            );
+                            return;
+                          }
+                          setModalState(() => modalLoading = true);
+                          try {
+                            final res = await http.post(
+                              Uri.parse('${UserSession.getBaseUrl()}/api/forgot-password/reset'),
+                              headers: {'Accept': 'application/json'},
+                              body: {
+                                'email': emailController.text.trim(),
+                                'otp': otp,
+                                'password': newPass,
+                                'password_confirmation': confirmPass,
+                              },
+                            );
+                            final data = jsonDecode(res.body);
+                            if (res.statusCode == 200 && data['status'] == 'success') {
+                              Navigator.pop(ctx);
+                              setState(() {
+                                _emailCtrl.text = emailController.text.trim();
+                                _passCtrl.clear();
+                                _isSignUp = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(data['message'] ?? 'Password reset successfully! Please log in.'), backgroundColor: kGreen),
+                              );
+                            } else {
+                              final msg = data['message'] ?? 'Failed to reset password.';
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(msg), backgroundColor: Colors.red),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
+                            );
+                          } finally {
+                            if (context.mounted) setModalState(() => modalLoading = false);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPink,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: modalLoading
+                            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                            : const Text('Reset Password', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!UserSession.isLoggedIn && !UserSession.isEmailVerified) {
@@ -2922,7 +3355,82 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-            const SizedBox(height: 24),
+            if (!_isSignUp) ...[
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _showForgotPasswordSheet,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    'Forgot Password?',
+                    style: TextStyle(color: kGreen, fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ] else ...[
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Checkbox(
+                    value: _agreeTerms,
+                    onChanged: (val) => setState(() => _agreeTerms = val ?? false),
+                    activeColor: kPink,
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => showTermsModal(context),
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(fontSize: 12, color: kSlate700),
+                          children: [
+                            TextSpan(text: 'I agree to the '),
+                            TextSpan(
+                              text: 'Terms and Conditions / Agreement',
+                              style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Checkbox(
+                    value: _agreePrivacy,
+                    onChanged: (val) => setState(() => _agreePrivacy = val ?? false),
+                    activeColor: kPink,
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => showPrivacyModal(context),
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(fontSize: 12, color: kSlate700),
+                          children: [
+                            TextSpan(text: 'I agree to the '),
+                            TextSpan(
+                              text: 'Data Privacy Policy',
+                              style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
 
             SizedBox(
               width: double.infinity, height: 52,
@@ -4581,6 +5089,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   late TextEditingController _clientNameCtrl;
   late TextEditingController _clientEmailCtrl;
   bool _isSubmitting = false;
+  bool _agreeTerms = UserSession.isLoggedIn;
+  bool _agreePrivacy = UserSession.isLoggedIn;
 
   // Payment / QR
   String? _qrCodeUrl;
@@ -4653,6 +5163,15 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_agreeTerms || !_agreePrivacy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept the Terms & Conditions and Data Privacy Policy before submitting.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     setState(() => _isSubmitting = true);
 
     try {
@@ -5145,6 +5664,63 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       ],
                     );
                   }),
+
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Checkbox(
+                        value: _agreeTerms,
+                        onChanged: (val) => setState(() => _agreeTerms = val ?? false),
+                        activeColor: kPink,
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => showTermsModal(context),
+                          child: RichText(
+                            text: const TextSpan(
+                              style: TextStyle(fontSize: 12, color: kSlate700),
+                              children: [
+                                TextSpan(text: 'I agree to the '),
+                                TextSpan(
+                                  text: 'Terms and Conditions / Agreement',
+                                  style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Checkbox(
+                        value: _agreePrivacy,
+                        onChanged: (val) => setState(() => _agreePrivacy = val ?? false),
+                        activeColor: kPink,
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => showPrivacyModal(context),
+                          child: RichText(
+                            text: const TextSpan(
+                              style: TextStyle(fontSize: 12, color: kSlate700),
+                              children: [
+                                TextSpan(text: 'I agree to the '),
+                                TextSpan(
+                                  text: 'Data Privacy Policy',
+                                  style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
                   SizedBox(
                     width: double.infinity,

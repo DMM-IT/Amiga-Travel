@@ -176,50 +176,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                         ]),
                 ];
 
-            case 'gallery':
-                return [
-                    Section::make('Gallery Page')->collapsible()
-                        ->description('Manage gallery header and image cards')
-                        ->schema([
-                            TextInput::make('content.badge')
-                                ->label('Page Badge')
-                                ->default('Gallery')
-                                ->maxLength(100),
-                            TextInput::make('content.title')
-                                ->label('Page Title')
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description')
-                                ->rows(4)
-                                ->maxLength(255),
-                            Repeater::make('content.gallery_items')
-                                ->label('Gallery Items')
-                                ->schema([
-                                    FileUpload::make('image')
-                                        ->label('Image')
-                                        ->image()
-                                        ->directory('website-settings/gallery'),
-                                    TextInput::make('alt')
-                                        ->label('Alt Text')
-                                        ->maxLength(255),
-                                    TextInput::make('label')
-                                        ->label('Badge Label')
-                                        ->maxLength(50),
-                                    TextInput::make('title')
-                                        ->label('Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    TextInput::make('description')
-                                        ->label('Description')
-                                        ->maxLength(255),
-                                    TextInput::make('caption')
-                                        ->label('Caption')
-                                        ->maxLength(255),
-                                ])
-                                ->columns(1),
-                        ]),
-                ];
-
             case 'services':
                 return [
                     Section::make('Services Page')->collapsible()

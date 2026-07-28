@@ -94,6 +94,7 @@ class ManagePaymentSettings extends Page implements HasForms
             'fee_per_accommodation' => $state['fee_per_accommodation'],
             'qr_code_path' => $state['qr_code_path'],
         ]);
+        PaymentSetting::bust(); // Clear cached payment settings
 
         Notification::make()
             ->title('Payment settings saved')

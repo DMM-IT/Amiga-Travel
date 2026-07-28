@@ -19,6 +19,8 @@ Route::middleware('throttle:10,1')->group(function () {
     Route::post('/register/verify-otp',       [AuthController::class, 'verifyRegisterOtp']);
     Route::post('/email-verification/request',[AuthController::class, 'requestEmailVerification']);
     Route::post('/email-verification/verify', [AuthController::class, 'verifyEmail']);
+    Route::post('/forgot-password/request-otp',[AuthController::class, 'requestPasswordResetOtp']);
+    Route::post('/forgot-password/reset',     [AuthController::class, 'resetPasswordWithOtp']);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -100,5 +102,6 @@ Route::middleware('throttle:20,1')->group(function () {
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth:api', 'throttle:60,1'])->group(function () {
     Route::get('/gracia-points', [\App\Http\Controllers\Api\GraciaPointsController::class, 'index']);
+    Route::post('/vouchers/claim', [\App\Http\Controllers\Api\VoucherController::class, 'claim']);
 });
 

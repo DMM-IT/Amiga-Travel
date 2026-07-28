@@ -386,4 +386,81 @@ class AuthController extends Controller
             'lookup_token' => $this->issueLookupToken($user->email),
         ]);
     }
+
+    /**
+     * Step 1 of forgot password: send 6-digit OTP to user's registered email address.
+     */
+    public function requestPasswordResetOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $user  = User::where('email', $email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'No account found with this email address.',
+            ], 404);
+        }
+
+        $otp = (string) random_int(100000, 999999);
+
+        Cache::put('password_reset_otp:' . $email, $otp, now()->addMinutes(15));
+
+        Mail::raw(
+            "Hello {$user->name},\n\nYour Amiga Gracia password reset code is: {$otp}\n\nThis code expires in 15 minutes. If you did not request a password reset, please ignore this email.",
+            function ($message) use ($email): void {
+                $message->to($email)->subject('Amiga Gracia – Password Reset Code');
+            }
+        );
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'A 6-digit verification code has been sent to your email address.',
+        ]);
+    }
+
+    /**
+     * Step 2 of forgot password: verify OTP code and update password.
+     */
+    public function resetPasswordWithOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'email'    => 'required|email',
+            'otp'      => 'required|string|size:6',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $email     = strtolower(trim($validated['email']));
+        $cachedOtp = Cache::get('password_reset_otp:' . $email);
+
+        if (! $cachedOtp || ! hash_equals((string) $cachedOtp, $validated['otp'])) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Invalid or expired verification code. Please request a new code.',
+            ], 400);
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'User account not found.',
+            ], 404);
+        }
+
+        $user->password = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        $user->save();
+
+        Cache::forget('password_reset_otp:' . $email);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Your password has been reset successfully. You can now log in with your new password.',
+        ]);
+    }
 }

@@ -9,11 +9,13 @@ use App\Models\Passenger;
 use App\Models\PaymentSetting;
 use App\Models\Schedule;
 use App\Models\ScheduleAccommodation;
+use App\Models\ScheduleTransportClass;
 use App\Models\TransportClass;
 use App\Models\Transaction;
 use App\Models\Voucher;
 use App\Services\GraciaPointsService;
 use App\Services\VoucherService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class CreateBookingAction
@@ -70,6 +72,72 @@ class CreateBookingAction
             $voucherCalculation,
             &$discountAmount
         ) {
+            // --- Pessimistic locking: prevent last-ticket race condition ---
+            // Lock the accommodation or transport-class row for the duration of this
+            // transaction so that two concurrent bookings cannot both pass the
+            // availability check and double-sell the same seat.
+            if ($scheduleAccommodation) {
+                $lockedAccom = ScheduleAccommodation::where('id', $scheduleAccommodation->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $lockedAccom || $lockedAccom->tickets_available <= 0) {
+                    throw new \InvalidArgumentException(
+                        'Sorry, this accommodation is now fully booked. Please choose another option.'
+                    );
+                }
+
+                // Decrement the availability counter atomically inside the transaction
+                $lockedAccom->decrement('tickets_available');
+            }
+
+            if ($returnScheduleAccommodation) {
+                $lockedReturnAccom = ScheduleAccommodation::where('id', $returnScheduleAccommodation->id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $lockedReturnAccom || $lockedReturnAccom->tickets_available <= 0) {
+                    throw new \InvalidArgumentException(
+                        'Sorry, the return trip accommodation is now fully booked. Please choose another option.'
+                    );
+                }
+
+                $lockedReturnAccom->decrement('tickets_available');
+            }
+
+            if (! empty($data['selected_transport_class_id'])) {
+                $lockedStc = ScheduleTransportClass::where('schedule_id', $schedule->id)
+                    ->where('transport_class_id', $data['selected_transport_class_id'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($lockedStc && $lockedStc->tickets_available !== null && $lockedStc->tickets_available <= 0) {
+                    throw new \InvalidArgumentException(
+                        'Sorry, this class is now fully booked. Please choose another option.'
+                    );
+                }
+
+                if ($lockedStc && $lockedStc->tickets_available !== null) {
+                    $lockedStc->decrement('tickets_available');
+                }
+            }
+
+            if ($returnSchedule && ! empty($data['return_selected_transport_class_id'])) {
+                $lockedReturnStc = ScheduleTransportClass::where('schedule_id', $returnSchedule->id)
+                    ->where('transport_class_id', $data['return_selected_transport_class_id'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($lockedReturnStc && $lockedReturnStc->tickets_available !== null && $lockedReturnStc->tickets_available <= 0) {
+                    throw new \InvalidArgumentException(
+                        'Sorry, the return trip class is now fully booked. Please choose another option.'
+                    );
+                }
+
+                if ($lockedReturnStc && $lockedReturnStc->tickets_available !== null) {
+                    $lockedReturnStc->decrement('tickets_available');
+                }
+            }
             // --- Price calculation ---
             $subtotal = $this->calculatePrice(
                 $schedule,
@@ -109,7 +177,8 @@ class CreateBookingAction
             // --- Create the Booking record ---
             $booking = Booking::create([
                 'user_id'                            => $user?->id,
-                'transaction_number'                 => 'AGT-' . now()->format('Ymd') . '-' . rand(1000, 9999),
+                // Use uniqid() (microsecond timestamp) to eliminate rand() collisions
+                'transaction_number'                 => 'AGT-' . now()->format('Ymd') . '-' . strtoupper(substr(uniqid(), -6)),
                 'origin'                             => $data['origin'],
                 'destination'                        => $data['destination'],
                 'departure_date'                     => $data['departure_date'],
@@ -233,7 +302,10 @@ class CreateBookingAction
         $returnSchedulePrice          = $returnSchedule         ? (float) $returnSchedule->price : 0;
         $returnScheduleAccomPrice     = $returnScheduleAccommodation ? (float) $returnScheduleAccommodation->price : 0;
 
-        $discounts = \App\Models\Discount::all()->keyBy('id');
+        // Cache the discount table — it rarely changes and is loaded on every booking.
+        $discounts = Cache::remember('discounts:all:keyed', now()->addHours(12), function () {
+            return \App\Models\Discount::all()->keyBy('id');
+        });
 
         $ferryTotal = collect($passengers)->sum(function (array $passenger) use (
             $schedulePrice,

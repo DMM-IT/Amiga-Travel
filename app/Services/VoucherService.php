@@ -159,7 +159,9 @@ class VoucherService
             ? (ScheduleAccommodation::query()->where('id', $bookingData['selected_return_schedule_accommodation_id'])->first()?->price ?? 0)
             : 0;
         
-        $discounts = Discount::all()->keyBy('id');
+        $discounts = \Illuminate\Support\Facades\Cache::remember('discounts:all:keyed', now()->addHours(12), function () {
+            return Discount::all()->keyBy('id');
+        });
         
         $fareTotal = collect($bookingData['passengers'] ?? [])->sum(function (array $passenger) use (
             $schedule, $scheduleAccommodationPrice, 
