@@ -131,8 +131,6 @@ class BookingForm extends Component
     // NOTE: use_promo_ticket is kept for ferry bookings (backward compat).
     // For airline bookings the per-passenger $passengers[n]['use_promo'] flag is used instead.
     public bool $use_promo_ticket = false;
-    public \Illuminate\Support\Collection $vehicleBrandCatalog;
-    public \Illuminate\Support\Collection $vehicleModelCatalog;
 
     public string $client_name = '';
     public string $client_email = '';
@@ -142,30 +140,12 @@ class BookingForm extends Component
     public bool $hasAcceptedTerms = false;
     public bool $hasAcceptedPrivacy = false;
     public bool $isSubmittingBooking = false;
-    public \Illuminate\Support\Collection $discounts;
-    public \Illuminate\Support\Collection $transportClassCatalog;
-    public \Illuminate\Support\Collection $vehicleRateCatalog;
-    public \Illuminate\Support\Collection $accommodationCatalog;
     public ?int $selected_hotel_id = null;
     public array $availableSchedules = [];
 
     public function mount(): void
     {
-        $this->discounts = Discount::all()->sortBy('name')->values();
-        $this->transportClassCatalog = TransportClass::query()->where('is_active', true)->orderBy('name')->get();
-        $this->vehicleRateCatalog = VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
-        $this->vehicleBrandCatalog = VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->get();
-        $this->vehicleModelCatalog = collect();
-        $this->accommodationCatalog = Accommodation::query()->where('is_active', true)->orderBy('name')->get();
         $this->availableSchedules = [];
-
-        if ($this->selected_brand_id) {
-            $this->vehicleModelCatalog = VehicleModel::query()
-                ->where('vehicle_brand_id', $this->selected_brand_id)
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->get();
-        }
 
         // Check if we have tour/package query params first
         $allowed = [
@@ -210,13 +190,7 @@ class BookingForm extends Component
             $this->prefilled_from_package = false;
         }
 
-        if ($this->selected_brand_id) {
-            $this->vehicleModelCatalog = VehicleModel::query()
-                ->where('vehicle_brand_id', $this->selected_brand_id)
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->get();
-        }
+        // vehicleModelCatalog is now computed dynamically.
 
         // Now apply tour/package query params
         // Pre-fill tour if present in query params
@@ -1243,19 +1217,12 @@ public function selectedSchedule(): ?array
     public function updatedSelectedBrandId($value): void
     {
         if (blank($value)) {
-            $this->vehicleModelCatalog = collect();
             $this->selected_model_id = null;
             $this->vehicle_type = '';
             $this->vehicle_price = null;
             $this->saveDraft();
             return;
         }
-
-        $this->vehicleModelCatalog = VehicleModel::query()
-            ->where('vehicle_brand_id', (int) $value)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
 
         $this->selected_model_id = null;
         $this->vehicle_type = '';
@@ -1737,9 +1704,59 @@ public function selectedSchedule(): ?array
         $this->hasAcceptedPrivacy = false;
     }
 
+    #[Computed]
+    public function discounts()
+    {
+        return Discount::all()->sortBy('name')->values();
+    }
+
+    #[Computed]
+    public function transportClassCatalog()
+    {
+        return TransportClass::query()->where('is_active', true)->orderBy('name')->get();
+    }
+
+    #[Computed]
+    public function vehicleRateCatalog()
+    {
+        return VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+    }
+
+    #[Computed]
+    public function vehicleBrandCatalog()
+    {
+        return VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->get();
+    }
+
+    #[Computed]
+    public function vehicleModelCatalog()
+    {
+        if ($this->selected_brand_id) {
+            return VehicleModel::query()
+                ->where('vehicle_brand_id', (int) $this->selected_brand_id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        }
+        return collect();
+    }
+
+    #[Computed]
+    public function accommodationCatalog()
+    {
+        return Accommodation::query()->where('is_active', true)->orderBy('name')->get();
+    }
+
     public function render()
     {
-        return view('livewire.booking-form');
+        return view('livewire.booking-form', [
+            'discounts' => $this->discounts,
+            'transportClassCatalog' => $this->transportClassCatalog,
+            'vehicleRateCatalog' => $this->vehicleRateCatalog,
+            'vehicleBrandCatalog' => $this->vehicleBrandCatalog,
+            'vehicleModelCatalog' => $this->vehicleModelCatalog,
+            'accommodationCatalog' => $this->accommodationCatalog,
+        ]);
     }
 
     protected function saveDraft(): void
