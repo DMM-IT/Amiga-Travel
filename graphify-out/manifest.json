@@ -1705,13 +1705,13 @@
     "semantic_hash": ""
   },
   "resources/views/home.blade.php": {
-    "mtime": 1785239024.1810386,
-    "ast_hash": "e8d12bffb9ccb694db44cfb5d6a06b64",
+    "mtime": 1785239093.6744628,
+    "ast_hash": "5254033cfc520630425057e5aeff7790",
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1785223633.0338812,
-    "ast_hash": "4f8872fec1b9dbee7b5f836f42a1a2d3",
+    "mtime": 1785239276.0847363,
+    "ast_hash": "db5ba6f3ce9d7526993e72a3af9605be",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
