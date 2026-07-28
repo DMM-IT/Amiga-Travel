@@ -9,13 +9,15 @@ class PromotionController extends Controller
 {
     public function index()
     {
-        $promotions = Promotion::where('is_active', true)->get()->map(function ($promo) {
-            return [
-                'id' => $promo->id,
-                'image_url' => $promo->image_path
-                    ? url('storage/' . $promo->image_path)
-                    : null,
-            ];
+        $promotions = \Illuminate\Support\Facades\Cache::remember('api:promotions', now()->addHours(6), function () {
+            return Promotion::where('is_active', true)->get()->map(function ($promo) {
+                return [
+                    'id' => $promo->id,
+                    'image_url' => $promo->image_path
+                        ? url('storage/' . $promo->image_path)
+                        : null,
+                ];
+            });
         });
 
         return response()->json([

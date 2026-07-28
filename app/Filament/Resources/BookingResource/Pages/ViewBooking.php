@@ -104,15 +104,52 @@ class ViewBooking extends ViewRecord
                     ])
                     ->columns(2)
                     ->visible(fn (): bool => $this->record->has_vehicle && $this->record->schedule?->ferryRoute?->mode !== 'airline'),
+
+                Section::make('Disruption & Rebooking Details')
+                    ->schema([
+                        TextInput::make('disruption_status_label')
+                            ->label('Disruption Status'),
+                        TextInput::make('rebooking_status_label')
+                            ->label('Rebooking Status'),
+                        DatePicker::make('preferred_replacement_date')
+                            ->label('Preferred Replacement Date'),
+                        TextInput::make('preferred_replacement_schedule_label')
+                            ->label('Preferred Replacement Schedule'),
+                        Textarea::make('disruption_notes')
+                            ->label('Staff Approval Notes')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (): bool => filled($this->record->service_cancellation_id) || filled($this->record->rebooking_status) || filled($this->record->disruption_status)),
             ]);
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        $prefSchedule = $this->record->preferredReplacementSchedule;
+
         return [
             ...$data,
             'transaction_payment_status' => $this->record->transaction?->payment_status,
             'proof_uploaded' => filled($this->record->transaction?->proof_of_payment) ? 'Yes' : 'No',
+            'disruption_status_label' => match ($this->record->disruption_status) {
+                'cancelled_by_operator_rescheduling_required' => 'Cancelled by Operator — Reschedule Required',
+                'reschedule_requested' => 'Customer Reschedule Requested',
+                'rescheduled_approved' => 'Rescheduled & Approved',
+                'rescheduled_declined' => 'Rescheduled — Declined',
+                'contact_support_required' => 'Contact Support Required',
+                default => $this->record->disruption_status ? ucfirst(str_replace('_', ' ', $this->record->disruption_status)) : '—',
+            },
+            'rebooking_status_label' => match ($this->record->rebooking_status) {
+                'rebooking_required' => 'Rebooking Required',
+                'reschedule_requested' => 'Reschedule Requested',
+                'verified' => 'Rebooked',
+                'pending' => 'Pending',
+                default => $this->record->rebooking_status ? ucfirst(str_replace('_', ' ', $this->record->rebooking_status)) : '—',
+            },
+            'preferred_replacement_schedule_label' => $prefSchedule
+                ? "{$prefSchedule->service_name} ({$prefSchedule->formatted_departure} → {$prefSchedule->formatted_arrival})"
+                : '—',
             'passengers' => $this->record->passengers->map(fn ($passenger) => [
                 'name' => $passenger->name,
                 'type' => $passenger->type,
@@ -130,6 +167,34 @@ class ViewBooking extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('approveReschedule')
+                ->label('Approve Reschedule Request')
+                ->icon('heroicon-o-check-circle')
+                ->color('success')
+                ->visible(fn (): bool => in_array($this->record->disruption_status, ['reschedule_requested', 'cancelled_by_operator_rescheduling_required']) && filled($this->record->preferred_replacement_schedule_id))
+                ->form([
+                    Textarea::make('staff_note')
+                        ->label('Internal / Customer Staff Note')
+                        ->placeholder('e.g., Approved replacement schedule per customer selection.')
+                        ->rows(2),
+                ])
+                ->action(function (array $data) {
+                    app(\App\Services\ServiceCancellationManager::class)->processStaffApproval(
+                        $this->record,
+                        true,
+                        $data['staff_note'] ?? null,
+                        auth()->user()
+                    );
+
+                    \Filament\Notifications\Notification::make()
+                        ->title('Reschedule Approved')
+                        ->body("Booking #{$this->record->transaction_number} date updated to " . $this->record->departure_date->format('M d, Y') . " and customer notified.")
+                        ->success()
+                        ->send();
+
+                    $this->redirect(BookingResource::getUrl('view', ['record' => $this->record]));
+                }),
+
             Actions\Action::make('confirm')
                 ->label('Confirm booking')
                 ->action(function () {
@@ -137,14 +202,14 @@ class ViewBooking extends ViewRecord
 
                     $booking->update([
                         'status' => 'confirmed',
-                        'verified_by_user_id' => Auth::id(),
+                        'verified_by_user_id' => \Auth::id(),
                         'verified_at' => now(),
                     ]);
 
                     if ($booking->transaction && $booking->transaction->payment_status !== 'paid') {
                         $booking->transaction->update([
                             'payment_status' => 'paid',
-                            'verified_by_user_id' => Auth::id(),
+                            'verified_by_user_id' => \Auth::id(),
                             'verified_at' => now(),
                         ]);
                     }

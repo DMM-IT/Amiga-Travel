@@ -19,18 +19,23 @@ class BookingReschedule extends Component
 
     public function mount(string $transaction_number): void
     {
-        $this->transaction_number = trim($transaction_number);
+        $this->transaction_number = ltrim(trim($transaction_number), '#');
         $this->loadBooking();
     }
 
     public function loadBooking(): void
     {
+        $cleanNumber = ltrim(trim($this->transaction_number), '#');
+
         $this->booking = Booking::with([
             'serviceCancellation.replacementSchedules.schedule.ferryRoute',
             'preferredReplacementSchedule',
             'passengers',
         ])
-        ->where('transaction_number', $this->transaction_number)
+        ->where(function ($query) use ($cleanNumber) {
+            $query->where('transaction_number', $cleanNumber)
+                  ->orWhere('transaction_number', '#' . $cleanNumber);
+        })
         ->first();
 
         if ($this->booking && $this->booking->preferred_replacement_schedule_id) {
@@ -94,23 +99,25 @@ class BookingReschedule extends Component
 
         if ($this->booking && $this->booking->serviceCancellation) {
             $cancellation = $this->booking->serviceCancellation;
-            $resumeDate = $cancellation->resume_date->format('Y-m-d');
+            $resumeDate = $cancellation->resume_date?->format('Y-m-d');
 
-            $eligibleReplacements = ServiceCancellationReplacementSchedule::with(['schedule.ferryRoute'])
-                ->where('service_cancellation_id', $cancellation->id)
-                ->whereDate('replacement_date', '>=', $resumeDate)
-                ->get()
-                ->filter(function ($item) {
-                    // Match route origin & destination
-                    return $item->schedule && $item->schedule->ferryRoute
-                        && $item->schedule->ferryRoute->origin === $this->booking->origin
-                        && $item->schedule->ferryRoute->destination === $this->booking->destination;
-                })
-                ->map(function ($item) {
-                    // Convert Carbon date to string to avoid serialization issues in Livewire
-                    $item->replacement_date_formatted = $item->replacement_date->format('Y-m-d');
-                    return $item;
-                });
+            if ($resumeDate) {
+                $eligibleReplacements = ServiceCancellationReplacementSchedule::with(['schedule.ferryRoute'])
+                    ->where('service_cancellation_id', $cancellation->id)
+                    ->whereDate('replacement_date', '>=', $resumeDate)
+                    ->get()
+                    ->filter(function ($item) {
+                        // Match route origin & destination
+                        return $item->schedule && $item->schedule->ferryRoute
+                            && $item->schedule->ferryRoute->origin === $this->booking->origin
+                            && $item->schedule->ferryRoute->destination === $this->booking->destination;
+                    })
+                    ->map(function ($item) {
+                        // Convert Carbon date to string to avoid serialization issues in Livewire
+                        $item->replacement_date_formatted = $item->replacement_date->format('Y-m-d');
+                        return $item;
+                    });
+            }
         }
 
         return view('livewire.booking-reschedule', [

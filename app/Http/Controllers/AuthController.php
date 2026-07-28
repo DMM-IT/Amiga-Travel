@@ -206,6 +206,13 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        // Issue a fresh Sanctum token (scoped, revocable)
+        // Delete previous tokens to avoid accumulation (one active session per user)
+        $user->tokens()->where('name', 'api-access')->delete();
+        $sanctumToken = $user->createToken('api-access')->plainTextToken;
+
+        // Also keep the legacy api_token populated for backward compat with older Flutter builds
         $user->api_token = Str::random(80);
         $user->save();
 
@@ -222,11 +229,14 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'user' => [
-                'name' => $user->name,
+                'name'  => $user->name,
                 'email' => $user->email,
             ],
-            'token' => $user->api_token,
-            'lookup_token' => $this->issueLookupToken($user->email),
+            // Legacy token — kept for backward compat
+            'token'         => $user->api_token,
+            // Sanctum token — use this in new Flutter builds
+            'sanctum_token' => $sanctumToken,
+            'lookup_token'  => $this->issueLookupToken($user->email),
         ]);
     }
 
@@ -238,10 +248,14 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
-        $validated['api_token'] = Str::random(80);
+        $legacyToken = Str::random(80);
+        $validated['password']  = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        $validated['api_token'] = $legacyToken;
 
         $user = User::create($validated);
+
+        // Issue Sanctum token for new users
+        $sanctumToken = $user->createToken('api-access')->plainTextToken;
 
         $this->logUserLogin(
             $user,
@@ -256,11 +270,12 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'user' => [
-                'name' => $user->name,
+                'name'  => $user->name,
                 'email' => $user->email,
             ],
-            'token' => $user->api_token,
-            'lookup_token' => $this->issueLookupToken($user->email),
+            'token'         => $legacyToken,
+            'sanctum_token' => $sanctumToken,
+            'lookup_token'  => $this->issueLookupToken($user->email),
         ]);
     }
 
@@ -337,13 +352,17 @@ class AuthController extends Controller
 
         Cache::forget('pending_register:' . $email);
 
+        $legacyToken = Str::random(80);
         $user = User::create([
             'name'              => $pending['name'],
             'email'             => $pending['email'],
             'password'          => $pending['password'],
-            'api_token'         => Str::random(80),
+            'api_token'         => $legacyToken,
             'email_verified_at' => now(),
         ]);
+
+        // Issue Sanctum token for OTP-verified registrations
+        $sanctumToken = $user->createToken('api-access')->plainTextToken;
 
         $this->logUserLogin(
             $user,
@@ -362,7 +381,8 @@ class AuthController extends Controller
                 'name'  => $user->name,
                 'email' => $user->email,
             ],
-            'token'        => $user->api_token,
+            'token'        => $legacyToken,
+            'sanctum_token'=> $sanctumToken,
             'lookup_token' => $this->issueLookupToken($user->email),
         ]);
     }

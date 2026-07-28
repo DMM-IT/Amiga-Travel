@@ -59,7 +59,7 @@ class AdminNotificationFeedTest extends TestCase
             'message' => 'Can you help with our ferry route?',
         ]);
 
-        $notifications = (new AdminNotificationFeed())->getForUser();
+        $notifications = (new AdminNotificationFeed())->getForUser(new \App\Models\User());
 
         $this->assertCount(4, $notifications);
         $this->assertEqualsCanonicalizing(

@@ -161,9 +161,16 @@
                         <button type="button" wire:click.prevent="{{ $selectAccommodationMethod }}({{ $accommodation['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 {{ (int)$selectedAccommodationId === (int)$accommodation['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h4 class="font-bold text-slate-900 text-sm">{{ $accommodation['name'] }}</h4>
-                                @if($accommodation['has_bed'])
-                                    <span class="text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">With Bed</span>
-                                @endif
+                                <div class="flex items-center gap-1.5">
+                                    @if(isset($accommodation['tickets_available']))
+                                        <span class="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
+                                            {{ $accommodation['tickets_available'] }} {{ \Illuminate\Support\Str::plural('ticket', $accommodation['tickets_available']) }} left
+                                        </span>
+                                    @endif
+                                    @if($accommodation['has_bed'])
+                                        <span class="text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200">With Bed</span>
+                                    @endif
+                                </div>
                             </div>
                             <p class="mt-2 text-lg font-extrabold text-[#db2777]">&#8369;{{ number_format($accommodation['price'], 2) }}</p>
                         </button>
@@ -179,7 +186,14 @@
                 <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
                     @foreach($selectedSchedule['transport_classes'] as $class)
                         <button type="button" wire:click.prevent="{{ $selectClassMethod }}({{ $class['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 overflow-hidden {{ (int)$selectedClassId === (int)$class['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
-                            <h4 class="font-bold text-slate-900 text-sm">{{ $class['name'] }}</h4>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-bold text-slate-900 text-sm">{{ $class['name'] }}</h4>
+                                @if(isset($class['tickets_available']))
+                                    <span class="text-[10px] font-extrabold {{ (int)$selectedClassId === (int)$class['id'] ? 'bg-[#db2777] text-white' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }} px-2.5 py-0.5 rounded-full">
+                                        {{ $class['tickets_available'] }} {{ \Illuminate\Support\Str::plural('seat', $class['tickets_available']) }} left
+                                    </span>
+                                @endif
+                            </div>
                             <p class="mt-2 text-lg font-extrabold text-[#db2777]">&#8369;{{ number_format($class['price'], 2) }}</p>
                         </button>
                     @endforeach

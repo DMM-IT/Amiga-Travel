@@ -14,6 +14,7 @@
         "intervention/image": "*",
         "kreait/laravel-firebase": "*",
         "laravel/framework": "^13.8",
+        "laravel/sanctum": "*",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^3.8",
         "predis/predis": "^3.5",

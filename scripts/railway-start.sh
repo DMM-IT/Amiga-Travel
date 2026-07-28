@@ -86,12 +86,14 @@ BROADCAST_CONNECTION="log"
 EOF
 
 # Run migrations and setup
-# Skip migrations if they timeout (database might not be fully ready)
-timeout 15 php artisan migrate --force --no-interaction || echo "Migrations skipped or timed out"
+timeout 60 php artisan migrate --force --no-interaction || echo "Migrations skipped or timed out"
 php artisan storage:link || true
 
 echo "=== Reached config cache step ==="
 php artisan config:clear
 php artisan config:cache
-echo "=== Starting server ==="
-exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"
+php artisan route:cache
+php artisan view:cache
+
+echo "=== Starting Supervisor (Nginx + PHP-FPM + Queue Worker) ==="
+exec supervisord -c /var/www/html/supervisord.conf

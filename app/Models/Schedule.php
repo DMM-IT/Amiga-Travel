@@ -465,6 +465,7 @@ class Schedule extends Model
             'service' => $this->service_name,
             'vehicle_name' => $this->vehicle_name,
             'availability' => $this->availability_label ?? 'Available',
+            'tickets_available' => (int) ($this->tickets_available ?? 0),
             'mode' => $mode,
             'operator' => $this->ferryRoute?->operator,
             'accommodations' => $activeAccommodations

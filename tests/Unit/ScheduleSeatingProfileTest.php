@@ -11,8 +11,11 @@ class ScheduleSeatingProfileTest extends TestCase
     public function test_airline_seating_profile_resolves_aliases_and_aircraft_variants(): void
     {
         $schedule = new Schedule();
-        $schedule->vehicle_name = 'A321';
+        // getAirlineSeatingProfile() resolves aircraft type from service_name, not vehicle_name
+        $schedule->service_name = 'A321';
         $schedule->setRelation('ferryRoute', new FerryRoute(['operator' => 'PAL']));
+        // Provide an empty in-memory relation to prevent a DB query in the unit test environment
+        $schedule->setRelation('transportClasses', collect());
 
         $profile = $schedule->getAirlineSeatingProfile();
 

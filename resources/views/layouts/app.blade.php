@@ -34,101 +34,10 @@
             .flatpickr-day.flatpickr-disabled { color:#e2e8f0; }
             .flatpickr-innerContainer { padding:6px 8px 8px; }
         </style>
-
-        @php
-            $bgMap = [
-                '' => 'bg-1.jpg',
-                '/' => 'bg-1.jpg',
-                'home' => 'bg-1.jpg',
-                'about' => 'bg-2.jpg',
-                'schedules' => 'bg-3.jpg',
-                'services' => 'bg-4.jpg',
-                'tour-package' => 'bg-5.jpg',
-                'contact-us' => 'bg-6.jpg',
-                'faqs' => 'bg-7.jpg',
-                'download' => 'bg-8.jpg',
-            ];
-
-            $currentPath = trim(request()->path(), '/');
-            $bgImage = 'bg-1.jpg';
-
-            if (isset($bgMap[$currentPath])) {
-                $bgImage = $bgMap[$currentPath];
-            } elseif (request()->is('about*')) {
-                $bgImage = 'bg-2.jpg';
-            } elseif (request()->is('book*')) {
-                $bgImage = null;
-            } elseif (request()->is('schedules*')) {
-                $bgImage = 'bg-3.jpg';
-            } elseif (request()->is('services*')) {
-                $bgImage = 'bg-4.jpg';
-            } elseif (request()->is('tour*') || request()->is('tours*')) {
-                $bgImage = 'bg-5.jpg';
-            } elseif (request()->is('contact*')) {
-                $bgImage = 'bg-6.jpg';
-            } elseif (request()->is('faq*')) {
-                $bgImage = 'bg-7.jpg';
-            } elseif (request()->is('download*')) {
-                $bgImage = 'bg-8.jpg';
-            } elseif (request()->is('login*') || request()->is('register*')) {
-                $bgImage = 'bg-2.jpg';
-            }
-        @endphp
-        @if($bgImage)
-        <style>
-            /* Dynamic page background image with opacity */
-            body::before {
-                content: "";
-                position: fixed;
-                inset: 0;
-                background-image: url('{{ asset('images/amiga-backgrounds/' . $bgImage) }}');
-                background-size: cover;
-                background-position: center center;
-                opacity: 0.35;
-                z-index: 0;
-                pointer-events: none;
-                filter: saturate(0.95) brightness(0.95);
-            }
-        </style>
-        @endif
-        <style>
-
-            /* Ensure content sits above the background */
-            body > *:not(header) { position: relative; z-index: 10; }
-            header { 
-                position: fixed !important; 
-                top: 0; 
-                left: 0; 
-                right: 0; 
-                width: 100%; 
-                z-index: 9999 !important; 
-            }
-
-            /* Hide background for Filament admin pages */
-            body.fi-layout::before,
-            .fi-layout::before {
-                display: none !important;
-            }
-        </style>
-        <script>
-            // Add body.fi-layout when Filament root exists anywhere in DOM
-            document.addEventListener('DOMContentLoaded', function() {
-                try {
-                    if (document.querySelector('.fi-layout')) {
-                        document.body.classList.add('fi-layout');
-                    }
-                } catch (e) {
-                    // noop
-                }
-            });
-        </script>
     </head>
     <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
-        <header class="bg-[#216417] text-white fixed top-0 left-0 right-0 w-full z-50 shadow-md">
-            <div class="absolute inset-0 h-20 overflow-hidden pointer-events-none z-0">
-                <div class="absolute inset-0 pointer-events-none" style="background-image: url('{{ asset('images/tribal-pattern.svg') }}'); background-repeat: repeat; opacity: 0.15;"></div>
-            </div>
-            <div class="relative z-10 max-w-full mx-auto px-3 sm:px-4 lg:px-5">
+        <header class="bg-[#216417] text-white sticky top-0 z-50 shadow-md">
+            <div class="max-w-full mx-auto px-3 sm:px-4 lg:px-5">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center gap-2">
                         <a href="{{ url('/') }}" class="flex items-center gap-2">
@@ -144,7 +53,7 @@
                                 Discover
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 z-50 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
                                     <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Services</a>
                                     <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Tour Package</a>
@@ -156,7 +65,7 @@
                                 Get Help
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 z-50 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
                                     <a href="{{ url('/contact-us') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Contact Us</a>
                                     <a href="{{ url('/faqs') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">FAQs</a>
@@ -187,7 +96,7 @@
                 </div>
             </div>
 
-            <div id="mobile-menu" class="md:hidden hidden bg-[#1e4c21] border-t border-white/10 relative z-10">
+            <div id="mobile-menu" class="md:hidden hidden bg-[#1e4c21] border-t border-white/10">
                 <div class="max-w-full mx-auto px-4 py-4 space-y-3">
                     <a href="{{ url('/') }}" class="block rounded-xl px-4 py-3 {{ request()->is('/') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Home</a>
                     <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">About</a>
@@ -225,29 +134,7 @@
             </div>
         </header>
 
-        <main class="flex-grow pt-20">
-            @unless(request()->routeIs('book.new') || request()->is('book/new') || request()->is('schedules') || request()->is('schedules*') || request()->is('download') || request()->is('download*'))
-                @if(session()->has('booking_draft'))
-                    <div class="max-w-7xl mx-auto px-4 pb-0 pt-4 sm:pt-6">
-                        <div class="rounded-[1.5rem] border border-pink-200 bg-pink-50 p-4 text-slate-900 shadow-sm">
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <p class="text-sm font-semibold text-pink-700">You have a pending booking in progress.</p>
-                                    <p class="mt-1 text-xs text-slate-600">Return to complete your booking or cancel the draft to start a new one.</p>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <a href="{{ url('/book/new') }}" class="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-pink-700">Return to booking</a>
-                                    <form method="POST" action="{{ route('booking.draft.cancel') }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="inline-flex items-center justify-center rounded-full border border-pink-600 px-4 py-2 text-xs font-semibold text-pink-700 transition hover:bg-pink-100">Cancel draft</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-                @include('partials.global-skeleton')
-            @endunless
+        <main class="flex-grow">
             @yield('content')
         </main>
 

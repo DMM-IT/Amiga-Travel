@@ -196,12 +196,14 @@ class TransactionResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->poll('10s')
             ->columns([
                 TextColumn::make('booking.transaction_number')
                     ->label('Transaction')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('payment_status')
+                    ->label('Payment Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'paid' => 'success',
@@ -210,6 +212,54 @@ class TransactionResource extends Resource
                         default => 'gray',
                     })
                     ->sortable(),
+                TextColumn::make('booking.status')
+                    ->label('Booking Status')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'confirmed' => 'success',
+                        'cancelled' => 'danger',
+                        'operator_cancelled' => 'danger',
+                        default => 'secondary',
+                    }),
+                TextColumn::make('verification_timer')
+                    ->label('Lock Timer')
+                    ->badge()
+                    ->icon(fn (Transaction $record): string => match (true) {
+                        $record->payment_status !== 'pending' => 'heroicon-m-check-circle',
+                        $record->created_at->addMinutes(10)->isPast() => 'heroicon-m-check-badge',
+                        default => 'heroicon-m-clock',
+                    })
+                    ->color(fn (Transaction $record): string => match (true) {
+                        $record->payment_status !== 'pending' => 'gray',
+                        $record->created_at->addMinutes(10)->isPast() => 'success',
+                        default => 'warning',
+                    })
+                    ->state(function (Transaction $record): string {
+                        if ($record->payment_status !== 'pending') {
+                            return '—';
+                        }
+
+                        $unlockTime = $record->created_at->addMinutes(10);
+                        if ($unlockTime->isPast()) {
+                            return 'Ready';
+                        }
+
+                        $diff = now()->diff($unlockTime);
+                        return sprintf('%dm %ds', $diff->i, $diff->s);
+                    })
+                    ->tooltip(function (Transaction $record): ?string {
+                        if ($record->payment_status !== 'pending') {
+                            return null;
+                        }
+
+                        $unlockTime = $record->created_at->addMinutes(10);
+                        if ($unlockTime->isPast()) {
+                            return '10-minute hold complete. Ready for verification.';
+                        }
+
+                        return 'Unlocks at ' . $unlockTime->format('h:i:s A');
+                    }),
                 TextColumn::make('booking.client_name')
                     ->label('Client name')
                     ->searchable()

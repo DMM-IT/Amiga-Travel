@@ -4,334 +4,90 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Passenger;
-use App\Models\Schedule;
-use App\Models\ScheduleAccommodation;
-use App\Models\TransportClass;
-use App\Models\VehicleRate;
-use App\Models\Accommodation;
 use App\Models\Transaction;
 use App\Models\PaymentSetting;
-use App\Models\Discount;
-use App\Models\Voucher;
+use App\Models\VehicleRate;
 use App\Services\VoucherService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\BookingConfirmation;
-use App\Mail\BookingCreated;
-use Spatie\LaravelPdf\Facades\Pdf;
 
 class BookingController extends Controller
 {
-    public function store(Request $request, VoucherService $voucherService)
+    /**
+     * Create a new booking.
+     *
+     * Validation lives here; all business logic is delegated to CreateBookingAction.
+     * The email + PDF are dispatched to the queue so the response returns immediately.
+     */
+    public function store(Request $request)
     {
         $request->validate([
-            'schedule_id' => 'required|integer|exists:schedules,id',
-            'origin' => 'required|string',
-            'destination' => 'required|string',
-            'departure_date' => 'required|date',
-            'trip_type' => 'required|string|in:one_way,round_trip',
-            'return_date' => 'nullable|date',
-            'client_name' => 'required|string|max:255',
-            'client_email' => 'required|email',
-            'selected_transport_class_id' => 'nullable|integer|exists:transport_classes,id',
-            'selected_schedule_accommodation_id' => 'nullable|integer|exists:schedule_accommodations,id',
-            'has_vehicle' => 'nullable|boolean',
-            'vehicle_type' => 'required_if:has_vehicle,true|nullable|string|max:255',
-            'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
-            'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
-            'passengers' => 'required|array|min:1',
-            'passengers.*.name' => 'required|string|max:255',
-            'passengers.*.type' => 'required|string|in:adult,child',
-            'passengers.*.discount_id' => 'nullable|integer|exists:discounts,id',
-            'passengers.*.school_name' => 'nullable|string|max:255',
-            'passengers.*.id_number' => 'nullable|string|max:255',
-            'accommodation_ids' => 'nullable|array',
-            'accommodation_ids.*' => 'integer|exists:accommodations,id',
-            'voucher_code' => 'nullable|string|max:50',
-            'return_schedule_id' => 'nullable|integer|exists:schedules,id',
+            'schedule_id'                               => 'required|integer|exists:schedules,id',
+            'origin'                                    => 'required|string',
+            'destination'                               => 'required|string',
+            'departure_date'                            => 'required|date',
+            'trip_type'                                 => 'required|string|in:one_way,round_trip',
+            'return_date'                               => 'nullable|date',
+            'client_name'                               => 'required|string|max:255',
+            'client_email'                              => 'required|email',
+            'selected_transport_class_id'               => 'nullable|integer|exists:transport_classes,id',
+            'selected_schedule_accommodation_id'        => 'nullable|integer|exists:schedule_accommodations,id',
+            'has_vehicle'                               => 'nullable|boolean',
+            'vehicle_type'                              => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_plate_number'                      => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'vehicle_price'                             => 'required_if:has_vehicle,true|nullable|numeric|min:0',
+            'passengers'                                => 'required|array|min:1',
+            'passengers.*.name'                         => 'required|string|max:255',
+            'passengers.*.type'                         => 'required|string|in:adult,child',
+            'passengers.*.discount_id'                  => 'nullable|integer|exists:discounts,id',
+            'passengers.*.school_name'                  => 'nullable|string|max:255',
+            'passengers.*.id_number'                    => 'nullable|string|max:255',
+            'accommodation_ids'                         => 'nullable|array',
+            'accommodation_ids.*'                       => 'integer|exists:accommodations,id',
+            'voucher_code'                              => 'nullable|string|max:50',
+            'return_schedule_id'                        => 'nullable|integer|exists:schedules,id',
             'selected_return_schedule_accommodation_id' => 'nullable|integer|exists:schedule_accommodations,id',
-            'use_points' => 'nullable|boolean',
+            'use_points'                                => 'nullable|boolean',
         ]);
 
-        $schedule = Schedule::findOrFail($request->input('schedule_id'));
-        $scheduleAccommodation = $request->input('selected_schedule_accommodation_id')
-            ? \App\Models\ScheduleAccommodation::find($request->input('selected_schedule_accommodation_id'))
-            : null;
-
-        $returnSchedule = $request->input('return_schedule_id')
-            ? Schedule::find($request->input('return_schedule_id'))
-            : null;
-        $returnScheduleAccommodation = $request->input('selected_return_schedule_accommodation_id')
-            ? \App\Models\ScheduleAccommodation::find($request->input('selected_return_schedule_accommodation_id'))
-            : null;
-
-        $transaction = null;
-        $voucher = null;
-        $voucherCalculation = null;
-
-        // Handle voucher if provided
-        if ($request->has('voucher_code') && $request->voucher_code) {
-            $voucherResult = $voucherService->validateAndCalculate($request->voucher_code, $request->all());
-            if (!$voucherResult['valid']) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => $voucherResult['message'],
-                ], 422);
-            }
-            $voucher = Voucher::where('code', strtoupper($request->voucher_code))->first();
-            $voucherCalculation = $voucherResult;
-        }
-
         try {
-            DB::beginTransaction();
+            /** @var \App\Models\Booking $booking */
+            $booking = app(\App\Actions\Bookings\CreateBookingAction::class)
+                ->execute($request->all(), auth()->guard('api')->user());
 
-            $subtotalBeforeVoucher = $this->calculatePrice(
-                $schedule,
-                $request->input('passengers'),
-                $request->input('trip_type'),
-                $request->input('accommodation_ids', []),
-                $scheduleAccommodation,
-                $request->input('selected_transport_class_id'),
-                $request->input('has_vehicle', false),
-                $request->input('vehicle_price', 0),
-                $returnSchedule,
-                $returnScheduleAccommodation
-            );
-
-            // Calculate final total with voucher
-            $totalPrice = $subtotalBeforeVoucher;
-            $discountAmount = 0;
-            if ($voucher && $voucherCalculation) {
-                $discountAmount = $voucherCalculation['discount_amount'];
-                $totalPrice = $subtotalBeforeVoucher - $discountAmount;
-            }
-
-            // Calculate points discount
-            $pointsUsed = 0;
-            $pointsDiscount = 0.00;
-            $user = auth()->guard('api')->user();
-            if ($user && $request->input('use_points', false)) {
-                $balance = \App\Models\GraciaUserBalance::where('user_id', $user->id)->first();
-                $availablePoints = $balance ? $balance->current_points : 0;
-                
-                if ($availablePoints > 0) {
-                    $pointsUsed = (int) min($availablePoints, ceil($totalPrice)); // 1 point = 1 PHP. Round up the limit so we can cover the full decimal if needed, wait, min(pts, total). If total is 50.50, we can use 50 pts, not 51 unless we allow negative total. Let's use floor.
-                    $pointsUsed = (int) min($availablePoints, floor($totalPrice)); 
-                    // Actually, if they have 100 points, they can use 50 or 51? Let's use min(available, ceil(total)).
-                    // It's safer to just let pointsDiscount = pointsUsed, and if total goes below 0, it becomes 0.
-                    $pointsUsed = (int) min($availablePoints, ceil($totalPrice));
-                    $pointsDiscount = (float) $pointsUsed;
-                    $totalPrice = max(0, $totalPrice - $pointsDiscount);
-                }
-            }
-
-            $booking = Booking::create([
-                'user_id' => auth()->guard('api')->user()?->id,
-                'transaction_number' => 'AGT-' . now()->format('Ymd') . '-' . rand(1000, 9999),
-                'origin' => $request->input('origin'),
-                'destination' => $request->input('destination'),
-                'departure_date' => $request->input('departure_date'),
-                'return_date' => $request->input('return_date'),
-                'schedule_id' => $schedule->id,
-                'schedule_service' => $schedule->service_name,
-                'schedule_departure_time' => $schedule->formatted_departure,
-                'schedule_arrival_time' => $schedule->formatted_arrival,
-                'schedule_price' => $schedule->price,
-                'schedule_accommodation_id' => $scheduleAccommodation?->id,
-                'schedule_accommodation_name' => $scheduleAccommodation?->name,
-                'schedule_accommodation_price' => $scheduleAccommodation?->price,
-                'return_schedule_id' => $returnSchedule?->id,
-                'return_schedule_service' => $returnSchedule?->service_name,
-                'return_schedule_departure_time' => $returnSchedule?->formatted_departure,
-                'return_schedule_arrival_time' => $returnSchedule?->formatted_arrival,
-                'return_schedule_price' => $returnSchedule?->price,
-                'return_schedule_accommodation_id' => $returnScheduleAccommodation?->id,
-                'return_schedule_accommodation_name' => $returnScheduleAccommodation?->name,
-                'return_schedule_accommodation_price' => $returnScheduleAccommodation?->price,
-                'client_name' => $request->input('client_name'),
-                'client_email' => $request->input('client_email'),
-                'total_price' => max(0, $totalPrice),
-                'status' => 'pending',
-                'has_vehicle' => $request->input('has_vehicle', false),
-                'vehicle_type' => $request->input('vehicle_type'),
-                'vehicle_plate_number' => $request->input('vehicle_plate_number'),
-                'vehicle_price' => $request->input('vehicle_price'),
-                'voucher_id' => $voucher?->id,
-                'voucher_code' => $voucher?->code,
-                'voucher_discount_amount' => $discountAmount,
-                'subtotal_before_voucher' => $subtotalBeforeVoucher,
-                'points_used' => $pointsUsed,
-                'points_discount' => $pointsDiscount,
-            ]);
-
-            if ($pointsUsed > 0) {
-                app(\App\Services\GraciaPointsService::class)->deductPointsForPayment($booking);
-            }
-
-            foreach ($request->input('passengers') as $passengerData) {
-                Passenger::create([
-                    'booking_id' => $booking->id,
-                    'type' => $passengerData['type'],
-                    'name' => $passengerData['name'],
-                    'discount_id' => $passengerData['discount_id'] ?? null,
-                    'school_name' => $passengerData['school_name'] ?? null,
-                    'id_number' => $passengerData['id_number'] ?? null,
-                ]);
-            }
-
-            if ($request->input('selected_transport_class_id')) {
-                $transportClass = \App\Models\TransportClass::find($request->input('selected_transport_class_id'));
-                if ($transportClass) {
-                    $booking->transportClasses()->attach($transportClass->id, [
-                        'price' => $transportClass->effective_price,
-                    ]);
-                }
-            }
-
-            $accommodationIds = $request->input('accommodation_ids', []);
-            if (!empty($accommodationIds)) {
-                $catalog = \App\Models\Accommodation::whereIn('id', $accommodationIds, 'and', false)->get();
-                foreach ($catalog as $accommodation) {
-                    $booking->accommodations()->attach($accommodation->id, [
-                        'price' => $accommodation->price,
-                    ]);
-                }
-            }
-
-            $transaction = Transaction::create([
-                'booking_id' => $booking->id,
-                'payment_status' => 'unpaid',
-            ]);
-
-            // Redeem voucher if applicable
-            if ($voucher && $voucherCalculation) {
-                $voucherService->redeemVoucher($voucher, $booking, [
-                    'discount_amount' => $discountAmount,
-                    'base_amount' => $voucherCalculation['original_subtotal'],
-                ]);
-            }
-
-            DB::commit();
-
-            // Try sending email receipt (optional)
-            try {
-                $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses', 'scheduleAccommodation', 'voucher');
-                $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
-                if (! file_exists(dirname($receiptPath))) {
-                    mkdir(dirname($receiptPath), 0755, true);
-                }
-
-                Pdf::driver('dompdf')
-                    ->view('pdf.receipt', ['booking' => $booking])
-                    ->save($receiptPath);
-
-                $ticketUrl = URL::temporarySignedRoute(
-                    'ticket.download',
-                    now()->addDays(7),
-                    ['booking' => $booking->id]
-                );
-
-                Mail::to($booking->client_email)->send(new BookingCreated($booking, $receiptPath));
-            } catch (\Exception $e) {
-                // Ignore mailing/PDF errors so it doesn't crash the api response
-            }
+            // Dispatch the PDF generation + email to the queue (non-blocking)
+            \App\Jobs\SendBookingConfirmationJob::dispatch($booking);
 
             return response()->json([
-                'status' => 'success',
-                'message' => 'Booking created successfully!',
-                'booking_id' => $booking->id,
-                'transaction_number' => $booking->transaction_number,
+                'status'                  => 'success',
+                'message'                 => 'Booking created successfully!',
+                'booking_id'              => $booking->id,
+                'transaction_number'      => $booking->transaction_number,
                 'subtotal_before_voucher' => floatval($booking->subtotal_before_voucher),
-                'voucher_code' => $booking->voucher_code,
+                'voucher_code'            => $booking->voucher_code,
                 'voucher_discount_amount' => floatval($booking->voucher_discount_amount),
-                'points_used' => $booking->points_used,
-                'points_discount' => floatval($booking->points_discount),
-                'total_price' => floatval($booking->total_price),
+                'points_used'             => $booking->points_used,
+                'points_discount'         => floatval($booking->points_discount),
+                'total_price'             => floatval($booking->total_price),
             ]);
 
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 422);
         } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to create booking: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['status' => 'error', 'message' => 'Failed to create booking: ' . $e->getMessage()], 500);
         }
-    }
-
-    private function calculatePrice(
-        Schedule $schedule,
-        array $passengers,
-        string $tripType,
-        array $accommodationIds = [],
-        $scheduleAccommodation = null,
-        $selectedTransportClassId = null,
-        $hasVehicle = false,
-        $vehiclePrice = 0,
-        $returnSchedule = null,
-        $returnScheduleAccommodation = null
-    ): float {
-        $schedulePrice = floatval($schedule->price);
-        $scheduleAccommodationPrice = $scheduleAccommodation ? floatval($scheduleAccommodation->price) : 0;
-        
-        $returnSchedulePrice = $returnSchedule ? floatval($returnSchedule->price) : 0;
-        $returnScheduleAccommodationPrice = $returnScheduleAccommodation ? floatval($returnScheduleAccommodation->price) : 0;
-        
-        // Removed tripMultiplier since we explicitly add the return leg now
-        $discounts = Discount::all()->keyBy('id');
-
-        $ferryTotal = collect($passengers)->sum(function (array $passenger) use (
-            $schedulePrice, 
-            $scheduleAccommodationPrice, 
-            $returnSchedulePrice, 
-            $returnScheduleAccommodationPrice, 
-            $discounts
-        ) {
-            $departureFare = $schedulePrice + $scheduleAccommodationPrice;
-            $returnFare = $returnSchedulePrice + $returnScheduleAccommodationPrice;
-            $fare = $departureFare + $returnFare;
-
-            if (! empty($passenger['discount_id'])) {
-                $discount = $discounts->get($passenger['discount_id']);
-                if ($discount) {
-                    $fare -= $fare * (floatval($discount->percentage) / 100);
-                }
-            }
-
-            return $fare;
-        });
-
-        $transportClassTotal = 0;
-        if ($selectedTransportClassId) {
-            $transportClass = \App\Models\TransportClass::find($selectedTransportClassId);
-            if ($transportClass) {
-                $transportClassTotal = floatval($transportClass->effective_price);
-            }
-        }
-
-        $accommodationsTotal = 0;
-        if (!empty($accommodationIds)) {
-            $accommodationsTotal = \App\Models\Accommodation::whereIn('id', $accommodationIds, 'and', false)->sum('price');
-        }
-
-        $vehicleTotal = $hasVehicle ? floatval($vehiclePrice ?? 0) : 0;
-
-        $settings = PaymentSetting::current();
-        $payingTravelers = count($passengers);
-        $serviceFee = ($payingTravelers * floatval($settings->fee_per_person ?? 0));
-
-        return $ferryTotal + $transportClassTotal + $accommodationsTotal + $vehicleTotal + $serviceFee;
     }
 
     public function vehicleRates()
     {
-        $rates = \App\Models\VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $rates = Cache::remember('api:vehicle_rates', now()->addHours(6), function () {
+            return VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        });
+
         return response()->json([
-            'status' => 'success',
-            'vehicle_rates' => $rates
+            'status'        => 'success',
+            'vehicle_rates' => $rates,
         ]);
     }
 
@@ -424,19 +180,22 @@ class BookingController extends Controller
 
     public function paymentSettings()
     {
-        $settings = PaymentSetting::current();
+        $data = Cache::remember('api:payment_settings', now()->addHours(6), function () {
+            $settings = PaymentSetting::current();
 
-        $qrCodeUrl = null;
-        if ($settings->qr_code_path) {
-            $qrCodeUrl = asset('storage/' . $settings->qr_code_path);
-        }
+            $qrCodeUrl = null;
+            if ($settings->qr_code_path) {
+                $qrCodeUrl = asset('storage/' . $settings->qr_code_path);
+            }
 
-        return response()->json([
-            'status'    => 'success',
-            'qr_code_url' => $qrCodeUrl,
-            'fee_per_person' => floatval($settings->fee_per_person),
-            'fee_per_accommodation' => floatval($settings->fee_per_accommodation),
-        ]);
+            return [
+                'qr_code_url'            => $qrCodeUrl,
+                'fee_per_person'         => floatval($settings->fee_per_person),
+                'fee_per_accommodation'  => floatval($settings->fee_per_accommodation),
+            ];
+        });
+
+        return response()->json(array_merge(['status' => 'success'], $data));
     }
 
     public function cancel(Request $request, $id)

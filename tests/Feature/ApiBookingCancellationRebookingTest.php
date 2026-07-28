@@ -71,9 +71,9 @@ class ApiBookingCancellationRebookingTest extends TestCase
 
         $response->assertOk()->assertJsonPath('rebooking_fee', 360);
         $this->assertDatabaseHas('bookings', [
-            'id' => $booking->id,
-            'rebooking_status' => 'pending',
-            'rebooking_departure_date' => now()->addDays(7)->toDateString(),
+            'id'                      => $booking->id,
+            'rebooking_status'        => 'pending',
+            'rebooking_departure_date'=> now()->addDays(7)->toDateString() . ' 00:00:00',
         ]);
     }
 

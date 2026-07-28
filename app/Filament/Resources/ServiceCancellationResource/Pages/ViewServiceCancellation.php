@@ -23,6 +23,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+
 class ViewServiceCancellation extends ViewRecord implements HasTable
 {
     use InteractsWithTable;
@@ -35,27 +38,55 @@ class ViewServiceCancellation extends ViewRecord implements HasTable
         $cancellation = $this->getRecord();
 
         return [
-            Tables\Actions\Action::make('update_resume_date')
+            EditAction::make(),
+
+            Action::make('declare_resume_date')
+                ->label('Declare Resume Date & Notify Customers')
+                ->icon('heroicon-o-megaphone')
+                ->color('success')
+                ->visible(fn () => empty($cancellation->resume_date))
+                ->form([
+                    DatePicker::make('resume_date')
+                        ->label('Official Service Resume Date')
+                        ->helperText('Customers will be notified via email that operations are resuming and can pick replacement dates starting from this date.')
+                        ->required()
+                        ->minDate(now()),
+                ])
+                ->action(function (array $data) use ($cancellation) {
+                    app(ServiceCancellationManager::class)->declareResumeDate($cancellation, $data['resume_date']);
+                    Notification::make()
+                        ->title('Service Resume Date Declared')
+                        ->body('Notification emails have been queued for all affected customers.')
+                        ->success()
+                        ->send();
+
+                    $this->redirect(ServiceCancellationResource::getUrl('view', ['record' => $cancellation]));
+                }),
+
+            Action::make('update_resume_date')
                 ->label('Update Resume Date')
                 ->icon('heroicon-o-calendar')
                 ->color('secondary')
+                ->visible(fn () => ! empty($cancellation->resume_date))
                 ->form([
                     DatePicker::make('resume_date')
                         ->label('Service Resume Date')
-                        ->default($cancellation->resume_date->format('Y-m-d'))
+                        ->default($cancellation->resume_date?->format('Y-m-d'))
                         ->required(),
                 ])
                 ->action(function (array $data) use ($cancellation) {
-                    $cancellation->update(['resume_date' => $data['resume_date']]);
+                    app(ServiceCancellationManager::class)->declareResumeDate($cancellation, $data['resume_date']);
 
                     Notification::make()
                         ->title('Resume Date Updated')
-                        ->body("Service resume date set to {$cancellation->resume_date->format('M d, Y')}.")
+                        ->body("Service resume date set to " . ($cancellation->resume_date ? $cancellation->resume_date->format('M d, Y') : 'TBA') . ".")
                         ->success()
                         ->send();
+
+                    $this->redirect(ServiceCancellationResource::getUrl('view', ['record' => $cancellation]));
                 }),
 
-            Tables\Actions\Action::make('add_replacement_schedule')
+            Action::make('add_replacement_schedule')
                 ->label('Add Replacement Schedule Option')
                 ->icon('heroicon-o-plus-circle')
                 ->color('primary')
@@ -63,7 +94,7 @@ class ViewServiceCancellation extends ViewRecord implements HasTable
                     DatePicker::make('replacement_date')
                         ->label('Replacement Travel Date')
                         ->required()
-                        ->default($cancellation->resume_date->format('Y-m-d')),
+                        ->default($cancellation->resume_date?->format('Y-m-d') ?? now()->toDateString()),
 
                     Select::make('schedule_id')
                         ->label('Eligible Replacement Schedule')

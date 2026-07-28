@@ -71,8 +71,8 @@
                 </div>
                 <div class="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
                     <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Service Resume Date</p>
-                    <p class="mt-1 text-base font-extrabold text-emerald-700">
-                        {{ $cancellation ? $cancellation->resume_date->format('M d, Y') : 'Pending' }}
+                    <p class="mt-1 text-base font-extrabold {{ $cancellation && $cancellation->resume_date ? 'text-emerald-700' : 'text-amber-600' }}">
+                        {{ $cancellation && $cancellation->resume_date ? $cancellation->resume_date->format('M d, Y') : 'To Be Announced' }}
                     </p>
                 </div>
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 shadow-sm">
@@ -94,7 +94,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Staff-Approved Replacement Schedules</h2>
-                    <p class="text-xs text-slate-500 font-medium">Select a replacement flight or voyage for the route <strong>{{ $booking->origin }} &rarr; {{ $booking->destination }}</strong> starting on or after {{ $cancellation ? $cancellation->resume_date->format('M d, Y') : 'resume date' }}.</p>
+                    <p class="text-xs text-slate-500 font-medium">Select a replacement flight or voyage for the route <strong>{{ $booking->origin }} &rarr; {{ $booking->destination }}</strong> {{ $cancellation && $cancellation->resume_date ? 'starting on or after ' . $cancellation->resume_date->format('M d, Y') : '(Pending Resumption Date)' }}.</p>
                 </div>
                 
                 <button type="button" wire:click="requestSupport" class="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline">
@@ -103,9 +103,14 @@
             </div>
 
             @if($eligibleReplacements->isEmpty())
-                <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-                    <p class="font-bold text-slate-700">No specific replacement dates listed yet.</p>
-                    <p class="mt-1 text-xs text-slate-500 max-w-md mx-auto">Staff are currently updating available replacement voyages for this carrier starting {{ $cancellation ? $cancellation->resume_date->format('M d, Y') : 'soon' }}. You can request support below and our team will contact you directly.</p>
+                <div class="rounded-2xl border {{ $cancellation && ! $cancellation->resume_date ? 'border-amber-200 bg-amber-50/80' : 'border-dashed border-slate-200 bg-slate-50' }} p-8 text-center">
+                    @if($cancellation && ! $cancellation->resume_date)
+                        <p class="font-bold text-amber-900">Service Operations Temporarily Suspended</p>
+                        <p class="mt-1 text-xs text-amber-800 max-w-md mx-auto">Travel operations for {{ $cancellation->carrier }} are currently suspended due to weather/safety advisories. An email notification will be sent to <strong>{{ $booking->client_email }}</strong> the moment travel clearance is granted and service resumes.</p>
+                    @else
+                        <p class="font-bold text-slate-700">No specific replacement dates listed yet.</p>
+                        <p class="mt-1 text-xs text-slate-500 max-w-md mx-auto">Staff are currently updating available replacement voyages for this carrier starting {{ $cancellation && $cancellation->resume_date ? $cancellation->resume_date->format('M d, Y') : 'soon' }}. You can request support below and our team will contact you directly.</p>
+                    @endif
                     <button type="button" wire:click="requestSupport" class="mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition">
                         Request Staff Assistance
                     </button>

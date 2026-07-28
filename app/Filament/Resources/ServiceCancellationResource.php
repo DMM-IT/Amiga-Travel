@@ -159,10 +159,10 @@ class ServiceCancellationResource extends Resource
                                 ->default('weather'),
 
                             DatePicker::make('resume_date')
-                                ->label('Service Resume Date')
-                                ->helperText('Customer replacement options must be on or after this date.')
-                                ->required()
-                                ->default(now()->addDays(1)->toDateString()),
+                                ->label('Service Resume Date (Optional / TBA)')
+                                ->helperText('Leave empty if resumption date is unknown. You can declare the resume date later when travel clears to notify customers.')
+                                ->nullable()
+                                ->default(null),
                         ]),
 
                         Textarea::make('customer_message')
@@ -219,6 +219,7 @@ class ServiceCancellationResource extends Resource
                 TextColumn::make('resume_date')
                     ->label('Resume Date')
                     ->date()
+                    ->placeholder('To Be Announced (TBA)')
                     ->sortable(),
 
                 TextColumn::make('affected_bookings_count')
@@ -269,6 +270,27 @@ class ServiceCancellationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('declareResumeDate')
+                    ->label('Declare Resume Date')
+                    ->icon('heroicon-m-megaphone')
+                    ->color('success')
+                    ->visible(fn (ServiceCancellation $record): bool => empty($record->resume_date))
+                    ->form([
+                        DatePicker::make('resume_date')
+                            ->label('Official Service Resume Date')
+                            ->helperText('Customers will be notified via email that operations are resuming and can pick replacement dates starting from this date.')
+                            ->required()
+                            ->minDate(now()),
+                    ])
+                    ->action(function (ServiceCancellation $record, array $data): void {
+                        app(ServiceCancellationManager::class)->declareResumeDate($record, $data['resume_date']);
+                        Notification::make()
+                            ->title('Service Resume Date Declared')
+                            ->body('Notification emails have been queued for all affected customers.')
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 
@@ -283,6 +305,7 @@ class ServiceCancellationResource extends Resource
             'index' => Pages\ListServiceCancellations::route('/'),
             'create' => Pages\CreateServiceCancellation::route('/create'),
             'view' => Pages\ViewServiceCancellation::route('/{record}'),
+            'edit' => Pages\EditServiceCancellation::route('/{record}/edit'),
         ];
     }
 }

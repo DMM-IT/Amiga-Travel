@@ -76,16 +76,47 @@ class ServiceCancellationManager
                     'status' => 'operator_cancelled',
                     'service_cancellation_id' => $cancellation->id,
                     'disruption_status' => 'cancelled_by_operator_rescheduling_required',
+                    'rebooking_status' => 'rebooking_required',
                 ]);
+
+                // Preserve paid status if already paid by customer — only cancel unpaid transactions
+                if ($booking->transaction && $booking->transaction->payment_status !== 'paid') {
+                    $booking->transaction->update([
+                        'payment_status' => 'cancelled',
+                    ]);
+                }
             }
 
-            // Seed default replacement options on/after resume_date
-            $this->seedDefaultReplacements($cancellation);
+            // Seed default replacement options on/after resume_date if provided
+            if (! empty($cancellation->resume_date)) {
+                $this->seedDefaultReplacements($cancellation);
+            }
 
             // Notify customers without duplicate triggers
-            $this->notifyAffectedBookers($cancellation, $affectedBookings);
+            $this->notifyAffectedBookers($cancellation, $affectedBookings, false);
 
             return $cancellation;
+        });
+    }
+
+    /**
+     * Declare official service resume date when travel clearance is granted, seed replacements, and notify customers.
+     */
+    public function declareResumeDate(ServiceCancellation $cancellation, string $resumeDate): void
+    {
+        DB::transaction(function () use ($cancellation, $resumeDate) {
+            $cancellation->update([
+                'resume_date' => $resumeDate,
+                'resumed_at'  => now(),
+                'status'      => 'active',
+            ]);
+
+            // Seed replacement schedules starting on/after the declared resume date
+            $this->seedDefaultReplacements($cancellation);
+
+            // Re-notify affected bookers with the official resume date and reschedule link
+            $affectedBookings = $cancellation->affectedBookings;
+            $this->notifyAffectedBookers($cancellation, $affectedBookings, true);
         });
     }
 
@@ -94,6 +125,10 @@ class ServiceCancellationManager
      */
     public function seedDefaultReplacements(ServiceCancellation $cancellation): void
     {
+        if (empty($cancellation->resume_date)) {
+            return;
+        }
+
         $affectedSchedules = $cancellation->getAffectedSchedulesQuery()->get();
         $resumeDate = Carbon::parse($cancellation->resume_date);
 
@@ -129,7 +164,7 @@ class ServiceCancellationManager
     /**
      * Send email, push, and internal notifications to unique bookers.
      */
-    public function notifyAffectedBookers(ServiceCancellation $cancellation, Collection $bookings): void
+    public function notifyAffectedBookers(ServiceCancellation $cancellation, Collection $bookings, bool $isResumption = false): void
     {
         $uniqueBookings = $bookings->unique('id');
 
@@ -137,7 +172,7 @@ class ServiceCancellationManager
             // Email notification
             if (filled($booking->client_email)) {
                 try {
-                    Mail::to($booking->client_email)->send(new ServiceCancellationNotificationMail($booking, $cancellation));
+                    Mail::to($booking->client_email)->send(new ServiceCancellationNotificationMail($booking, $cancellation, $isResumption));
                 } catch (\Exception $e) {
                     Log::error("Failed sending disruption cancellation email to {$booking->client_email}: " . $e->getMessage());
                 }
@@ -145,9 +180,13 @@ class ServiceCancellationManager
 
             // Mobile App Push Notification (FCM)
             try {
+                $resumeText = ! empty($cancellation->resume_date)
+                    ? "Tap to choose a new travel date starting {$cancellation->resume_date->format('M d, Y')}."
+                    : "Service operations are temporarily suspended. We will notify you when travel resumes.";
+
                 AppNotification::create([
                     'title' => "{$cancellation->carrier} Disruptions: Schedule Cancelled",
-                    'body' => "Booking #{$booking->transaction_number} was cancelled due to {$cancellation->reason_category}. Tap to choose a new travel date starting {$cancellation->resume_date->format('M d, Y')}.",
+                    'body'  => "Booking #{$booking->transaction_number} was cancelled due to {$cancellation->reason_category}. {$resumeText}",
                 ]);
             } catch (\Exception $e) {
                 Log::error("Failed creating push notification for disruption: " . $e->getMessage());
@@ -191,6 +230,7 @@ class ServiceCancellationManager
             'preferred_replacement_schedule_id' => $replacementSchedule->id,
             'preferred_replacement_date' => $date,
             'disruption_status' => 'reschedule_requested',
+            'rebooking_status' => 'reschedule_requested',
         ]);
 
         return true;

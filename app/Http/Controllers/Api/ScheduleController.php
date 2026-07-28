@@ -13,7 +13,12 @@ class ScheduleController extends Controller
     {
         $mode = $request->input('mode', '');
         $operator = $request->input('operator', '');
-        $origins = FerryRoute::scheduleOrigins($mode ?: null, $operator ?: null);
+        $cacheKey = "api:origins:{$mode}:{$operator}";
+
+        $origins = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(6), function () use ($mode, $operator) {
+            return FerryRoute::scheduleOrigins($mode ?: null, $operator ?: null);
+        });
+
         return response()->json([
             'status' => 'success',
             'origins' => $origins
@@ -23,7 +28,12 @@ class ScheduleController extends Controller
     public function operators(Request $request)
     {
         $mode = $request->input('mode', '');
-        $operators = FerryRoute::scheduleOperatorsFor($mode ?: null);
+        $cacheKey = "api:operators:{$mode}";
+
+        $operators = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(6), function () use ($mode) {
+            return FerryRoute::scheduleOperatorsFor($mode ?: null);
+        });
+
         return response()->json([
             'status' => 'success',
             'operators' => $operators
@@ -39,8 +49,13 @@ class ScheduleController extends Controller
         $mode = $request->input('mode', '');
         $operator = $request->input('operator', '');
         $tripType = $request->input('trip_type', 'one_way');
-        $requireReturn = $tripType === 'round_trip';
-        $destinations = FerryRoute::scheduleDestinationsFor($origin, $mode ?: null, $operator ?: null, $requireReturn);
+        $requireReturn = $tripType === 'round_trip' ? '1' : '0';
+        $cacheKey = "api:destinations:{$origin}:{$mode}:{$operator}:{$requireReturn}";
+
+        $destinations = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(6), function () use ($origin, $mode, $operator, $tripType) {
+            return FerryRoute::scheduleDestinationsFor($origin, $mode ?: null, $operator ?: null, $tripType === 'round_trip');
+        });
+
         return response()->json([
             'status' => 'success',
             'destinations' => $destinations
@@ -56,34 +71,38 @@ class ScheduleController extends Controller
 
         $origin = $request->input('origin');
         $destination = $request->input('destination');
-        $mode = $request->input('mode', null);
-        $operator = $request->input('operator', null);
+        $mode = $request->input('mode', '');
+        $operator = $request->input('operator', '');
+        $cacheKey = "api:available_dates:{$origin}:{$destination}:{$mode}:{$operator}";
 
-        $query = FerryRoute::where('is_active', true)
-            ->where('origin', $origin)
-            ->where('destination', $destination);
-            
-        if ($mode) {
-            $query->where('mode', $mode);
-        }
-        if ($operator) {
-            $query->where('operator', 'like', "%{$operator}%");
-        }
-
-        $routes = $query->with(['schedules' => function($q) {
-            $q->where('is_active', true)
-              ->where('departure_time', '>=', now()->startOfDay());
-        }])->get();
-
-        $dates = [];
-        foreach ($routes as $route) {
-            foreach ($route->schedules as $schedule) {
-                $dates[] = \Carbon\Carbon::parse($schedule->departure_time)->format('Y-m-d');
+        $dates = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function () use ($origin, $destination, $mode, $operator) {
+            $query = FerryRoute::where('is_active', true)
+                ->where('origin', $origin)
+                ->where('destination', $destination);
+                
+            if ($mode) {
+                $query->where('mode', $mode);
             }
-        }
+            if ($operator) {
+                $query->where('operator', 'like', "%{$operator}%");
+            }
 
-        $dates = array_values(array_unique($dates));
-        sort($dates);
+            $routes = $query->with(['schedules' => function($q) {
+                $q->where('is_active', true)
+                  ->where('departure_time', '>=', now()->startOfDay());
+            }])->get();
+
+            $datesList = [];
+            foreach ($routes as $route) {
+                foreach ($route->schedules as $schedule) {
+                    $datesList[] = \Carbon\Carbon::parse($schedule->departure_time)->format('Y-m-d');
+                }
+            }
+
+            $datesList = array_values(array_unique($datesList));
+            sort($datesList);
+            return $datesList;
+        });
 
         return response()->json([
             'status' => 'success',

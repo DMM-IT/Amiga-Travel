@@ -96,12 +96,15 @@ class DatePicker extends Component
             return;
         }
 
+        if ($this->hasEnabledDatesRestriction && ! empty($this->enabledDates) && ! in_array($date, $this->enabledDates, true)) {
+            return;
+        }
+
         $this->value = $date;
         $this->isOpen = false;
 
         \Illuminate\Support\Facades\Log::info('[DatePicker] selectDate', ['field' => $this->field, 'value' => $this->value]);
-        $this->dispatch('datePickerUpdated', $this->field, $this->value);
-        $this->dispatch('input', $this->value);
+        $this->dispatch('datePickerUpdated', field: $this->field, value: $this->value);
     }
 
     public function getCalendarDaysProperty(): array

@@ -692,10 +692,10 @@
                                             :schedules="$availableReturnSchedules"
                                             selectedId="{{ $selected_return_schedule_id }}"
                                             selectedAccommodationId="{{ $selected_return_schedule_accommodation_id }}"
-                                            selectedClassId="{{ $selected_transport_class_id }}" 
+                                            selectedClassId="{{ $selected_return_transport_class_id }}" 
                                             selectMethod="selectReturnSchedule"
                                             selectAccommodationMethod="selectReturnScheduleAccommodation"
-                                            selectClassMethod="selectTransportClass"
+                                            selectClassMethod="selectReturnTransportClass"
                                             :mode="$mode"
                                         />
                                     @else

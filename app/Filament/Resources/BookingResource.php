@@ -91,6 +91,7 @@ class BookingResource extends Resource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query)
             ->defaultSort('created_at', 'desc')
+            ->poll('10s')
             ->columns([
                 Tables\Columns\TextColumn::make('transaction_number')
                     ->searchable()
@@ -131,25 +132,89 @@ class BookingResource extends Resource
                     ->label('Plate Number')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Booking Status')
                     ->badge()
                     ->color(fn (?string $state): string => match ($state) {
                         'pending' => 'warning',
                         'confirmed' => 'success',
                         'cancelled' => 'danger',
+                        'operator_cancelled' => 'danger',
                         default => 'secondary',
                     }),
+                Tables\Columns\TextColumn::make('transaction.payment_status')
+                    ->label('Payment Status')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'paid' => 'success',
+                        'pending' => 'warning',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    })
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('rebooking_status')
                     ->label('Rebooking')
                     ->badge()
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'rebooking_required' => 'Rebooking Required',
+                        'reschedule_requested' => 'Reschedule Requested',
+                        'verified' => 'Rebooked',
+                        'pending' => 'Pending',
+                        default => $state ? ucfirst(str_replace('_', ' ', $state)) : null,
+                    })
                     ->color(fn (?string $state): string => match ($state) {
-                        'pending' => 'warning',
+                        'rebooking_required' => 'warning',
+                        'reschedule_requested' => 'info',
                         'verified' => 'success',
+                        'pending' => 'warning',
                         default => 'gray',
                     })
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('total_price')
                     ->money('PHP')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('verification_timer')
+                    ->label('Lock Timer')
+                    ->badge()
+                    ->icon(fn (Booking $record): string => match (true) {
+                        $record->status !== 'pending' => 'heroicon-m-check-circle',
+                        ! $record->transaction => 'heroicon-m-clock',
+                        $record->transaction->created_at->addMinutes(10)->isPast() => 'heroicon-m-check-badge',
+                        default => 'heroicon-m-clock',
+                    })
+                    ->color(fn (Booking $record): string => match (true) {
+                        $record->status !== 'pending' => 'gray',
+                        ! $record->transaction => 'warning',
+                        $record->transaction->created_at->addMinutes(10)->isPast() => 'success',
+                        default => 'warning',
+                    })
+                    ->state(function (Booking $record): string {
+                        if ($record->status !== 'pending') {
+                            return '—';
+                        }
+                        if (! $record->transaction) {
+                            return 'No tx';
+                        }
+
+                        $unlockTime = $record->transaction->created_at->addMinutes(10);
+                        if ($unlockTime->isPast()) {
+                            return 'Ready';
+                        }
+
+                        $diff = now()->diff($unlockTime);
+                        return sprintf('%dm %ds', $diff->i, $diff->s);
+                    })
+                    ->tooltip(function (Booking $record): ?string {
+                        if ($record->status !== 'pending' || ! $record->transaction) {
+                            return null;
+                        }
+
+                        $unlockTime = $record->transaction->created_at->addMinutes(10);
+                        if ($unlockTime->isPast()) {
+                            return '10-minute hold complete. Ready for verification.';
+                        }
+
+                        return 'Unlocks at ' . $unlockTime->format('h:i:s A');
+                    }),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -263,6 +328,33 @@ class BookingResource extends Resource
                         );
                     })
                     ->color('secondary'),
+
+                Tables\Actions\Action::make('approveDisruptionReschedule')
+                    ->label('Approve Reschedule')
+                    ->icon('heroicon-m-check-circle')
+                    ->button()
+                    ->color('success')
+                    ->visible(fn (Booking $record): bool => in_array($record->disruption_status, ['reschedule_requested', 'cancelled_by_operator_rescheduling_required']) && filled($record->preferred_replacement_schedule_id))
+                    ->form([
+                        Forms\Components\Textarea::make('staff_note')
+                            ->label('Internal / Customer Staff Note')
+                            ->placeholder('e.g., Approved replacement schedule per customer selection.')
+                            ->rows(2),
+                    ])
+                    ->action(function (Booking $record, array $data): void {
+                        app(ServiceCancellationManager::class)->processStaffApproval(
+                            $record,
+                            true,
+                            $data['staff_note'] ?? null,
+                            Auth::user()
+                        );
+
+                        Notification::make()
+                            ->title('Reschedule Approved')
+                            ->body("Booking #{$record->transaction_number} date updated and customer notified.")
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

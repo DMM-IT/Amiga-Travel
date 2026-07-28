@@ -21,28 +21,30 @@ class BookingRebookingFlowTest extends TestCase
 
         $booking = Booking::create([
             'transaction_number' => 'AGT-REBOOK-001',
-            'origin' => 'Cebu',
-            'destination' => 'Bohol',
-            'departure_date' => now()->addDay()->toDateString(),
-            'return_date' => now()->addDays(3)->toDateString(),
-            'status' => 'pending',
-            'total_price' => 1200,
-            'client_email' => 'customer@example.com',
-            'client_name' => 'Jane Doe',
+            'origin'             => 'Cebu',
+            'destination'        => 'Bohol',
+            'departure_date'     => now()->addDay()->toDateString(),
+            'return_date'        => now()->addDays(3)->toDateString(),
+            'status'             => 'pending',
+            'total_price'        => 1200,
+            'client_email'       => 'customer@example.com',
+            'client_name'        => 'Jane Doe',
         ]);
 
+        // Payment must be 'pending' or 'unpaid' for the rebooking guard to pass
         Transaction::create([
-            'booking_id' => $booking->id,
-            'payment_status' => 'paid',
+            'booking_id'     => $booking->id,
+            'payment_status' => 'pending',
         ]);
 
         $newDeparture = now()->addDays(7)->toDateString();
-        $newReturn = now()->addDays(10)->toDateString();
+        $newReturn    = now()->addDays(10)->toDateString();
 
         Livewire::test(BookingLookup::class)
             ->set('transaction_number', $booking->transaction_number)
             ->call('search')
-            ->call('requestRebooking')
+            ->call('requestRebooking')       // shows warning
+            ->call('confirmRebookingRequest') // sets rebookingRequested = true and pre-fills dates
             ->set('rebooking_departure_date', $newDeparture)
             ->set('rebooking_return_date', $newReturn)
             ->set('rebookingProof', UploadedFile::fake()->image('proof.jpg'))

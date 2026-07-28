@@ -100,6 +100,7 @@ class BookingForm extends Component
     public ?int $selected_return_schedule_id = null;
     public ?int $selected_return_schedule_accommodation_id = null;
     public ?int $selected_transport_class_id = null;
+    public ?int $selected_return_transport_class_id = null;
 
     public ?int $tour_id = null;
     public ?int $tour_date_id = null;
@@ -858,8 +859,14 @@ public function selectedSchedule(): ?array
         $this->saveDraft();
     }
 
-    public function datePickerUpdated(string $field, ?string $value): void
+    #[\Livewire\Attributes\On('datePickerUpdated')]
+    public function datePickerUpdated($field = null, $value = null): void
     {
+        if (is_array($field)) {
+            $value = $field['value'] ?? ($field[1] ?? null);
+            $field = $field['field'] ?? ($field[0] ?? null);
+        }
+
         if (! in_array($field, ['departure_date', 'return_date'], true)) {
             return;
         }
@@ -868,12 +875,19 @@ public function selectedSchedule(): ?array
 
         if ($field === 'departure_date') {
             $this->selected_schedule_id = null;
-        $this->selected_return_schedule_id = null;
+            $this->selected_return_schedule_id = null;
             $this->availableSchedules = [];
             $this->updateReturnDateFromDuration();
+            $this->updateAvailableScheduleDates();
         }
 
-        $this->validateOnly($field, $this->allRules());
+        try {
+            $this->validateOnly($field, $this->allRules());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log/ignore partial step validation errors during date picking
+        }
+
+        $this->saveDraft();
     }
 
     public function hydrate(): void
@@ -1329,6 +1343,12 @@ public function selectedSchedule(): ?array
         $this->saveDraft();
     }
 
+    public function selectReturnTransportClass(?int $classId): void
+    {
+        $this->selected_return_transport_class_id = $this->selected_return_transport_class_id === $classId ? null : $classId;
+        $this->saveDraft();
+    }
+
 
     public function submit()
     {
@@ -1756,6 +1776,7 @@ public function selectedSchedule(): ?array
             'selected_schedule_accommodation_id' => $this->selected_schedule_accommodation_id,
             'selected_return_schedule_accommodation_id' => $this->selected_return_schedule_accommodation_id,
             'selected_transport_class_id' => $this->selected_transport_class_id,
+            'selected_return_transport_class_id' => $this->selected_return_transport_class_id,
             'has_vehicle' => $this->has_vehicle,
             'vehicle_booking_method' => $this->vehicle_booking_method,
             'selected_vehicle_rate_id' => $this->selected_vehicle_rate_id,
@@ -2042,9 +2063,15 @@ public function selectedSchedule(): ?array
             return $fare;
         });
 
-        $transportClassTotal = $this->selected_transport_class_id
+        $departureTransportClassTotal = $this->selected_transport_class_id
             ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id)->price ?? 0)
             : 0;
+
+        $returnTransportClassTotal = ($this->trip_type === 'round_trip' && $this->selected_return_transport_class_id)
+            ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_return_transport_class_id)->price ?? 0)
+            : 0;
+
+        $transportClassTotal = $departureTransportClassTotal + $returnTransportClassTotal;
 
         $vehicleTotal = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
 

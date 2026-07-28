@@ -14,8 +14,7 @@ return [
     |
     */
 
-    // Default to 'failover' so when MAIL_MAILER is not set we avoid hard SMTP failures.
-    'default' => env('MAIL_MAILER', 'failover'),
+    'default' => env('MAIL_MAILER', 'smtp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -48,7 +47,7 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            'local_domain' => env('MAIL_EHLO_DOMAIN') ?: (parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost'),
         ],
 
         'ses' => [

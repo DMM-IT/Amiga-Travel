@@ -1,5 +1,6 @@
-FROM php:8.3-cli-alpine
+FROM php:8.3-fpm-alpine
 
+# --- System dependencies ---
 RUN apk add --no-cache \
     bash \
     curl \
@@ -14,26 +15,54 @@ RUN apk add --no-cache \
     unzip \
     libpng-dev \
     libjpeg-turbo-dev \
-    freetype-dev
+    freetype-dev \
+    nginx \
+    supervisor
 
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip bcmath intl gd
+# --- PHP extensions ---
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip bcmath intl gd opcache
 
+# --- Composer ---
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
 ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# --- Opcache tuning for production ---
+RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer=8" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=10000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
 
 WORKDIR /var/www/html
 
+# --- Copy application source ---
 COPY . .
 
+# --- Install PHP & Node dependencies, build frontend assets ---
 RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts --optimize-autoloader \
     && npm install --legacy-peer-deps \
     && npm run build
 
+# --- Laravel bootstrap ---
 RUN php artisan package:discover --ansi
 
+# --- Permissions ---
 RUN chmod +x /var/www/html/scripts/railway-start.sh \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# --- Log directories ---
+RUN mkdir -p /var/log/nginx /var/log \
+    && touch /var/log/queue-worker.log /var/log/php-fpm.log /var/log/supervisord.log
+
+# --- Copy Nginx config into place ---
+COPY nginx.conf /etc/nginx/http.d/default.conf
+
+# --- PHP-FPM: run as www-data ---
+RUN sed -i 's/user = www-data/user = www-data/' /usr/local/etc/php-fpm.d/www.conf 2>/dev/null || true \
+    && sed -i 's/group = www-data/group = www-data/' /usr/local/etc/php-fpm.d/www.conf 2>/dev/null || true
+
 EXPOSE 10000
+
 CMD ["/var/www/html/scripts/railway-start.sh"]
