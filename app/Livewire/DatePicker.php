@@ -55,17 +55,26 @@ class DatePicker extends Component
         }
     }
 
+    protected $listeners = [
+        'dropdownOpened' => 'onDropdownOpened',
+    ];
+
     public function toggleCalendar(): void
     {
         $this->isOpen = ! $this->isOpen;
-        // Intentionally do not call browser event helpers here to maintain
-        // compatibility with the project's Livewire version.
+        if ($this->isOpen) {
+            $this->dispatch('dropdownOpened', name: 'date-' . $this->field);
+        }
     }
 
+    #[\Livewire\Attributes\On('dropdownOpened')]
     public function onDropdownOpened($name = null): void
     {
+        if (is_array($name) && isset($name['name'])) {
+            $name = $name['name'];
+        }
         // If another dropdown opened (not the datepicker for this field), close.
-        if ($this->isOpen && $name !== 'date-'.$this->field) {
+        if ($this->isOpen && $name !== 'date-' . $this->field) {
             $this->isOpen = false;
         }
     }

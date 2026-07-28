@@ -301,11 +301,6 @@ class BookingForm extends Component
                     // ignore unparseable entries
                 }
             }
-
-            // if we parsed dates and no departure_date yet, set the first one
-            if (! empty($this->available_package_dates) && empty($this->departure_date)) {
-                $this->departure_date = $this->available_package_dates[0];
-            }
         }
 
         // If a duration_days param was provided, store duration_days
@@ -321,22 +316,6 @@ class BookingForm extends Component
         // If the package has duration days and no explicit trip type, assume round trip
         elseif ($this->duration_days > 1 && $this->trip_type === 'one_way') {
             $this->trip_type = 'round_trip';
-        }
-
-        // Fallback: if no parsed package dates and no departure_date set, default to next upcoming weekend (Sat or Sun)
-        if (empty($this->available_package_dates) && empty($this->departure_date)) {
-            $d = Carbon::today();
-            $found = null;
-            for ($i = 0; $i < 14; $i++) {
-                if (in_array($d->dayOfWeekIso, [6, 7], true)) {
-                    $found = $d;
-                    break;
-                }
-                $d = $d->addDay();
-            }
-            if ($found) {
-                $this->departure_date = $found->format('Y-m-d');
-            }
         }
 
         // If return_date is missing, compute it from departure_date and duration_days.
@@ -634,7 +613,7 @@ public function selectedSchedule(): ?array
             $this->showOperatorDropdown = false;
             $this->showOriginDropdown = false;
             $this->showDestinationDropdown = false;
-            $this->dispatch('dropdownOpened', 'mode');
+            $this->dispatch('dropdownOpened', name: 'mode');
         }
     }
 
@@ -645,12 +624,16 @@ public function selectedSchedule(): ?array
             $this->showModeDropdown = false;
             $this->showOriginDropdown = false;
             $this->showDestinationDropdown = false;
-            $this->dispatch('dropdownOpened', 'operator');
+            $this->dispatch('dropdownOpened', name: 'operator');
         }
     }
 
     public function onDropdownOpened($name = null): void
     {
+        if (is_array($name) && isset($name['name'])) {
+            $name = $name['name'];
+        }
+
         // If another dropdown opened and it's not one of BookingForm's, close ours.
         if ($name === null) {
             $this->showModeDropdown = false;
@@ -719,8 +702,9 @@ public function selectedSchedule(): ?array
 
         if ($this->showOriginDropdown) {
             $this->showModeDropdown = false;
+            $this->showOperatorDropdown = false;
             $this->showDestinationDropdown = false;
-            $this->dispatch('dropdownOpened', 'origin');
+            $this->dispatch('dropdownOpened', name: 'origin');
         }
 
         if (! $this->showOriginDropdown) {
@@ -734,8 +718,9 @@ public function selectedSchedule(): ?array
 
         if ($this->showDestinationDropdown) {
             $this->showModeDropdown = false;
+            $this->showOperatorDropdown = false;
             $this->showOriginDropdown = false;
-            $this->dispatch('dropdownOpened', 'destination');
+            $this->dispatch('dropdownOpened', name: 'destination');
         }
 
         if (! $this->showDestinationDropdown) {
