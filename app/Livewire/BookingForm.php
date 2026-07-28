@@ -646,6 +646,7 @@ public function selectedSchedule(): ?array
         $this->availableSchedules = [];
         $this->resetVehicleData();
         $this->showModeDropdown = false;
+        $this->saveDraft();
     }
 
     public function selectOperator(?string $operator): void
