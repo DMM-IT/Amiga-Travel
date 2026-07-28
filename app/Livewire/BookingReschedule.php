@@ -93,6 +93,24 @@ class BookingReschedule extends Component
         $this->feedback = 'Our support team has been notified. We will reach out to your email shortly to assist with custom travel arrangements.';
     }
 
+    public function cancelBookingAndRefund(): void
+    {
+        if (! $this->booking) {
+            $this->feedback = 'Booking not found.';
+            return;
+        }
+
+        try {
+            app(ServiceCancellationManager::class)->cancelAndRefundBooking($this->booking);
+
+            $this->loadBooking();
+            $this->submitted = true;
+            $this->feedback = 'Your booking has been cancelled and a full refund has been requested. Our team will process it shortly.';
+        } catch (\Exception $e) {
+            $this->feedback = $e->getMessage();
+        }
+    }
+
     public function render()
     {
         $eligibleReplacements = collect();

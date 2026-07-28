@@ -29,13 +29,21 @@ class PaymentSetting extends Model
      */
     public static function current(): self
     {
-        return Cache::remember('payment_settings:current', now()->addHours(6), function () {
-            return static::query()->firstOrCreate(['id' => 1], [
+        $attributes = Cache::remember('payment_settings:current', now()->addHours(6), function () {
+            $model = static::query()->firstOrCreate(['id' => 1], [
                 'fee_per_person'        => 2000,
                 'fee_per_accommodation' => 5000,
                 'proof_retention_days'  => 30,
             ]);
+
+            return $model->getAttributes();
         });
+
+        $instance = new static;
+        $instance->setRawAttributes($attributes, true);
+        $instance->exists = true;
+
+        return $instance;
     }
 
     /**

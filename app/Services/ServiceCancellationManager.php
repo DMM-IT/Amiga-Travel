@@ -26,7 +26,9 @@ class ServiceCancellationManager
     {
         $cancellation = new ServiceCancellation([
             'service_type' => $data['service_type'] ?? 'ferry',
-            'carrier' => $data['carrier'] ?? '',
+            'carrier' => $data['carrier'] ?? null,
+            'ferry_route_id' => $data['ferry_route_id'] ?? null,
+            'vehicle_id' => $data['vehicle_id'] ?? null,
             'scope' => $data['scope'] ?? 'specific_schedule',
             'schedule_id' => $data['schedule_id'] ?? null,
             'affected_date' => $data['affected_date'] ?? null,
@@ -54,7 +56,9 @@ class ServiceCancellationManager
             $cancellation = ServiceCancellation::create([
                 'cancellation_code' => ServiceCancellation::generateCode(),
                 'service_type' => $data['service_type'],
-                'carrier' => $data['carrier'],
+                'carrier' => $data['carrier'] ?? null,
+                'ferry_route_id' => $data['ferry_route_id'] ?? null,
+                'vehicle_id' => $data['vehicle_id'] ?? null,
                 'scope' => $data['scope'],
                 'schedule_id' => $data['schedule_id'] ?? null,
                 'affected_date' => $data['affected_date'] ?? null,

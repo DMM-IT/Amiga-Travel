@@ -36,8 +36,15 @@
 
         <p>Dear <strong>{{ $booking->client_name }}</strong>,</p>
         
+        @php
+            $carrierName = $cancellation->carrier 
+                ?? $cancellation->ferryRoute?->operator 
+                ?? $cancellation->vehicle?->operator 
+                ?? 'the operator';
+        @endphp
+
         @if(!empty($isResumption))
-            <p>We are pleased to inform you that travel operations for <strong>{{ $cancellation->carrier }}</strong> are officially resuming starting <strong>{{ $cancellation->resume_date ? $cancellation->resume_date->format('F d, Y') : 'soon' }}</strong>. You can now log in to select your replacement travel date at zero extra cost.</p>
+            <p>We are pleased to inform you that travel operations for <strong>{{ $carrierName }}</strong> are officially resuming starting <strong>{{ $cancellation->resume_date ? $cancellation->resume_date->format('F d, Y') : 'soon' }}</strong>. You can now log in to select your replacement travel date at zero extra cost.</p>
         @else
             <p>We regret to inform you that your upcoming travel schedule for <strong>Booking #{{ $booking->transaction_number }}</strong> has been cancelled by the operator due to <strong>{{ ucfirst(str_replace('_', ' ', $cancellation->reason_category)) }}</strong>.</p>
         @endif
@@ -49,7 +56,7 @@
             </div>
             <div class="info-row">
                 <span class="label">Carrier / Operator</span>
-                <span class="value">{{ $cancellation->carrier }}</span>
+                <span class="value">{{ $carrierName }}</span>
             </div>
             <div class="info-row">
                 <span class="label">Original Route</span>

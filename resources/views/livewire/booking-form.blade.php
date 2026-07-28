@@ -1272,7 +1272,7 @@
                                     @endphp
                                     <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm transition-shadow hover:shadow-md">
                                         <div class="flex items-center justify-between">
-                                            <span class="text-slate-900 font-bold text-sm">{{ ucfirst($passenger['type']) }}{{ $passenger['name'] ? ' &mdash; ' . $passenger['name'] : '' }}</span>
+                                            <span class="text-slate-900 font-bold text-sm">{{ ucfirst($passenger['type']) }}{{ $passenger['name'] ? ' — ' . $passenger['name'] : '' }}</span>
                                             @if($summaryIsPromo)
                                                 <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 bg-[#db2777]/10 text-[#db2777] rounded-full">
                                                     <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -1287,6 +1287,20 @@
                                 @empty
                                     <p class="text-slate-500 italic">No passengers added yet.</p>
                                 @endforelse
+
+                                @if ($discountedCount > 0)
+                                    <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+                                        <div class="flex items-start gap-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 text-amber-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <div>
+                                                <h3 class="text-sm font-bold text-amber-900">Important Reminder</h3>
+                                                <p class="mt-1 text-sm text-amber-700">You have booked discounted tickets. Please make sure to bring the valid IDs (School ID, OSCA ID, or PWD ID) and present them at the port during boarding.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
 
@@ -1540,35 +1554,6 @@
                             </div>
                         </div>
 
-                        @if ($showPresentIdWarning)
-                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-                                <div class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-200">
-                                    <div class="flex items-start justify-between gap-4">
-                                        <div>
-                                            <h2 class="text-xl font-semibold text-slate-900">Prepare valid ID for boarding</h2>
-                                            <p class="mt-3 text-sm leading-6 text-slate-600">Discounted passengers must present a valid ID during boarding. Please have your school ID, OSCA ID, or PWD ID ready.</p>
-                                        </div>
-                                        <button type="button" wire:click.prevent="closePresentIdWarning" class="rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200">
-                                            <span class="sr-only">Close</span>
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                    </div>
-                                    <div class="mt-5 grid gap-4">
-                                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                            <p class="font-semibold text-slate-900">What to bring</p>
-                                            <ul class="mt-3 space-y-2 text-sm text-slate-700">
-                                                <li>&bull; School ID for Student discounts</li>
-                                                <li>&bull; OSCA ID for Senior Citizen discounts</li>
-                                                <li>&bull; PWD ID for PWD discounts</li>
-                                            </ul>
-                                        </div>
-                                        <button type="button" wire:click.prevent="closePresentIdWarning" class="inline-flex w-full items-center justify-center rounded-xl bg-[#db2777] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#be185d]">
-                                            Got it, I will present my ID
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
                     @endif
 
                         <div class="flex flex-col gap-3 sm:flex-row sm:justify-between mt-8 pt-6 border-t border-slate-200">
@@ -1843,6 +1828,36 @@
                             @endif
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($showPresentIdWarning)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+            <div class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-200">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-slate-900">Prepare valid ID for boarding</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Discounted passengers must present a valid ID during boarding. Please have your school ID, OSCA ID, or PWD ID ready.</p>
+                    </div>
+                    <button type="button" wire:click.prevent="closePresentIdWarning" class="rounded-full bg-slate-100 p-2 text-slate-600 hover:bg-slate-200">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="mt-5 grid gap-4">
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="font-semibold text-slate-900">What to bring</p>
+                        <ul class="mt-3 space-y-2 text-sm text-slate-700">
+                            <li>&bull; School ID for Student discounts</li>
+                            <li>&bull; OSCA ID for Senior Citizen discounts</li>
+                            <li>&bull; PWD ID for PWD discounts</li>
+                        </ul>
+                    </div>
+                    <button type="button" wire:click.prevent="closePresentIdWarning" class="inline-flex w-full items-center justify-center rounded-xl bg-[#db2777] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#be185d]">
+                        Got it, I will present my ID
+                    </button>
                 </div>
             </div>
         </div>

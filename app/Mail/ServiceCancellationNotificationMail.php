@@ -24,9 +24,14 @@ class ServiceCancellationNotificationMail extends Mailable implements ShouldQueu
 
     public function envelope(): Envelope
     {
+        $carrierName = $this->cancellation->carrier 
+            ?? $this->cancellation->ferryRoute?->operator 
+            ?? $this->cancellation->vehicle?->operator 
+            ?? 'the operator';
+
         $subject = $this->isResumption
             ? "🟢 GOOD NEWS: Travel Operations Resuming — Select New Date for Booking #{$this->booking->transaction_number}"
-            : "🔴 IMPORTANT: Schedule Cancelled for Booking #{$this->booking->transaction_number} ({$this->cancellation->carrier})";
+            : "🔴 IMPORTANT: Schedule Cancelled for Booking #{$this->booking->transaction_number} ({$carrierName})";
 
         return new Envelope(
             subject: $subject,

@@ -16,6 +16,8 @@ class ServiceCancellation extends Model
         'cancellation_code',
         'service_type',
         'carrier',
+        'ferry_route_id',
+        'vehicle_id',
         'scope',
         'schedule_id',
         'affected_date',
@@ -44,6 +46,16 @@ class ServiceCancellation extends Model
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class);
+    }
+
+    public function ferryRoute(): BelongsTo
+    {
+        return $this->belongsTo(FerryRoute::class);
+    }
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 
     public function replacementSchedules(): HasMany
@@ -82,6 +94,12 @@ class ServiceCancellation extends Model
             if ($this->carrier) {
                 $routeQuery->where('operator', $this->carrier);
             }
+            if ($this->ferry_route_id) {
+                $routeQuery->where('id', $this->ferry_route_id);
+            }
+            if ($this->vehicle_id) {
+                $routeQuery->where('vehicle_id', $this->vehicle_id);
+            }
         });
     }
 
@@ -109,6 +127,12 @@ class ServiceCancellation extends Model
                     if ($this->carrier) {
                         $rq->where('operator', $this->carrier);
                     }
+                    if ($this->ferry_route_id) {
+                        $rq->where('id', $this->ferry_route_id);
+                    }
+                    if ($this->vehicle_id) {
+                        $rq->where('vehicle_id', $this->vehicle_id);
+                    }
                 });
         } elseif ($this->scope === 'carrier_date_range' && $this->start_date && $this->end_date) {
             $query->whereBetween('departure_date', [$this->start_date->format('Y-m-d'), $this->end_date->format('Y-m-d')])
@@ -118,6 +142,12 @@ class ServiceCancellation extends Model
                     }
                     if ($this->carrier) {
                         $rq->where('operator', $this->carrier);
+                    }
+                    if ($this->ferry_route_id) {
+                        $rq->where('id', $this->ferry_route_id);
+                    }
+                    if ($this->vehicle_id) {
+                        $rq->where('vehicle_id', $this->vehicle_id);
                     }
                 });
         }

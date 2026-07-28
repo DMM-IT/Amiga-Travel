@@ -58,6 +58,38 @@ class ServiceCancellationResource extends Resource
                 Section::make('Cancellation Scope & Details')
                     ->description('Specify the carrier, service type, and disruption scope.')
                     ->schema([
+                        Select::make('autofill_schedule_id')
+                            ->label('Quick Fill from Schedule (Optional)')
+                            ->placeholder('Select a schedule to auto-fill the fields below')
+                            ->options(function () {
+                                return Schedule::query()
+                                    ->active()
+                                    ->with('ferryRoute')
+                                    ->get()
+                                    ->mapWithKeys(fn (Schedule $s) => [
+                                        $s->id => "{$s->ferryRoute?->origin} → {$s->ferryRoute?->destination} | {$s->service_name} ({$s->departure_time->format('M d, Y H:i')})",
+                                    ]);
+                            })
+                            ->searchable()
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, Get $get) {
+                                if ($state) {
+                                    $schedule = Schedule::with('ferryRoute')->find($state);
+                                    if ($schedule && $schedule->ferryRoute) {
+                                        $set('service_type', $schedule->ferryRoute->mode);
+                                        $set('carrier', $schedule->ferryRoute->operator);
+                                        $set('ferry_route_id', $schedule->ferryRoute->id);
+                                        $set('vehicle_id', $schedule->ferryRoute->vehicle_id);
+                                        if ($get('scope') === 'specific_schedule') {
+                                            $set('schedule_id', $schedule->id);
+                                            $set('affected_date', $schedule->departure_time->format('Y-m-d'));
+                                        }
+                                    }
+                                }
+                            })
+                            ->columnSpanFull(),
+
                         Grid::make(3)->schema([
                             Select::make('service_type')
                                 ->label('Service Type')
@@ -82,7 +114,7 @@ class ServiceCancellationResource extends Resource
                                     return array_combine($operators, $operators);
                                 })
                                 ->searchable()
-                                ->required()
+                                ->required(fn (Get $get) => empty($get('ferry_route_id')) && empty($get('vehicle_id')))
                                 ->live(),
 
                             Select::make('scope')
@@ -94,6 +126,38 @@ class ServiceCancellationResource extends Resource
                                 ])
                                 ->required()
                                 ->default('specific_schedule')
+                                ->live(),
+                        ]),
+
+                        Grid::make(2)->schema([
+                            Select::make('ferry_route_id')
+                                ->label('Specific Route (Optional)')
+                                ->options(function (Get $get) {
+                                    $mode = $get('service_type');
+                                    $carrier = $get('carrier');
+                                    return FerryRoute::query()
+                                        ->active()
+                                        ->when($mode, fn($q) => $q->where('mode', $mode))
+                                        ->when($carrier, fn($q) => $q->where('operator', $carrier))
+                                        ->get()
+                                        ->mapWithKeys(fn (FerryRoute $r) => [$r->id => $r->label]);
+                                })
+                                ->searchable()
+                                ->live(),
+
+                            Select::make('vehicle_id')
+                                ->label('Specific Vehicle (Optional)')
+                                ->options(function (Get $get) {
+                                    $mode = $get('service_type');
+                                    $carrier = $get('carrier');
+                                    return \App\Models\Vehicle::query()
+                                        ->active()
+                                        ->when($mode, fn($q) => $q->where('type', $mode))
+                                        ->when($carrier, fn($q) => $q->where('operator', $carrier))
+                                        ->get()
+                                        ->mapWithKeys(fn (\App\Models\Vehicle $v) => [$v->id => $v->full_name]);
+                                })
+                                ->searchable()
                                 ->live(),
                         ]),
 

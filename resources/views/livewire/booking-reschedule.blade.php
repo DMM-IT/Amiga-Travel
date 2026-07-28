@@ -170,10 +170,21 @@
                 </div>
 
                 <div class="flex items-center gap-3">
+                    @if($status !== 'refund_requested' && $status !== 'cancelled')
+                        <button
+                            type="button"
+                            wire:click="cancelBookingAndRefund"
+                            wire:confirm="Are you sure you want to cancel your booking? A full refund will be processed back to your original payment method."
+                            class="rounded-xl border-2 border-rose-600 bg-transparent px-6 py-2.5 text-sm font-extrabold text-rose-600 hover:bg-rose-50 transition"
+                        >
+                            Cancel & Refund
+                        </button>
+                    @endif
+
                     <button
                         type="button"
                         wire:click="submitReschedule"
-                        @disabled(!$selected_schedule_id || !$selected_date || $status === 'rescheduled_approved')
+                        @disabled(!$selected_schedule_id || !$selected_date || $status === 'rescheduled_approved' || $status === 'refund_requested')
                         class="rounded-xl bg-[#216417] px-6 py-3 text-sm font-extrabold text-white shadow-sm hover:bg-[#1a5012] disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
                         Submit Preferred Replacement Date
