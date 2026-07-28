@@ -529,7 +529,7 @@
                             @endif
 
                             @if ($showPassengerInfoModal)
-                                <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24 backdrop-blur-sm">
+                                <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                                     <div class="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
                                         <button type="button" wire:click.prevent="togglePassengerInfoModal" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
                                             <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -557,14 +557,14 @@
                             @endif
 
                             @if ($showMinorAgeWarning)
-                                <div class="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 pt-24 backdrop-blur-sm">
+                                <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                                     <div class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
                                         <button type="button" wire:click.prevent="closeMinorAgeWarning" class="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100">
                                             <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                                             <span class="sr-only">Close</span>
                                         </button>
 
-                                        <h2 class="text-xl font-bold text-slate-900">Minor age warning</h2>
+                                        <h2 class="text-xl font-bold text-slate-900">Minor age reminder</h2>
                                         <p class="mt-3 text-slate-600">23 months and under will be issued upon arrival at the port.</p>
                                         <div class="mt-6 flex justify-end">
                                             <button type="button" wire:click.prevent="closeMinorAgeWarning" class="inline-flex rounded-full bg-[#db2777] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#be185d]">Close</button>
@@ -1541,7 +1541,7 @@
                         </div>
 
                         @if ($showPresentIdWarning)
-                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6">
+                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                                 <div class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-200">
                                     <div class="flex items-start justify-between gap-4">
                                         <div>

@@ -28,7 +28,10 @@
                     </span>
                 </div>
 
-                {{ $this->deleteSelectedAction }}
+                <div class="flex items-center gap-2">
+                    {{ $this->downloadZipAction }}
+                    {{ $this->deleteSelectedAction }}
+                </div>
             </div>
         </div>
 
@@ -69,7 +72,11 @@
                             <img
                                 src="{{ $proof->proof_url }}"
                                 alt="Proof for {{ $proof->booking?->transaction_number ?? 'transaction' }}"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                             />
+                            <div class="hidden h-48 w-full items-center justify-center bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-400">
+                                Proof image unavailable
+                            </div>
                         </div>
 
                         <div class="flex flex-1 flex-col gap-1 p-3 text-xs">
@@ -99,7 +106,7 @@
                             </p>
                         </div>
 
-                        <div class="mt-auto flex gap-2 border-t border-gray-200 p-2 dark:border-gray-700">
+                        <div class="mt-auto flex gap-1.5 border-t border-gray-200 p-2 dark:border-gray-700">
                             <x-filament::button
                                 tag="a"
                                 href="{{ $this->viewTransactionUrl($proof) }}"
@@ -108,6 +115,18 @@
                                 class="flex-1"
                             >
                                 View
+                            </x-filament::button>
+
+                            <x-filament::button
+                                tag="a"
+                                href="{{ $proof->proof_url }}"
+                                download
+                                target="_blank"
+                                color="amber"
+                                size="sm"
+                                class="flex-1"
+                            >
+                                Download
                             </x-filament::button>
 
                             <div class="flex flex-1">

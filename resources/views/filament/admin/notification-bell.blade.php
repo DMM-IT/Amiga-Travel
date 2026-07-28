@@ -146,7 +146,7 @@
                 </div>
 
                 {{-- Tab bar --}}
-                <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 -mx-6 px-6 pb-3 bg-white dark:bg-gray-900">
+                <div class="flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 -mx-5 px-5 pb-3 bg-white dark:bg-gray-900">
                     <button
                         type="button"
                         @click="activeTab = 'all'"
@@ -174,7 +174,7 @@
                 </div>
 
                 {{-- Bulk selection bar --}}
-                <div x-show="bulkMode" x-cloak class="flex items-center justify-between py-3 text-sm border-b border-gray-100 dark:border-gray-800 -mx-6 px-6 bg-white dark:bg-gray-900">
+                <div x-show="bulkMode" x-cloak class="flex items-center justify-between py-3 text-sm border-b border-gray-100 dark:border-gray-800 -mx-5 px-5 bg-white dark:bg-gray-900">
                     <label class="inline-flex items-center gap-2.5 cursor-pointer select-none text-gray-700 dark:text-gray-300">
                         <input
                             type="checkbox"

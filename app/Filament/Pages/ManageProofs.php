@@ -173,6 +173,99 @@ class ManageProofs extends Page implements HasActions, HasForms
         return TransactionResource::getUrl('view', ['record' => $transaction]);
     }
 
+    public function downloadZip(): ?\Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $query = Transaction::query()->whereNotNull('proof_of_payment');
+
+        if (! empty($this->selectedTransactions)) {
+            $query->whereKey($this->selectedTransactions);
+        }
+
+        $transactions = $query->get();
+
+        if ($transactions->isEmpty()) {
+            Notification::make()
+                ->title('No proofs available to download')
+                ->warning()
+                ->send();
+
+            return null;
+        }
+
+        $zipFileName = 'payment-proofs-' . now()->format('Y-m-d-His') . '.zip';
+        $zipFilePath = storage_path('app/' . $zipFileName);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            Notification::make()
+                ->title('Failed to create ZIP archive')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+
+        $filesAdded = 0;
+        foreach ($transactions as $tx) {
+            $proofPath = $tx->proof_of_payment;
+            if (! $proofPath) {
+                continue;
+            }
+
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($proofPath);
+            if (! file_exists($fullPath)) {
+                $fullPath = storage_path('app/public/' . $proofPath);
+            }
+
+            if (file_exists($fullPath)) {
+                $extension = pathinfo($fullPath, PATHINFO_EXTENSION) ?: 'jpg';
+                $ref = $tx->booking?->transaction_number ?? ('TX-' . $tx->id);
+                $zipEntryName = "{$ref}_proof.{$extension}";
+
+                // Handle duplicates inside ZIP
+                $counter = 1;
+                $originalName = $zipEntryName;
+                while ($zip->statName($zipEntryName) !== false) {
+                    $zipEntryName = "{$ref}_proof_{$counter}.{$extension}";
+                    $counter++;
+                }
+
+                $zip->addFile($fullPath, $zipEntryName);
+                $filesAdded++;
+            }
+        }
+
+        $zip->close();
+
+        if ($filesAdded === 0 || ! file_exists($zipFilePath)) {
+            if (file_exists($zipFilePath)) {
+                @unlink($zipFilePath);
+            }
+
+            Notification::make()
+                ->title('No proof files found on disk')
+                ->warning()
+                ->send();
+
+            return null;
+        }
+
+        return response()->download($zipFilePath, $zipFileName)->deleteFileAfterSend(true);
+    }
+
+    public function downloadZipAction(): Action
+    {
+        return Action::make('downloadZip')
+            ->label(fn (): string => ! empty($this->selectedTransactions)
+                ? 'Download ZIP (' . count($this->selectedTransactions) . ')'
+                : 'Download all ZIP'
+            )
+            ->icon('heroicon-o-arrow-down-tray')
+            ->color('warning')
+            ->action(fn () => $this->downloadZip())
+            ->disabled(fn (): bool => $this->proofs->isEmpty());
+    }
+
     public function deleteSelectedAction(): Action
     {
         return Action::make('deleteSelected')

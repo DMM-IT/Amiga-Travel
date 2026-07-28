@@ -42,7 +42,7 @@
                         @endif
 
                         @if($showCancellationWarning || $showRebookingWarning)
-                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                                 <div class="w-full max-w-xl rounded-[2rem] bg-white p-6 shadow-2xl ring-1 ring-slate-200">
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
