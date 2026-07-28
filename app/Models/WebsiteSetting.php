@@ -46,6 +46,8 @@ class WebsiteSetting extends Model
             \Illuminate\Support\Facades\Cache::forget('website_settings:page:' . $setting->page);
             \Illuminate\Support\Facades\Cache::forget('website_settings:header');
             \Illuminate\Support\Facades\Cache::forget('website_settings:footer');
+            \Illuminate\Support\Facades\Cache::forget('website_settings:header_data');
+            \Illuminate\Support\Facades\Cache::forget('website_settings:footer_data');
             if ($setting->page === 'services') {
                 \Illuminate\Support\Facades\Cache::forget('api:services');
             }
