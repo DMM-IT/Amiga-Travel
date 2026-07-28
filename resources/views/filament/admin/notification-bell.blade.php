@@ -39,13 +39,13 @@
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-1 scale-[0.98]"
             x-bind:style="dropdownStyles"
-            class="rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[11000] flex flex-col overflow-hidden"
+            class="rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 z-[11000] flex flex-col relative"
         >
 
             {{-- ── Panel Header ── --}}
-            <div class="shrink-0 px-6 pt-6 pb-0 bg-white dark:bg-gray-900">
+            <div class="shrink-0 px-5 pt-5 pb-0 bg-white dark:bg-gray-900 rounded-t-2xl">
                 {{-- Title row --}}
-                <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center justify-between mb-4">
                     <h2 class="text-[17px] font-bold tracking-tight text-gray-900 dark:text-white pl-1">Notifications</h2>
 
                     {{-- Three-dot global actions --}}
@@ -77,7 +77,8 @@
                             x-transition:leave="transition ease-in duration-75"
                             x-transition:leave-start="opacity-100 scale-100"
                             x-transition:leave-end="opacity-0 scale-95"
-                            class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl py-1 overflow-hidden z-[11001]"
+                            style="position: absolute; right: 0; left: auto; top: 100%; margin-top: 6px; width: 210px; z-index: 99999;"
+                            class="origin-top-right rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl py-1 overflow-hidden"
                         >
                             {{-- Enable / Disable selection --}}
                             <button type="button"
@@ -279,7 +280,7 @@
             </div>
 
             {{-- ── Footer ── --}}
-            <div class="shrink-0 border-t border-gray-100 dark:border-gray-800 px-2 py-2 bg-white dark:bg-gray-900">
+            <div class="shrink-0 border-t border-gray-100 dark:border-gray-800 px-2 py-2 bg-white dark:bg-gray-900 rounded-b-2xl">
                 <a
                     href="{{ \App\Filament\Pages\AdminNotifications::getUrl() }}"
                     @click="dropdownOpen = false"

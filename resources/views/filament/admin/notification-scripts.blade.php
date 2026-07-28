@@ -169,7 +169,7 @@ window.adminNotificationBell = function (config) {
             if (!trigger || !panel) return;
 
             const triggerRect = trigger.getBoundingClientRect();
-            const panelWidth = Math.min(340, window.innerWidth - 32);
+            const panelWidth = Math.min(360, window.innerWidth - 32);
             const idealLeft = triggerRect.right - panelWidth;
             const left = Math.max(16, Math.min(idealLeft, window.innerWidth - panelWidth - 16));
             const rawTop = triggerRect.bottom + 8;

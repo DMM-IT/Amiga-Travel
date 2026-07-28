@@ -11,13 +11,13 @@ export SESSION_DRIVER="${SESSION_DRIVER:-database}"
 export CACHE_STORE="${CACHE_STORE:-database}"
 export QUEUE_CONNECTION="${QUEUE_CONNECTION:-database}"
 
-# Database - these MUST be set in Railway Variables
+# Database - fallback to Railway MYSQL env vars if DB_* not set explicitly
 export DB_CONNECTION="${DB_CONNECTION:-mysql}"
-export DB_HOST="${DB_HOST}"
-export DB_PORT="${DB_PORT:-3306}"
-export DB_DATABASE="${DB_DATABASE:-railway}"
-export DB_USERNAME="${DB_USERNAME:-root}"
-export DB_PASSWORD="${DB_PASSWORD}"
+export DB_HOST="${DB_HOST:-${MYSQLHOST:-${MYSQL_HOST:-sakura.proxy.rlwy.net}}}"
+export DB_PORT="${DB_PORT:-${MYSQLPORT:-${MYSQL_PORT:-43993}}}"
+export DB_DATABASE="${DB_DATABASE:-${MYSQLDATABASE:-${MYSQL_DATABASE:-railway}}}"
+export DB_USERNAME="${DB_USERNAME:-${MYSQLUSER:-${MYSQL_USER:-root}}}"
+export DB_PASSWORD="${DB_PASSWORD:-${MYSQLPASSWORD:-${MYSQL_ROOT_PASSWORD:-BIMPMSZRxyaizrljoaKdBoAixcTWShuP}}}"
 
 # Mail settings
 export MAIL_MAILER="${MAIL_MAILER:-smtp}"
@@ -85,15 +85,20 @@ FILESYSTEM_DISK="local"
 BROADCAST_CONNECTION="log"
 EOF
 
+# Dynamically configure Nginx to listen on Railway's assigned $PORT
+PORT="${PORT:-10000}"
+echo "=== Configuring Nginx port to $PORT ==="
+sed -i "s/listen [0-9]*;/listen ${PORT};/g" /etc/nginx/http.d/default.conf 2>/dev/null || true
+
 # Run migrations and setup
 timeout 60 php artisan migrate --force --no-interaction || echo "Migrations skipped or timed out"
 php artisan storage:link || true
 
 echo "=== Reached config cache step ==="
-php artisan config:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:clear || true
+php artisan config:cache || true
+php artisan route:clear || true
+php artisan view:cache || true
 
 echo "=== Starting Supervisor (Nginx + PHP-FPM + Queue Worker) ==="
 exec supervisord -c /var/www/html/supervisord.conf
