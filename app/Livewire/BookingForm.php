@@ -1711,56 +1711,70 @@ public function selectedSchedule(): ?array
     #[Computed]
     public function discounts()
     {
-        return \Illuminate\Support\Facades\Cache::remember('catalog:discounts', now()->addHours(6), function () {
-            return Discount::all()->sortBy('name')->values();
+        $items = \Illuminate\Support\Facades\Cache::remember('catalog:discounts_v3', now()->addHours(6), function () {
+            return Discount::all()->sortBy('name')->values()->toArray();
         });
+
+        return Discount::hydrate($items);
     }
 
     #[Computed]
     public function transportClassCatalog()
     {
-        return \Illuminate\Support\Facades\Cache::remember('catalog:transport_classes', now()->addHours(6), function () {
-            return TransportClass::query()->where('is_active', true)->orderBy('name')->get();
+        $items = \Illuminate\Support\Facades\Cache::remember('catalog:transport_classes_v3', now()->addHours(6), function () {
+            return TransportClass::query()->where('is_active', true)->orderBy('name')->get()->toArray();
         });
+
+        return TransportClass::hydrate($items);
     }
 
     #[Computed]
     public function vehicleRateCatalog()
     {
-        return \Illuminate\Support\Facades\Cache::remember('api:vehicle_rates', now()->addHours(6), function () {
-            return VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $items = \Illuminate\Support\Facades\Cache::remember('api:vehicle_rates_v3', now()->addHours(6), function () {
+            return VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get()->toArray();
         });
+
+        return VehicleRate::hydrate($items);
     }
 
     #[Computed]
     public function vehicleBrandCatalog()
     {
-        return \Illuminate\Support\Facades\Cache::remember('catalog:vehicle_brands', now()->addHours(6), function () {
-            return VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $items = \Illuminate\Support\Facades\Cache::remember('catalog:vehicle_brands_v3', now()->addHours(6), function () {
+            return VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->get()->toArray();
         });
+
+        return VehicleBrand::hydrate($items);
     }
 
     #[Computed]
     public function vehicleModelCatalog()
     {
         if ($this->selected_brand_id) {
-            return \Illuminate\Support\Facades\Cache::remember('catalog:vehicle_models:' . (int) $this->selected_brand_id, now()->addHours(6), function () {
+            $items = \Illuminate\Support\Facades\Cache::remember('catalog:vehicle_models_v3:' . (int) $this->selected_brand_id, now()->addHours(6), function () {
                 return VehicleModel::query()
                     ->where('vehicle_brand_id', (int) $this->selected_brand_id)
                     ->where('is_active', true)
                     ->orderBy('sort_order')
-                    ->get();
+                    ->get()
+                    ->toArray();
             });
+
+            return VehicleModel::hydrate($items);
         }
+
         return collect();
     }
 
     #[Computed]
     public function accommodationCatalog()
     {
-        return \Illuminate\Support\Facades\Cache::remember('api:accommodations', now()->addHours(6), function () {
-            return Accommodation::query()->where('is_active', true)->orderBy('name')->get();
+        $items = \Illuminate\Support\Facades\Cache::remember('api:accommodations_v3', now()->addHours(6), function () {
+            return Accommodation::query()->where('is_active', true)->orderBy('name')->get()->toArray();
         });
+
+        return Accommodation::hydrate($items);
     }
 
     public function render()

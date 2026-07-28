@@ -88,7 +88,7 @@ class FerryRouteResource extends Resource
                     ->default('ferry')
                     ->reactive()
                     ->required()
-                    ->afterStateUpdated(function (string $state, callable $set) {
+                    ->afterStateUpdated(function (?string $state, callable $set) {
                         $set('vehicle_id', null);
                         $set('operator', null);
                     }),
