@@ -1710,8 +1710,8 @@
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1785239276.0847363,
-    "ast_hash": "db5ba6f3ce9d7526993e72a3af9605be",
+    "mtime": 1785239529.0961561,
+    "ast_hash": "8779dcbe400d07884b1b9032d93060fc",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
