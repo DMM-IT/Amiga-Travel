@@ -11,6 +11,7 @@ class DatePicker extends Component
     #[Modelable]
     public ?string $value = null;
     public string $label = 'Date';
+    public string $placeholder = 'Select date';
     public ?string $min = null;
     public bool $isOpen = false;
     public bool $disabled = false;
@@ -23,11 +24,12 @@ class DatePicker extends Component
     // project's Livewire version (emit/dispatchBrowserEvent). This component
     // relies on `wire:model` binding to update parent properties.
 
-    public function mount(string $field, ?string $value = null, string $label = 'Date', ?string $min = null, $disabled = false, $enabledDates = null): void
+    public function mount(string $field, ?string $value = null, string $label = 'Date', ?string $min = null, $disabled = false, $enabledDates = null, string $placeholder = 'Select date'): void
     {
         $this->field = $field;
         $this->value = $value;
         $this->label = $label;
+        $this->placeholder = $placeholder;
         $this->min = $min;
         $this->disabled = filter_var($disabled, FILTER_VALIDATE_BOOLEAN);
 
