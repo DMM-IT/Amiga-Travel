@@ -336,23 +336,22 @@
                                         <div class="mt-2">
                                             @php
                                                 $isPackage = $prefilled_from_package || $tour_id;
-                                                $restrictDepartureDates = false;
+                                                $hasRouteSelected = $isPackage || (!empty($origin) && !empty($destination));
                                                 $enabledDepartureDates = [];
-                                                if ($isPackage && !empty($available_package_dates)) {
-                                                    $restrictDepartureDates = true;
-                                                    $enabledDepartureDates = $available_package_dates;
-                                                } elseif (!$isPackage && !empty($available_schedule_dates)) {
-                                                    $restrictDepartureDates = true;
-                                                    $enabledDepartureDates = $available_schedule_dates;
-                                                } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
-                                                    $restrictDepartureDates = true;
-                                                    $enabledDepartureDates = [];
+
+                                                if ($isPackage) {
+                                                    $enabledDepartureDates = $available_package_dates ?? [];
+                                                } elseif ($hasRouteSelected) {
+                                                    $enabledDepartureDates = $available_schedule_dates ?? [];
                                                 }
                                             @endphp
-                                            @if($restrictDepartureDates)
-                                                <livewire:date-picker wire:key="departure-restricted-{{ md5(json_encode($enabledDepartureDates)) }}" wire:model="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
+
+                                            @if(!$hasRouteSelected)
+                                                <livewire:date-picker wire:key="departure-no-route" wire:model="departure_date" field="departure_date" label="" :disabled="true" placeholder="Select origin & destination first" />
+                                            @elseif(empty($enabledDepartureDates))
+                                                <livewire:date-picker wire:key="departure-no-schedules" wire:model="departure_date" field="departure_date" label="" :disabled="true" placeholder="No schedules available" />
                                             @else
-                                                <livewire:date-picker wire:key="departure-unrestricted" wire:model="departure_date" field="departure_date" label="" min="{{ date('Y-m-d') }}" />
+                                                <livewire:date-picker wire:key="departure-restricted-{{ md5(json_encode($enabledDepartureDates)) }}" wire:model="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
                                             @endif
                                         </div>
                                     @error('departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -363,20 +362,18 @@
                                         <label class="block text-black font-extrabold text-sm">Return Date</label>
                                         <div class="mt-2">
                                             @php
-                                                $restrictReturnDates = false;
                                                 $enabledReturnDates = [];
-                                                if (!empty($available_return_schedule_dates)) {
-                                                    $restrictReturnDates = true;
-                                                    $enabledReturnDates = $available_return_schedule_dates;
-                                                } elseif ($mode === 'ferry' && !empty($origin) && !empty($destination)) {
-                                                    $restrictReturnDates = true;
-                                                    $enabledReturnDates = [];
+                                                if ($hasRouteSelected) {
+                                                    $enabledReturnDates = $available_return_schedule_dates ?? [];
                                                 }
                                             @endphp
-                                            @if($restrictReturnDates)
-                                                <livewire:date-picker wire:key="return-restricted-{{ md5(json_encode($enabledReturnDates)) }}" wire:model="return_date" field="return_date" :enabled-dates="$enabledReturnDates" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
+
+                                            @if(!$hasRouteSelected)
+                                                <livewire:date-picker wire:key="return-no-route" wire:model="return_date" field="return_date" label="" :disabled="true" placeholder="Select origin & destination first" />
+                                            @elseif(empty($enabledReturnDates))
+                                                <livewire:date-picker wire:key="return-no-schedules" wire:model="return_date" field="return_date" label="" :disabled="true" placeholder="No return schedules available" />
                                             @else
-                                                <livewire:date-picker wire:key="return-unrestricted" wire:model="return_date" field="return_date" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
+                                                <livewire:date-picker wire:key="return-restricted-{{ md5(json_encode($enabledReturnDates)) }}" wire:model="return_date" field="return_date" :enabled-dates="$enabledReturnDates" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
                                             @endif
                                         </div>
                                         @error('return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror

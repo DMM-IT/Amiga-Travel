@@ -4,16 +4,16 @@
     @endif
     <div class="mt-2 relative">
         @if($disabled)
-            <button type="button" disabled class="flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-left shadow-sm text-slate-500 transition cursor-not-allowed">
-                <span>{{ $value ? date('M d, Y', strtotime($value)) : 'Select date' }}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+            <button type="button" disabled class="flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-left shadow-sm text-slate-400 transition cursor-not-allowed select-none">
+                <span class="truncate">{{ $value ? date('M d, Y', strtotime($value)) : $placeholder }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                 </svg>
             </button>
         @else
             <button type="button" wire:click="toggleCalendar" class="flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20">
-                <span>{{ $value ? date('M d, Y', strtotime($value)) : 'Select date' }}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                <span class="truncate">{{ $value ? date('M d, Y', strtotime($value)) : $placeholder }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                 </svg>
             </button>
