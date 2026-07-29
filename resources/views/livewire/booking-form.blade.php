@@ -709,65 +709,99 @@
                                         />
                                     @endif
 
-                                        {{-- Baggage toggle --}}
-                                        @if($this->baggageRules)
-                                            @php
-                                                $freeAllowance = \Illuminate\Support\Arr::get($this->baggageRules, 'checked_baggage.free_allowance_kg');
-                                            @endphp
-                                            @if($freeAllowance)
-                                                <div class="mt-6 border-t border-slate-200 pt-6">
-                                                    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                                                        <div class="flex flex-wrap items-center justify-between gap-4">
+                                        {{-- Extra Baggage section (bottom of schedule phase) --}}
+                                        <div class="mt-8 border-t border-slate-200 pt-6">
+                                            <div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+                                                <div class="flex flex-wrap items-center justify-between gap-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#216417]">
+                                                            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <p class="text-slate-900 font-bold text-lg">Prepaid Extra Baggage</p>
+                                                            <p class="text-xs text-slate-500">Add prepaid check-in baggage per passenger for your flight</p>
+                                                        </div>
+                                                    </div>
+                                                    <label class="relative inline-flex cursor-pointer items-center gap-3">
+                                                        <input type="checkbox" wire:model.live="hasExtraBaggage" class="peer sr-only">
+                                                        <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#216417] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#216417]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+                                                        <span class="text-sm font-bold text-slate-900">{{ $hasExtraBaggage ? 'Extra Baggage Added' : 'No Extra Baggage' }}</span>
+                                                    </label>
+                                                </div>
+
+                                                @if($hasExtraBaggage)
+                                                    @php
+                                                        $baggageRates = $this->getAirlineExtraBaggageRates();
+                                                        $currentAirlineKey = $selected_baggage_airline ?: $this->autoDetectBaggageAirline();
+                                                        $selectedAirlineData = $baggageRates[$currentAirlineKey] ?? reset($baggageRates);
+                                                        $passengersCount = max(1, count($passengers));
+                                                    @endphp
+
+                                                    <div class="mt-6 border-t border-slate-100 pt-5 space-y-5">
+                                                        <div class="grid gap-4 sm:grid-cols-2">
+                                                            {{-- Airline Rate Table Selector --}}
                                                             <div>
-                                                                <p class="text-slate-900 font-bold text-lg">Baggage Reminders</p>
-                                                                <p class="mt-1 text-sm text-slate-600">Free Personal Allowance: {{ $freeAllowance }}kg</p>
+                                                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Airline Rate Table</label>
+                                                                <select wire:model.live="selected_baggage_airline" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20">
+                                                                    @foreach($baggageRates as $key => $airline)
+                                                                        <option value="{{ $key }}">{{ $airline['name'] }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
-                                                            <label class="relative inline-flex cursor-pointer items-center gap-3">
-                                                                <input type="checkbox" wire:model.live="hasExtraBaggage" class="peer sr-only">
-                                                                <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#db2777] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#db2777]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
-                                                                <span class="text-sm font-semibold text-slate-700">{{ $hasExtraBaggage ? 'Add Extra Baggage' : 'No Extra Baggage' }}</span>
-                                                            </label>
+
+                                                            {{-- Baggage Weight & Price Dropdown --}}
+                                                            <div>
+                                                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Select Extra Baggage (kg)</label>
+                                                                <select 
+                                                                    wire:change="selectBaggageOption($event.target.options[$event.target.selectedIndex].dataset.weight, $event.target.value)"
+                                                                    class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 shadow-sm focus:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20"
+                                                                >
+                                                                    @foreach($selectedAirlineData['options'] as $opt)
+                                                                        @php
+                                                                            $isSelected = ($extra_baggage_weight === $opt['weight']);
+                                                                        @endphp
+                                                                        <option value="{{ $opt['price'] }}" data-weight="{{ $opt['weight'] }}" {{ $isSelected ? 'selected' : '' }}>
+                                                                            {{ $opt['weight'] }} — &#8369;{{ number_format($opt['price']) }} / pax
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
                                                         </div>
 
-                                                        @if($hasExtraBaggage)
-                                                            <div class="mt-5 w-full space-y-4 border-t border-slate-100 pt-4">
-                                                                <p class="text-xs text-slate-500">
-                                                                    Please declare items that exceed or are not part of standard personal allowance (e.g., large boxes, instruments, sports equipment, commercial goods).
-                                                                </p>
-                                                                <div>
-                                                                    <label class="text-sm font-semibold text-slate-700">Select Item Category / Example</label>
-                                                                    <select wire:model.live="extra_baggage_type"
-                                                                            class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20">
-                                                                        <option value="">-- Select an example category --</option>
-                                                                        <option value="Large Suitcase / Oversized Luggage">Large Suitcase / Oversized Luggage</option>
-                                                                        <option value="Balikbayan Box / Packed Carton">Balikbayan Box / Packed Carton</option>
-                                                                        <option value="Musical Instrument (Guitar, Keyboard, etc.)">Musical Instrument (Guitar, Keyboard, etc.)</option>
-                                                                        <option value="Sports Equipment (Surfboard, Bicycle, Golf Bag)">Sports Equipment (Surfboard, Bicycle, Golf Bag)</option>
-                                                                        <option value="Electronic Appliance / Boxed Equipment">Electronic Appliance / Boxed Equipment</option>
-                                                                        <option value="Commercial Goods / Merchandise">Commercial Goods / Merchandise</option>
-                                                                        <option value="Other Non-Personal Item">Other Non-Personal Item</option>
-                                                                    </select>
-                                                                    @error('extra_baggage_type')
-                                                                        <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                                                                    @enderror
+                                                        {{-- Visual Image Details & Price Computation Card --}}
+                                                        <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 sm:p-5">
+                                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                                                <div class="flex items-center gap-3">
+                                                                    @if(!empty($selectedAirlineData['logo']))
+                                                                        <div class="w-12 h-12 rounded-xl bg-white p-1 shadow-sm border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+                                                                            <img src="{{ asset('images/' . $selectedAirlineData['logo']) }}" alt="{{ $selectedAirlineData['name'] }}" class="w-full h-full object-contain">
+                                                                        </div>
+                                                                    @endif
+                                                                    <div>
+                                                                        <div class="flex items-center gap-2">
+                                                                            <span class="font-bold text-slate-900 text-base">{{ $selectedAirlineData['name'] }}</span>
+                                                                            <span class="rounded-full bg-[#216417] px-2.5 py-0.5 text-xs font-extrabold text-white">{{ $extra_baggage_weight ?: '20 kg' }}</span>
+                                                                        </div>
+                                                                        <p class="text-xs text-slate-600 mt-0.5">
+                                                                            Rate: &#8369;{{ number_format($extra_baggage_price ?? 0) }} per passenger &times; {{ $passengersCount }} traveler{{ $passengersCount > 1 ? 's' : '' }}
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
 
-                                                                <div>
-                                                                    <label class="text-sm font-semibold text-slate-700">Specify Item Details & Quantity</label>
-                                                                    <input type="text"
-                                                                           wire:model.live="extra_baggage_specify"
-                                                                           class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20"
-                                                                           placeholder="e.g. 2 Balikbayan boxes, 1 Surfboard bag (dimensions/description)">
-                                                                    @error('extra_baggage_specify')
-                                                                        <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                                                                    @enderror
+                                                                <div class="text-left sm:text-right border-t sm:border-t-0 border-emerald-200/60 pt-3 sm:pt-0">
+                                                                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Added Baggage Fee</div>
+                                                                    <div class="text-xl font-extrabold text-[#216417] mt-0.5">
+                                                                        +&#8369;{{ number_format($this->getExtraBaggageTotalPrice(), 2) }}
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        @endif
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            @endif
-                                        @endif
+                                                @endif
+                                            </div>
+                                        </div>
 
                                         {{-- Promo Ticket section --}}
                                         @php
@@ -1498,6 +1532,14 @@
                                     </div>
                                 @endif
 
+                                {{-- Extra Baggage --}}
+                                @if (isset($breakdown['extra_baggage']) && $breakdown['extra_baggage'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Prepaid Extra Baggage ({{ $extra_baggage_weight }} &times; {{ $adults + $children }} pax)</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['extra_baggage'], 2) }}</span>
+                                    </div>
+                                @endif
+
                                 {{-- Fees --}}
                                 @if ($breakdown['fee_per_traveler'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
@@ -1862,7 +1904,56 @@
             </div>
         </div>
     @endif
-    
+
+    @if ($showDataPrivacyWarning)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+            <div class="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-slate-200 text-left">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Data privacy reminder</h2>
+                        <p class="text-xs font-semibold text-slate-500">Please review before proceeding to the booking form</p>
+                    </div>
+                </div>
+
+                <div class="mt-5 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 max-h-60 overflow-y-auto">
+                    <p class="font-semibold text-slate-900">Notice on Data Collection & Privacy Rights</p>
+                    <p>
+                        In compliance with the <strong>Data Privacy Act of 2012 (R.A. 10173)</strong>, Amiga Gracia Travel Service is committed to protecting your personal information.
+                    </p>
+                    <p>
+                        By proceeding, you consent to the collection, processing, and storage of your personal details (including full names, contact info, birthdates, and identification documents) strictly for ticket reservations, passenger manifest compliance, customer verification, and transport partner requirements.
+                    </p>
+                    <p class="text-xs text-slate-600 italic">
+                        Clicking <strong>Continue</strong> allows you to proceed to the booking form. If you choose <strong>Cancel / Disagree</strong>, you will be redirected to the home page.
+                    </p>
+                </div>
+
+                <div class="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                    <button 
+                        type="button" 
+                        wire:click.prevent="declineDataPrivacyWarning"
+                        onclick="window.location.href='/'"
+                        class="w-full sm:w-auto rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 focus:outline-none"
+                    >
+                        Cancel / Disagree
+                    </button>
+                    <button 
+                        type="button" 
+                        wire:click.prevent="acceptDataPrivacyWarning"
+                        class="w-full sm:w-auto rounded-xl bg-[#216417] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#194d12] focus:outline-none"
+                    >
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <script>
         function initBookingModal(modal) {
             const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');

@@ -14,7 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
-        $middleware->trustHosts(at: ['amiga-travel.up.railway.app', 'localhost']);
+        $middleware->trustHosts(at: [
+            'amiga-travel.up.railway.app',
+            '*.railway.app',
+            'amigagracia.com',
+            '*.amigagracia.com',
+            'localhost',
+            '127.0.0.1',
+        ]);
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'staff.permission' => \App\Http\Middleware\EnsureStaffPermission::class,

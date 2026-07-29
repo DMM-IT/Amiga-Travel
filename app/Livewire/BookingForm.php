@@ -71,6 +71,7 @@ class BookingForm extends Component
     public ?string $operator = null;
     public bool $showPresentIdWarning = false;
     public bool $hasSeenPresentIdWarning = false;
+    public bool $showDataPrivacyWarning = true;
 
     // Each entry: ['type' => 'adult'|'child', 'name' => '', 'discount_id' => null]
     public array $passengers = [];
@@ -125,7 +126,9 @@ class BookingForm extends Component
     public ?string $driver_birthday = null;
     public bool $showBaggageRules = false;
     public bool $hasExtraBaggage = false;
-    public ?float $extra_baggage_weight = null;
+    public string $selected_baggage_airline = '';
+    public string $extra_baggage_weight = '';
+    public ?float $extra_baggage_price = null;
     public ?string $extra_baggage_type = '';
     public ?string $extra_baggage_specify = '';
     // NOTE: use_promo_ticket is kept for ferry bookings (backward compat).
@@ -671,6 +674,132 @@ public function selectedSchedule(): ?array
         }
     }
 
+    public function acceptDataPrivacyWarning(): void
+    {
+        $this->showDataPrivacyWarning = false;
+    }
+
+    public function declineDataPrivacyWarning()
+    {
+        return redirect()->to('/');
+    }
+
+    public function getAirlineExtraBaggageRates(): array
+    {
+        return [
+            'pal' => [
+                'name' => 'Philippine Airlines (PAL)',
+                'code' => 'PAL',
+                'logo' => 'Pal-Logo.jfif',
+                'options' => [
+                    ['weight' => '20 kg', 'price' => 3700],
+                    ['weight' => '25 kg', 'price' => 4625],
+                    ['weight' => '30 kg', 'price' => 5550],
+                    ['weight' => '40 kg', 'price' => 7400],
+                    ['weight' => '50 kg', 'price' => 9250],
+                ],
+            ],
+            'ceb_pac' => [
+                'name' => 'Cebu Pacific Air',
+                'code' => 'Cebu Pacific',
+                'logo' => 'CebuPecific-Logo.png',
+                'options' => [
+                    ['weight' => '20 kg', 'price' => 1505],
+                    ['weight' => '24 kg', 'price' => 2105],
+                    ['weight' => '28 kg', 'price' => 2705],
+                    ['weight' => '32 kg', 'price' => 3305],
+                ],
+            ],
+            'airasia' => [
+                'name' => 'AirAsia International',
+                'code' => 'AirAsia',
+                'logo' => 'AirAsia-Logo.png',
+                'options' => [
+                    ['weight' => '20 kg', 'price' => 1470],
+                    ['weight' => '25 kg', 'price' => 2220],
+                    ['weight' => '30 kg', 'price' => 2650],
+                    ['weight' => '40 kg', 'price' => 2930],
+                    ['weight' => '50 kg', 'price' => 3730],
+                    ['weight' => '60 kg', 'price' => 4400],
+                ],
+            ],
+        ];
+    }
+
+    public function autoDetectBaggageAirline(): string
+    {
+        $op = strtolower($this->operator ?: '');
+        if (! $op && $this->selected_schedule_id) {
+            $sched = Schedule::find($this->selected_schedule_id);
+            $op = strtolower($sched?->service_name ?: '');
+        }
+
+        if (stripos($op, 'pal') !== false || stripos($op, 'philippine') !== false) {
+            return 'pal';
+        }
+        if (stripos($op, 'airasia') !== false) {
+            return 'airasia';
+        }
+        if (stripos($op, 'cebu') !== false || stripos($op, 'ceb') !== false) {
+            return 'ceb_pac';
+        }
+
+        return 'ceb_pac';
+    }
+
+    public function selectBaggageOption(string $weight, float $price): void
+    {
+        $this->extra_baggage_weight = $weight;
+        $this->extra_baggage_price = floatval($price);
+        $this->extra_baggage_type = $weight . ' Extra Baggage';
+        $this->saveDraft();
+    }
+
+    public function updatedHasExtraBaggage($value): void
+    {
+        if ($value) {
+            if (! $this->selected_baggage_airline) {
+                $this->selected_baggage_airline = $this->autoDetectBaggageAirline();
+            }
+            $rates = $this->getAirlineExtraBaggageRates();
+            $key = $this->selected_baggage_airline;
+            if (isset($rates[$key]['options'][0])) {
+                $first = $rates[$key]['options'][0];
+                $this->extra_baggage_weight = $first['weight'];
+                $this->extra_baggage_price = floatval($first['price']);
+                $this->extra_baggage_type = $first['weight'] . ' Extra Baggage';
+            }
+        } else {
+            $this->extra_baggage_weight = '';
+            $this->extra_baggage_price = null;
+            $this->extra_baggage_type = '';
+            $this->extra_baggage_specify = '';
+        }
+        $this->saveDraft();
+    }
+
+    public function updatedSelectedBaggageAirline($value): void
+    {
+        $rates = $this->getAirlineExtraBaggageRates();
+        if (isset($rates[$value]['options'][0])) {
+            $first = $rates[$value]['options'][0];
+            $this->extra_baggage_weight = $first['weight'];
+            $this->extra_baggage_price = floatval($first['price']);
+            $this->extra_baggage_type = $first['weight'] . ' Extra Baggage';
+        }
+        $this->saveDraft();
+    }
+
+    public function getExtraBaggageTotalPrice(): float
+    {
+        if (! $this->hasExtraBaggage || ! $this->extra_baggage_price) {
+            return 0;
+        }
+
+        $passengersCount = max(1, count($this->passengers));
+        return floatval($this->extra_baggage_price) * $passengersCount;
+    }
+
     public function toggleOriginDropdown(): void
     {
         $this->showOriginDropdown = ! $this->showOriginDropdown;
@@ -1121,17 +1250,6 @@ public function selectedSchedule(): ?array
             $this->vehicle_type = '';
             $this->vehicle_plate_number = '';
             $this->vehicle_price = null;
-        }
-
-        $this->saveDraft();
-    }
-
-    public function updatedHasExtraBaggage(bool $value): void
-    {
-        if (! $value) {
-            $this->extra_baggage_weight = null;
-            $this->extra_baggage_type = '';
-            $this->extra_baggage_specify = '';
         }
 
         $this->saveDraft();
@@ -1620,7 +1738,7 @@ public function selectedSchedule(): ?array
             $pdfOptions = new Options();
             $pdfOptions->set('isRemoteEnabled', false);
             $pdfOptions->set('isHtml5ParserEnabled', true);
-            $pdfOptions->set('defaultFont', 'Arial');
+            $pdfOptions->set('defaultFont', 'DejaVu Sans');
             $dompdf = new Dompdf($pdfOptions);
             $dompdf->loadHtml(view('pdf.receipt', ['booking' => $booking])->render());
             $dompdf->setPaper('A4', 'portrait');
@@ -2122,7 +2240,7 @@ public function selectedSchedule(): ?array
         $totalAccommodationAmount = $scheduleAccommodationPrice + $returnScheduleAccommodationPrice + $hotelTotal;
         $accommodationFee = $totalAccommodationAmount > 0 ? floatval($settings->fee_per_accommodation) : 0;
 
-        return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee;
+        return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $this->getExtraBaggageTotalPrice();
     }
 
     /**
@@ -2137,6 +2255,7 @@ public function selectedSchedule(): ?array
             'transport_class' => 0,
             'vehicle' => 0,
             'hotel' => 0,
+            'extra_baggage' => 0,
             'fee_per_traveler' => 0,
             'fee_per_accommodation' => 0,
             'total' => 0,
@@ -2195,6 +2314,9 @@ public function selectedSchedule(): ?array
             ? floatval($this->accommodationCatalog->firstWhere('id', $this->selected_hotel_id)->price ?? 0)
             : 0;
 
+        // Extra Baggage (multiplied per passenger per explicit user selection)
+        $breakdown['extra_baggage'] = $this->getExtraBaggageTotalPrice();
+
         // Fees
         $breakdown['fee_per_traveler'] = $passengerCount * floatval($settings->fee_per_person);
         
@@ -2210,6 +2332,7 @@ public function selectedSchedule(): ?array
             $breakdown['transport_class'] +
             $breakdown['vehicle'] +
             $breakdown['hotel'] +
+            $breakdown['extra_baggage'] +
             $breakdown['fee_per_traveler'] +
             $breakdown['fee_per_accommodation'];
 

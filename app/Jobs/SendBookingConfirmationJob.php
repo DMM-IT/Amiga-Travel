@@ -63,6 +63,8 @@ class SendBookingConfirmationJob implements ShouldQueue
         }
 
         Pdf::driver('dompdf')
+            ->option('defaultFont', 'DejaVu Sans')
+            ->option('isHtml5ParserEnabled', true)
             ->view('pdf.receipt', ['booking' => $this->booking])
             ->save($receiptPath);
 

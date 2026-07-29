@@ -77,7 +77,7 @@ class BookingExportController extends Controller
 
         $options = new Options();
         $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'Arial');
+        $options->set('defaultFont', 'DejaVu Sans');
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
