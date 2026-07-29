@@ -58,7 +58,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.14+18';
+  static const String appVersion = '1.0.15+19';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -175,6 +175,10 @@ class BookingData {
   String? voucherCode;
   Map<String, dynamic>? voucherData; // {name, discount_type, discount_value, eligible_scope, discount_amount, final_total}
 
+  // Promotional ticket (promo price applied when schedule has an active promo)
+  int? promotionalTicketId;
+  bool usePromoTicket = true;
+
   // Pricing
   double totalPrice = 0;
   
@@ -212,6 +216,8 @@ class BookingData {
       'clientEmail': clientEmail,
       'voucherCode': voucherCode,
       'voucherData': voucherData,
+      'promotionalTicketId': promotionalTicketId,
+      'usePromoTicket': usePromoTicket,
       'totalPrice': totalPrice,
       'savedStep': savedStep,
     };
@@ -260,6 +266,8 @@ class BookingData {
     b.clientEmail = json['clientEmail'] ?? '';
     b.voucherCode = json['voucherCode'];
     b.voucherData = json['voucherData'] != null ? Map<String, dynamic>.from(json['voucherData']) : null;
+    b.promotionalTicketId = json['promotionalTicketId'];
+    b.usePromoTicket = json['usePromoTicket'] ?? true;
     b.totalPrice = (json['totalPrice'] ?? 0.0).toDouble();
     b.savedStep = json['savedStep'] ?? 0;
     
@@ -723,6 +731,10 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _handleLogout() async {
+    // Unsubscribe from user-specific FCM topic before clearing session
+    if (UserSession.isLoggedIn && UserSession.email.isNotEmpty) {
+      await NotificationService.unsubscribeFromUserTopic(UserSession.email);
+    }
     await UserSession.clear();
     setState(() {
       UserSession.isLoggedIn = false;
@@ -2921,6 +2933,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
           _pendingRegisterEmail = null;
         });
         await UserSession.save();
+        // Subscribe to user-specific FCM topic for targeted notifications (e.g. booking cancellation)
+        await NotificationService.subscribeToUserTopic(UserSession.email);
         widget.onLoginSuccess();
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2972,6 +2986,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
         });
         await UserSession.save();
+        // Subscribe to user-specific FCM topic for targeted notifications (e.g. booking cancellation)
+        await NotificationService.subscribeToUserTopic(UserSession.email);
         widget.onLoginSuccess();
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3496,7 +3512,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               final status = b['status']?.toString() ?? 'pending';
               Color statusColor = Colors.orange;
               if (status == 'confirmed' || status == 'paid') statusColor = kGreen;
-              if (status == 'cancelled') statusColor = Colors.red;
+              if (status == 'cancelled' || status == 'operator_cancelled') statusColor = Colors.red;
 
               return Card(
                 color: Colors.white,
@@ -3521,7 +3537,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              status.toUpperCase(),
+                              status == 'operator_cancelled' ? 'CANCELLED BY OPERATOR' : status.toUpperCase(),
                               style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -3863,6 +3879,40 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       appBar: AppBar(title: const Text('Booking details')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         _detailHeader(status),
+        if (status == 'operator_cancelled' || _booking['service_cancellation_id'] != null)
+          Card(
+            color: Colors.red.shade50,
+            margin: const EdgeInsets.only(bottom: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.red.shade300),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Service Cancelled by Operator',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red.shade900, fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'This trip has been cancelled by the operator/admin due to service disruption. Please contact support for rescheduling or assistance.',
+                    style: TextStyle(color: Colors.red.shade800, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ),
         const SizedBox(height: 12),
         _detailSection('Trip', [
           '${_booking['origin']} → ${_booking['destination']}',
@@ -3904,7 +3954,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     );
   }
 
-  Widget _detailHeader(String status) => Card(color: kGreen, child: Padding(padding: const EdgeInsets.all(18), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_booking['transaction_number'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)), const SizedBox(height: 8), Text(status.toUpperCase(), style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold))])));
+  Widget _detailHeader(String status) {
+    final isOpCancelled = status == 'operator_cancelled' || _booking['service_cancellation_id'] != null;
+    final bg = isOpCancelled || status == 'cancelled' ? Colors.red : kGreen;
+    return Card(color: bg, child: Padding(padding: const EdgeInsets.all(18), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_booking['transaction_number'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)), const SizedBox(height: 8), Text(isOpCancelled ? 'CANCELLED BY OPERATOR' : status.toUpperCase(), style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold))])));
+  }
 
   Widget _detailSection(String title, List<String> values) => Card(margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)), const SizedBox(height: 8), ...values.map((value) => Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(value, style: const TextStyle(color: kSlate600))))])));
 }
@@ -3984,7 +4038,7 @@ class AppDrawer extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'Version 1.0.0',
+                  'Version ${UserSession.appVersion}',
                   style: TextStyle(color: kSlate400, fontSize: 12, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
@@ -4320,16 +4374,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           }
                           Navigator.pop(context);
                           setState(() {});
-                          if (widget.booking.tripType != 'round_trip' || (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)) {
-                            widget.booking.savedStep = 2;
-                            widget.booking.saveToPrefs(2);
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
-                              if (mounted) {
-                                widget.booking.savedStep = 1;
-                                widget.booking.saveToPrefs(1);
-                              }
-                            });
-                          }
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
@@ -4428,6 +4472,8 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 ),
                               ),
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
+                              if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
+                                _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                                 child: Column(
@@ -4444,6 +4490,8 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 ),
                               ),
                               _buildHorizontalScheduleList(_returnSchedules, isReturn: true),
+                              if (widget.booking.selectedReturnSchedule != null && widget.booking.selectedReturnSchedule!['promotional_ticket'] != null)
+                                _buildPromoTicketBanner(widget.booking.selectedReturnSchedule!['promotional_ticket'], isReturn: true),
                               
                               const SizedBox(height: 20),
                               Padding(
@@ -4486,11 +4534,85 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 ),
                               ),
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
+                              if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
+                                _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
+                              if (widget.booking.selectedSchedule != null)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      widget.booking.savedStep = 2;
+                                      widget.booking.saveToPrefs(2);
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+                                        if (mounted) {
+                                          widget.booking.savedStep = 1;
+                                          widget.booking.saveToPrefs(1);
+                                        }
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: kPink,
+                                      minimumSize: const Size(double.infinity, 50),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: const Text('Continue to Discounts', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
                             ],
                             const SizedBox(height: 20),
                           ],
                         ),
                       ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPromoTicketBanner(Map<String, dynamic> promo, {bool isReturn = false}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFdb2777).withOpacity(0.06),
+        border: Border.all(color: const Color(0xFFdb2777), width: 2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('✨ ', style: TextStyle(fontSize: 18)),
+              Expanded(
+                child: Text(
+                  isReturn ? 'Return Trip Promo Ticket Available!' : 'Promotional Ticket Available!',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800),
+                ),
+              ),
+              Switch(
+                value: widget.booking.usePromoTicket,
+                activeColor: const Color(0xFFdb2777),
+                onChanged: (val) {
+                  setState(() {
+                    widget.booking.usePromoTicket = val;
+                    widget.booking.promotionalTicketId = val ? promo['id'] : null;
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Promo price: ₱${promo['promo_price']}   •   Remaining: ${promo['quantity_remaining']} tickets',
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFFdb2777)),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            widget.booking.usePromoTicket
+                ? 'Using promotional fare (₱${promo['promo_price']} / pax)'
+                : 'Using regular ticket fare',
+            style: const TextStyle(fontSize: 12, color: kSlate600),
           ),
         ],
       ),
@@ -4541,6 +4663,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                       }
                     } else {
                       widget.booking.selectedSchedule = Map<String, dynamic>.from(s);
+                      // Store promotional ticket ID so it is passed to the booking API
+                      final promo = s['promotional_ticket'];
+                      widget.booking.promotionalTicketId = promo != null ? promo['id'] as int? : null;
                       widget.booking.passengers = [
                         for (int i = 0; i < widget.booking.adults; i++)
                           {'type': 'adult', 'name': '', 'discount_id': null},
@@ -4559,22 +4684,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                            _showAirlineClassPicker(context, classes); 
                         }
                       }
-                      
-                      if (widget.booking.tripType != 'round_trip') {
-                          final isAirline = widget.booking.mode == 'airline';
-                          final classes = s['transport_classes'] as List<dynamic>? ?? [];
-                          final accommodations = s['accommodations'] as List<dynamic>? ?? [];
-                          if ((isAirline && classes.isEmpty) || (!isAirline && accommodations.isEmpty)) {
-                              widget.booking.savedStep = 2;
-                              widget.booking.saveToPrefs(2);
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
-                                if (mounted) {
-                                  widget.booking.savedStep = 1;
-                                  widget.booking.saveToPrefs(1);
-                                }
-                              });
-                          }
-                      }
                     }
                   });
                 },
@@ -4587,14 +4696,42 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('₱${s['price']}', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : kPink)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
-                            child: Text(
-                              s['operator'] ?? 'Operator',
-                              style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Show promo price if schedule has an active promotional ticket
+                              if (s['promotional_ticket'] != null) ...[
+                                Text(
+                                  '₱${s['price']}',
+                                  style: TextStyle(color: isSelected ? Colors.white54 : kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough),
+                                ),
+                                Text(
+                                  '₱${s['promotional_ticket']['promo_price']}',
+                                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : Colors.orange),
+                                ),
+                              ] else
+                                Text('₱${s['price']}', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : kPink)),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              // PROMO badge
+                              if (s['promotional_ticket'] != null)
+                                Container(
+                                  margin: const EdgeInsets.only(right: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                  decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(6)),
+                                  child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                                ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                child: Text(
+                                  s['operator'] ?? 'Operator',
+                                  style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -5209,6 +5346,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
           if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnScheduleAccommodationId != null)
             'selected_return_schedule_accommodation_id': widget.booking.selectedReturnScheduleAccommodationId,
           if (widget.booking.voucherCode != null) 'voucher_code': widget.booking.voucherCode,
+          if (widget.booking.promotionalTicketId != null) 'promotional_ticket_id': widget.booking.promotionalTicketId,
           if (_usePoints) 'use_points': true,
         }),
       );
