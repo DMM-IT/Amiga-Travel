@@ -1906,9 +1906,9 @@
     @endif
 
     @if ($showDataPrivacyWarning)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-            <div class="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-slate-200 text-left">
-                <div class="flex items-center gap-4">
+        <div x-data="{ show: true }" x-show="show" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
+            <div class="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-slate-200 text-left overflow-hidden">
+                <div class="flex items-center gap-4 pb-2">
                     <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
@@ -1920,7 +1920,7 @@
                     </div>
                 </div>
 
-                <div class="mt-5 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 max-h-60 overflow-y-auto">
+                <div class="mt-4 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 overflow-y-auto max-h-[50vh]">
                     <p class="font-semibold text-slate-900">Notice on Data Collection & Privacy Rights</p>
                     <p>
                         In compliance with the <strong>Data Privacy Act of 2012 (R.A. 10173)</strong>, Amiga Gracia Travel Service is committed to protecting your personal information.
@@ -1933,19 +1933,20 @@
                     </p>
                 </div>
 
-                <div class="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                <div class="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 shrink-0 pt-2">
                     <button 
                         type="button" 
+                        @click="window.location.href='/'"
                         wire:click.prevent="declineDataPrivacyWarning"
-                        onclick="window.location.href='/'"
                         class="w-full sm:w-auto rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 focus:outline-none"
                     >
                         Cancel / Disagree
                     </button>
                     <button 
                         type="button" 
+                        @click="show = false"
                         wire:click.prevent="acceptDataPrivacyWarning"
-                        class="w-full sm:w-auto rounded-xl bg-[#216417] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#194d12] focus:outline-none"
+                        class="w-full sm:w-auto rounded-xl bg-[#216417] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#194d12] focus:outline-none cursor-pointer"
                     >
                         Continue
                     </button>
