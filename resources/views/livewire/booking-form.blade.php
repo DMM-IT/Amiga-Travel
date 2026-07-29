@@ -578,9 +578,9 @@
 
                     @if ($step === 2 && !$tour_id && !$prefilled_from_package)
                         <div class="space-y-4">
-                            <div class="flex flex-col gap-8 lg:gap-6 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(340px,1fr)] lg:items-start">
+                            <div class="flex flex-col gap-8 md:gap-6 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)] md:items-start">
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
-                                <div class="space-y-6 mt-6 lg:mt-0 min-w-0">
+                                <div class="space-y-6 mt-6 md:mt-0 min-w-0">
                                     <p class="text-black font-bold">Choose the schedule that works best for your trip.</p>
                                     @if($this->baggageRules)
                                         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -855,10 +855,10 @@
                                         ? collect($selectedSchedule['transport_classes'])->firstWhere('id', $selected_transport_class_id)
                                         : null;
                                 @endphp
-                                <div class="flex flex-col gap-6 lg:sticky lg:top-6 min-w-0 w-full">
+                                <div class="flex flex-col gap-6 md:sticky md:top-6 min-w-0 w-full">
                                     @if($mode === 'airline')
                                         {{-- Airline booking details little ticket --}}
-                                        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm order-3 lg:order-1">
+                                        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                                             <div class="flex flex-wrap items-start justify-between gap-4">
                                                 <div>
                                                     <h3 class="text-lg font-bold text-slate-900">Airline booking details</h3>
