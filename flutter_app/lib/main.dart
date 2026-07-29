@@ -60,7 +60,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.17+21';
+  static const String appVersion = '1.0.18+22';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();

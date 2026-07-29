@@ -49378,7 +49378,7 @@ case 7:l=b
 if(l.b===200){h=l
 k=B.P.cp(0,A.cK(A.cJ(h.e)).bs(0,h.w),null)
 j=A.b_(J.Q(k,"version"))
-if(!J.c(j,"1.0.17+21")&&m.c!=null){h=$.aSG()
+if(!J.c(j,"1.0.18+22")&&m.c!=null){h=$.aSG()
 i=$.a6.L$.x.h(0,h)
 if(i!=null)A.aXn(i,j)}}n.push(6)
 s=5
@@ -49507,7 +49507,7 @@ case 7:m=b
 if(m.b===200){i=m
 l=B.P.cp(0,A.cK(A.cJ(i.e)).bs(0,i.w),null)
 k=A.b_(J.Q(l,"version"))
-if(!J.c(k,"1.0.17+21")){i=n.c
+if(!J.c(k,"1.0.18+22")){i=n.c
 if(i!=null)A.aXn(i,k)
 s=1
 break}}p=2
@@ -113672,7 +113672,7 @@ B.N6=new A.aH(57499,"MaterialIcons",!0)
 B.Od=new A.aR(B.N6,16,B.am,null,null)
 B.WT=new A.ad(B.j9,B.Od,null)
 B.a2w=new A.l(!0,B.am,null,null,null,null,12,B.F,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.a71=new A.J("Version 1.0.17+21",null,B.a2w,B.aX,null,null,null,null,null,null,null)
+B.a71=new A.J("Version 1.0.18+22",null,B.a2w,B.aX,null,null,null,null,null,null,null)
 B.a8S=new A.J("\xa9 2025 Amiga Gracia Travel Services",null,B.kt,B.aX,null,null,null,null,null,null,null)
 B.Ql=s([B.a71,B.a7,B.a8S],t.p)
 B.Ko=new A.ew(B.N,B.i,B.f,B.k,null,B.ag,null,0,B.Ql,null)
