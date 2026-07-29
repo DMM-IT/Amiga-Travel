@@ -67,8 +67,8 @@ return [
         ],
 
         'sendgrid' => [
-            'transport' => 'symfony',
-            'dsn' => 'sendgrid+api://'.env('SENDGRID_API_KEY').'@default',
+            'transport' => 'sendgrid',
+            'api_key' => env('SENDGRID_API_KEY'),
         ],
 
         'sendmail' => [
