@@ -32,6 +32,7 @@
                                 'pending' => ['bg' => '#fef3c7', 'text' => '#92400e'],
                                 'confirmed' => ['bg' => '#dcfce7', 'text' => '#166534'],
                                 'cancelled' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
+                                'operator_cancelled' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
                             ];
                             $statusStyle = $statusColors[$booking->status] ?? $statusColors['pending'];
                         @endphp
