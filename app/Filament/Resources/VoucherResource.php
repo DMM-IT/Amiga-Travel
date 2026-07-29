@@ -150,6 +150,7 @@ class VoucherResource extends Resource
                 Select::make('eligible_schedule_id')
                     ->label('Eligible Schedule')
                     ->relationship(name: 'eligibleSchedule', titleAttribute: 'service_name')
+                    ->getOptionLabelFromRecordUsing(fn (\App\Models\Schedule $record) => ($record->service_name ?? 'Schedule #' . $record->id) . ' (' . ($record->ferryRoute?->origin ?? '') . ' - ' . ($record->ferryRoute?->destination ?? '') . ')')
                     ->searchable(['service_name', 'origin', 'destination'])
                     ->preload()
                     ->helperText('Optional: Leave empty for all schedules'),
