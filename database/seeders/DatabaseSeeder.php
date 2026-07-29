@@ -35,6 +35,16 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
+        User::updateOrCreate(
+            ['email' => 'arieskingnieto@gmail.com'],
+            [
+                'name' => 'Aries King',
+                'password' => bcrypt('password'),
+                'is_admin' => false,
+                'is_staff' => false,
+            ],
+        );
+
         $this->call([
             DiscountSeeder::class,
             TourHotelsSeeder::class,
