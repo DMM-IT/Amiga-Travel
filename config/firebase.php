@@ -50,7 +50,9 @@ return [
              *
              */
 
-            'credentials' => env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')),
+            'credentials' => is_string(env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS'))) && str_starts_with(trim(env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS'))), '{')
+                ? (json_decode(env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')), true) ?? json_decode(str_replace('\\n', "\n", env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS'))), true) ?? env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')))
+                : env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')),
 
             /*
              * ------------------------------------------------------------------------
