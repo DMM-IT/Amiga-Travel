@@ -4,9 +4,12 @@ namespace App\Providers;
 
 use App\Models\WebsiteSetting;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\Mailer\Bridge\Sendgrid\Transport\SendgridTransportFactory;
+use Symfony\Component\Mailer\Transport\Dsn;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +40,16 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('headerData', $headerData);
             $view->with('footerData', $footerData);
+        });
+
+        Mail::extend('sendgrid', function (array $config) {
+            return (new SendgridTransportFactory)->create(
+                new Dsn(
+                    'sendgrid+api',
+                    'default',
+                    $config['api_key'] ?? env('SENDGRID_API_KEY')
+                )
+            );
         });
     }
 }
