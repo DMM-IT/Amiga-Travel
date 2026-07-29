@@ -43,7 +43,7 @@ class ServiceCancellationNotificationMail extends Mailable implements ShouldQueu
         return new Content(
             view: 'emails.service-cancellation-notification',
             with: [
-                'rescheduleUrl' => route('booking.reschedule', ['transaction_number' => $this->booking->transaction_number]),
+                'rescheduleUrl' => route('book.status', ['transaction_number' => $this->booking->transaction_number]),
                 'isResumption'  => $this->isResumption,
             ],
         );

@@ -42,6 +42,47 @@
                             </div>
                         @endif
 
+                        {{-- ⏱ 5-Minute Cancellation Reminder Dialog --}}
+                        @if($showCancellationReminder)
+                            <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+                                <div class="w-full max-w-md rounded-[2rem] bg-white p-7 shadow-2xl ring-1 ring-slate-200">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <p class="text-sm font-bold uppercase tracking-widest text-amber-700">Cancellation Window</p>
+                                        </div>
+                                        <button wire:click="dismissCancellationReminder" type="button" class="rounded-full bg-slate-100 p-2 text-slate-500 transition hover:bg-slate-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <h2 class="mt-4 text-xl font-bold text-slate-900">You have 5 minutes to cancel</h2>
+                                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">
+                                        Your booking is now submitted. If you need to cancel it, you have a <strong>5-minute window</strong> from the time you uploaded your payment proof. After this window expires, cancellations will be subject to a <strong>50% fee</strong>.
+                                    </p>
+
+                                    <div class="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                                        ⚠️ This window closes shortly. Act now if you wish to cancel.
+                                    </div>
+
+                                    <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                                        <button wire:click="dismissCancellationReminder" type="button" class="rounded-3xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                            Keep my booking
+                                        </button>
+                                        <button wire:click="showCancellationWarning" type="button" class="rounded-3xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
+                                            Cancel my booking
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         @if($showCancellationWarning || $showRebookingWarning)
                             <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
                                 <div class="w-full max-w-xl rounded-[2rem] bg-white p-6 shadow-2xl ring-1 ring-slate-200">

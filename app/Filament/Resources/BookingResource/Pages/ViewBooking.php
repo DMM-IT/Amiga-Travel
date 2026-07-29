@@ -115,9 +115,48 @@ class ViewBooking extends ViewRecord
                             ->label('Preferred Replacement Date'),
                         TextInput::make('preferred_replacement_schedule_label')
                             ->label('Preferred Replacement Schedule'),
+                        Placeholder::make('customer_request')
+                            ->label('Customer Reschedule Request')
+                            ->columnSpanFull()
+                            ->content(function () {
+                                $notes = $this->record->disruption_notes;
+                                if (!\Illuminate\Support\Str::isJson($notes)) {
+                                    return new HtmlString('<span class="text-gray-500">No custom details provided.</span>');
+                                }
+                                
+                                $data = json_decode($notes, true);
+                                $html = '<div class="space-y-2 mt-2">';
+                                
+                                if (!empty($data['dep_schedule_id'])) {
+                                    $sch = \App\Models\Schedule::with('ferryRoute')->find($data['dep_schedule_id']);
+                                    $html .= "<p><strong>Departure Schedule:</strong> " . ($sch ? "{$sch->ferryRoute->origin} → {$sch->ferryRoute->destination} ({$sch->formatted_departure})" : 'Unknown') . "</p>";
+                                }
+                                if (!empty($data['dep_accommodation_id'])) {
+                                    $html .= "<p><strong>Departure Acc. ID:</strong> {$data['dep_accommodation_id']}</p>";
+                                }
+                                if (!empty($data['ret_schedule_id'])) {
+                                    $sch = \App\Models\Schedule::with('ferryRoute')->find($data['ret_schedule_id']);
+                                    $html .= "<p><strong>Return Schedule:</strong> " . ($sch ? "{$sch->ferryRoute->origin} → {$sch->ferryRoute->destination} ({$sch->formatted_departure})" : 'Unknown') . "</p>";
+                                }
+                                if (!empty($data['ret_accommodation_id'])) {
+                                    $html .= "<p><strong>Return Acc. ID:</strong> {$data['ret_accommodation_id']}</p>";
+                                }
+                                if (isset($data['price_diff'])) {
+                                    $html .= "<p><strong>Price Difference Paid:</strong> ₱" . number_format($data['price_diff'], 2) . "</p>";
+                                }
+                                if (!empty($data['proof_path'])) {
+                                    $url = asset('storage/' . $data['proof_path']);
+                                    $html .= "<p><strong>Payment Proof:</strong> <a href=\"{$url}\" target=\"_blank\" class=\"text-primary-600 underline\">View Receipt</a></p>";
+                                }
+                                
+                                $html .= '</div>';
+                                return new HtmlString($html);
+                            })
+                            ->visible(fn (): bool => \Illuminate\Support\Str::isJson($this->record->disruption_notes)),
                         Textarea::make('disruption_notes')
                             ->label('Staff Approval Notes')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->visible(fn (): bool => !\Illuminate\Support\Str::isJson($this->record->disruption_notes)),
                     ])
                     ->columns(2)
                     ->visible(fn (): bool => filled($this->record->service_cancellation_id) || filled($this->record->rebooking_status) || filled($this->record->disruption_status)),

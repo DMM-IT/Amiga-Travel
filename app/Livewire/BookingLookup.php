@@ -37,6 +37,7 @@ class BookingLookup extends Component
     public ?string $rebooking_return_date = null;
     public bool $showCancellationWarning = false;
     public bool $showRebookingWarning = false;
+    public bool $showCancellationReminder = false;
 
     protected $rules = [
         'rebookingProof' => 'nullable|image|max:2048',
@@ -55,6 +56,9 @@ class BookingLookup extends Component
             // If the link included start_cancellation=1, begin the cancellation flow and start the window.
             if (request()->query('start_cancellation')) {
                 $this->requestCancellation();
+            }
+            if (request()->query('show_cancellation_reminder')) {
+                $this->showCancellationReminder = true;
             }
             $this->loadCancellationWindowFromSession();
         }
@@ -114,6 +118,11 @@ class BookingLookup extends Component
     public function requestCancellation(): void
     {
         $this->showCancellationWarning();
+    }
+
+    public function dismissCancellationReminder(): void
+    {
+        $this->showCancellationReminder = false;
     }
 
     public function confirmCancellationRequest(): void

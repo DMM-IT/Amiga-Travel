@@ -281,6 +281,7 @@ class TransactionResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('verify')
                     ->label('Verify booking')
+                    ->visible(fn (Transaction $record): bool => $record->payment_status === 'pending')
                     ->form([
                         TextInput::make('confirmation_url')
                             ->label('Confirmation URL')

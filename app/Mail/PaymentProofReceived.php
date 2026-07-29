@@ -5,9 +5,10 @@ namespace App\Mail;
 use App\Models\Transaction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\SerializesModels;
 
-class PaymentProofReceived extends Mailable
+class PaymentProofReceived extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

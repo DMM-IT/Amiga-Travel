@@ -83,8 +83,8 @@ class ServiceCancellationManager
                     'rebooking_status' => 'rebooking_required',
                 ]);
 
-                // Preserve paid status if already paid by customer — only cancel unpaid transactions
-                if ($booking->transaction && $booking->transaction->payment_status !== 'paid') {
+                // Preserve paid or pending status if already paid/submitted by customer
+                if ($booking->transaction && !in_array($booking->transaction->payment_status, ['paid', 'pending'])) {
                     $booking->transaction->update([
                         'payment_status' => 'cancelled',
                     ]);

@@ -5,10 +5,11 @@ namespace App\Mail;
 use App\Models\Booking;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 
-class RebookingVerification extends Mailable
+class RebookingVerification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

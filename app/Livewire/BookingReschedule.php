@@ -3,24 +3,68 @@
 namespace App\Livewire;
 
 use App\Models\Booking;
-use App\Models\ServiceCancellationReplacementSchedule;
+use App\Models\Schedule;
+use App\Models\ScheduleAccommodation;
 use App\Services\ServiceCancellationManager;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Collection;
+use Carbon\Carbon;
+use Throwable;
 
 class BookingReschedule extends Component
 {
+    use WithFileUploads;
+
     public string $transaction_number = '';
     public ?Booking $booking = null;
-    public ?int $selected_schedule_id = null;
-    public ?string $selected_date = null;
+
     public ?string $feedback = null;
     public bool $submitted = false;
     public bool $supportRequested = false;
+
+    // Cancel & Refund inline form
+    public bool $showRefundForm = false;
+    public string $refund_method = 'GCash';
+    public string $refund_bank_name = '';
+    public string $refund_account_number = '';
+    public string $refund_account_name = '';
+
+    // Wizard State
+    // Steps: departure_date, departure_schedule, departure_accommodation, return_date, return_schedule, return_accommodation, confirm
+    public string $step = 'departure_date';
+
+    // Departure Leg
+    public ?string $dep_date = null;
+    public ?int $dep_schedule_id = null;
+    public ?string $dep_accommodation_id = null;
+    public ?float $dep_schedule_price = null;
+    public ?float $dep_accommodation_price = null;
+
+    // Return Leg (if applicable)
+    public ?string $ret_date = null;
+    public ?int $ret_schedule_id = null;
+    public ?string $ret_accommodation_id = null;
+    public ?float $ret_schedule_price = null;
+    public ?float $ret_accommodation_price = null;
+
+    // Payment Diff
+    public float $priceDiff = 0.0;
+    public $paymentProof;
+    public bool $isUploading = false;
 
     public function mount(string $transaction_number): void
     {
         $this->transaction_number = ltrim(trim($transaction_number), '#');
         $this->loadBooking();
+
+        if ($this->booking && $this->booking->serviceCancellation) {
+            $resumeDate = $this->booking->serviceCancellation->resume_date;
+            $this->dep_date = $resumeDate ? $resumeDate->format('Y-m-d') : Carbon::tomorrow()->format('Y-m-d');
+            if ($this->isRoundTrip()) {
+                $this->ret_date = $this->dep_date;
+            }
+        }
     }
 
     public function loadBooking(): void
@@ -28,8 +72,7 @@ class BookingReschedule extends Component
         $cleanNumber = ltrim(trim($this->transaction_number), '#');
 
         $this->booking = Booking::with([
-            'serviceCancellation.replacementSchedules.schedule.ferryRoute',
-            'preferredReplacementSchedule',
+            'serviceCancellation',
             'passengers',
         ])
         ->where(function ($query) use ($cleanNumber) {
@@ -37,42 +80,278 @@ class BookingReschedule extends Component
                   ->orWhere('transaction_number', '#' . $cleanNumber);
         })
         ->first();
+    }
 
-        if ($this->booking && $this->booking->preferred_replacement_schedule_id) {
-            $this->selected_schedule_id = $this->booking->preferred_replacement_schedule_id;
-            $this->selected_date = $this->booking->preferred_replacement_date?->format('Y-m-d');
+    public function isRoundTrip(): bool
+    {
+        return $this->booking && ($this->booking->return_date || $this->booking->return_schedule_id);
+    }
+
+    // -- Wizard Navigation --
+
+    public function setStep(string $step)
+    {
+        $this->step = $step;
+        $this->feedback = null;
+        if ($step === 'confirm') {
+            $this->calculatePriceDiff();
         }
     }
 
-    public function selectOption(int $scheduleId, string $date): void
+    public function updatedDepDate()
     {
-        $this->selected_schedule_id = $scheduleId;
-        $this->selected_date = $date;
-        $this->feedback = null;
+        $this->dep_schedule_id = null;
+        $this->dep_accommodation_id = null;
+        $this->dep_schedule_price = null;
+        $this->dep_accommodation_price = null;
+    }
+
+    public function updatedRetDate()
+    {
+        $this->ret_schedule_id = null;
+        $this->ret_accommodation_id = null;
+        $this->ret_schedule_price = null;
+        $this->ret_accommodation_price = null;
+    }
+
+    public function selectDepartureSchedule(int $scheduleId, float $price)
+    {
+        $this->dep_schedule_id = $scheduleId;
+        $this->dep_schedule_price = $price;
+        $this->dep_accommodation_id = null;
+        $this->dep_accommodation_price = null;
+        $this->setStep('departure_accommodation');
+    }
+
+    public function selectDepartureAccommodation(string $accId, float $price)
+    {
+        $this->dep_accommodation_id = $accId;
+        $this->dep_accommodation_price = $price;
+        
+        if ($this->isRoundTrip()) {
+            $this->setStep('return_date');
+        } else {
+            $this->setStep('confirm');
+        }
+    }
+
+    public function selectReturnSchedule(int $scheduleId, float $price)
+    {
+        $this->ret_schedule_id = $scheduleId;
+        $this->ret_schedule_price = $price;
+        $this->ret_accommodation_id = null;
+        $this->ret_accommodation_price = null;
+        $this->setStep('return_accommodation');
+    }
+
+    public function selectReturnAccommodation(string $accId, float $price)
+    {
+        $this->ret_accommodation_id = $accId;
+        $this->ret_accommodation_price = $price;
+        $this->setStep('confirm');
+    }
+
+    // -- Data Fetching --
+
+    public function getAvailableDepartureSchedulesProperty()
+    {
+        if (!$this->booking || !$this->dep_date) return collect();
+        return Schedule::forRouteAndDate($this->booking->origin, $this->booking->destination, $this->dep_date)
+            ->with(['ferryRoute', 'vehicle'])
+            ->get();
+    }
+
+    public function getAvailableReturnSchedulesProperty()
+    {
+        if (!$this->booking || !$this->ret_date) return collect();
+        return Schedule::forRouteAndDate($this->booking->destination, $this->booking->origin, $this->ret_date)
+            ->with(['ferryRoute', 'vehicle'])
+            ->get();
+    }
+
+    public function getDepartureAccommodationsProperty()
+    {
+        if (!$this->dep_schedule_id) return collect();
+        $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->dep_schedule_id);
+        if (!$schedule) return collect();
+
+        $items = collect();
+        foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
+            $items->push((object)[
+                'id' => 'acc_' . $acc->id,
+                'name' => $acc->name,
+                'description' => $acc->description,
+                'price' => $acc->price,
+            ]);
+        }
+        foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
+            $items->push((object)[
+                'id' => 'tc_' . $tc->id,
+                'name' => $tc->name,
+                'description' => $tc->pivot->description ?? $tc->description,
+                'price' => $tc->pivot->additional_price,
+            ]);
+        }
+        return $items;
+    }
+
+    public function getReturnAccommodationsProperty()
+    {
+        if (!$this->ret_schedule_id) return collect();
+        $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->ret_schedule_id);
+        if (!$schedule) return collect();
+
+        $items = collect();
+        foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
+            $items->push((object)[
+                'id' => 'acc_' . $acc->id,
+                'name' => $acc->name,
+                'description' => $acc->description,
+                'price' => $acc->price,
+            ]);
+        }
+        foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
+            $items->push((object)[
+                'id' => 'tc_' . $tc->id,
+                'name' => $tc->name,
+                'description' => $tc->pivot->description ?? $tc->description,
+                'price' => $tc->pivot->additional_price,
+            ]);
+        }
+        return $items;
+    }
+
+    public function calculatePriceDiff()
+    {
+        if (!$this->booking) return;
+
+        $passengerCount = $this->booking->passengers()->count();
+        if ($passengerCount === 0) $passengerCount = 1;
+
+        $newTotal = 0.0;
+        
+        // Add departure costs
+        $newTotal += ($this->dep_schedule_price ?? 0) * $passengerCount;
+        $newTotal += ($this->dep_accommodation_price ?? 0) * $passengerCount;
+
+        // Add return costs if round trip
+        if ($this->isRoundTrip()) {
+            $newTotal += ($this->ret_schedule_price ?? 0) * $passengerCount;
+            $newTotal += ($this->ret_accommodation_price ?? 0) * $passengerCount;
+        }
+
+        // Add vehicle cost if preserved
+        if ($this->booking->has_vehicle) {
+            $newTotal += $this->booking->vehicle_price;
+        }
+
+        $this->priceDiff = max(0, $newTotal - $this->booking->total_price);
     }
 
     public function submitReschedule(): void
     {
-        if (! $this->booking) {
+        if (!$this->booking) return;
+
+        if ($this->priceDiff > 0) {
+            $this->validate([
+                'paymentProof' => 'required|image|max:2048'
+            ]);
+        }
+
+        try {
+            // Save proof if required
+            $proofPath = null;
+            if ($this->priceDiff > 0 && $this->paymentProof) {
+                $proofPath = $this->paymentProof->store('proofs', 'public');
+            }
+
+            // Ideally, we'd have a method in ServiceCancellationManager to handle this custom free-pick reschedule + payment diff.
+            // For now, we will update the booking record directly to reflect the custom selections, since the original method 
+            // submitCustomerReschedule() expects a single seeded option.
+            
+            $this->booking->update([
+                'preferred_replacement_schedule_id' => $this->dep_schedule_id,
+                'preferred_replacement_date' => $this->dep_date,
+                'rebooking_departure_date' => $this->dep_date,
+                'rebooking_return_date' => $this->isRoundTrip() ? $this->ret_date : null,
+                'disruption_status' => 'reschedule_requested',
+                'rebooking_status' => 'reschedule_requested',
+                'disruption_notes' => json_encode([
+                    'dep_schedule_id' => $this->dep_schedule_id,
+                    'dep_accommodation_id' => $this->dep_accommodation_id,
+                    'ret_schedule_id' => $this->ret_schedule_id,
+                    'ret_accommodation_id' => $this->ret_accommodation_id,
+                    'price_diff' => $this->priceDiff,
+                    'proof_path' => $proofPath
+                ])
+            ]);
+
+            $this->loadBooking();
+            $this->submitted = true;
+            $this->feedback = 'Your new travel dates and accommodations have been submitted successfully and are awaiting staff approval.';
+        } catch (\Exception $e) {
+            $this->feedback = $e->getMessage();
+        }
+    }
+
+    // -- Inline Refund Form --
+
+    public function openRefundForm()
+    {
+        $this->showRefundForm = true;
+    }
+
+    public function closeRefundForm()
+    {
+        $this->showRefundForm = false;
+        $this->reset(['refund_method', 'refund_bank_name', 'refund_account_number', 'refund_account_name']);
+    }
+
+    public function submitCancelAndRefund(): void
+    {
+        if (!$this->booking) {
             $this->feedback = 'Booking not found.';
             return;
         }
 
-        if (! $this->selected_schedule_id || ! $this->selected_date) {
-            $this->feedback = 'Please select a replacement date and schedule from the list below.';
-            return;
+        $rules = [
+            'refund_method' => 'required|string|in:GCash,Online Wallet,Bank Account',
+            'refund_account_number' => 'required|string|max:50',
+            'refund_account_name' => 'required|string|max:100',
+        ];
+
+        if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
+            $rules['refund_bank_name'] = 'required|string|max:100';
         }
 
+        $this->validate($rules);
+
+        $destinationParts = [];
+        $destinationParts[] = "Method: " . $this->refund_method;
+        if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
+            $destinationParts[] = "Institution: " . $this->refund_bank_name;
+        }
+        $destinationParts[] = "Account No: " . $this->refund_account_number;
+        $destinationParts[] = "Name: " . $this->refund_account_name;
+        
+        $refundDestination = implode(' | ', $destinationParts);
+
         try {
-            app(ServiceCancellationManager::class)->submitCustomerReschedule(
-                $this->booking,
-                $this->selected_schedule_id,
-                $this->selected_date
-            );
+            $this->booking->update([
+                'status' => 'cancelled',
+                'disruption_status' => 'refund_requested',
+                'refund_destination' => $refundDestination,
+                'refund_amount' => $this->booking->total_price, // 100% full refund
+            ]);
+
+            if ($this->booking->transaction) {
+                $this->booking->transaction->update(['payment_status' => 'cancelled']);
+            }
 
             $this->loadBooking();
+            $this->closeRefundForm();
             $this->submitted = true;
-            $this->feedback = 'Your preferred replacement travel date has been submitted successfully and is awaiting staff approval.';
+            $this->feedback = 'Your booking has been cancelled and a full 100% refund has been requested. Our team will process it shortly to your provided account.';
         } catch (\Exception $e) {
             $this->feedback = $e->getMessage();
         }
@@ -93,53 +372,8 @@ class BookingReschedule extends Component
         $this->feedback = 'Our support team has been notified. We will reach out to your email shortly to assist with custom travel arrangements.';
     }
 
-    public function cancelBookingAndRefund(): void
-    {
-        if (! $this->booking) {
-            $this->feedback = 'Booking not found.';
-            return;
-        }
-
-        try {
-            app(ServiceCancellationManager::class)->cancelAndRefundBooking($this->booking);
-
-            $this->loadBooking();
-            $this->submitted = true;
-            $this->feedback = 'Your booking has been cancelled and a full refund has been requested. Our team will process it shortly.';
-        } catch (\Exception $e) {
-            $this->feedback = $e->getMessage();
-        }
-    }
-
     public function render()
     {
-        $eligibleReplacements = collect();
-
-        if ($this->booking && $this->booking->serviceCancellation) {
-            $cancellation = $this->booking->serviceCancellation;
-            $resumeDate = $cancellation->resume_date?->format('Y-m-d');
-
-            if ($resumeDate) {
-                $eligibleReplacements = ServiceCancellationReplacementSchedule::with(['schedule.ferryRoute'])
-                    ->where('service_cancellation_id', $cancellation->id)
-                    ->whereDate('replacement_date', '>=', $resumeDate)
-                    ->get()
-                    ->filter(function ($item) {
-                        // Match route origin & destination
-                        return $item->schedule && $item->schedule->ferryRoute
-                            && $item->schedule->ferryRoute->origin === $this->booking->origin
-                            && $item->schedule->ferryRoute->destination === $this->booking->destination;
-                    })
-                    ->map(function ($item) {
-                        // Convert Carbon date to string to avoid serialization issues in Livewire
-                        $item->replacement_date_formatted = $item->replacement_date->format('Y-m-d');
-                        return $item;
-                    });
-            }
-        }
-
-        return view('livewire.booking-reschedule', [
-            'eligibleReplacements' => $eligibleReplacements,
-        ]);
+        return view('livewire.booking-reschedule');
     }
 }
