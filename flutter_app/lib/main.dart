@@ -4510,6 +4510,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (widget.booking.tripType == 'round_trip') ...[
+                              _buildBaggageReminder(),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                                 child: Column(
@@ -4546,9 +4547,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               _buildHorizontalScheduleList(_returnSchedules, isReturn: true),
                               if (widget.booking.selectedReturnSchedule != null && widget.booking.selectedReturnSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedReturnSchedule!['promotional_ticket'], isReturn: true),
-                              
-                              if (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)
-                                _buildBaggageSection(),
+                              _buildBaggageSwitch(),
 
                               const SizedBox(height: 20),
                               Padding(
@@ -4575,6 +4574,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 ),
                               ),
                             ] else ...[
+                              _buildBaggageReminder(),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                                 child: Column(
@@ -4593,9 +4593,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
                               if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
+                              _buildBaggageSwitch(),
                               
                               if (widget.booking.selectedSchedule != null) ...[
-                                _buildBaggageSection(),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                                   child: ElevatedButton(
@@ -4679,38 +4679,47 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     );
   }
 
-  Widget _buildBaggageSection() {
+  Widget _buildBaggageReminder() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: const Color(0xFFFFF7ED), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFFED7AA))),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.luggage, color: kGreen, size: 20),
+                Icon(Icons.luggage, color: Color(0xFFEA580C), size: 18),
                 SizedBox(width: 8),
-                Text('Baggage Rules & Reminders', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                Text('Baggage Rules & Reminders', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF9A3412))),
               ],
             ),
-            const SizedBox(height: 12),
-            const Text('â€¢ Standard ticket includes 1 hand carry bag (up to 7kg).', style: TextStyle(fontSize: 13, color: kSlate600)),
+            const SizedBox(height: 8),
+            const Text('• Standard ticket includes 1 hand carry bag (up to 7kg).', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
             const SizedBox(height: 4),
-            const Text('â€¢ Ensure valuables are kept with you at all times.', style: TextStyle(fontSize: 13, color: kSlate600)),
-            const SizedBox(height: 12),
-            SwitchListTile(
-              title: const Text('I have Extra Baggage', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: const Text('Additional fees may apply upon check-in at the terminal.', style: TextStyle(fontSize: 12)),
-              value: widget.booking.hasExtraBaggage,
-              activeColor: kGreen,
-              contentPadding: EdgeInsets.zero,
-              onChanged: (val) {
-                setState(() => widget.booking.hasExtraBaggage = val);
-              },
-            ),
+            const Text('• Ensure valuables are kept with you at all times.', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBaggageSwitch() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
+        child: SwitchListTile(
+          title: const Text('I have Extra Baggage', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          subtitle: const Text('Additional fees may apply upon check-in at the terminal.', style: TextStyle(fontSize: 12)),
+          value: widget.booking.hasExtraBaggage,
+          activeColor: kGreen,
+          contentPadding: EdgeInsets.zero,
+          onChanged: (val) {
+            setState(() => widget.booking.hasExtraBaggage = val);
+          },
         ),
       ),
     );
