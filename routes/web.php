@@ -157,3 +157,31 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/admin/notifications/api', [AdminNotificationController::class, 'destroy']);
 });
 
+Route::get('/db-test', function () {
+    try {
+        $pdo = DB::connection()->getPdo();
+        $dbName = DB::connection()->getDatabaseName();
+        $tables = DB::select('SHOW TABLES');
+        $schedulesCount = App\Models\Schedule::count();
+        $routesCount = App\Models\FerryRoute::count();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Successfully connected to the database.',
+            'database' => $dbName,
+            'tables_count' => count($tables),
+            'schedules_count' => $schedulesCount,
+            'routes_count' => $routesCount,
+            'host' => config('database.connections.mysql.host'),
+            'port' => config('database.connections.mysql.port'),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to connect to the database: ' . $e->getMessage(),
+            'host' => config('database.connections.mysql.host'),
+            'port' => config('database.connections.mysql.port'),
+        ], 500);
+    }
+});
+
