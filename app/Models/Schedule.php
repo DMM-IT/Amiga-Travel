@@ -456,6 +456,8 @@ class Schedule extends Model
             : $this->transportClasses()->where('transport_classes.is_active', true)->orderBy('sort_order')->get())
             ->filter(fn ($tc) => ($tc->pivot?->tickets_available ?? 50) > 0);
 
+        $promoTicket = $this->activePromotionalTicket();
+
         return [
             'id' => $this->id,
             'departure' => $this->formatted_departure,
@@ -468,6 +470,13 @@ class Schedule extends Model
             'tickets_available' => (int) ($this->tickets_available ?? 0),
             'mode' => $mode,
             'operator' => $this->ferryRoute?->operator,
+            // Promotional ticket — null when no active promo exists for this schedule
+            'promotional_ticket' => $promoTicket ? [
+                'id'                 => $promoTicket->id,
+                'promo_price'        => floatval($promoTicket->promo_price),
+                'quantity_remaining' => $promoTicket->remaining_quantity,
+                'ends_at'            => $promoTicket->ends_at->toISOString(),
+            ] : null,
             'accommodations' => $activeAccommodations
                 ->map(fn (ScheduleAccommodation $accommodation) => [
                     'id' => $accommodation->id,
