@@ -26,7 +26,8 @@ class AppNotification extends Model
                     $notification = $notification->withImageUrl(url('storage/' . $model->image_path));
                 }
 
-                $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('topic', 'all_users')
+                $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                    ->withTopic('all_users')
                     ->withNotification($notification);
 
                 $messaging->send($message);

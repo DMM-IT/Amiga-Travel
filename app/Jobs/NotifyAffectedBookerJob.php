@@ -54,7 +54,8 @@ class NotifyAffectedBookerJob implements ShouldQueue
                     "✈️ {$this->cancellation->carrier} Disruption",
                     "Booking #{$this->booking->transaction_number} was cancelled due to {$this->cancellation->reason_category}. {$resumeText}"
                 );
-                $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('topic', $userTopic)
+                $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                    ->withTopic($userTopic)
                     ->withNotification($notification);
                 $messaging->send($message);
             }

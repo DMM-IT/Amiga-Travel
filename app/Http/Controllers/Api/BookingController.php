@@ -263,7 +263,8 @@ class BookingController extends Controller
                 '✈️ Booking Cancelled',
                 "Booking #{$booking->transaction_number} has been cancelled. Refund: ₱{$booking->refund_amount}. Please allow 3–5 business days for processing."
             );
-            $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('topic', $userTopic)
+            $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                ->withTopic($userTopic)
                 ->withNotification($notification);
             $messaging->send($message);
         } catch (\Exception $e) {
