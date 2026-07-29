@@ -578,7 +578,7 @@
 
                     @if ($step === 2 && !$tour_id && !$prefilled_from_package)
                         <div class="space-y-4">
-                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
                                 <div class="lg:col-span-7 xl:col-span-8 space-y-6 min-w-0">
                                     <p class="text-black font-bold">Choose the schedule that works best for your trip.</p>
@@ -855,7 +855,7 @@
                                         ? collect($selectedSchedule['transport_classes'])->firstWhere('id', $selected_transport_class_id)
                                         : null;
                                 @endphp
-                                <div class="lg:col-span-5 xl:col-span-4 space-y-6 lg:sticky lg:top-6 min-w-0">
+                                <div class="lg:col-span-5 xl:col-span-4 self-start lg:sticky lg:top-6 space-y-6 min-w-0">
                                     @if($mode === 'airline')
                                         {{-- Airline booking details little ticket --}}
                                         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
