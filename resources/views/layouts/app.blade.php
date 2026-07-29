@@ -17,6 +17,9 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
         <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
         <style>
+            /* Prevent Alpine.js elements with x-cloak from flashing before init */
+            [x-cloak] { display: none !important; }
+
             .flatpickr-calendar { font-family: inherit; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px -5px rgba(0,0,0,.15); overflow: hidden; }
             .flatpickr-calendar.arrowTop:before,.flatpickr-calendar.arrowTop:after { display:none; }
             .flatpickr-months { background:#3b82f6; border-radius:1rem 1rem 0 0; padding:4px 0; }

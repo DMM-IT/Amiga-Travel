@@ -1894,7 +1894,7 @@
     @endif
 
     @if ($step === 1 && $showDataPrivacyWarning)
-        <div x-data="{ show: true }" x-show="show" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
+        <div x-data="{ show: !localStorage.getItem('amiga_privacy_accepted') }" x-show="show" x-cloak class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
             <div class="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-slate-200 text-left overflow-hidden">
                 <div class="flex items-center gap-4 pb-2">
                     <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
@@ -1932,7 +1932,7 @@
                     </button>
                     <button 
                         type="button" 
-                        @click="show = false"
+                        @click="localStorage.setItem('amiga_privacy_accepted', '1'); show = false"
                         wire:click.prevent="acceptDataPrivacyWarning"
                         class="w-full sm:w-auto rounded-xl bg-[#216417] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#194d12] focus:outline-none cursor-pointer"
                     >
