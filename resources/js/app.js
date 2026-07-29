@@ -1,10 +1,6 @@
-import Alpine from 'alpinejs';
 import ApexCharts from 'apexcharts';
 
-window.Alpine = Alpine;
 window.ApexCharts = ApexCharts;
-
-Alpine.start();
 
 document.addEventListener('DOMContentLoaded', function () {
     const menuButton = document.getElementById('mobile-menu-button');
