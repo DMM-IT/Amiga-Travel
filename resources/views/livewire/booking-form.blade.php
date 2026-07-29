@@ -153,7 +153,7 @@
                             </div>
 
                             <div class="grid gap-4 grid-cols-2 lg:grid-cols-4 mt-4">
-                                <label class="relative block" data-error="mode">
+                                <div class="relative block" data-error="mode">
                                     <span class="text-black font-extrabold text-sm">Mode</span>
                                     <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
                                         <div class="flex items-center gap-2">
@@ -197,9 +197,9 @@
                                             </div>
                                         </div>
                                     @endif
-                                </label>
+                                </div>
 
-                                <label class="relative block">
+                                <div class="relative block">
                                     <span class="text-black font-extrabold text-sm">Operator</span>
                                     <button type="button" wire:click.prevent="toggleOperatorDropdown" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                         <div class="flex items-center gap-2">
@@ -263,11 +263,11 @@
                                             </div>
                                         </div>
                                     @endif
-                                </label>
+                                </div>
 
                             <div class="col-span-2 lg:col-span-2">
                             <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                            <label class="relative block" data-error="origin">
+                            <div class="relative block" data-error="origin">
                                 <span class="text-black font-extrabold text-sm">Origin</span>
                                 <button type="button" wire:click.prevent="toggleOriginDropdown" @if($prefilled_from_package || $mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $origin ?: ($mode === '' ? 'Select mode first' : 'Select origin') }}</span>
@@ -295,9 +295,9 @@
                                         </div>
                                     </div>
                                 @endif
-                            </label>
+                            </div>
 
-                            <label class="relative block" data-error="destination">
+                            <div class="relative block" data-error="destination">
                                 <span class="text-black font-extrabold text-sm">Destination</span>
                                 <button type="button" wire:click.prevent="toggleDestinationDropdown" @if($prefilled_from_package || $mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $destination ?: (blank($origin) ? 'Select origin first' : 'Select destination') }}</span>
@@ -325,7 +325,7 @@
                                         </div>
                                     </div>
                                 @endif
-                            </label>
+                            </div>
                             </div>
                             </div>
                         </div>
