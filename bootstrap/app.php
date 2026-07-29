@@ -15,10 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->trustHosts(at: [
-            'amiga-travel.up.railway.app',
-            '*.railway.app',
             'amigagracia.com',
-            '*.amigagracia.com',
+            'railway.app',
             'localhost',
             '127.0.0.1',
         ]);
