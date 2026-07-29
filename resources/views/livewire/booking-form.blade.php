@@ -740,24 +740,12 @@
                                                     @endphp
 
                                                     <div class="mt-6 border-t border-slate-100 pt-5 space-y-5">
-                                                        <div class="grid gap-4 sm:grid-cols-2">
-                                                            {{-- Airline Rate Table Selector --}}
-                                                            <div>
-                                                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Airline Rate Table</label>
-                                                                <select wire:model.live="selected_baggage_airline" class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20">
-                                                                    @foreach($baggageRates as $key => $airline)
-                                                                        <option value="{{ $key }}">{{ $airline['name'] }}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-
-                                                            {{-- Baggage Weight & Price Dropdown --}}
-                                                            <div>
-                                                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Select Extra Baggage (kg)</label>
-                                                                <select 
-                                                                    wire:change="selectBaggageOption($event.target.options[$event.target.selectedIndex].dataset.weight, $event.target.value)"
-                                                                    class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 shadow-sm focus:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20"
-                                                                >
+                                                        <div>
+                                                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Select Extra Baggage (kg)</label>
+                                                            <select 
+                                                                wire:change="selectBaggageOption($event.target.options[$event.target.selectedIndex].dataset.weight, $event.target.value)"
+                                                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 shadow-sm focus:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20"
+                                                            >
                                                                     @foreach($selectedAirlineData['options'] as $opt)
                                                                         @php
                                                                             $isSelected = ($extra_baggage_weight === $opt['weight']);
@@ -1905,7 +1893,7 @@
         </div>
     @endif
 
-    @if ($showDataPrivacyWarning)
+    @if ($step === 1 && $showDataPrivacyWarning)
         <div x-data="{ show: true }" x-show="show" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
             <div class="relative w-full max-w-xl max-h-[90vh] flex flex-col rounded-3xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-slate-200 text-left overflow-hidden">
                 <div class="flex items-center gap-4 pb-2">
