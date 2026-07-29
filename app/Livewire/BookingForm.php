@@ -148,6 +148,10 @@ class BookingForm extends Component
 
     public function mount(): void
     {
+        if (session()->get('has_accepted_data_privacy_warning', false)) {
+            $this->showDataPrivacyWarning = false;
+        }
+
         $this->availableSchedules = [];
 
         // Check if we have tour/package query params first
@@ -677,10 +681,12 @@ public function selectedSchedule(): ?array
     public function acceptDataPrivacyWarning(): void
     {
         $this->showDataPrivacyWarning = false;
+        session()->put('has_accepted_data_privacy_warning', true);
     }
 
     public function declineDataPrivacyWarning()
     {
+        session()->forget('has_accepted_data_privacy_warning');
         return redirect()->to('/');
     }
 
