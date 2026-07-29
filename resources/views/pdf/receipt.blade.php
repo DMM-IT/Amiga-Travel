@@ -216,7 +216,7 @@
             <td class="receipt-title-box">
                 @php
                     $payStatus = strtolower($booking->transaction->payment_status ?? $booking->status ?? 'confirmed');
-                    $isPaid = in-array($payStatus, ['paid', 'confirmed', 'completed', 'approved']);
+                    $isPaid = in_array($payStatus, ['paid', 'confirmed', 'completed', 'approved']);
                 @endphp
                 <div class="receipt-badge {{ $isPaid ? 'badge-paid' : '' }}">
                     {{ $isPaid ? 'CONFIRMED / PAID' : strtoupper($payStatus) }}
