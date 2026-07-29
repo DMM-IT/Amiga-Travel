@@ -578,7 +578,7 @@
 
                     @if ($step === 2 && !$tour_id && !$prefilled_from_package)
                         <div class="space-y-4">
-                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8" style="align-items: start;">
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
                                 <div class="lg:col-span-7 xl:col-span-8 space-y-6 min-w-0">
                                     <p class="text-black font-bold">Choose the schedule that works best for your trip.</p>
