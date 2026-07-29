@@ -173,41 +173,7 @@ class ServiceCancellationManager
         $uniqueBookings = $bookings->unique('id');
 
         foreach ($uniqueBookings as $booking) {
-            // Email notification
-            if (filled($booking->client_email)) {
-                try {
-                    Mail::to($booking->client_email)->send(new ServiceCancellationNotificationMail($booking, $cancellation, $isResumption));
-                } catch (\Exception $e) {
-                    Log::error("Failed sending disruption cancellation email to {$booking->client_email}: " . $e->getMessage());
-                }
-            }
-
-            // Mobile App Push Notification (FCM)
-            try {
-                $resumeText = ! empty($cancellation->resume_date)
-                    ? "Tap to choose a new travel date starting {$cancellation->resume_date->format('M d, Y')}."
-                    : "Service operations are temporarily suspended. We will notify you when travel resumes.";
-
-                AppNotification::create([
-                    'title' => "{$cancellation->carrier} Disruptions: Schedule Cancelled",
-                    'body'  => "Booking #{$booking->transaction_number} was cancelled due to {$cancellation->reason_category}. {$resumeText}",
-                ]);
-
-                // Send user-specific FCM push to only the affected user's device
-                if (filled($booking->client_email)) {
-                    $userTopic = 'user_' . md5(strtolower(trim($booking->client_email)));
-                    $messaging = app('firebase.messaging');
-                    $notification = \Kreait\Firebase\Messaging\Notification::create(
-                        "✈️ {$cancellation->carrier} Disruption",
-                        "Booking #{$booking->transaction_number} was cancelled due to {$cancellation->reason_category}. {$resumeText}"
-                    );
-                    $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('topic', $userTopic)
-                        ->withNotification($notification);
-                    $messaging->send($message);
-                }
-            } catch (\Exception $e) {
-                Log::error("Failed creating push notification for disruption: " . $e->getMessage());
-            }
+            \App\Jobs\NotifyAffectedBookerJob::dispatch($booking, $cancellation, $isResumption);
         }
     }
 

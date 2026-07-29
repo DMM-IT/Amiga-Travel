@@ -1746,40 +1746,7 @@ public function selectedSchedule(): ?array
 
         $booking->load('passengers.discount', 'scheduleAccommodation', 'transportClasses', 'transaction', 'schedule');
 
-        $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
-        try {
-            if (! file_exists(dirname($receiptPath))) {
-                @mkdir(dirname($receiptPath), 0755, true);
-            }
-            $pdfOptions = new Options();
-            $pdfOptions->set('isRemoteEnabled', false);
-            $pdfOptions->set('isHtml5ParserEnabled', true);
-            $pdfOptions->set('defaultFont', 'DejaVu Sans');
-            $dompdf = new Dompdf($pdfOptions);
-            $dompdf->loadHtml(view('pdf.receipt', ['booking' => $booking])->render());
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-            @file_put_contents($receiptPath, $dompdf->output());
-        } catch (\Throwable $e) {
-            Log::warning('Receipt PDF generation failed (non-fatal)', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        try {
-            if (file_exists($receiptPath)) {
-                Mail::to($booking->client_email)->send(new BookingCreated($booking, $receiptPath));
-            } else {
-                Mail::to($booking->client_email)->send(new BookingCreated($booking, null));
-            }
-        } catch (Throwable $e) {
-            Log::error('Failed sending booking created email', [
-                'booking_id' => $booking->id ?? null,
-                'email' => $booking->client_email ?? null,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        \App\Jobs\SendBookingConfirmationJob::dispatch($booking);
 
         return $transaction;
     }
