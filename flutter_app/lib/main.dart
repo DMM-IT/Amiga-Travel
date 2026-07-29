@@ -7310,7 +7310,8 @@ class _PackageList extends StatelessWidget {
 // ==========================================
 class RequestBookingScreen extends StatefulWidget {
   final Map<String, dynamic>? package;
-  const RequestBookingScreen({super.key, this.package});
+  final Map<String, dynamic>? initialData;
+  const RequestBookingScreen({super.key, this.package, this.initialData});
 
   @override
   State<RequestBookingScreen> createState() => _RequestBookingScreenState();
@@ -7325,6 +7326,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   String _serviceType = 'Ferry Ticket';
+  String _tripType = 'One Way';
   final _fromCtrl = TextEditingController();
   final _toCtrl = TextEditingController();
   final _dateCtrl = TextEditingController();
@@ -7333,6 +7335,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
   bool _submitted = false;
 
   static const _services = ['Ferry Ticket', 'Airline Ticket', 'Tour Package', 'Custom Group Package', 'Apprenticeship / Educational Tour'];
+  static const _tripTypes = ['One Way', 'Round Trip'];
 
   @override
   void initState() {
@@ -7345,6 +7348,17 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
       _dateCtrl.text = pkg['available_dates'] ?? '';
       _passengersCtrl.text = '1';
       _notesCtrl.text = pkg['inclusions'] ?? '';
+      _nameCtrl.text = UserSession.username;
+      _emailCtrl.text = UserSession.email;
+    } else if (widget.initialData != null) {
+      final init = widget.initialData!;
+      _serviceType = init['mode'] == 'airline' ? 'Airline Ticket' : 'Ferry Ticket';
+      _fromCtrl.text = init['origin'] ?? '';
+      _toCtrl.text = init['destination'] ?? '';
+      _dateCtrl.text = init['departure_date'] ?? '';
+      if (init['operator'] != null) {
+        _notesCtrl.text = 'Preferred Operator: ${init['operator']}';
+      }
       _nameCtrl.text = UserSession.username;
       _emailCtrl.text = UserSession.email;
     }
@@ -7446,9 +7460,19 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                             decoration: InputDecoration(labelText: 'Service Type', prefixIcon: const Icon(Icons.category, color: kGreen), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                           ),
                         ),
+                        if (_serviceType == 'Ferry Ticket' || _serviceType == 'Airline Ticket')
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: DropdownButtonFormField<String>(
+                              value: _tripType,
+                              items: _tripTypes.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                              onChanged: (v) => setState(() => _tripType = v!),
+                              decoration: InputDecoration(labelText: 'Trip Type', prefixIcon: const Icon(Icons.swap_horiz, color: kGreen), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                            ),
+                          ),
                         _Field(ctrl: _fromCtrl, label: 'From', icon: Icons.location_on),
                         _Field(ctrl: _toCtrl, label: 'To', icon: Icons.navigation),
-                        _Field(ctrl: _dateCtrl, label: 'Travel Date', icon: Icons.calendar_today),
+                        _Field(ctrl: _dateCtrl, label: 'Travel Date (or Date Range)', icon: Icons.calendar_today),
                         _Field(ctrl: _passengersCtrl, label: 'Number of Passengers', icon: Icons.people, keyboard: TextInputType.number),
                       ]),
                       // Page 3: Notes
@@ -7476,6 +7500,8 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                               _SummaryRow('Name', _nameCtrl.text),
                               _SummaryRow('Email', _emailCtrl.text),
                               _SummaryRow('Service', _serviceType),
+                              if (_serviceType == 'Ferry Ticket' || _serviceType == 'Airline Ticket')
+                                _SummaryRow('Trip Type', _tripType),
                               _SummaryRow('From → To', '${_fromCtrl.text} → ${_toCtrl.text}'),
                               _SummaryRow('Date', _dateCtrl.text),
                               _SummaryRow('Passengers', _passengersCtrl.text),
@@ -8014,7 +8040,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                             ),
                           ),
                           SizedBox(
-                            height: 220,
+                            height: 280,
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               padding: const EdgeInsets.all(16),
@@ -8101,6 +8127,31 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                           const SizedBox(width: 4),
                                           Expanded(child: Text(exactDate, style: const TextStyle(fontSize: 12, color: kSlate600))),
                                         ],
+                                      ),
+                                      const Spacer(),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            Navigator.push(context, MaterialPageRoute(builder: (_) => RequestBookingScreen(
+                                              initialData: {
+                                                'mode': route['mode'] ?? 'ferry',
+                                                'operator': route['operator'] ?? '',
+                                                'origin': route['origin'] ?? '',
+                                                'destination': route['destination'] ?? '',
+                                                'departure_date': s['departure_time'].toString().substring(0, 10),
+                                              },
+                                            )));
+                                          },
+                                          icon: const Icon(Icons.book_online, size: 16),
+                                          label: const Text('Book Now'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: kGreen,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
