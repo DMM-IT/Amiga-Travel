@@ -153,9 +153,9 @@
                             </div>
 
                             <div class="grid gap-4 grid-cols-2 lg:grid-cols-4 mt-4">
-                                <div x-data="{ open: false }" @click.outside="open = false" class="relative block" data-error="mode">
+                                <label class="relative block" data-error="mode">
                                     <span class="text-black font-extrabold text-sm">Mode</span>
-                                    <button type="button" @click="open = !open" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
+                                    <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
                                         <div class="flex items-center gap-2">
                                             @if($mode === 'ferry')
                                                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
@@ -170,36 +170,38 @@
                                     </button>
                                     @error('mode')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
 
-                                    <div x-show="open" x-cloak class="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
-                                        <div class="max-h-64 overflow-y-auto px-2 py-2 space-y-1">
-                                            @php
-                                                $modeOptions = collect($this->getModeOptions());
-                                            @endphp
+                                    @if ($showModeDropdown)
+                                        <div class="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+                                            <div class="max-h-64 overflow-y-auto px-2 py-2 space-y-1">
+                                                @php
+                                                    $modeOptions = collect($this->getModeOptions());
+                                                @endphp
 
-                                            @foreach($modeOptions as $key => $label)
-                                                <button type="button" wire:click.prevent="selectMode('{{ $key }}')" @click="open = false" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $mode === $key ? 'bg-slate-50 font-semibold' : '' }}">
-                                                    <div class="flex items-center justify-between gap-3">
-                                                        <div class="flex items-center gap-2">
-                                                            @if($key === 'ferry')
-                                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
-                                                            @elseif($key === 'airline')
-                                                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                                @foreach($modeOptions as $key => $label)
+                                                    <button type="button" wire:click.prevent="selectMode('{{ $key }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $mode === $key ? 'bg-slate-50 font-semibold' : '' }}">
+                                                        <div class="flex items-center justify-between gap-3">
+                                                            <div class="flex items-center gap-2">
+                                                                @if($key === 'ferry')
+                                                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
+                                                                @elseif($key === 'airline')
+                                                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                                                @endif
+                                                                <span>{{ $label }}</span>
+                                                            </div>
+                                                            @if($mode === $key)
+                                                                <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
                                                             @endif
-                                                            <span>{{ $label }}</span>
                                                         </div>
-                                                        @if($mode === $key)
-                                                            <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
-                                                        @endif
-                                                    </div>
-                                                </button>
-                                            @endforeach
+                                                    </button>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    @endif
+                                </label>
 
-                                <div x-data="{ open: false }" @click.outside="open = false" class="relative block">
+                                <label class="relative block">
                                     <span class="text-black font-extrabold text-sm">Operator</span>
-                                    <button type="button" @click="open = !open" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
+                                    <button type="button" wire:click.prevent="toggleOperatorDropdown" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                         <div class="flex items-center gap-2">
                                             @php
                                                 $selectedOpLogo = null;
@@ -222,50 +224,52 @@
                                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                         </svg>
                                     </button>
-                                    <div x-show="open" x-cloak class="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
-                                        <div class="max-h-64 overflow-y-auto px-2 py-2 space-y-1">
-                                            <button type="button" wire:click.prevent="selectOperator(null)" @click="open = false" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ blank($operator) ? 'bg-slate-50 font-semibold' : '' }}">
-                                                <div class="flex items-center justify-between gap-3">
-                                                    <span>All operators</span>
-                                                    @if(blank($operator))
-                                                        <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
-                                                    @endif
-                                                </div>
-                                            </button>
-                                            @foreach($this->operators as $op)
-                                                <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" @click="open = false" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $operator === $op ? 'bg-slate-50 font-semibold' : '' }}">
+                                    @if ($showOperatorDropdown)
+                                        <div class="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+                                            <div class="max-h-64 overflow-y-auto px-2 py-2 space-y-1">
+                                                <button type="button" wire:click.prevent="selectOperator(null)" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ blank($operator) ? 'bg-slate-50 font-semibold' : '' }}">
                                                     <div class="flex items-center justify-between gap-3">
-                                                        <div class="flex items-center gap-2">
-                                                            @php
-                                                                $opLogo = null;
-                                                                if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
-                                                                elseif (stripos($op, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
-                                                                elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
-                                                                elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
-                                                                elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
-                                                            @endphp
-                                                            @if($opLogo)
-                                                                <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
-                                                                    <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $op }}" class="w-full h-full object-contain">
-                                                                </div>
-                                                            @endif
-                                                            <span>{{ $op }}</span>
-                                                        </div>
-                                                        @if($operator === $op)
+                                                        <span>All operators</span>
+                                                        @if(blank($operator))
                                                             <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
                                                         @endif
                                                     </div>
                                                 </button>
-                                            @endforeach
+                                                @foreach($this->operators as $op)
+                                                    <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $operator === $op ? 'bg-slate-50 font-semibold' : '' }}">
+                                                        <div class="flex items-center justify-between gap-3">
+                                                            <div class="flex items-center gap-2">
+                                                                @php
+                                                                    $opLogo = null;
+                                                                    if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
+                                                                    elseif (stripos($op, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
+                                                                    elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
+                                                                    elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+                                                                    elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+                                                                @endphp
+                                                                @if($opLogo)
+                                                                    <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
+                                                                        <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $op }}" class="w-full h-full object-contain">
+                                                                    </div>
+                                                                @endif
+                                                                <span>{{ $op }}</span>
+                                                            </div>
+                                                            @if($operator === $op)
+                                                                <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
+                                                            @endif
+                                                        </div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    @endif
+                                </label>
 
                             <div class="col-span-2 lg:col-span-2">
                             <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-                            <div x-data="{ open: false }" @click.outside="open = false" class="relative block" data-error="origin">
+                            <label class="relative block" data-error="origin">
                                 <span class="text-black font-extrabold text-sm">Origin</span>
-                                <button type="button" @click="open = !open" @if($prefilled_from_package || $mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
+                                <button type="button" wire:click.prevent="toggleOriginDropdown" @if($prefilled_from_package || $mode === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $origin ?: ($mode === '' ? 'Select mode first' : 'Select origin') }}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -273,14 +277,14 @@
                                 </button>
                                 @error('origin')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
 
-                                @if ($mode !== '')
-                                    <div x-show="open" x-cloak class="absolute left-0 right-0 top-full mt-1 z-30 max-h-96 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                                @if ($showOriginDropdown && $mode !== '')
+                                    <div class="absolute left-0 right-0 top-full mt-1 z-30 max-h-96 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
                                         <div class="p-3 border-b border-slate-100">
                                             <input type="text" wire:model.live.debounce.150ms="originSearch" placeholder="Search origins" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" />
                                         </div>
                                         <div class="max-h-[14rem] overflow-y-auto hide-scrollbar px-2 py-2 space-y-1">
                                             @forelse($this->filteredOrigins as $originOption)
-                                                <button type="button" wire:click.prevent="selectOrigin('{{ $originOption }}')" @click="open = false" class="w-full rounded-lg px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $origin === $originOption ? 'bg-slate-50 font-semibold' : '' }}">
+                                                <button type="button" wire:click.prevent="selectOrigin('{{ $originOption }}')" class="w-full rounded-lg px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $origin === $originOption ? 'bg-slate-50 font-semibold' : '' }}">
                                                     {{ $originOption }}
                                                 </button>
                                             @empty
@@ -291,11 +295,11 @@
                                         </div>
                                     </div>
                                 @endif
-                            </div>
+                            </label>
 
-                            <div x-data="{ open: false }" @click.outside="open = false" class="relative block" data-error="destination">
+                            <label class="relative block" data-error="destination">
                                 <span class="text-black font-extrabold text-sm">Destination</span>
-                                <button type="button" @click="open = !open" @if($prefilled_from_package || $mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
+                                <button type="button" wire:click.prevent="toggleDestinationDropdown" @if($prefilled_from_package || $mode === '' || $origin === '') disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
                                     <span>{{ $destination ?: (blank($origin) ? 'Select origin first' : 'Select destination') }}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
@@ -303,14 +307,14 @@
                                 </button>
                                 @error('destination')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
 
-                                @if (filled($origin))
-                                    <div x-show="open" x-cloak class="absolute left-0 right-0 top-full mt-1 z-30 max-h-96 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                                @if ($showDestinationDropdown && filled($origin))
+                                    <div class="absolute left-0 right-0 top-full mt-1 z-30 max-h-96 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
                                         <div class="p-3 border-b border-slate-100">
                                             <input type="text" wire:model.live.debounce.150ms="destinationSearch" placeholder="Search destinations" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" />
                                         </div>
                                         <div class="max-h-[14rem] overflow-y-auto hide-scrollbar px-2 py-2 space-y-1">
                                             @forelse($this->filteredDestinations as $destinationOption)
-                                                <button type="button" wire:click.prevent="selectDestination('{{ $destinationOption }}')" @click="open = false" class="w-full rounded-lg px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $destination === $destinationOption ? 'bg-slate-50 font-semibold' : '' }}">
+                                                <button type="button" wire:click.prevent="selectDestination('{{ $destinationOption }}')" class="w-full rounded-lg px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $destination === $destinationOption ? 'bg-slate-50 font-semibold' : '' }}">
                                                     {{ $destinationOption }}
                                                 </button>
                                             @empty
@@ -321,7 +325,7 @@
                                         </div>
                                     </div>
                                 @endif
-                            </div>
+                            </label>
                             </div>
                             </div>
                         </div>
