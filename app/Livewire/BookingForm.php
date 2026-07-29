@@ -394,12 +394,17 @@ class BookingForm extends Component
             return null;
         }
         
-        $filePath = base_path('baggage-rules.json');
-        if (!file_exists($filePath)) {
+        $json = \Illuminate\Support\Facades\Cache::remember('baggage_rules_json_v1', now()->addHours(12), function () {
+            $filePath = base_path('baggage-rules.json');
+            if (!file_exists($filePath)) {
+                return null;
+            }
+            return json_decode(file_get_contents($filePath), true);
+        });
+        if (!$json) {
             return null;
         }
-        
-        $json = json_decode(file_get_contents($filePath), true);
+
         $carriers = $json['carriers'] ?? [];
         $meta = $json['meta'] ?? [];
         
