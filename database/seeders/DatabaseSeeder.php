@@ -51,6 +51,7 @@ class DatabaseSeeder extends Seeder
             TransportClassSeeder::class,
             VehicleBrandModelSeeder::class,
             VehicleRateSeeder::class,
+            seed_user::class,
             VehicleSeeder::class,
             WebsiteSettingSeeder::class,
             GraciaEarningRuleSeeder::class,
