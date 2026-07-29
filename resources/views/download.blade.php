@@ -50,18 +50,21 @@
                             </h3>
                             <div class="mt-4">
                                 <p class="text-base text-slate-700 font-semibold leading-relaxed">
-                                    Add Amiga Gracia to your Home Screen?
+                                    How to add to iOS Home Screen
                                 </p>
-                                <p class="mt-2 text-sm text-slate-500 leading-relaxed">
-                                    Install the Amiga Gracia app directly to your device for instant, full-screen access to ferry tickets, flight bookings, and tour packages.
+                                <p class="mt-2 text-sm text-slate-500 leading-relaxed text-left">
+                                    1. Open this page in <strong>Safari</strong>.<br>
+                                    2. Tap the <strong>Share</strong> button at the bottom of the screen.<br>
+                                    3. Scroll down and tap <strong>Add to Home Screen</strong>.<br>
+                                    4. Tap <strong>Add</strong> in the top right corner.
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 sm:px-10 sm:flex sm:flex-row-reverse gap-3">
-                    <button type="button" onclick="triggerAddToHomeScreen()" class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-[#216417] text-base font-bold text-white hover:bg-[#14400e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#216417] sm:w-auto sm:text-sm transition-colors">
-                        Add to Home Screen
+                    <button type="button" onclick="window.location.href = '/app/'" class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-6 py-3 bg-[#216417] text-base font-bold text-white hover:bg-[#14400e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#216417] sm:w-auto sm:text-sm transition-colors">
+                        Open Web App
                         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     </button>
                     <button type="button" onclick="document.getElementById('ios-modal').classList.add('hidden')" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-xl border border-slate-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 sm:w-auto sm:text-sm transition-colors">

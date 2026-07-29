@@ -58,7 +58,7 @@ class UserSession {
   static int spendThreshold = 0;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.15+19';
+  static const String appVersion = '1.0.16+20';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -142,6 +142,7 @@ class BookingData {
   int children = 0;
 
   // Step 2 — Schedule
+  bool hasExtraBaggage = false;
   Map<String, dynamic>? selectedSchedule;
   int? selectedTransportClassId;
   Map<String, dynamic>? selectedTransportClass;
@@ -196,6 +197,7 @@ class BookingData {
       'returnDate': returnDate,
       'adults': adults,
       'children': children,
+      'hasExtraBaggage': hasExtraBaggage,
       'selectedSchedule': selectedSchedule,
       'selectedTransportClassId': selectedTransportClassId,
       'selectedTransportClass': selectedTransportClass,
@@ -234,6 +236,7 @@ class BookingData {
     b.returnDate = json['returnDate'];
     b.adults = json['adults'] ?? 1;
     b.children = json['children'] ?? 0;
+    b.hasExtraBaggage = json['hasExtraBaggage'] ?? false;
     
     b.selectedSchedule = json['selectedSchedule'] != null ? Map<String, dynamic>.from(json['selectedSchedule']) : null;
     b.selectedTransportClassId = json['selectedTransportClassId'];
@@ -897,20 +900,38 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _resumeBooking() {
     if (_savedSession == null) return;
     BookingData.activeSession = _savedSession;
+    
+    PageRouteBuilder buildRoute(Widget screen, bool animate) {
+      return PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => screen,
+        transitionDuration: animate ? const Duration(milliseconds: 300) : Duration.zero,
+        reverseTransitionDuration: animate ? const Duration(milliseconds: 300) : Duration.zero,
+        transitionsBuilder: animate 
+            ? (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.ease;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                return SlideTransition(position: animation.drive(tween), child: child);
+              }
+            : (context, animation, secondaryAnimation, child) => child,
+      );
+    }
+
     if (_savedSession!.savedStep >= 0) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => TravelScreen(initialMode: _savedSession!.mode)));
+      Navigator.push(context, buildRoute(TravelScreen(initialMode: _savedSession!.mode), _savedSession!.savedStep == 0));
     }
     if (_savedSession!.savedStep >= 1) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: _savedSession!)));
+      Navigator.push(context, buildRoute(ScheduleSelectScreen(booking: _savedSession!), _savedSession!.savedStep == 1));
     }
     if (_savedSession!.savedStep >= 2) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: _savedSession!)));
+      Navigator.push(context, buildRoute(DiscountScreen(booking: _savedSession!), _savedSession!.savedStep == 2));
     }
     if (_savedSession!.savedStep >= 3) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: _savedSession!)));
+      Navigator.push(context, buildRoute(StayScreen(booking: _savedSession!), _savedSession!.savedStep == 3));
     }
     if (_savedSession!.savedStep >= 4) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: _savedSession!)));
+      Navigator.push(context, buildRoute(BookingSubmitScreen(booking: _savedSession!), _savedSession!.savedStep == 4));
     }
   }
 
@@ -1585,6 +1606,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
 
   List<Map<String, dynamic>> _vehicleRates = [];
   final _plateCtrl = TextEditingController();
+  bool _isVehicleBookingEnabled = false;
 
   @override
   void initState() {
@@ -1848,7 +1870,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       ..adults = _adults
       ..children = _children;
 
-    if (_mode == 'ferry' && (_plateCtrl.text.isNotEmpty || _vehicleRates.any((r) => r['selected'] == true))) {
+    if (_mode == 'ferry' && _isVehicleBookingEnabled) {
        booking.hasVehicle = true;
        booking.vehiclePlateNumber = _plateCtrl.text;
        final selected = _vehicleRates.where((r) => r['selected'] == true).toList();
@@ -2047,7 +2069,24 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                     label: 'Child',
                                     subtitle: '2 - 11 years',
                                     count: _children,
-                                    onIncrement: _totalPassengers < 8 ? () => setState(() => _children++) : null,
+                                    onIncrement: _totalPassengers < 8 ? () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (c) => AlertDialog(
+                                          title: const Text('Minor / Infant Notice'),
+                                          content: const Text('Please note: If the passenger is an infant (under 2 years old), additional requirements and fees may apply depending on the operator.'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(c);
+                                                setState(() => _children++);
+                                              },
+                                              child: const Text('Acknowledge'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } : null,
                                     onDecrement: _children > 0 ? () => setState(() => _children--) : null,
                                   ),
                                   const Divider(height: 20),
@@ -2130,10 +2169,11 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                         ],
                                       ),
                                       Switch(
-                                        value: _plateCtrl.text.isNotEmpty || _vehicleRates.any((r) => r['selected'] == true),
+                                        value: _isVehicleBookingEnabled,
                                         activeColor: kGreen,
                                         onChanged: (val) {
                                           setState(() {
+                                            _isVehicleBookingEnabled = val;
                                             if (!val) {
                                               _plateCtrl.clear();
                                               for (var r in _vehicleRates) { r['selected'] = false; }
@@ -2145,7 +2185,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                       ),
                                     ],
                                   ),
-                                  if (_plateCtrl.text.isNotEmpty || _vehicleRates.any((r) => r['selected'] == true)) ...[
+                                  if (_isVehicleBookingEnabled) ...[
                                     const SizedBox(height: 16),
                                     Container(
                                       padding: const EdgeInsets.all(12),
@@ -3904,6 +3944,20 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        final tNum = _booking['transaction_number'];
+                        if (tNum == null) return;
+                        launchUrl(Uri.parse('$_baseUrl/booking/reschedule/${tNum.replaceAll('#', '')}'), mode: LaunchMode.externalApplication);
+                      },
+                      icon: const Icon(Icons.open_in_browser),
+                      label: const Text('Reschedule for free on website'),
+                      style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700, foregroundColor: Colors.white),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'This trip has been cancelled by the operator/admin due to service disruption. Please contact support for rescheduling or assistance.',
@@ -4493,6 +4547,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               if (widget.booking.selectedReturnSchedule != null && widget.booking.selectedReturnSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedReturnSchedule!['promotional_ticket'], isReturn: true),
                               
+                              if (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)
+                                _buildBaggageSection(),
+
                               const SizedBox(height: 20),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -4536,7 +4593,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
                               if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
-                              if (widget.booking.selectedSchedule != null)
+                              
+                              if (widget.booking.selectedSchedule != null) ...[
+                                _buildBaggageSection(),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                                   child: ElevatedButton(
@@ -4558,6 +4617,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                     child: const Text('Continue to Discounts', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                                   ),
                                 ),
+                              ],
                             ],
                             const SizedBox(height: 20),
                           ],
@@ -4615,6 +4675,43 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             style: const TextStyle(fontSize: 12, color: kSlate600),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBaggageSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.luggage, color: kGreen, size: 20),
+                SizedBox(width: 8),
+                Text('Baggage Rules & Reminders', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Text('â€¢ Standard ticket includes 1 hand carry bag (up to 7kg).', style: TextStyle(fontSize: 13, color: kSlate600)),
+            const SizedBox(height: 4),
+            const Text('â€¢ Ensure valuables are kept with you at all times.', style: TextStyle(fontSize: 13, color: kSlate600)),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              title: const Text('I have Extra Baggage', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              subtitle: const Text('Additional fees may apply upon check-in at the terminal.', style: TextStyle(fontSize: 12)),
+              value: widget.booking.hasExtraBaggage,
+              activeColor: kGreen,
+              contentPadding: EdgeInsets.zero,
+              onChanged: (val) {
+                setState(() => widget.booking.hasExtraBaggage = val);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -4781,6 +4878,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
   final _formKey = GlobalKey<FormState>();
   List<Map<String, dynamic>> _discounts = [];
   List<TextEditingController> _nameControllers = [];
+  List<TextEditingController> _birthdateControllers = [];
   List<TextEditingController> _schoolControllers = [];
   List<TextEditingController> _idControllers = [];
 
@@ -4791,6 +4889,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
     super.initState();
     _nameControllers = List.generate(widget.booking.passengers.length, (i) {
       return TextEditingController(text: widget.booking.passengers[i]['name'] ?? '');
+    });
+    _birthdateControllers = List.generate(widget.booking.passengers.length, (i) {
+      return TextEditingController(text: widget.booking.passengers[i]['birthdate'] ?? '');
     });
     _schoolControllers = List.generate(widget.booking.passengers.length, (i) {
       return TextEditingController(text: widget.booking.passengers[i]['school_name'] ?? '');
@@ -4804,6 +4905,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
   @override
   void dispose() {
     for (var c in _nameControllers) c.dispose();
+    for (var c in _birthdateControllers) c.dispose();
     for (var c in _schoolControllers) c.dispose();
     for (var c in _idControllers) c.dispose();
     super.dispose();
@@ -4826,6 +4928,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
     if (!_formKey.currentState!.validate()) return;
     for (int i = 0; i < widget.booking.passengers.length; i++) {
       widget.booking.passengers[i]['name'] = _nameControllers[i].text.trim();
+      widget.booking.passengers[i]['birthdate'] = _birthdateControllers[i].text.trim();
       
       final discId = widget.booking.passengers[i]['discount_id'];
       final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
@@ -4911,6 +5014,49 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               ),
                               validator: (v) => (v == null || v.trim().isEmpty) ? 'Full name is required' : null,
                             ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _birthdateControllers[i],
+                              readOnly: true,
+                              onTap: () async {
+                                final d = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
+                                  firstDate: DateTime(1900),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (d != null) {
+                                  final selectedDate = "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+                                  setState(() => _birthdateControllers[i].text = selectedDate);
+                                  
+                                  // Infant check
+                                  final age = DateTime.now().difference(d).inDays / 365.25;
+                                  if (age < 2 && type == 'child') {
+                                    if (mounted) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (c) => AlertDialog(
+                                          title: const Text('Minor / Infant Notice'),
+                                          content: const Text('Please note: If the passenger is an infant (under 2 years old), additional requirements and fees may apply depending on the operator.'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(c),
+                                              child: const Text('Acknowledge'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Birthdate',
+                                hintText: 'YYYY-MM-DD',
+                                suffixIcon: const Icon(Icons.calendar_today, size: 20),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
                             if (_discounts.isNotEmpty) ...[
                               const SizedBox(height: 10),
                               DropdownButtonFormField<int?>(
@@ -4929,6 +5075,21 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   setState(() {
                                     pax[i]['discount_id'] = v;
                                   });
+                                  if (v != null) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (c) => AlertDialog(
+                                        title: const Text('Discount Applied'),
+                                        content: const Text('Please ensure you have a valid ID to present upon boarding to claim this discount.'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(c),
+                                            child: const Text('Okay'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
                                 },
                                 decoration: InputDecoration(
                                   labelText: 'Discount',
@@ -5232,6 +5393,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   // Payment / QR
   String? _qrCodeUrl;
   bool _loadingPaymentSettings = true;
+  double _feePerPerson = 0.0;
+  double _feePerAccommodation = 0.0;
 
   // Proof upload state (shown after booking is created)
   int? _bookingId;
@@ -5289,7 +5452,11 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data['status'] == 'success') {
-          setState(() => _qrCodeUrl = data['qr_code_url']);
+          setState(() {
+            _qrCodeUrl = data['qr_code_url'];
+            _feePerPerson = (data['fee_per_person'] as num?)?.toDouble() ?? 0.0;
+            _feePerAccommodation = (data['fee_per_accommodation'] as num?)?.toDouble() ?? 0.0;
+          });
         }
       }
     } catch (_) {}
@@ -5740,7 +5907,52 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   ],
 
                   Builder(builder: (ctx) {
-                    final subtotal = widget.booking.totalPrice;
+                    double ticketPrice = 0.0;
+                    if (widget.booking.selectedSchedule != null) {
+                       ticketPrice += (widget.booking.adults * (widget.booking.selectedSchedule!['adult_price'] ?? 0).toDouble()) + 
+                                      (widget.booking.children * (widget.booking.selectedSchedule!['child_price'] ?? 0).toDouble());
+                       if (widget.booking.selectedScheduleAccommodation != null) {
+                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (widget.booking.selectedScheduleAccommodation!['price_per_adult'] ?? 0).toDouble());
+                       }
+                    }
+                    if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
+                       ticketPrice += (widget.booking.adults * (widget.booking.selectedReturnSchedule!['adult_price'] ?? 0).toDouble()) + 
+                                      (widget.booking.children * (widget.booking.selectedReturnSchedule!['child_price'] ?? 0).toDouble());
+                       if (widget.booking.selectedReturnScheduleAccommodation != null) {
+                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (widget.booking.selectedReturnScheduleAccommodation!['price_per_adult'] ?? 0).toDouble());
+                       }
+                    }
+                    
+                    double passengerDiscount = 0.0;
+                    for (var p in widget.booking.passengers) {
+                      if (p['discount_id'] != null && widget.booking.selectedSchedule != null) {
+                         passengerDiscount += ((widget.booking.selectedSchedule!['adult_price'] ?? 0).toDouble() * 0.20); 
+                         if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
+                             passengerDiscount += ((widget.booking.selectedReturnSchedule!['adult_price'] ?? 0).toDouble() * 0.20);
+                         }
+                      }
+                    }
+                    
+                    double vehicleCost = 0.0;
+                    if (widget.booking.hasVehicle && widget.booking.mode == 'ferry') {
+                        vehicleCost = widget.booking.vehiclePrice;
+                    }
+                    
+                    double accommodationCost = 0.0;
+                    if (widget.booking.selectedAccommodationIds.isNotEmpty) {
+                        for (var acc in widget.booking.availableAccommodations) {
+                            if (widget.booking.selectedAccommodationIds.contains(acc['id'])) {
+                                accommodationCost += (acc['price'] ?? 0).toDouble();
+                            }
+                        }
+                    }
+                    
+                    int travelers = widget.booking.adults + widget.booking.children;
+                    double calculationFee = (travelers * _feePerPerson) + (accommodationCost > 0 ? _feePerAccommodation : 0);
+                    
+                    double subtotal = ticketPrice + vehicleCost + accommodationCost + calculationFee - passengerDiscount;
+                    if (subtotal < 0) subtotal = 0.0;
+
                     final discount = widget.booking.voucherData != null ? (widget.booking.voucherData!['discount_amount'] as num).toDouble() : 0.0;
                     double totalBeforePoints = subtotal - discount;
                     if (totalBeforePoints < 0) totalBeforePoints = 0.0;
@@ -5756,6 +5968,12 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _SummarySection(title: 'Payment Summary', children: [
+                          _SummaryRow('Base Fare', '₱${ticketPrice.toStringAsFixed(2)}'),
+                          if (passengerDiscount > 0) _SummaryRow('Passenger Discount', '-₱${passengerDiscount.toStringAsFixed(2)}'),
+                          if (vehicleCost > 0) _SummaryRow('Vehicle Freight', '₱${vehicleCost.toStringAsFixed(2)}'),
+                          if (accommodationCost > 0) _SummaryRow('Stay', '₱${accommodationCost.toStringAsFixed(2)}'),
+                          if (calculationFee > 0) _SummaryRow('Calculation Fee', '₱${calculationFee.toStringAsFixed(2)}'),
+                          const Divider(height: 16),
                           _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
                           if (discount > 0) _SummaryRow('Voucher Discount', '-₱${discount.toStringAsFixed(2)}'),
                           if (pointsDiscount > 0) _SummaryRow('Points Discount (${pointsDiscount.toInt()} pts)', '-₱${pointsDiscount.toStringAsFixed(2)}'),
