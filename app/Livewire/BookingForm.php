@@ -20,6 +20,7 @@ use App\Models\VehicleModel;
 use App\Models\VehicleRate;
 use App\Models\Transaction;
 use App\Models\PromotionalTicket;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -148,7 +149,8 @@ class BookingForm extends Component
 
     public function mount(): void
     {
-        if (session()->get('has_accepted_data_privacy_warning', false)) {
+        // Check both session AND cookie so consent persists across browser sessions
+        if (session()->get('has_accepted_data_privacy_warning', false) || Cookie::get('data_privacy_accepted') === '1') {
             $this->showDataPrivacyWarning = false;
         }
 
@@ -687,11 +689,14 @@ public function selectedSchedule(): ?array
     {
         $this->showDataPrivacyWarning = false;
         session()->put('has_accepted_data_privacy_warning', true);
+        // Set a cookie that lasts 365 days so consent is remembered across sessions
+        Cookie::queue('data_privacy_accepted', '1', 60 * 24 * 365);
     }
 
     public function declineDataPrivacyWarning()
     {
         session()->forget('has_accepted_data_privacy_warning');
+        Cookie::queue(Cookie::forget('data_privacy_accepted'));
         return redirect()->to('/');
     }
 
