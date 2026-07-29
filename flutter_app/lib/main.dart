@@ -9,8 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
+import 'package:intl/intl.dart';
 
 import 'notification_service.dart';
+import 'replacement_booking_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
@@ -8012,7 +8014,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                             ),
                           ),
                           SizedBox(
-                            height: 200,
+                            height: 220,
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               padding: const EdgeInsets.all(16),
@@ -8021,8 +8023,30 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               itemBuilder: (context, sIndex) {
                                 final s = schedules[sIndex];
                                 final price = s['price'] ?? 0;
+
+                                DateTime? depTime;
+                                DateTime? arrTime;
+                                String formattedDepTime = s['formatted_departure'] ?? s['departure_time'].toString().substring(11, 16);
+                                String formattedArrTime = s['formatted_arrival'] ?? s['arrival_time'].toString().substring(11, 16);
+                                String exactDate = s['departure_time'].toString().substring(0, 10);
+                                String durationStr = '';
+
+                                try {
+                                  depTime = DateTime.parse(s['departure_time'].toString());
+                                  arrTime = DateTime.parse(s['arrival_time'].toString());
+                                  formattedDepTime = DateFormat('h:mm a').format(depTime);
+                                  formattedArrTime = DateFormat('h:mm a').format(arrTime);
+                                  exactDate = '${DateFormat('MMM d, yyyy').format(depTime)} - ${DateFormat('MMM d, yyyy').format(arrTime)}';
+
+                                  final diff = arrTime.difference(depTime);
+                                  final hours = diff.inHours;
+                                  final mins = diff.inMinutes.remainder(60);
+                                  if (hours > 0) durationStr += '${hours}h ';
+                                  if (mins > 0) durationStr += '${mins}m';
+                                } catch (_) {}
+
                                 return Container(
-                                  width: 260,
+                                  width: schedules.length == 1 ? MediaQuery.of(context).size.width - 64 : 260,
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -8036,6 +8060,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(child: Text(s['service_name'] ?? 'Economy', style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                          Text('$formattedDepTime - $formattedArrTime', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kGreen)),
                                         ],
                                       ),
                                       const Spacer(),
@@ -8045,15 +8070,25 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                           Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(s['formatted_departure'] ?? s['departure_time'].toString().substring(11, 16), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                              Text(formattedDepTime, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                               const Text('DEPART', style: TextStyle(fontSize: 10, color: kSlate400, fontWeight: FontWeight.bold)),
                                             ],
                                           ),
-                                          const Icon(Icons.arrow_right_alt, color: kGreen),
+                                          Column(
+                                            children: [
+                                              if (durationStr.isNotEmpty) Text(durationStr, style: const TextStyle(fontSize: 10, color: kSlate500)),
+                                              Row(
+                                                children: [
+                                                  Container(width: 8, height: 2, color: kSlate300),
+                                                  const Icon(Icons.arrow_forward_ios, color: kGreen, size: 12),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                           Column(
                                             crossAxisAlignment: CrossAxisAlignment.end,
                                             children: [
-                                              Text(s['formatted_arrival'] ?? s['arrival_time'].toString().substring(11, 16), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                              Text(formattedArrTime, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                               const Text('ARRIVE', style: TextStyle(fontSize: 10, color: kSlate400, fontWeight: FontWeight.bold)),
                                             ],
                                           ),
@@ -8064,7 +8099,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         children: [
                                           const Icon(Icons.event, size: 14, color: kSlate400),
                                           const SizedBox(width: 4),
-                                          Text(s['departure_time'].toString().substring(0, 10), style: const TextStyle(fontSize: 12, color: kSlate600)),
+                                          Expanded(child: Text(exactDate, style: const TextStyle(fontSize: 12, color: kSlate600))),
                                         ],
                                       ),
                                     ],
@@ -8504,4 +8539,26 @@ class _VouchersScreenState extends State<VouchersScreen> {
                     ),
     );
   }
+}
+
+
+class TicketClipper extends CustomClipper<Path> {
+  final double punchRadius;
+  final double dividerX;
+  TicketClipper({this.punchRadius = 8.0, this.dividerX = 100.0});
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(dividerX - punchRadius, 0);
+    path.arcToPoint(Offset(dividerX + punchRadius, 0), radius: Radius.circular(punchRadius), clockwise: false);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(dividerX + punchRadius, size.height);
+    path.arcToPoint(Offset(dividerX - punchRadius, size.height), radius: Radius.circular(punchRadius), clockwise: false);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

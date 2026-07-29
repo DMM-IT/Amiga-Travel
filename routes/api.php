@@ -82,6 +82,8 @@ Route::middleware('throttle:20,1')->group(function () {
     Route::post('/bookings/{id}/proof',   [BookingController::class, 'uploadProof']);
     Route::post('/bookings/{id}/cancel',  [BookingController::class, 'cancel']);
     Route::post('/bookings/{id}/rebook',  [BookingController::class, 'rebook']);
+    Route::post('/bookings/{id}/submit-replacement', [BookingController::class, 'submitReplacement']);
+    Route::post('/bookings/{id}/disruption-refund', [BookingController::class, 'submitDisruptionRefund']);
 
     Route::post('/vouchers/validate', [\App\Http\Controllers\Api\VoucherController::class, 'validateVoucher']);
 

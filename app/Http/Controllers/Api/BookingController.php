@@ -334,4 +334,97 @@ class BookingController extends Controller
             'rebooking_status' => 'pending',
         ]);
     }
+
+    public function submitReplacement(Request $request, $id)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'dep_date' => 'required|date',
+            'dep_schedule_id' => 'required|integer',
+            'dep_accommodation_id' => 'nullable|string',
+            'ret_date' => 'nullable|date',
+            'ret_schedule_id' => 'nullable|integer',
+            'ret_accommodation_id' => 'nullable|string',
+            'price_diff' => 'nullable|numeric'
+        ]);
+
+        $booking = Booking::whereKey($id)
+            ->where('client_email', $request->input('email'))
+            ->firstOrFail();
+
+        // Check if there's actually a disruption
+        if (!$booking->serviceCancellation) {
+             return response()->json([
+                 'status' => 'error',
+                 'message' => 'This booking does not have an active disruption.'
+             ], 400);
+        }
+
+        $proofPath = null;
+        if ($request->input('price_diff', 0) > 0) {
+            $request->validate(['proof' => 'required|image|max:2048']);
+            if ($request->hasFile('proof')) {
+                $proofPath = $request->file('proof')->store('proofs', 'public');
+            }
+        }
+
+        $booking->update([
+            'preferred_replacement_schedule_id' => $request->dep_schedule_id,
+            'preferred_replacement_date' => $request->dep_date,
+            'rebooking_departure_date' => $request->dep_date,
+            'rebooking_return_date' => $request->input('ret_date'),
+            'disruption_status' => 'reschedule_requested',
+            'rebooking_status' => 'reschedule_requested',
+            'disruption_notes' => json_encode([
+                'dep_schedule_id' => $request->dep_schedule_id,
+                'dep_accommodation_id' => $request->dep_accommodation_id,
+                'ret_schedule_id' => $request->input('ret_schedule_id'),
+                'ret_accommodation_id' => $request->input('ret_accommodation_id'),
+                'price_diff' => $request->input('price_diff', 0),
+                'proof_path' => $proofPath
+            ])
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Your new travel dates and accommodations have been submitted successfully and are awaiting staff approval.'
+        ]);
+    }
+
+    public function submitDisruptionRefund(Request $request, $id)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'refund_destination' => 'required|string|max:255',
+        ]);
+
+        $booking = Booking::whereKey($id)
+            ->where('client_email', $request->input('email'))
+            ->with('transaction')
+            ->firstOrFail();
+
+        if (!$booking->serviceCancellation) {
+             return response()->json([
+                 'status' => 'error',
+                 'message' => 'This booking does not have an active disruption.'
+             ], 400);
+        }
+
+        $booking->update([
+            'status' => 'cancelled',
+            'disruption_status' => 'refund_requested',
+            'refund_destination' => $request->refund_destination,
+            'refund_amount' => $booking->total_price, // 100% full refund
+        ]);
+
+        if ($booking->transaction) {
+            $booking->transaction->update(['payment_status' => 'cancelled']);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Your booking has been cancelled and a full 100% refund has been requested. Our team will process it shortly to your provided account.',
+            'refund_amount' => $booking->total_price,
+        ]);
+    }
 }
