@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource.php": {
-    "mtime": 1785246133.2176352,
-    "ast_hash": "0a7fe6efeb1d09bb795fca5114559928",
+    "mtime": 1785416199.0029502,
+    "ast_hash": "8ec5f9ecb0a0a2ad52bc13ebb199354c",
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource/Pages/CreateFerryRoute.php": {
@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1785415469.4193275,
-    "ast_hash": "cea878103bc208d1aed47f5ce80428a6",
+    "mtime": 1785416320.9458604,
+    "ast_hash": "26a1e080a0ba6aa64503d13a513b01e4",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -700,8 +700,8 @@
     "semantic_hash": ""
   },
   "app/Models/FerryRoute.php": {
-    "mtime": 1785248108.478767,
-    "ast_hash": "cf6a27b955e0d72ac52456f9cab39c40",
+    "mtime": 1785416171.6207252,
+    "ast_hash": "08a795a169630410b2bdfd051d9df775",
     "semantic_hash": ""
   },
   "app/Models/GraciaEarningRule.php": {
@@ -740,8 +740,8 @@
     "semantic_hash": ""
   },
   "app/Models/Schedule.php": {
-    "mtime": 1785312319.2653544,
-    "ast_hash": "9087ae8299b27e211a58a33c31d12ac9",
+    "mtime": 1785416210.7397008,
+    "ast_hash": "f047edc33b2a82e60f97541e6c26511e",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -1415,8 +1415,8 @@
     "semantic_hash": ""
   },
   "database/seeders/VehicleSeeder.php": {
-    "mtime": 1784652338.0723312,
-    "ast_hash": "c4446e9e21a3e2464eb049a5b2569bfe",
+    "mtime": 1785415816.5025904,
+    "ast_hash": "c15e2efc63d8df170db605ff75fa9af4",
     "semantic_hash": ""
   },
   "database/seeders/WebsiteSettingSeeder.php": {
@@ -1990,8 +1990,8 @@
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1785415492.5714383,
-    "ast_hash": "8bf8f399ac89ac6b217c4dee7cf0aca8",
+    "mtime": 1785416341.3479602,
+    "ast_hash": "93d72902b733036d60f5ea24937cb59a",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
@@ -3070,8 +3070,8 @@
     "semantic_hash": ""
   },
   "app/Services/ScheduleCsvImportService.php": {
-    "mtime": 1785411480.7012842,
-    "ast_hash": "082be1bdb4ed632ace2d6cf99a4ea17d",
+    "mtime": 1785415816.5005548,
+    "ast_hash": "d280986b63c1f1857aaaa1ae91a8803b",
     "semantic_hash": ""
   },
   "database/migrations/2026_07_30_150000_create_airline_baggage_rules_table.php": {
@@ -3102,6 +3102,16 @@
   "scratch/test_schedules.php": {
     "mtime": 1785411480.7035367,
     "ast_hash": "6e4e4f01015e1cbc495050626496f631",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_30_200758_add_plate_no_to_schedules_table.php": {
+    "mtime": 1785415816.5015712,
+    "ast_hash": "0ada3586d52ffe4e33208974fb115b28",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_30_210000_add_trip_type_to_ferry_routes_table.php": {
+    "mtime": 1785416157.1469083,
+    "ast_hash": "f21d95a6be10d10e2665865b3e1430b8",
     "semantic_hash": ""
   }
 }

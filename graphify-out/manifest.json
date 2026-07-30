@@ -885,7 +885,7 @@
     "semantic_hash": ""
   },
   "composer.json": {
-    "mtime": 1785379807.8192582,
+    "mtime": 1785416734.3384888,
     "ast_hash": "d390729828787420dca983b25fb43374",
     "semantic_hash": ""
   },
@@ -1685,82 +1685,82 @@
     "semantic_hash": ""
   },
   "public/js/filament/filament/app.js": {
-    "mtime": 1784873218.4171884,
+    "mtime": 1785416949.911433,
     "ast_hash": "055af451d117e11009c5600efa7e0247",
     "semantic_hash": ""
   },
   "public/js/filament/filament/echo.js": {
-    "mtime": 1784873218.4171884,
+    "mtime": 1785416950.080518,
     "ast_hash": "9a7993fa9a704f0e97d5c701b08e6bce",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/color-picker.js": {
-    "mtime": 1784873218.4015224,
+    "mtime": 1785416948.8229527,
     "ast_hash": "4393c422493e0e6143a80d58647ff2b7",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/date-time-picker.js": {
-    "mtime": 1784873218.4025583,
+    "mtime": 1785416949.044966,
     "ast_hash": "81dde65996cea522022e7e01f12aa195",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/file-upload.js": {
-    "mtime": 1784873218.4035883,
+    "mtime": 1785416949.1160476,
     "ast_hash": "e6b4d840b25668da2a477ea8b2cdf026",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/key-value.js": {
-    "mtime": 1784873218.4045854,
+    "mtime": 1785416949.140099,
     "ast_hash": "b23b4554a7073f7911cb39a35b88f4e9",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/markdown-editor.js": {
-    "mtime": 1784873218.406238,
+    "mtime": 1785416949.533383,
     "ast_hash": "69b95c6980262efcf7a49aa01859a7c2",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/rich-editor.js": {
-    "mtime": 1784873218.406238,
+    "mtime": 1785416949.581543,
     "ast_hash": "3c0f7f9d1c1c13febc0e4d0a5c3698b5",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/select.js": {
-    "mtime": 1784873218.408241,
+    "mtime": 1785416949.6916897,
     "ast_hash": "c51957de2de3f9c1553ddf8c40ffcbf1",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/tags-input.js": {
-    "mtime": 1784873218.408241,
+    "mtime": 1785416949.7162752,
     "ast_hash": "0c2de9797b4b240e4c0f706863491e03",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/textarea.js": {
-    "mtime": 1784873218.4102445,
+    "mtime": 1785416949.7237535,
     "ast_hash": "abb98c0edb3e7228142c14a8422ef7c6",
     "semantic_hash": ""
   },
   "public/js/filament/notifications/notifications.js": {
-    "mtime": 1784873218.4191813,
+    "mtime": 1785416950.0965927,
     "ast_hash": "f873fe0caab22e4a8740d51d4f31a6da",
     "semantic_hash": ""
   },
   "public/js/filament/support/support.js": {
-    "mtime": 1784873218.4201777,
+    "mtime": 1785416950.2563946,
     "ast_hash": "7a114a87d2fcdefefc3e4f9012dbdbbb",
     "semantic_hash": ""
   },
   "public/js/filament/tables/components/table.js": {
-    "mtime": 1784873218.4102445,
+    "mtime": 1785416949.7430823,
     "ast_hash": "414ff611c888683f502c4f14f7191def",
     "semantic_hash": ""
   },
   "public/js/filament/widgets/components/chart.js": {
-    "mtime": 1784873218.4122493,
+    "mtime": 1785416949.8173807,
     "ast_hash": "f214520fae0f668a51d73056581cd884",
     "semantic_hash": ""
   },
   "public/js/filament/widgets/components/stats-overview/stat/chart.js": {
-    "mtime": 1784873218.4122493,
+    "mtime": 1785416949.877577,
     "ast_hash": "42945d911451ca2ed6a66f6380dcfce0",
     "semantic_hash": ""
   },
@@ -3045,8 +3045,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/AirlineBaggageRuleResource.php": {
-    "mtime": 1785415283.5182652,
-    "ast_hash": "a389a2c0a7d78f4e1e8e6ab72532312e",
+    "mtime": 1785417807.6770382,
+    "ast_hash": "5bf9ac8b749a507e0fff6c085b7a8648",
     "semantic_hash": ""
   },
   "app/Filament/Resources/AirlineBaggageRuleResource/Pages/CreateAirlineBaggageRule.php": {
@@ -3060,8 +3060,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/AirlineBaggageRuleResource/Pages/ListAirlineBaggageRules.php": {
-    "mtime": 1785415220.859533,
-    "ast_hash": "8929b7eb114da6b1628f44619864fa9f",
+    "mtime": 1785417762.76864,
+    "ast_hash": "1331de3e7ef4a15f70315369fa410805",
     "semantic_hash": ""
   },
   "app/Models/AirlineBaggageRule.php": {
