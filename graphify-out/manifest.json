@@ -5,7 +5,7 @@
     "semantic_hash": ""
   },
   "app/Actions/Bookings/CreateBookingAction.php": {
-    "mtime": 1785379807.810032,
+    "mtime": 1785414459.5489478,
     "ast_hash": "d8884cef805e40701c336decca46fa3c",
     "semantic_hash": ""
   },
@@ -120,7 +120,7 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource.php": {
-    "mtime": 1785223633.0025012,
+    "mtime": 1785414459.5397556,
     "ast_hash": "9103248fbd44db525c9e0531e394edf5",
     "semantic_hash": ""
   },
@@ -140,7 +140,7 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/BookingResource/Pages/ViewBooking.php": {
-    "mtime": 1785311270.2420313,
+    "mtime": 1785413375.856789,
     "ast_hash": "f1d87d908200e1c78b009c496c377ef1",
     "semantic_hash": ""
   },
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource.php": {
-    "mtime": 1785246133.2176352,
-    "ast_hash": "0a7fe6efeb1d09bb795fca5114559928",
+    "mtime": 1785416199.0029502,
+    "ast_hash": "8ec5f9ecb0a0a2ad52bc13ebb199354c",
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource/Pages/CreateFerryRoute.php": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/FerryRouteResource/Pages/ListFerryRoutes.php": {
-    "mtime": 1784467577.1139035,
-    "ast_hash": "125a3486432bcb41ef367848e08fd279",
+    "mtime": 1785411480.7007704,
+    "ast_hash": "ee3f9e27bd015ba2233812fe0afa7a0d",
     "semantic_hash": ""
   },
   "app/Filament/Resources/GraciaEarningRuleResource.php": {
@@ -335,7 +335,7 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource.php": {
-    "mtime": 1785311270.2420313,
+    "mtime": 1785413375.856789,
     "ast_hash": "e4b23472f931f9a28f543f825316062c",
     "semantic_hash": ""
   },
@@ -535,7 +535,7 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/BookingController.php": {
-    "mtime": 1785410626.3209028,
+    "mtime": 1785414459.5489478,
     "ast_hash": "962996f73d64907b21ed511c79de0ab3",
     "semantic_hash": ""
   },
@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1785379807.8161871,
-    "ast_hash": "c201426aea25875f49e4c4f78db686b1",
+    "mtime": 1785416320.9458604,
+    "ast_hash": "26a1e080a0ba6aa64503d13a513b01e4",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -690,7 +690,7 @@
     "semantic_hash": ""
   },
   "app/Models/Booking.php": {
-    "mtime": 1785168152.9528944,
+    "mtime": 1785414459.5571988,
     "ast_hash": "6cbc4b8b691bb9b3c0ae0a71214c3d74",
     "semantic_hash": ""
   },
@@ -700,8 +700,8 @@
     "semantic_hash": ""
   },
   "app/Models/FerryRoute.php": {
-    "mtime": 1785248108.478767,
-    "ast_hash": "cf6a27b955e0d72ac52456f9cab39c40",
+    "mtime": 1785416171.6207252,
+    "ast_hash": "08a795a169630410b2bdfd051d9df775",
     "semantic_hash": ""
   },
   "app/Models/GraciaEarningRule.php": {
@@ -740,8 +740,8 @@
     "semantic_hash": ""
   },
   "app/Models/Schedule.php": {
-    "mtime": 1785312319.2653544,
-    "ast_hash": "9087ae8299b27e211a58a33c31d12ac9",
+    "mtime": 1785416210.7397008,
+    "ast_hash": "f047edc33b2a82e60f97541e6c26511e",
     "semantic_hash": ""
   },
   "app/Models/ScheduleAccommodation.php": {
@@ -785,8 +785,8 @@
     "semantic_hash": ""
   },
   "app/Models/User.php": {
-    "mtime": 1785379807.817724,
-    "ast_hash": "d143643fcb25c2eb0c897ad26d82e766",
+    "mtime": 1785415192.2699976,
+    "ast_hash": "6d60bee623dd3b1607cd58164823ba5e",
     "semantic_hash": ""
   },
   "app/Models/UserLoginHistory.php": {
@@ -1380,8 +1380,8 @@
     "semantic_hash": ""
   },
   "database/seeders/DatabaseSeeder.php": {
-    "mtime": 1785379807.8254244,
-    "ast_hash": "ff3d92b9b67dcb994228d36c892dfe79",
+    "mtime": 1785415331.9664633,
+    "ast_hash": "24b0ee4047e464b8b764660dc6820770",
     "semantic_hash": ""
   },
   "database/seeders/DiscountSeeder.php": {
@@ -1415,8 +1415,8 @@
     "semantic_hash": ""
   },
   "database/seeders/VehicleSeeder.php": {
-    "mtime": 1784652338.0723312,
-    "ast_hash": "c4446e9e21a3e2464eb049a5b2569bfe",
+    "mtime": 1785415816.5025904,
+    "ast_hash": "c15e2efc63d8df170db605ff75fa9af4",
     "semantic_hash": ""
   },
   "database/seeders/WebsiteSettingSeeder.php": {
@@ -1480,7 +1480,7 @@
     "semantic_hash": ""
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1785410725.48028,
+    "mtime": 1785414459.5489478,
     "ast_hash": "b734b60fc7fd606b3e7fb0f03e70bd9e",
     "semantic_hash": ""
   },
@@ -1990,8 +1990,8 @@
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
-    "mtime": 1785379810.872708,
-    "ast_hash": "a9102c03af0e59eb77b228960e867b67",
+    "mtime": 1785416341.3479602,
+    "ast_hash": "93d72902b733036d60f5ea24937cb59a",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-lookup.blade.php": {
@@ -3042,6 +3042,76 @@
   "scratch/test_smtp.php": {
     "mtime": 1785379810.88066,
     "ast_hash": "f5403179e819c9c3c1d09b01e6f72d05",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AirlineBaggageRuleResource.php": {
+    "mtime": 1785415283.5182652,
+    "ast_hash": "a389a2c0a7d78f4e1e8e6ab72532312e",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AirlineBaggageRuleResource/Pages/CreateAirlineBaggageRule.php": {
+    "mtime": 1785415243.642496,
+    "ast_hash": "45ee02e5c4ee6122c557afa15ff63d75",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AirlineBaggageRuleResource/Pages/EditAirlineBaggageRule.php": {
+    "mtime": 1785415255.0904913,
+    "ast_hash": "b50225ab94de2d637a7f9a5517da0f47",
+    "semantic_hash": ""
+  },
+  "app/Filament/Resources/AirlineBaggageRuleResource/Pages/ListAirlineBaggageRules.php": {
+    "mtime": 1785415220.859533,
+    "ast_hash": "8929b7eb114da6b1628f44619864fa9f",
+    "semantic_hash": ""
+  },
+  "app/Models/AirlineBaggageRule.php": {
+    "mtime": 1785415115.8142076,
+    "ast_hash": "8430e3a2eab2353c85098770a6fc7a6f",
+    "semantic_hash": ""
+  },
+  "app/Services/ScheduleCsvImportService.php": {
+    "mtime": 1785415816.5005548,
+    "ast_hash": "d280986b63c1f1857aaaa1ae91a8803b",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_30_150000_create_airline_baggage_rules_table.php": {
+    "mtime": 1785415045.932745,
+    "ast_hash": "3b3e87c7a98aa53ef7b55841fcdf2bda",
+    "semantic_hash": ""
+  },
+  "database/seeders/AirlineBaggageRuleSeeder.php": {
+    "mtime": 1785415318.5359356,
+    "ast_hash": "f32defb93f6b6a3540c5bf6f30c439fd",
+    "semantic_hash": ""
+  },
+  "scratch/check_operators.php": {
+    "mtime": 1785411480.7017977,
+    "ast_hash": "78e1e7ac48294d28c2a5dfd05a477bbe",
+    "semantic_hash": ""
+  },
+  "scratch/replace_dates.php": {
+    "mtime": 1785411480.7017977,
+    "ast_hash": "5430d47e4f8a759b9f073d82451a381c",
+    "semantic_hash": ""
+  },
+  "scratch/test_booking_lookup.php": {
+    "mtime": 1785411480.7017977,
+    "ast_hash": "3fb8d1bdeba2b016602236f8bd64cf87",
+    "semantic_hash": ""
+  },
+  "scratch/test_schedules.php": {
+    "mtime": 1785411480.7035367,
+    "ast_hash": "6e4e4f01015e1cbc495050626496f631",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_30_200758_add_plate_no_to_schedules_table.php": {
+    "mtime": 1785415816.5015712,
+    "ast_hash": "0ada3586d52ffe4e33208974fb115b28",
+    "semantic_hash": ""
+  },
+  "database/migrations/2026_07_30_210000_add_trip_type_to_ferry_routes_table.php": {
+    "mtime": 1785416157.1469083,
+    "ast_hash": "f21d95a6be10d10e2665865b3e1430b8",
     "semantic_hash": ""
   }
 }

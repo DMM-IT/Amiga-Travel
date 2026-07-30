@@ -93,6 +93,17 @@ class FerryRouteResource extends Resource
                         $set('operator', null);
                     }),
 
+                Select::make('trip_type')
+                    ->label('Flight Scope (Domestic / International)')
+                    ->options([
+                        'local' => 'Local / Domestic',
+                        'international' => 'International',
+                    ])
+                    ->default('local')
+                    ->visible(fn (callable $get) => $get('mode') === 'airline')
+                    ->required(fn (callable $get) => $get('mode') === 'airline')
+                    ->helperText('Determines whether Local/Domestic or International baggage rates and rules apply to schedules under this airline route.'),
+
                 Select::make('vehicle_id')
                     ->label('Vehicle')
                     ->options(fn (callable $get) => Vehicle::query()
@@ -461,6 +472,20 @@ class FerryRouteResource extends Resource
                     ->sortable(),
                 TextColumn::make('mode')
                     ->label('Mode')
+                    ->sortable(),
+                TextColumn::make('trip_type')
+                    ->label('Scope')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'international' => 'info',
+                        'local' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'international' => 'International',
+                        'local' => 'Domestic / Local',
+                        default => 'Domestic / Local',
+                    })
                     ->sortable(),
                 TextColumn::make('schedules_count')
                     ->counts('schedules')

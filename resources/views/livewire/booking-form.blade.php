@@ -741,6 +741,19 @@
 
                                                     <div class="mt-6 border-t border-slate-100 pt-5 space-y-5">
                                                         <div>
+                                                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Flight Scope / Baggage Rules (Auto-Detected from Route)</label>
+                                                            <div class="flex items-center gap-4">
+                                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                                    <input type="radio" wire:model.live="baggage_trip_type" value="local" class="text-[#216417] focus:ring-[#216417]">
+                                                                    <span class="text-sm font-semibold text-slate-800">Local / Domestic</span>
+                                                                </label>
+                                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                                    <input type="radio" wire:model.live="baggage_trip_type" value="international" class="text-[#216417] focus:ring-[#216417]">
+                                                                    <span class="text-sm font-semibold text-slate-800">International</span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div>
                                                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Select Extra Baggage (kg)</label>
                                                             <select 
                                                                 wire:change="selectBaggageOption($event.target.options[$event.target.selectedIndex].dataset.weight, $event.target.value)"

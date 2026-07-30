@@ -14,6 +14,7 @@ class FerryRoute extends Model
         'destination',
         'is_active',
         'mode',
+        'trip_type',
         'operator',
         'vehicle_id',
     ];

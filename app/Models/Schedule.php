@@ -470,6 +470,7 @@ class Schedule extends Model
             'availability' => $this->availability_label ?? 'Available',
             'tickets_available' => (int) ($this->tickets_available ?? 0),
             'mode' => $mode,
+            'trip_type' => $this->ferryRoute?->trip_type ?: 'local',
             'operator' => $this->ferryRoute?->operator,
             // Promotional ticket — null when no active promo exists for this schedule
             'promotional_ticket' => $promoTicket ? [

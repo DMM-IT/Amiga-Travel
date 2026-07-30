@@ -58,6 +58,7 @@ class User extends Authenticatable implements FilamentUser
         ],
         'Airline' => [
             'airline_seats' => 'Airline Seats',
+            'airline_baggage' => 'Airline Baggage',
         ],
         'Ferry' => [
             'vehicle_rates' => 'Vehicle Rates',
@@ -87,6 +88,7 @@ class User extends Authenticatable implements FilamentUser
         'bookings' => 'Bookings',
         'transactions' => 'Transactions',
         'airline_seats' => 'Airline Seats',
+        'airline_baggage' => 'Airline Baggage',
         'vehicle_rates' => 'Vehicle Rates',
     ];
 

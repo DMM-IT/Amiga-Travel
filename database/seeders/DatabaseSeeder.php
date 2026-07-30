@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
             VehicleSeeder::class,
             WebsiteSettingSeeder::class,
             GraciaEarningRuleSeeder::class,
+            AirlineBaggageRuleSeeder::class,
         ]);
     }
 }

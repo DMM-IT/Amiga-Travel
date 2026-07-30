@@ -127,6 +127,7 @@ class BookingForm extends Component
     public ?string $driver_birthday = null;
     public bool $showBaggageRules = false;
     public bool $hasExtraBaggage = false;
+    public string $baggage_trip_type = 'local'; // 'local' or 'international'
     public string $selected_baggage_airline = '';
     public string $extra_baggage_weight = '';
     public ?float $extra_baggage_price = null;
@@ -702,52 +703,75 @@ public function selectedSchedule(): ?array
 
     public function getAirlineExtraBaggageRates(): array
     {
-        return [
-            'pal' => [
-                'name' => 'Philippine Airlines (PAL)',
-                'code' => 'PAL',
-                'logo' => 'Pal-Logo.jfif',
-                'options' => [
-                    ['weight' => '20 kg', 'price' => 3700],
-                    ['weight' => '25 kg', 'price' => 4625],
-                    ['weight' => '30 kg', 'price' => 5550],
-                    ['weight' => '40 kg', 'price' => 7400],
-                    ['weight' => '50 kg', 'price' => 9250],
-                ],
-            ],
-            'ceb_pac' => [
-                'name' => 'Cebu Pacific Air',
-                'code' => 'Cebu Pacific',
-                'logo' => 'CebuPecific-Logo.png',
-                'options' => [
-                    ['weight' => '20 kg', 'price' => 1505],
-                    ['weight' => '24 kg', 'price' => 2105],
-                    ['weight' => '28 kg', 'price' => 2705],
-                    ['weight' => '32 kg', 'price' => 3305],
-                ],
-            ],
-            'airasia' => [
-                'name' => 'AirAsia International',
-                'code' => 'AirAsia',
-                'logo' => 'AirAsia-Logo.png',
-                'options' => [
-                    ['weight' => '20 kg', 'price' => 1470],
-                    ['weight' => '25 kg', 'price' => 2220],
-                    ['weight' => '30 kg', 'price' => 2650],
-                    ['weight' => '40 kg', 'price' => 2930],
-                    ['weight' => '50 kg', 'price' => 3730],
-                    ['weight' => '60 kg', 'price' => 4400],
-                ],
-            ],
-        ];
+        return \App\Models\AirlineBaggageRule::getRatesForBooking($this->baggage_trip_type);
+    }
+
+    public function autoDetectBaggageScope(): string
+    {
+        if ($this->selected_schedule_id) {
+            $sched = Schedule::with('ferryRoute')->find($this->selected_schedule_id);
+            if ($sched?->ferryRoute?->trip_type) {
+                return $sched->ferryRoute->trip_type;
+            }
+        }
+        if ($this->origin && $this->destination) {
+            $routeScope = \App\Models\FerryRoute::query()
+                ->where('origin', $this->origin)
+                ->where('destination', $this->destination)
+                ->whereNotNull('trip_type')
+                ->value('trip_type');
+            if ($routeScope) {
+                return $routeScope;
+            }
+        }
+
+        return 'local';
+    }
+
+    public function updateBaggagePriceFromRates(): void
+    {
+        $rates = $this->getAirlineExtraBaggageRates();
+        $key = $this->selected_baggage_airline;
+        if (isset($rates[$key]['options']) && ! empty($rates[$key]['options'])) {
+            $found = false;
+            if ($this->extra_baggage_weight) {
+                foreach ($rates[$key]['options'] as $opt) {
+                    if ($opt['weight'] === $this->extra_baggage_weight) {
+                        $this->extra_baggage_price = floatval($opt['price']);
+                        $this->extra_baggage_type = $opt['weight'] . ' Extra Baggage (' . ucfirst($this->baggage_trip_type) . ')';
+                        $found = true;
+                        break;
+                    }
+                }
+            }
+            if (! $found) {
+                $first = $rates[$key]['options'][0];
+                $this->extra_baggage_weight = $first['weight'];
+                $this->extra_baggage_price = floatval($first['price']);
+                $this->extra_baggage_type = $first['weight'] . ' Extra Baggage (' . ucfirst($this->baggage_trip_type) . ')';
+            }
+        } else {
+            $this->extra_baggage_weight = '';
+            $this->extra_baggage_price = null;
+            $this->extra_baggage_type = '';
+        }
+    }
+
+    public function updatedBaggageTripType($value): void
+    {
+        if (! $this->selected_baggage_airline) {
+            $this->selected_baggage_airline = $this->autoDetectBaggageAirline();
+        }
+        $this->updateBaggagePriceFromRates();
+        $this->saveDraft();
     }
 
     public function autoDetectBaggageAirline(): string
     {
         $op = strtolower($this->operator ?: '');
         if (! $op && $this->selected_schedule_id) {
-            $sched = Schedule::find($this->selected_schedule_id);
-            $op = strtolower($sched?->service_name ?: '');
+            $sched = Schedule::with('ferryRoute')->find($this->selected_schedule_id);
+            $op = strtolower($sched?->ferryRoute?->operator ?: ($sched?->service_name ?: ''));
         }
 
         if (stripos($op, 'pal') !== false || stripos($op, 'philippine') !== false) {
@@ -767,24 +791,18 @@ public function selectedSchedule(): ?array
     {
         $this->extra_baggage_weight = $weight;
         $this->extra_baggage_price = floatval($price);
-        $this->extra_baggage_type = $weight . ' Extra Baggage';
+        $this->extra_baggage_type = $weight . ' Extra Baggage (' . ucfirst($this->baggage_trip_type) . ')';
         $this->saveDraft();
     }
 
     public function updatedHasExtraBaggage($value): void
     {
         if ($value) {
+            $this->baggage_trip_type = $this->autoDetectBaggageScope();
             if (! $this->selected_baggage_airline) {
                 $this->selected_baggage_airline = $this->autoDetectBaggageAirline();
             }
-            $rates = $this->getAirlineExtraBaggageRates();
-            $key = $this->selected_baggage_airline;
-            if (isset($rates[$key]['options'][0])) {
-                $first = $rates[$key]['options'][0];
-                $this->extra_baggage_weight = $first['weight'];
-                $this->extra_baggage_price = floatval($first['price']);
-                $this->extra_baggage_type = $first['weight'] . ' Extra Baggage';
-            }
+            $this->updateBaggagePriceFromRates();
         } else {
             $this->extra_baggage_weight = '';
             $this->extra_baggage_price = null;
@@ -796,13 +814,7 @@ public function selectedSchedule(): ?array
 
     public function updatedSelectedBaggageAirline($value): void
     {
-        $rates = $this->getAirlineExtraBaggageRates();
-        if (isset($rates[$value]['options'][0])) {
-            $first = $rates[$value]['options'][0];
-            $this->extra_baggage_weight = $first['weight'];
-            $this->extra_baggage_price = floatval($first['price']);
-            $this->extra_baggage_type = $first['weight'] . ' Extra Baggage';
-        }
+        $this->updateBaggagePriceFromRates();
         $this->saveDraft();
     }
 
@@ -867,6 +879,7 @@ public function selectedSchedule(): ?array
         $this->availableSchedules = [];
         $this->showDestinationDropdown = false;
         $this->destinationSearch = '';
+        $this->baggage_trip_type = $this->autoDetectBaggageScope();
 
         $this->updateAvailableScheduleDates();
         $this->saveDraft();
@@ -1130,6 +1143,9 @@ public function selectedSchedule(): ?array
     {
         $this->selected_schedule_id = $scheduleId;
         $this->selected_transport_class_id = null;
+        $this->baggage_trip_type = $this->autoDetectBaggageScope();
+        $this->selected_baggage_airline = $this->autoDetectBaggageAirline();
+        $this->updateBaggagePriceFromRates();
         $this->saveDraft();
     }
     
