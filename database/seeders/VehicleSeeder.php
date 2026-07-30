@@ -104,15 +104,15 @@ class VehicleSeeder extends Seeder
             ['name' => 'Airbus A330neo', 'vehicle_id' => 'RP-C3901', 'operator' => 'Cebu Pacific Air', 'type' => 'airline', 'is_active' => true],
             ['name' => 'Airbus A330neo', 'vehicle_id' => 'RP-C3902', 'operator' => 'Cebu Pacific Air', 'type' => 'airline', 'is_active' => true],
 
-            // Philippines AirAsia
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8945', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8947', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8950', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8963', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8966', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8972', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8974', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
-            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8975', 'operator' => 'Philippines AirAsia', 'type' => 'airline', 'is_active' => true],
+            // Philippine AirAsia
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8945', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8947', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8950', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8963', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8966', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8972', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8974', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
+            ['name' => 'Airbus A320-200', 'vehicle_id' => 'RP-C8975', 'operator' => 'Philippine AirAsia', 'type' => 'airline', 'is_active' => true],
         ];
 
         foreach ($airlines as $airline) {

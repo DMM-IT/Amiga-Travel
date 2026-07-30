@@ -138,11 +138,18 @@ class FerryRouteResource extends Resource
                     })
                     ->hint('Select a vehicle from the ferry/airline list'),
 
-                TextInput::make('operator')
+                Select::make('operator')
                     ->label('Operator')
-                    ->disabled()
+                    ->options(fn (callable $get) => Vehicle::query()
+                        ->when($get('mode'), fn ($query, $mode) => $query->where('type', $mode))
+                        ->whereNotNull('operator')
+                        ->orderBy('operator')
+                        ->pluck('operator', 'operator')
+                        ->toArray()
+                    )
+                    ->searchable()
                     ->reactive()
-                    ->dehydrated(),
+                    ->nullable(),
 
                 Toggle::make('is_active')
                     ->label('Available for booking')
@@ -289,6 +296,12 @@ class FerryRouteResource extends Resource
                         $set('vehicle_name', optional(Vehicle::find($vehicleId))->name);
                     }
                 })
+                ->visible(fn (callable $get) => filled($get('../../vehicle_id')))
+                ->nullable()
+                ->maxLength(255),
+                
+            TextInput::make('plate_no')
+                ->label('Plate No.')
                 ->nullable()
                 ->maxLength(255),
 

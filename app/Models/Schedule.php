@@ -17,6 +17,7 @@ class Schedule extends Model
         'ferry_route_id',
         'service_name',
         'vehicle_name',
+        'plate_no',
         'departure_time',
         'arrival_time',
         'duration_minutes',

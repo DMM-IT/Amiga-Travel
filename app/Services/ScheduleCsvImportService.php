@@ -237,6 +237,7 @@ class ScheduleCsvImportService
         $modeRaw = $this->getValue($row, ['mode']);
         $operator = $this->getValue($row, ['operator']);
         $vehicleTailNo = $this->getValue($row, ['vehicletailno', 'vehicle', 'tailno', 'vehicleno']);
+        $plateNo = $this->getValue($row, ['plateno', 'plate']);
         $origin = $this->getValue($row, ['origin']);
         $destination = $this->getValue($row, ['destination']);
         $depDateStr = $this->getValue($row, ['departuredate', 'depdate', 'date']);
@@ -322,8 +323,8 @@ class ScheduleCsvImportService
         if (! $schedule) {
             $schedule = Schedule::create([
                 'ferry_route_id' => $route->id,
-                'service_name' => $vehicleTailNo,
                 'vehicle_name' => $vehicleTailNo,
+                'plate_no' => $plateNo,
                 'departure_time' => $departureDateTime,
                 'arrival_time' => $arrivalDateTime,
                 'price' => $rate,
@@ -369,9 +370,7 @@ class ScheduleCsvImportService
                 }
             }
         } else {
-            $accommodationExists = $schedule->scheduleAccommodations()
-                ->where('name', $transportClassStr)
-                ->exists();
+            $accommodationExists = $schedule->scheduleAccommodations()->where('name', $transportClassStr)->exists();
 
             if ($accommodationExists && ! $scheduleCreated) {
                 $status = 'skipped';
@@ -391,7 +390,7 @@ class ScheduleCsvImportService
 
         // 6. Handle optional Return Date if present
         if (filled($returnDateStr)) {
-            $this->processReturnSchedule($route, $vehicleTailNo, $operator, $mode, trim($returnDateStr), $depTimeStrClean, $arrTimeStr, $transportClassStr, $rate);
+            $this->processReturnSchedule($route, $vehicleTailNo, $plateNo, $operator, $mode, trim($returnDateStr), $depTimeStrClean, $arrTimeStr, $transportClassStr, $rate);
         }
 
         return $status;
@@ -403,6 +402,7 @@ class ScheduleCsvImportService
     protected function processReturnSchedule(
         FerryRoute $forwardRoute,
         string $vehicleTailNo,
+        ?string $plateNo,
         string $operator,
         string $mode,
         string $returnDateStr,
@@ -448,8 +448,8 @@ class ScheduleCsvImportService
         if (! $schedule) {
             $schedule = Schedule::create([
                 'ferry_route_id' => $returnRoute->id,
-                'service_name' => $vehicleTailNo,
                 'vehicle_name' => $vehicleTailNo,
+                'plate_no' => $plateNo,
                 'departure_time' => $departureDateTime,
                 'arrival_time' => $arrivalDateTime,
                 'price' => $rate,
@@ -487,7 +487,7 @@ class ScheduleCsvImportService
     protected function normalizeOperatorName(?string $operator, string $mode): string
     {
         if (blank($operator)) {
-            return $mode === 'airline' ? 'Philippines AirAsia' : 'Standard Ferry';
+            return $mode === 'airline' ? 'Philippine AirAsia' : 'Standard Ferry';
         }
 
         $clean = trim($operator);
@@ -495,7 +495,7 @@ class ScheduleCsvImportService
 
         if ($mode === 'airline') {
             if (str_contains($lower, 'airasia')) {
-                return 'Philippines AirAsia';
+                return 'Philippine AirAsia';
             }
             if (str_contains($lower, 'cebu') || str_contains($lower, 'ceb')) {
                 return 'Cebu Pacific Air';
