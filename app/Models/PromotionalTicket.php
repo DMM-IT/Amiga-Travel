@@ -14,6 +14,8 @@ class PromotionalTicket extends Model
         'promo_price',
         'quantity_available',
         'quantity_sold',
+        'landscape_image',
+        'portrait_image',
         'starts_at',
         'ends_at',
         'is_active',

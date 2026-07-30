@@ -343,7 +343,8 @@ class CreateBookingAction
 
         $settings       = PaymentSetting::current();
         $serviceFee     = count($passengers) * (float) ($settings->fee_per_person ?? 0);
+        $hotelFee       = $accommodationsTotal > 0 ? (float) ($settings->fee_per_accommodation ?? 0) : 0;
 
-        return $ferryTotal + $transportClassTotal + $accommodationsTotal + $vehicleTotal + $serviceFee;
+        return $ferryTotal + $transportClassTotal + $accommodationsTotal + $vehicleTotal + $serviceFee + $hotelFee;
     }
 }

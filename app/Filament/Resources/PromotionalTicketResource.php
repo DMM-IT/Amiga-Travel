@@ -157,6 +157,14 @@ class PromotionalTicketResource extends Resource
                     ->required()
                     ->searchable()
                     ->placeholder(fn(Get $get): string => $get('vehicle_id') ? 'Select schedule first' : 'Select vehicle first'),
+                Forms\Components\FileUpload::make('landscape_image')
+                    ->label('Landscape Image')
+                    ->image()
+                    ->directory('promotional-tickets'),
+                Forms\Components\FileUpload::make('portrait_image')
+                    ->label('Portrait Image')
+                    ->image()
+                    ->directory('promotional-tickets'),
                 Forms\Components\TextInput::make('promo_price')
                     ->label('Promo Price (₱)')
                     ->numeric()

@@ -756,7 +756,6 @@
                                                                     @endforeach
                                                                 </select>
                                                             </div>
-                                                        </div>
 
                                                         {{-- Visual Image Details & Price Computation Card --}}
                                                         <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 sm:p-5">
@@ -1538,7 +1537,7 @@
 
                                 @if ($breakdown['fee_per_accommodation'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
-                                        <span class="text-slate-700 font-medium">Accommodation Service Fee</span>
+                                        <span class="text-slate-700 font-medium">Hotel Service Fee</span>
                                         <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['fee_per_accommodation'], 2) }}</span>
                                     </div>
                                 @endif

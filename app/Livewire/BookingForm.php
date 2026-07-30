@@ -2217,9 +2217,8 @@ public function selectedSchedule(): ?array
         $payingTravelers = count($this->passengers);
         $serviceFee = ($payingTravelers * floatval($settings->fee_per_person));
         
-        // Accommodation fee: only charged if accommodation is actually selected AND has a price
-        $totalAccommodationAmount = $scheduleAccommodationPrice + $returnScheduleAccommodationPrice + $hotelTotal;
-        $accommodationFee = $totalAccommodationAmount > 0 ? floatval($settings->fee_per_accommodation) : 0;
+        // Accommodation fee: only charged if hotel is actually selected AND has a price
+        $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
 
         return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $this->getExtraBaggageTotalPrice();
     }
@@ -2301,9 +2300,8 @@ public function selectedSchedule(): ?array
         // Fees
         $breakdown['fee_per_traveler'] = $passengerCount * floatval($settings->fee_per_person);
         
-        // Accommodation fee: only charged if accommodation is actually selected AND has a price
-        $accommodationTotal = $breakdown['accommodation'] + $breakdown['hotel'];
-        $breakdown['fee_per_accommodation'] = $accommodationTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
+        // Accommodation fee: only charged if hotel is actually selected AND has a price
+        $breakdown['fee_per_accommodation'] = $breakdown['hotel'] > 0 ? floatval($settings->fee_per_accommodation) : 0;
 
         // Calculate total (sum of all items)
         $breakdown['total'] = 

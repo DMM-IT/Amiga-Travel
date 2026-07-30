@@ -62,8 +62,8 @@ class ManagePaymentSettings extends Page implements HasForms
                             ->minValue(0)
                             ->required(),
                         TextInput::make('fee_per_accommodation')
-                            ->label('Fee per accommodation (₱)')
-                            ->helperText('Charged for each accommodation the client selects.')
+                            ->label('Fee per hotel (₱)')
+                            ->helperText('Charged for each hotel the client selects.')
                             ->numeric()
                             ->prefix('₱')
                             ->minValue(0)
