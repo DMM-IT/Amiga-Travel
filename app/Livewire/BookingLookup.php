@@ -38,6 +38,8 @@ class BookingLookup extends Component
     public bool $showCancellationWarning = false;
     public bool $showRebookingWarning = false;
     public bool $showCancellationReminder = false;
+    public array $availableRebookingDates = [];
+    public array $availableRebookingReturnDates = [];
 
     protected $rules = [
         'rebookingProof' => 'nullable|image|max:2048',
@@ -351,7 +353,88 @@ class BookingLookup extends Component
         $this->rebooking_departure_date = $this->booking->departure_date?->format('Y-m-d');
         $this->rebooking_return_date = $this->booking->return_date?->format('Y-m-d');
         $this->feedback = "To rebook, please select your new travel dates and upload proof of payment for the 30% rebooking fee. Rebooking fee: ₱" . number_format($this->booking->getRebookingFeeAmount(), 2) . ".";
+
+        $this->calculateAvailableRebookingDates();
     }
+
+    private function calculateAvailableRebookingDates(): void
+    {
+        $this->availableRebookingDates = [];
+        $this->availableRebookingReturnDates = [];
+
+        if (! $this->booking || ! $this->booking->schedule) {
+            return;
+        }
+
+        $this->availableRebookingDates = $this->getValidDatesForSchedule(
+            $this->booking->schedule, 
+            $this->booking->schedule_accommodation_name,
+            $this->booking->transportClasses
+        );
+
+        if ($this->rebooking_is_round_trip && $this->booking->returnSchedule) {
+            $this->availableRebookingReturnDates = $this->getValidDatesForSchedule(
+                $this->booking->returnSchedule,
+                $this->booking->return_schedule_accommodation_name,
+                $this->booking->transportClasses
+            );
+        }
+    }
+
+    private function getValidDatesForSchedule(\App\Models\Schedule $originalSchedule, ?string $accommodationName, \Illuminate\Database\Eloquent\Collection $transportClasses): array
+    {
+        $timeStr = \Carbon\Carbon::parse($originalSchedule->departure_time)->format('H:i:s');
+        
+        $query = \App\Models\Schedule::where('ferry_route_id', $originalSchedule->ferry_route_id)
+            ->whereTime('departure_time', $timeStr)
+            ->where('departure_time', '>', now()->startOfDay())
+            ->active();
+
+        $matchingSchedules = $query->get();
+
+        $validDates = [];
+
+        foreach ($matchingSchedules as $schedule) {
+            $isValid = false;
+
+            if ($schedule->ferryRoute?->mode === 'airline') {
+                if ($transportClasses->isEmpty()) {
+                    $isValid = true;
+                } else {
+                    $requiredClassIds = $transportClasses->pluck('id')->all();
+                    
+                    $availableClassIds = $schedule->transportClasses()
+                        ->where('schedule_transport_class.tickets_available', '>', 0)
+                        ->where(function($q) {
+                             $q->where('schedule_transport_class.is_active', true)->orWhereNull('schedule_transport_class.is_active');
+                        })
+                        ->pluck('transport_classes.id')
+                        ->all();
+                        
+                    $isValid = empty(array_diff($requiredClassIds, $availableClassIds));
+                }
+            } else {
+                if (! $accommodationName) {
+                    $isValid = true;
+                } else {
+                    $isValid = $schedule->scheduleAccommodations()
+                        ->where('name', $accommodationName)
+                        ->where(function($q) {
+                             $q->where('is_active', true)->orWhereNull('is_active');
+                        })
+                        ->where('tickets_available', '>', 0)
+                        ->exists();
+                }
+            }
+
+            if ($isValid) {
+                $validDates[] = \Carbon\Carbon::parse($schedule->departure_time)->format('Y-m-d');
+            }
+        }
+
+        return array_values(array_unique($validDates));
+    }
+
 
     public function submitRebookingProof(): void
     {

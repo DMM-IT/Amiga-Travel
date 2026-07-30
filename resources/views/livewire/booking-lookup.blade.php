@@ -414,19 +414,25 @@
                                                     <div
                                                         class="relative"
                                                         wire:ignore
-                                                        x-data="{}"
+                                                        x-data="{ enabledDates: @js($availableRebookingDates) }"
                                                         x-init="
                                                             $nextTick(() => {
-                                                                flatpickr($el.querySelector('input'), {
-                                                                    dateFormat: 'Y-m-d',
-                                                                    altInput: true,
-                                                                    altFormat: 'F j, Y',
-                                                                    minDate: 'today',
-                                                                    disableMobile: true,
-                                                                    onChange: function(sel, dateStr) {
-                                                                        $wire.set('rebooking_departure_date', dateStr);
-                                                                    }
-                                                                });
+                                                                if (enabledDates.length === 0) {
+                                                                    $el.querySelector('input').disabled = true;
+                                                                    $el.querySelector('input').placeholder = 'No available dates';
+                                                                } else {
+                                                                    flatpickr($el.querySelector('input'), {
+                                                                        dateFormat: 'Y-m-d',
+                                                                        altInput: true,
+                                                                        altFormat: 'F j, Y',
+                                                                        minDate: 'today',
+                                                                        enable: enabledDates,
+                                                                        disableMobile: true,
+                                                                        onChange: function(sel, dateStr) {
+                                                                            $wire.set('rebooking_departure_date', dateStr);
+                                                                        }
+                                                                    });
+                                                                }
                                                             })
                                                         "
                                                     >
@@ -471,19 +477,25 @@
                                                         <div
                                                             class="relative"
                                                             wire:ignore
-                                                            x-data="{}"
+                                                            x-data="{ enabledDates: @js($availableRebookingReturnDates) }"
                                                             x-init="
                                                                 $nextTick(() => {
-                                                                    flatpickr($el.querySelector('input'), {
-                                                                        dateFormat: 'Y-m-d',
-                                                                        altInput: true,
-                                                                        altFormat: 'F j, Y',
-                                                                        minDate: 'today',
-                                                                        disableMobile: true,
-                                                                        onChange: function(sel, dateStr) {
-                                                                            $wire.set('rebooking_return_date', dateStr);
-                                                                        }
-                                                                    });
+                                                                    if (enabledDates.length === 0) {
+                                                                        $el.querySelector('input').disabled = true;
+                                                                        $el.querySelector('input').placeholder = 'No available dates';
+                                                                    } else {
+                                                                        flatpickr($el.querySelector('input'), {
+                                                                            dateFormat: 'Y-m-d',
+                                                                            altInput: true,
+                                                                            altFormat: 'F j, Y',
+                                                                            minDate: 'today',
+                                                                            enable: enabledDates,
+                                                                            disableMobile: true,
+                                                                            onChange: function(sel, dateStr) {
+                                                                                $wire.set('rebooking_return_date', dateStr);
+                                                                            }
+                                                                        });
+                                                                    }
                                                                 })
                                                             "
                                                         >
