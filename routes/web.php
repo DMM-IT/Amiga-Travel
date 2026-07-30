@@ -10,13 +10,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TourController;
 
 $renderWebsitePage = function (string $page, string $view) {
-    $settings = WebsiteSetting::firstWhere('page', $page);
+    class_exists(\App\Models\WebsiteSetting::class);
+    
+    $settingsData = \Illuminate\Support\Facades\Cache::remember('website_settings:page:' . $page, now()->addHour(), fn () =>
+        WebsiteSetting::firstWhere('page', $page)?->toArray()
+    );
 
     return view($view, [
-        'pageSettings' => $settings,
-        'pageContent' => $settings->content ?? [],
-        'heroImages' => collect($settings->hero_images ?? []),
-        'bookingCards' => $settings->booking_cards ?? $settings->content['booking_cards'] ?? [],
+        'pageSettings' => (object) ($settingsData ?? []),
+        'pageContent' => $settingsData['content'] ?? [],
+        'heroImages' => collect($settingsData['hero_images'] ?? []),
+        'bookingCards' => collect($settingsData['booking_cards'] ?? $settingsData['content']['booking_cards'] ?? []),
     ]);
 };
 
@@ -96,10 +100,18 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
     // Filter out routes that have no schedules in this date range
     $routes = $routes->filter(fn ($route) => $route->schedules->isNotEmpty());
 
-    $settings = WebsiteSetting::firstWhere('page', 'schedules');
-    $pageContent = $settings->content ?? [];
+    class_exists(\App\Models\WebsiteSetting::class);
+    $settingsData = \Illuminate\Support\Facades\Cache::remember('website_settings:page:schedules', now()->addHour(), fn () =>
+        WebsiteSetting::firstWhere('page', 'schedules')?->toArray()
+    );
+    $pageContent = $settingsData['content'] ?? [];
 
-    return view('schedules', compact('routes', 'startDate', 'endDate', 'pageContent'));
+    $activeTab = $request->query('tab', 'ferry');
+    if (!in_array($activeTab, ['ferry', 'airlines'])) {
+        $activeTab = 'ferry';
+    }
+
+    return view('schedules', compact('routes', 'startDate', 'endDate', 'pageContent', 'activeTab'));
 })->name('schedules');
 
 Route::get('/payment/{transaction}', function (Transaction $transaction) {

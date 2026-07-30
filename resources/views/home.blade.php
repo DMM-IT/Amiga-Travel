@@ -9,12 +9,13 @@
     <div x-data="{ open: true }" x-init="open = true">
         <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center">
             <div class="fixed inset-0 bg-black/40" @click="open = false"></div>
-            <div class="relative max-w-lg w-full rounded-2xl bg-white p-6 z-10 shadow-lg">
-                <h3 class="text-lg font-semibold text-slate-900">Want to cancel your booking?</h3>
-                <p class="mt-3 text-sm text-slate-700">We received your proof of payment. If you change your mind, you can start a 5-minute cancellation window now to request a refund. After 5 minutes, cancellation will no longer be available.</p>
+            <div class="relative max-w-lg w-full rounded-2xl bg-white p-6 z-10 shadow-lg relative ws-sbtn-container">
+                @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'cancel_modal' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
+                <h3 class="text-lg font-semibold text-slate-900">{{ data_get($pageContent, 'cancel_modal_title', 'Want to cancel your booking?') }}</h3>
+                <p class="mt-3 text-sm text-slate-700">{{ data_get($pageContent, 'cancel_modal_desc', 'We received your proof of payment. If you change your mind, you can start a 5-minute cancellation window now to request a refund. After 5 minutes, cancellation will no longer be available.') }}</p>
                 <div class="mt-4 flex gap-3 justify-end">
-                    <a href="{{ url('/') }}" class="inline-flex items-center justify-center rounded-3xl border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Maybe later</a>
-                    <a href="{{ url('/book/status?transaction_number=' . urlencode($suggestTxn) . '&start_cancellation=1') }}" class="inline-flex items-center justify-center rounded-3xl bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700">Start cancellation</a>
+                    <a href="{{ url('/') }}" class="inline-flex items-center justify-center rounded-3xl border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">{{ data_get($pageContent, 'cancel_modal_btn_cancel', 'Maybe later') }}</a>
+                    <a href="{{ url('/book/status?transaction_number=' . urlencode($suggestTxn) . '&start_cancellation=1') }}" class="inline-flex items-center justify-center rounded-3xl bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700">{{ data_get($pageContent, 'cancel_modal_btn_confirm', 'Start cancellation') }}</a>
                 </div>
             </div>
         </div>
@@ -84,12 +85,13 @@
         </template>
 
         <template x-if="slides.length === 0">
-            <div class="w-full h-full min-h-[280px] lg:min-h-[600px] flex flex-col items-center justify-center p-6 text-center bg-slate-50 aspect-[16/9] lg:aspect-[3/4]">
+            <div class="w-full h-full min-h-[280px] lg:min-h-[600px] flex flex-col items-center justify-center p-6 text-center bg-slate-50 aspect-[16/9] lg:aspect-[3/4] relative ws-sbtn-container">
+                @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'deals_empty' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <h3 class="text-xl font-medium text-slate-500">Exciting Deals Coming Soon!</h3>
-                <p class="mt-2 text-sm text-slate-400">Check back later for special promotions and announcements.</p>
+                <h3 class="text-xl font-medium text-slate-500">{{ data_get($pageContent, 'deals_empty_title', 'Exciting Deals Coming Soon!') }}</h3>
+                <p class="mt-2 text-sm text-slate-400">{{ data_get($pageContent, 'deals_empty_desc', 'Check back later for special promotions and announcements.') }}</p>
             </div>
         </template>
     </div>
@@ -150,26 +152,28 @@
             </div>
  
             <div class="p-5 sm:p-7 grid gap-5 sm:grid-cols-2 flex-grow">
-                <a href="{{ url('/book/new') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="background: linear-gradient(135deg, #eaf5e8 0%, #d8eed2 100%); --hover-border: #216417;" onmouseover="this.style.borderColor='#216417'" onmouseout="this.style.borderColor=''">
+                <a href="{{ url('/book/new') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col relative ws-sbtn-container" style="background: linear-gradient(135deg, #eaf5e8 0%, #d8eed2 100%); --hover-border: #216417;" onmouseover="this.style.borderColor='#216417'" onmouseout="this.style.borderColor=''">
+                    @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'action_cards' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#216417;">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                     </div>
-                    <h2 class="mt-3 text-base font-semibold text-slate-900">Book a Trip</h2>
-                    <p class="mt-1 text-xs text-slate-600 flex-grow">Start a new booking — choose your route, schedule, passengers, and accommodations.</p>
-                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#216417;">Get started →</span>
+                    <h2 class="mt-3 text-base font-semibold text-slate-900">{{ data_get($pageContent, 'action_book_title', 'Book a Trip') }}</h2>
+                    <p class="mt-1 text-xs text-slate-600 flex-grow">{{ data_get($pageContent, 'action_book_desc', 'Start a new booking — choose your route, schedule, passengers, and accommodations.') }}</p>
+                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#216417;">{{ data_get($pageContent, 'action_book_btn', 'Get started →') }}</span>
                 </a>
  
-                <a href="{{ url('/book/status') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col" style="background: linear-gradient(135deg, #fde6f3 0%, #f9cce6 100%);" onmouseover="this.style.borderColor='#ee018d'" onmouseout="this.style.borderColor=''">
+                <a href="{{ url('/book/status') }}" class="group rounded-[1.5rem] border-2 border-slate-200 p-4 text-left transition duration-200 hover:shadow-md flex flex-col relative ws-sbtn-container" style="background: linear-gradient(135deg, #fde6f3 0%, #f9cce6 100%);" onmouseover="this.style.borderColor='#ee018d'" onmouseout="this.style.borderColor=''">
+                    @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'action_cards' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl" style="background:#ee018d;">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.2 4.2a7.5 7.5 0 0012.45 12.45z" />
                         </svg>
                     </div>
-                    <h2 class="mt-3 text-base font-semibold text-slate-900">Check My Booking</h2>
-                    <p class="mt-1 text-xs text-slate-600 flex-grow">Already booked? Enter your transaction number to view your booking details and status.</p>
-                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#ee018d;">Check status →</span>
+                    <h2 class="mt-3 text-base font-semibold text-slate-900">{{ data_get($pageContent, 'action_status_title', 'Check My Booking') }}</h2>
+                    <p class="mt-1 text-xs text-slate-600 flex-grow">{{ data_get($pageContent, 'action_status_desc', 'Already booked? Enter your transaction number to view your booking details and status.') }}</p>
+                    <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style="color:#ee018d;">{{ data_get($pageContent, 'action_status_btn', 'Check status →') }}</span>
                 </a>
             </div>
         </div>

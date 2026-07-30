@@ -38,6 +38,10 @@ class ManageWebsiteSettings extends Page implements HasForms
                     Section::make('About Page')->collapsible()
                         ->description('Main content for the About page')
                         ->schema([
+                            TextInput::make('content.badge')
+                                ->label('Page Badge')
+                                ->default('About Us')
+                                ->maxLength(100),
                             TextInput::make('content.title')
                                 ->label('Page Title')
                                 ->maxLength(255),
@@ -46,9 +50,25 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->rows(5)
                                 ->columnSpanFull(),
                         ]),
+                    Section::make('History Section')->collapsible()
+                        ->description('Update the history section content')
+                        ->schema([
+                            TextInput::make('content.history_title')
+                                ->label('History Section Title')
+                                ->default('Backed by Experience, Driven by Excellence')
+                                ->maxLength(255),
+                            Textarea::make('content.history_content')
+                                ->label('History Content (HTML)')
+                                ->rows(8)
+                                ->columnSpanFull(),
+                        ]),
                     Section::make('Did you know?')->collapsible()
                         ->description('Update the did you know facts shown on the about page')
                         ->schema([
+                            TextInput::make('content.quick_facts_title')
+                                ->label('Section Title')
+                                ->default('Did you know?')
+                                ->maxLength(255),
                             Repeater::make('content.quick_facts')
                                 ->label('Did you know?')
                                 ->schema([
@@ -208,8 +228,20 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->label('CTA Button Text')
                                         ->maxLength(50),
                                 ]),
-                            Repeater::make('content.travel_service_cards')
-                                ->label('Travel & Booking Services Cards')
+                            Section::make('Travel & Booking Services')->collapsible()
+                                ->description('Manage the main travel services section')
+                                ->schema([
+                                    TextInput::make('content.travel_services_title')
+                                        ->label('Section Title')
+                                        ->default('Travel & Booking Services')
+                                        ->maxLength(255),
+                                    Textarea::make('content.travel_services_desc')
+                                        ->label('Section Description')
+                                        ->rows(2)
+                                        ->default('From daily commutes to dream vacations, we offer a comprehensive range of travel solutions designed for your convenience.')
+                                        ->maxLength(255),
+                                    Repeater::make('content.travel_service_cards')
+                                        ->label('Travel & Booking Services Cards')
                                 ->schema([
                                     TextInput::make('title')
                                         ->label('Card Title')
@@ -274,8 +306,21 @@ class ManageWebsiteSettings extends Page implements HasForms
                                     ],
                                 ])
                                 ->columns(1),
-                            Repeater::make('content.service_cards')
-                                ->label('Service Cards')
+                            ]),
+                            Section::make('Specialized Services')->collapsible()
+                                ->description('Manage the specialized services section')
+                                ->schema([
+                                    TextInput::make('content.specialized_services_title')
+                                        ->label('Section Title')
+                                        ->default('Specialized Services')
+                                        ->maxLength(255),
+                                    Textarea::make('content.specialized_services_desc')
+                                        ->label('Section Description')
+                                        ->rows(2)
+                                        ->default('Beyond standard ticketing, we offer specialized arrangements to cater to unique travel and educational requirements.')
+                                        ->maxLength(255),
+                                    Repeater::make('content.service_cards')
+                                        ->label('Specialized Service Cards')
                                 ->schema([
                                     TextInput::make('title')
                                         ->label('Card Title')
@@ -299,6 +344,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->helperText('Add a Tailwind text color class such as text-pink-600 or text-emerald-700'),
                                 ])
                                 ->columns(1),
+                            ]),
                         ]),
                 ];
 
@@ -318,6 +364,14 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->label('Page Description')
                                 ->rows(4)
                                 ->maxLength(255),
+                            TextInput::make('content.tab_domestic_label')
+                                ->label('Domestic Tab Label')
+                                ->default('Domestic')
+                                ->maxLength(50),
+                            TextInput::make('content.tab_international_label')
+                                ->label('International Tab Label')
+                                ->default('International')
+                                ->maxLength(50),
                             Tabs::make('Tour Packages')
                                 ->tabs([
                                     Tabs\Tab::make('Domestic')
@@ -397,7 +451,19 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->columns(1),
                                         ]),
                                 ]),
-                            Repeater::make('content.supported_destinations')
+                            Section::make('Supported Destinations')->collapsible()
+                                ->description('Manage the supported destinations section')
+                                ->schema([
+                                    TextInput::make('content.destinations_title')
+                                        ->label('Section Title')
+                                        ->default('Top Supported Destinations')
+                                        ->maxLength(255),
+                                    Textarea::make('content.destinations_desc')
+                                        ->label('Section Description')
+                                        ->rows(2)
+                                        ->default('We cater to popular tourist spots and bustling cities across the Philippines and beyond.')
+                                        ->maxLength(255),
+                                    Repeater::make('content.supported_destinations')
                                 ->label('Supported Destination Groups')
                                 ->schema([
                                     TextInput::make('title')
@@ -415,6 +481,24 @@ class ManageWebsiteSettings extends Page implements HasForms
                                         ->columns(1),
                                 ])
                                 ->columns(1),
+                            ]),
+                            Section::make('Call to Action (CTA)')->collapsible()
+                                ->description('Manage the bottom CTA section')
+                                ->schema([
+                                    TextInput::make('content.cta_title')
+                                        ->label('CTA Title')
+                                        ->default('Don\'t see your dream destination?')
+                                        ->maxLength(255),
+                                    Textarea::make('content.cta_desc')
+                                        ->label('CTA Description')
+                                        ->rows(2)
+                                        ->default('We can create a custom tour package tailored just for you. Get in touch with our travel agents to start planning.')
+                                        ->maxLength(255),
+                                    TextInput::make('content.cta_button')
+                                        ->label('CTA Button Text')
+                                        ->default('Contact Us')
+                                        ->maxLength(50),
+                                ]),
                         ]),
                 ];
 
@@ -423,6 +507,10 @@ class ManageWebsiteSettings extends Page implements HasForms
                     Section::make('Download Page')->collapsible()
                         ->description('Manage the download page content and app install steps')
                         ->schema([
+                            TextInput::make('content.badge')
+                                ->label('Page Badge')
+                                ->default('Download App')
+                                ->maxLength(100),
                             TextInput::make('content.title')
                                 ->label('Page Title')
                                 ->maxLength(255),
@@ -430,6 +518,14 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->label('Page Description')
                                 ->rows(4)
                                 ->maxLength(255),
+                            TextInput::make('content.btn_ios')
+                                ->label('iOS Button Text')
+                                ->default('Download for iOS')
+                                ->maxLength(50),
+                            TextInput::make('content.btn_android')
+                                ->label('Android Button Text')
+                                ->default('Download for Android')
+                                ->maxLength(50),
                             Repeater::make('content.download_steps')
                                 ->label('Download Steps')
                                 ->schema([
@@ -486,34 +582,48 @@ class ManageWebsiteSettings extends Page implements HasForms
 
             case 'contact_us':
                 return [
-                    Section::make('Contact Information')->collapsible()
-                        ->description('Contact details shown on Contact Us page')
+                    Section::make('Sidebar Content')->collapsible()
+                        ->description('Manage the sidebar contact details')
                         ->schema([
+                            TextInput::make('content.badge')
+                                ->label('Page Badge')
+                                ->default('Contact Us')
+                                ->maxLength(100),
                             TextInput::make('content.title')
                                 ->label('Page Title')
-                                ->default('Get in Touch')
+                                ->default('Ready To Explore? Let\'s Connect and Start Planning Your Next Adventure')
                                 ->maxLength(255),
                             Textarea::make('content.description')
                                 ->label('Page Description')
                                 ->rows(4)
                                 ->maxLength(255),
-                            TextInput::make('content.contact_name')
-                                ->label('Contact Name')
-                                ->placeholder('Amiga Travel Support'),
-                            TextInput::make('content.phone')
-                                ->label('Phone Number')
-                                ->tel(),
-                            TextInput::make('content.email')
-                                ->label('Email Address')
-                                ->email(),
-                            Textarea::make('content.address')
-                                ->label('Address')
+                            TextInput::make('content.phone_label')
+                                ->label('Phone Label')
+                                ->default('Phone Numbers')
+                                ->maxLength(100),
+                            Textarea::make('content.phones')
+                                ->label('Phone Numbers')
                                 ->rows(3)
-                                ->columnSpanFull(),
-                            Textarea::make('content.map_embed')
-                                ->label('Map Embed (iframe)')
-                                ->rows(4)
-                                ->helperText('Paste iframe embed code for map if available.'),
+                                ->helperText('Enter one phone number per line.'),
+                            TextInput::make('content.email_label')
+                                ->label('Email Label')
+                                ->default('Email Addresses')
+                                ->maxLength(100),
+                            Textarea::make('content.emails')
+                                ->label('Email Addresses')
+                                ->rows(3)
+                                ->helperText('Enter one email per line.'),
+                            TextInput::make('content.location_label')
+                                ->label('Location Label')
+                                ->default('Office Address')
+                                ->maxLength(100),
+                            Textarea::make('content.location_address')
+                                ->label('Location Address')
+                                ->rows(3),
+                            TextInput::make('content.socials_label')
+                                ->label('Social Links Label')
+                                ->default('Connect With Us')
+                                ->maxLength(100),
                             Repeater::make('content.social_links')
                                 ->label('Social Media Links')
                                 ->schema([
@@ -528,6 +638,76 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ])
                                 ->columns(1),
                         ]),
+                    Section::make('Contact Form Texts')->collapsible()
+                        ->description('Manage labels and texts on the contact form')
+                        ->schema([
+                            TextInput::make('content.form_title')
+                                ->label('Form Title')
+                                ->default('Send us a message')
+                                ->maxLength(255),
+                            TextInput::make('content.label_name')
+                                ->label('Name Label')
+                                ->default('Your Name')
+                                ->maxLength(100),
+                            TextInput::make('content.label_email')
+                                ->label('Email Label')
+                                ->default('Email Address')
+                                ->maxLength(100),
+                            TextInput::make('content.label_subject')
+                                ->label('Subject Label')
+                                ->default('Subject')
+                                ->maxLength(100),
+                            TextInput::make('content.label_message')
+                                ->label('Message Label')
+                                ->default('How can we help you?')
+                                ->maxLength(100),
+                            TextInput::make('content.btn_send')
+                                ->label('Send Button Text')
+                                ->default('Send Message')
+                                ->maxLength(50),
+                            TextInput::make('content.btn_sending')
+                                ->label('Sending Button Text')
+                                ->default('Sending...')
+                                ->maxLength(50),
+                            TextInput::make('content.success_title')
+                                ->label('Success Title')
+                                ->default('Message Sent!')
+                                ->maxLength(255),
+                            Textarea::make('content.success_desc')
+                                ->label('Success Description')
+                                ->rows(2)
+                                ->default('Thank you for reaching out. We will get back to you within 24 hours.')
+                                ->maxLength(255),
+                            TextInput::make('content.success_btn')
+                                ->label('Success Button Text')
+                                ->default('Send Another Message')
+                                ->maxLength(50),
+                        ]),
+                    Section::make('Map Section')->collapsible()
+                        ->description('Manage map details and embed')
+                        ->schema([
+                            TextInput::make('content.map_title')
+                                ->label('Map Title')
+                                ->default('Visit our Calapan Office')
+                                ->maxLength(255),
+                            Textarea::make('content.map_desc')
+                                ->label('Map Description')
+                                ->rows(3)
+                                ->default('We are conveniently located in the heart of Calapan City. Drop by our office for personalized travel assistance.')
+                                ->maxLength(255),
+                            TextInput::make('content.map_link')
+                                ->label('Map Link URL')
+                                ->url()
+                                ->maxLength(255),
+                            TextInput::make('content.map_btn')
+                                ->label('Map Button Text')
+                                ->default('Get Directions')
+                                ->maxLength(50),
+                            Textarea::make('content.map_embed')
+                                ->label('Map Embed (iframe)')
+                                ->rows(4)
+                                ->helperText('Paste iframe embed code for map.'),
+                        ]),
                 ];
 
             case 'faqs':
@@ -535,6 +715,10 @@ class ManageWebsiteSettings extends Page implements HasForms
                     Section::make('FAQs')->collapsible()
                         ->description('Manage Frequently Asked Questions')
                         ->schema([
+                            TextInput::make('content.badge')
+                                ->label('Page Badge')
+                                ->default('FAQs')
+                                ->maxLength(100),
                             TextInput::make('content.title')
                                 ->label('Page Title')
                                 ->default('Frequently Asked Questions')
@@ -542,6 +726,15 @@ class ManageWebsiteSettings extends Page implements HasForms
                             Textarea::make('content.description')
                                 ->label('Page Description')
                                 ->rows(3)
+                                ->maxLength(255),
+                            TextInput::make('content.empty_title')
+                                ->label('Empty State Title')
+                                ->default('No FAQs yet')
+                                ->maxLength(255),
+                            Textarea::make('content.empty_desc')
+                                ->label('Empty State Description')
+                                ->rows(2)
+                                ->default('Check back later for answers to common questions.')
                                 ->maxLength(255),
                             Repeater::make('content.faqs')
                                 ->label('Q&A Items')
@@ -557,6 +750,23 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ])
                                 ->columns(1)
                                 ->columnSpanFull(),
+                        ]),
+                    Section::make('Call to Action')->collapsible()
+                        ->description('Manage the bottom call to action')
+                        ->schema([
+                            TextInput::make('content.cta_title')
+                                ->label('CTA Title')
+                                ->default('Still have questions?')
+                                ->maxLength(255),
+                            Textarea::make('content.cta_desc')
+                                ->label('CTA Description')
+                                ->rows(2)
+                                ->default('If you couldn\'t find the answer to your question, our support team is always ready to help you.')
+                                ->maxLength(255),
+                            TextInput::make('content.cta_btn')
+                                ->label('CTA Button Text')
+                                ->default('Contact Support')
+                                ->maxLength(50),
                         ]),
                 ];
 

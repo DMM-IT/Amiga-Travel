@@ -4,11 +4,12 @@
 <div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'domestic' }">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-16">
-            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ $pageContent['badge'] ?? 'Tour Packages' }}</span>
-            <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ $pageContent['title'] ?? 'Explore Our Packages' }}</h1>
+        <div class="text-center mb-16 relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 right-0"></button> @endif
+            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ data_get($pageContent, 'badge', 'Tour Packages') }}</span>
+            <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'title', 'Explore Our Packages') }}</h1>
             <p class="mt-4 text-lg text-black font-semibold max-w-2xl mx-auto">
-                {{ $pageContent['description'] ?? 'Discover carefully curated domestic and international travel packages tailored to your budget and adventure style.' }}
+                {{ data_get($pageContent, 'description', 'Discover carefully curated domestic and international travel packages tailored to your budget and adventure style.') }}
             </p>
 
         @php
@@ -126,22 +127,25 @@
         @endphp
 
             <!-- Interactive Tab Buttons -->
-            <div class="mt-10 inline-flex p-1 bg-slate-200/80 rounded-2xl">
+            <div class="mt-10 inline-flex p-1 bg-slate-200/80 rounded-2xl relative ws-sbtn-container">
+                @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'tabs' })" class="ws-sbtn absolute -top-2 -right-2 z-10"></button> @endif
                 <button @click="activeTab = 'domestic'" 
                         :class="activeTab === 'domestic' ? 'bg-white text-slate-900 shadow-sm' : 'text-black font-semibold hover:text-slate-900'"
                         class="px-6 py-2.5 rounded-xl font-bold text-sm transition cursor-pointer">
-                    Domestic Packages
+                    {{ data_get($pageContent, 'tab_domestic_label', 'Domestic Packages') }}
                 </button>
                 <button @click="activeTab = 'international'" 
                         :class="activeTab === 'international' ? 'bg-white text-slate-900 shadow-sm' : 'text-black font-semibold hover:text-slate-900'"
                         class="px-6 py-2.5 rounded-xl font-bold text-sm transition cursor-pointer">
-                    International Packages
+                    {{ data_get($pageContent, 'tab_international_label', 'International Packages') }}
                 </button>
             </div>
         </div>
 
-        <!-- Domestic Packages Tab -->
-        <div id="domestic-packages" x-show="activeTab === 'domestic'" x-transition class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="relative ws-sbtn-container w-full">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'tour_packages' })" class="ws-sbtn absolute -top-8 -right-4 z-10"></button> @endif
+            <!-- Domestic Packages Tab -->
+            <div id="domestic-packages" x-show="activeTab === 'domestic'" x-transition class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
             {{-- Server-side fallback packages (will be replaced by client-side JS when available) --}}
             @foreach(data_get($tourPackages, 'domestic', []) as $package)
                 <div class="bg-white/85 backdrop-blur-md rounded-[2rem] overflow-hidden shadow-md ring-1 ring-slate-100 flex flex-col hover:shadow-lg transition">
@@ -209,13 +213,37 @@
                 </div>
             @endforeach
         </div>
+        </div>
 
-        <!-- Additional List of Supported Destinations -->
-        <div class="mt-16 bg-white/85 backdrop-blur-md rounded-[2rem] p-8 sm:p-12 shadow-md ring-1 ring-slate-100">
-            <h3 class="text-xl font-bold text-slate-900 text-center mb-8">{{ data_get($pageContent, 'supported_destinations_title', 'All Supported Destinations') }}</h3>
+        <!-- Custom Package CTA -->
+        <div class="mt-20 bg-gradient-to-br from-[#216417] to-[#14400e] rounded-[2rem] p-8 sm:p-12 text-center text-white shadow-xl flex flex-col items-center justify-center relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'cta' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
+            <div class="h-16 w-16 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black mb-4">{{ data_get($pageContent, 'cta_title', 'Start Your Journey') }}</h2>
+            <p class="text-emerald-100 max-w-xl mx-auto mb-8">
+                {{ data_get($pageContent, 'cta_desc', 'Ready to explore? Book your tour package now and create unforgettable memories.') }}
+            </p>
+            <a href="{{ url('/contact-us') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-emerald-900 font-bold rounded-full shadow-lg hover:bg-emerald-50 transition cursor-pointer">
+                {{ data_get($pageContent, 'cta_button', 'Book Now') }}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </a>
+        </div>
+
+        <!-- Supported Destinations Section -->
+        <div class="mt-20 text-center relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'supported_destinations' })" class="ws-sbtn absolute -top-4 -right-4 z-10"></button> @endif
+            <h2 class="text-3xl font-black text-slate-900 mb-4">{{ data_get($pageContent, 'destinations_title', 'Popular Destinations') }}</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-12">{{ data_get($pageContent, 'destinations_desc', 'See the world with our tailored services to these amazing destinations.') }}</p>
+            
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 @foreach($supportedDestinations as $group)
-                    <div>
+                    <div class="bg-white/50 p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h4 class="font-bold text-[#216417] text-sm uppercase tracking-wide mb-3">{{ data_get($group, 'title') }}</h4>
                         <ul class="text-sm text-slate-500 space-y-2">
                             @foreach(data_get($group, 'destinations', []) as $destination)

@@ -4,11 +4,12 @@
 <div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-16">
-            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ $pageContent['badge'] ?? 'Services' }}</span>
-            <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ $pageContent['title'] ?? 'Our Travel Services' }}</h1>
+        <div class="text-center mb-16 relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 right-0"></button> @endif
+            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ data_get($pageContent, 'badge', 'Services') }}</span>
+            <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'title', 'Our Travel Services') }}</h1>
             <p class="mt-4 text-lg text-black font-semibold max-w-2xl mx-auto">
-                {{ $pageContent['description'] ?? 'Explore a full range of reliable travel, transit ticketing, and customizable packages designed to make your journey completely hassle-free.' }}
+                {{ data_get($pageContent, 'description', 'Explore a full range of reliable travel, transit ticketing, and customizable packages designed to make your journey completely hassle-free.') }}
             </p>
         </div>
 
@@ -128,7 +129,8 @@
                 ],
             ];
         @endphp
-        <div class="bg-gradient-to-br from-[#216417] to-[#14400e] text-white rounded-[2rem] p-8 sm:p-12 shadow-xl mb-12 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div class="bg-gradient-to-br from-[#216417] to-[#14400e] text-white rounded-[2rem] p-8 sm:p-12 shadow-xl mb-12 flex flex-col md:flex-row items-center justify-between gap-8 relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'service_cta' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
             <div class="max-w-xl text-center md:text-left">
                 <span class="text-xs font-bold uppercase tracking-widest text-emerald-300 bg-white/10 px-3 py-1 rounded-full">{{ data_get($serviceCta, 'badge') }}</span>
                 <h2 class="mt-3 text-2xl sm:text-3xl font-black">{{ data_get($serviceCta, 'title') }}</h2>
@@ -147,10 +149,11 @@
         </div>
 
         <!-- Travel & Booking Services Section -->
-        <div class="mb-16">
+        <div class="mb-16 relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'travel_service_cards' })" class="ws-sbtn absolute -top-4 -right-4"></button> @endif
             <div class="text-center mb-10">
-                <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Travel & Booking Services</h2>
-                <p class="mt-3 text-black font-semibold max-w-2xl mx-auto">Choose from our ferry, airline, tour, and custom travel arrangements.</p>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900">{{ data_get($pageContent, 'travel_services_title', 'Travel & Booking Services') }}</h2>
+                <p class="mt-3 text-black font-semibold max-w-2xl mx-auto">{{ data_get($pageContent, 'travel_services_desc', 'Choose from our ferry, airline, tour, and custom travel arrangements.') }}</p>
             </div>
             
 @php
@@ -200,8 +203,13 @@
                 openModal(service) { this.selectedService = service; },
                 closeModal() { this.selectedService = null; }
             }"
-            class="relative"
+            class="relative ws-sbtn-container mt-16"
         >
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'service_cards' })" class="ws-sbtn absolute -top-4 -right-4 z-10"></button> @endif
+            <div class="text-center mb-10">
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900">{{ data_get($pageContent, 'specialized_services_title', 'Specialized Services') }}</h2>
+                <p class="mt-3 text-black font-semibold max-w-2xl mx-auto">{{ data_get($pageContent, 'specialized_services_desc', 'Explore our additional programs and assistance offerings.') }}</p>
+            </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                 @foreach($serviceCards as $card)
                 @php
