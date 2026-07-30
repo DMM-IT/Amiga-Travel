@@ -16,8 +16,9 @@
             }
         </style>
         <!-- Hero Section -->
-        <div class="text-center mb-16">
-            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">About Us</span>
+        <div class="text-center mb-16 relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 right-0"></button> @endif
+            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ data_get($pageContent, 'badge', 'About Us') }}</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
                 {{ $pageContent['title'] ?? 'Our Journey' }}
             </h1>
@@ -27,59 +28,59 @@
         </div>
 
         <!-- History & Info Section -->
-        <div class="grid md:grid-cols-2 gap-12 items-center mb-16">
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-16 relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'history' })" class="ws-sbtn absolute -top-4 -right-4"></button> @endif
             <div class="space-y-6">
                 <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
-                    Backed by Experience, Driven by Excellence
+                    {{ data_get($pageContent, 'history_title', 'Backed by Experience, Driven by Excellence') }}
                 </h2>
-                <p class="text-black font-semibold leading-relaxed">
-                    Amiga Gracia was established in <strong>July 2017</strong>. Its humble beginning was born from the dedication of its founder, <strong>Mrs. MGA-Ting</strong>, whose extensive experience with 2GO laid the foundation for the company's first-class standard of service.
-                </p>
-                <p class="text-black font-semibold leading-relaxed">
-                    What started in the municipality of Roxas, Oriental Mindoro has expanded. Following the challenges of the pandemic, our main office relocated to the thriving <strong>City of Calapan</strong>, positioned to serve travelers better than ever.
-                </p>
-                <p class="text-black font-semibold leading-relaxed">
-                    Our core ambition remains unchanged: to be recognized as the premier travel agency providing outstanding travel solutions and apprenticeship programs, both in Oriental Mindoro and nationwide.
-                </p>
+                <div class="text-black font-semibold leading-relaxed space-y-4">
+                    {!! data_get($pageContent, 'history_content', "
+                        <p>Amiga Gracia was established in <strong>July 2017</strong>. Its humble beginning was born from the dedication of its founder, <strong>Mrs. MGA-Ting</strong>, whose extensive experience with 2GO laid the foundation for the company's first-class standard of service.</p>
+                        <p>What started in the municipality of Roxas, Oriental Mindoro has expanded. Following the challenges of the pandemic, our main office relocated to the thriving <strong>City of Calapan</strong>, positioned to serve travelers better than ever.</p>
+                        <p>Our core ambition remains unchanged: to be recognized as the premier travel agency providing outstanding travel solutions and apprenticeship programs, both in Oriental Mindoro and nationwide.</p>
+                    ") !!}
+                </div>
             </div>
             
-            <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl ring-1 ring-slate-100 relative overflow-hidden">
+            <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl ring-1 ring-slate-100 relative overflow-hidden ws-sbtn-container">
+                @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'quick_facts' })" class="ws-sbtn absolute top-2 right-2 z-20"></button> @endif
                 <div class="absolute top-0 right-0 h-40 w-40 bg-emerald-50 rounded-full -mr-16 -mt-16 z-0"></div>
                 <div class="relative z-10 space-y-6">
                     <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <span class="h-2 w-2 rounded-full bg-emerald-600"></span> Did you know?
+                        <span class="h-2 w-2 rounded-full bg-emerald-600"></span> {{ data_get($pageContent, 'quick_facts_title', 'Did you know?') }}
                     </h3>
                     
                     <div class="space-y-4">
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 h-10 w-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-semibold">
-                                01
+                        @php
+                            $quickFacts = data_get($pageContent, 'quick_facts', [
+                                ['title' => 'Established', 'desc' => 'July 2017 in Oriental Mindoro', 'color' => 'emerald'],
+                                ['title' => 'Key Partnerships', 'desc' => '2GO and Starlite Ferries Inc.', 'color' => 'green'],
+                                ['title' => 'Specialty', 'desc' => 'Ferry bookings, Educational tours, Apprenticeship programs', 'color' => 'blue'],
+                            ]);
+                        @endphp
+                        @foreach($quickFacts as $index => $fact)
+                            @php
+                                $color = data_get($fact, 'color', 'emerald');
+                                $colors = [
+                                    'emerald' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700'],
+                                    'green' => ['bg' => 'bg-green-100', 'text' => 'text-green-700'],
+                                    'blue' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-600'],
+                                    'pink' => ['bg' => 'bg-pink-100', 'text' => 'text-pink-600'],
+                                    'purple' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-600'],
+                                ];
+                                $colorClasses = $colors[$color] ?? $colors['emerald'];
+                            @endphp
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 h-10 w-10 {{ $colorClasses['bg'] }} rounded-xl flex items-center justify-center {{ $colorClasses['text'] }} font-semibold">
+                                    {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900">{{ data_get($fact, 'title') }}</h4>
+                                    <p class="text-sm text-slate-500">{{ data_get($fact, 'desc') }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="font-bold text-slate-900">Established</h4>
-                                <p class="text-sm text-slate-500">July 2017 in Oriental Mindoro</p>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-xl flex items-center justify-center text-green-700 font-semibold">
-                                02
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-900">Key Partnerships</h4>
-                                <p class="text-sm text-slate-500">2GO and Starlite Ferries Inc.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-semibold">
-                                03
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-900">Specialty</h4>
-                                <p class="text-sm text-slate-500">Ferry bookings, Educational tours, Apprenticeship programs</p>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>

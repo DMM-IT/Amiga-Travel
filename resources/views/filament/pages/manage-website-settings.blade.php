@@ -613,6 +613,38 @@
                     <label class="ws-label">Page Description</label>
                     <textarea class="ws-textarea" wire:model.blur="settingsData.content.description" rows="3"></textarea>
                 </div>
+                <div class="ws-hr"></div>
+                <div class="ws-sh">Tabs & Destinations</div>
+                <div class="ws-field">
+                    <label class="ws-label">Domestic Tab</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.tab_domestic_label">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">International Tab</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.tab_international_label">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Destinations Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.destinations_title">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Destinations Desc</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.destinations_desc" rows="2"></textarea>
+                </div>
+                <div class="ws-hr"></div>
+                <div class="ws-sh">CTA Section</div>
+                <div class="ws-field">
+                    <label class="ws-label">CTA Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.cta_title">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">CTA Description</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.cta_desc" rows="2"></textarea>
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">CTA Button</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.cta_button">
+                </div>
 
             {{-- ======================================= --}}
             {{-- TOUR PACKAGES                            --}}
@@ -640,6 +672,10 @@
             {{-- CONTACT INFO                             --}}
             {{-- ======================================= --}}
             @elseif($activeSection === 'contact_info')
+                <div class="ws-field">
+                    <label class="ws-label">Page Badge</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.badge" placeholder="Contact Us">
+                </div>
                 <div class="ws-field">
                     <label class="ws-label">Page Title</label>
                     <input type="text" class="ws-input" wire:model.blur="settingsData.content.title" placeholder="Get in Touch">
@@ -687,12 +723,38 @@
             {{-- ======================================= --}}
             @elseif($activeSection === 'faqs_content')
                 <div class="ws-field">
+                    <label class="ws-label">Page Badge</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.badge" placeholder="FAQs">
+                </div>
+                <div class="ws-field">
                     <label class="ws-label">Page Title</label>
                     <input type="text" class="ws-input" wire:model.blur="settingsData.content.title" placeholder="Frequently Asked Questions">
                 </div>
                 <div class="ws-field">
                     <label class="ws-label">Page Description</label>
                     <textarea class="ws-textarea" wire:model.blur="settingsData.content.description" rows="3"></textarea>
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Empty State Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.empty_title">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Empty State Desc</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.empty_desc" rows="2"></textarea>
+                </div>
+                <div class="ws-hr"></div>
+                <div class="ws-sh">Call to Action</div>
+                <div class="ws-field">
+                    <label class="ws-label">CTA Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.cta_title">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">CTA Description</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.cta_desc" rows="2"></textarea>
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">CTA Button</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.cta_btn">
                 </div>
                 <div class="ws-hr"></div>
                 <div class="ws-sh">Q&A Items</div>
@@ -719,12 +781,24 @@
             {{-- ======================================= --}}
             @elseif($activeSection === 'download_content')
                 <div class="ws-field">
+                    <label class="ws-label">Page Badge</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.badge" placeholder="Download App">
+                </div>
+                <div class="ws-field">
                     <label class="ws-label">Page Title</label>
                     <input type="text" class="ws-input" wire:model.blur="settingsData.content.title" placeholder="Download Our App">
                 </div>
                 <div class="ws-field">
                     <label class="ws-label">Page Description</label>
                     <textarea class="ws-textarea" wire:model.blur="settingsData.content.description" rows="4"></textarea>
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">iOS Button Text</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.btn_ios">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Android Button Text</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.btn_android">
                 </div>
                 <div class="ws-hr"></div>
                 <div class="ws-sh">How It Works Section</div>

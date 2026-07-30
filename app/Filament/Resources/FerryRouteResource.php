@@ -108,11 +108,13 @@ class FerryRouteResource extends Resource
                     ->label('Vehicle')
                     ->options(fn (callable $get) => Vehicle::query()
                         ->when($get('mode'), fn ($query, $mode) => $query->where('type', $mode))
+                        ->when($get('operator'), fn ($query, $operator) => $query->where('operator', $operator))
                         ->where('is_active', true)
                         ->orderBy('name')
                         ->get()
                         ->mapWithKeys(fn (Vehicle $vehicle) => [$vehicle->id => "{$vehicle->name} ({$vehicle->vehicle_id}) - {$vehicle->operator}"])
                         ->toArray())
+                    ->nullable()
                     ->reactive()
                     ->searchable()
                     ->afterStateHydrated(function ($state, callable $set, callable $get) {
@@ -138,7 +140,6 @@ class FerryRouteResource extends Resource
                             }
                             $set('schedules', $schedules);
                         } else {
-                            $set('operator', null);
 
                             $schedules = $get('schedules') ?? [];
                             foreach ($schedules as $index => $schedule) {
@@ -156,11 +157,15 @@ class FerryRouteResource extends Resource
                         ->whereNotNull('operator')
                         ->orderBy('operator')
                         ->pluck('operator', 'operator')
+                        ->unique()
                         ->toArray()
                     )
                     ->searchable()
                     ->reactive()
-                    ->nullable(),
+                    ->nullable()
+                    ->afterStateUpdated(function (?string $state, callable $set) {
+                        $set('vehicle_id', null);
+                    }),
 
                 Toggle::make('is_active')
                     ->label('Available for booking')

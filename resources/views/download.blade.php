@@ -177,21 +177,22 @@
             @include('partials.global-skeleton')
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <!-- Left: Text Content -->
-                <div class="flex-1 text-center lg:text-left">
+                <div class="flex-1 text-center lg:text-left relative ws-sbtn-container">
+                    @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 -right-4 z-10"></button> @endif
                     <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6 mb-6">
                         <img src="{{ asset('images/app-icon-original.png') }}" alt="Amiga Gracia" class="h-20 w-20 rounded-2xl shadow-xl border border-white/20 bg-white object-contain">
                         <div class="flex flex-col items-center lg:items-start">
                             <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 mb-3">
                                 <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-3.598 1.543A3.002 3.002 0 007 13a3 3 0 00-2 5.236V18a1 1 0 001 1h8a1 1 0 001-1v-.764A3.001 3.001 0 0013 13a3.002 3.002 0 00-.244-1.18l2.85-1.22a1 1 0 000-1.84l-5.212-2.68zM7 14a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z"/></svg>
-                                Android APK
+                                {{ data_get($pageContent, 'badge', 'Android APK') }}
                             </span>
                             <h1 class="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-                                {!! $pageContent['title'] ?? 'Get the <span class="text-emerald-400">Amiga Gracia</span> App' !!}
+                                {!! data_get($pageContent, 'title', 'Get the <span class="text-emerald-400">Amiga Gracia</span> App') !!}
                             </h1>
                         </div>
                     </div>
                     <p class="mt-6 text-base sm:text-lg text-white/80 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                        {{ $pageContent['description'] ?? 'Book ferry tickets, flights, and tour packages right from your phone. Download our compiled Android APK for a fast, hassle-free booking experience.' }}
+                        {{ data_get($pageContent, 'description', 'Book ferry tickets, flights, and tour packages right from your phone. Download our compiled Android APK for a fast, hassle-free booking experience.') }}
                     </p>
 
                     <!-- Install Button (PWA) & APK Download -->
@@ -204,7 +205,7 @@
                             <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current text-white" viewBox="0 0 24 24">
                                 <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM11.1 5.6a.49.49 0 00-.23-.65l-1.3-.75a.51.51 0 00-.69.18.49.49 0 00.18.69l1.3.75c.08.05.17.08.26.08.17 0 .34-.09.43-.25zM12.9 5.6a.49.49 0 00.43.25c.09 0 .18-.03.26-.08l1.3-.75a.49.49 0 00.18-.69.51.51 0 00-.69-.18l-1.3.75a.49.49 0 00-.23.65zM12 5a3 3 0 013 3H9a3 3 0 013-3zM19.5 8c-.83 0-1.5.67-1.5 1.5v6c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-6c0-.83-.67-1.5-1.5-1.5zM4.5 8C3.67 8 3 8.67 3 9.5v6c0 .83.67 1.5 1.5 1.5S6 16.33 6 15.5v-6C6 8.67 5.33 8 4.5 8z"/>
                             </svg>
-                            Download Android APK
+                            {{ data_get($pageContent, 'btn_android', 'Download Android APK') }}
                         </a>
 
                         <!-- iOS Add to Home Screen Button / Instructions -->
@@ -214,7 +215,7 @@
                             <svg class="h-6 w-6 group-hover:scale-110 transition-transform fill-current text-white" viewBox="0 0 24 24">
                                 <path d="M16.5 13.9c-.04-2.58 2.1-3.83 2.19-3.88-1.2-1.76-3.07-2-3.7-2.04-1.57-.16-3.06.92-3.86.92-.81 0-2.03-.9-3.32-.88-1.7.02-3.26.99-4.14 2.52-1.79 3.09-.46 7.68 1.28 10.19.85 1.22 1.86 2.59 3.2 2.54 1.29-.05 1.79-.83 3.35-.83 1.55 0 2.04.83 3.37.8 1.37-.03 2.23-1.25 3.07-2.48 1-1.46 1.4-2.87 1.42-2.94-.03-.01-2.73-1.04-2.78-4.04zM14.54 5.92c.7-.85 1.18-2.03 1.05-3.21-1.01.04-2.26.67-2.98 1.54-.64.77-1.2 1.97-1.05 3.12 1.14.09 2.28-.6 2.98-1.45z"/>
                             </svg>
-                            Get for iOS
+                            {{ data_get($pageContent, 'btn_ios', 'Get for iOS') }}
                         </button>
                     </div>
 

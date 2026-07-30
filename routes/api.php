@@ -76,7 +76,7 @@ Route::middleware('throttle:60,1')->group(function () {
 // Booking creation is kept public to support guest bookings.
 // Ownership is verified via client_email on all mutating endpoints.
 // ─────────────────────────────────────────────────────────────────────────────
-Route::middleware('throttle:20,1')->group(function () {
+Route::middleware(['throttle:20,1', 'sensitive.actions'])->group(function () {
     Route::post('/bookings',              [BookingController::class, 'store']);
     Route::get('/bookings',               [BookingController::class, 'index']);
     Route::post('/bookings/{id}/proof',   [BookingController::class, 'uploadProof']);
