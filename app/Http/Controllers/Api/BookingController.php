@@ -140,7 +140,7 @@ class BookingController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'bookings' => $bookings
+            'bookings' => array_values(is_array($bookings) ? $bookings : $bookings->values()->all()),
         ]);
     }
 

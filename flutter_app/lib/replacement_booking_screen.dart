@@ -38,7 +38,8 @@ class _ReplacementBookingScreenState extends State<ReplacementBookingScreen> {
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
-          _schedules = data['data'];
+          final raw = data['data'];
+          _schedules = raw is List ? raw : (raw is Map ? raw.values.toList() : []);
           _isLoading = false;
         });
       } else {

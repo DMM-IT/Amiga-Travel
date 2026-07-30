@@ -21,7 +21,7 @@ class DiscountController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'discounts' => $discounts,
+            'discounts' => array_values(is_array($discounts) ? $discounts : $discounts->values()->all()),
         ]);
     }
 }

@@ -314,9 +314,13 @@ class BookingData {
   static Future<void> clearPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('saved_booking_session');
-  }
 }
 
+List<dynamic> parseJsonList(dynamic raw) {
+  if (raw is List) return raw;
+  if (raw is Map) return raw.values.toList();
+  return [];
+}
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -2779,7 +2783,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
         setState(() {
-          _bookings = data['bookings'];
+          _bookings = parseJsonList(data['bookings']);
         });
       } else {
         debugPrint('Bookings error: ${response.statusCode} ${response.body}');
@@ -4267,7 +4271,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        _schedules = data['schedules'];
+        _schedules = parseJsonList(data['schedules']);
       } else {
         setState(() => _error = data['message'] ?? 'Failed to load schedules.');
         return;
@@ -4287,7 +4291,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
         );
         final returnData = jsonDecode(returnRes.body);
         if (returnRes.statusCode == 200 && returnData['status'] == 'success') {
-          _returnSchedules = returnData['schedules'];
+          _returnSchedules = parseJsonList(returnData['schedules']);
         } else {
           setState(() => _error = returnData['message'] ?? 'Failed to load returning schedules.');
           return;
@@ -8133,7 +8137,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
       final res = await http.get(Uri.parse('$baseUrl/api/all-schedules'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        if (mounted) setState(() { _routes = data['routes']; _loading = false; });
+        if (mounted) setState(() { _routes = parseJsonList(data['routes']); _loading = false; });
       } else {
         if (mounted) setState(() => _loading = false);
       }
@@ -8273,7 +8277,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final route = filteredRoutes[index];
-                    final schedules = route['schedules'] as List<dynamic>;
+                    final schedules = parseJsonList(route['schedules']);
                     final isFerry = (route['mode'] ?? 'ferry') == 'ferry';
                     
                     return Card(
