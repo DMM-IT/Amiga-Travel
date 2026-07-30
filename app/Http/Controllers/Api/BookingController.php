@@ -54,7 +54,7 @@ class BookingController extends Controller
         try {
             /** @var \App\Models\Booking $booking */
             $booking = app(\App\Actions\Bookings\CreateBookingAction::class)
-                ->execute($request->all(), auth()->guard('api')->user());
+                ->execute($request->validated(), auth()->guard('api')->user());
 
             // Dispatch the PDF generation + email to the queue (non-blocking)
             \App\Jobs\SendBookingConfirmationJob::dispatch($booking);
@@ -255,21 +255,23 @@ class BookingController extends Controller
             $booking->transaction->update(['payment_status' => 'cancelled']);
         }
 
-        // Send a user-specific FCM push notification to the cancelling user's phone
-        try {
-            $userTopic = 'user_' . md5(strtolower(trim($booking->client_email)));
-            $messaging = app('firebase.messaging');
-            $notification = \Kreait\Firebase\Messaging\Notification::create(
-                '✈️ Booking Cancelled',
-                "Booking #{$booking->transaction_number} has been cancelled. Refund: ₱{$booking->refund_amount}. Please allow 3–5 business days for processing."
-            );
-            $message = \Kreait\Firebase\Messaging\CloudMessage::new()
-                ->withTopic($userTopic)
-                ->withNotification($notification);
-            $messaging->send($message);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('FCM cancellation push failed: ' . $e->getMessage());
-        }
+        // Send a user-specific FCM push notification to the cancelling user's phone asynchronously
+        dispatch(function () use ($booking) {
+            try {
+                $userTopic = 'user_' . md5(strtolower(trim($booking->client_email)));
+                $messaging = app('firebase.messaging');
+                $notification = \Kreait\Firebase\Messaging\Notification::create(
+                    '✈️ Booking Cancelled',
+                    "Booking #{$booking->transaction_number} has been cancelled. Refund: ₱{$booking->refund_amount}. Please allow 3–5 business days for processing."
+                );
+                $message = \Kreait\Firebase\Messaging\CloudMessage::new()
+                    ->withTopic($userTopic)
+                    ->withNotification($notification);
+                $messaging->send($message);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('FCM cancellation push failed: ' . $e->getMessage());
+            }
+        });
 
         return response()->json([
             'status' => 'success',

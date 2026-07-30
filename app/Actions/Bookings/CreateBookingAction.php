@@ -278,7 +278,7 @@ class CreateBookingAction
             $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses', 'scheduleAccommodation', 'voucher');
 
             return $booking;
-        });
+        }, 3);
     }
 
     // -----------------------------------------------------------------------
