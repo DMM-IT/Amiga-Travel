@@ -29,7 +29,7 @@ class AccommodationController extends Controller
 
         return response()->json([
             'status'         => 'success',
-            'accommodations' => $accommodations,
+            'accommodations' => array_values(is_array($accommodations) ? $accommodations : $accommodations->values()->all()),
         ]);
     }
 }

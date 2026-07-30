@@ -9,6 +9,22 @@ use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
 {
+    /**
+     * Ensure a collection or array is a cleanly re-indexed sequential PHP array
+     * with integer keys so json_encode always outputs a JSON array [...]
+     * rather than a JSON object {"0": ...} after cache unserialization.
+     */
+    private function ensureSequentialArray(mixed $data): array
+    {
+        if ($data instanceof \Illuminate\Support\Collection || $data instanceof \Illuminate\Database\Eloquent\Collection) {
+            $data = $data->values()->all();
+        } elseif (!is_array($data)) {
+            return [];
+        }
+
+        return array_values($data);
+    }
+
     public function origins(Request $request)
     {
         $mode = $request->input('mode', '');
@@ -21,7 +37,7 @@ class ScheduleController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'origins' => $origins
+            'origins' => $this->ensureSequentialArray($origins)
         ]);
     }
 
@@ -36,7 +52,7 @@ class ScheduleController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'operators' => $operators
+            'operators' => $this->ensureSequentialArray($operators)
         ]);
     }
 
@@ -58,7 +74,7 @@ class ScheduleController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'destinations' => $destinations
+            'destinations' => $this->ensureSequentialArray($destinations)
         ]);
     }
 
@@ -106,7 +122,7 @@ class ScheduleController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'available_dates' => $dates
+            'available_dates' => $this->ensureSequentialArray($dates)
         ]);
     }
 
@@ -159,7 +175,7 @@ class ScheduleController extends Controller
 
         return response()->json([
             'status'    => 'success',
-            'schedules' => $schedules,
+            'schedules' => $this->ensureSequentialArray($schedules),
         ]);
     }
     public function allSchedules(Request $request)
@@ -183,11 +199,20 @@ class ScheduleController extends Controller
               ->values();
         });
 
+        $routesArray = $this->ensureSequentialArray($routes);
+        $routesArray = array_map(function ($route) {
+            $arr = is_array($route) ? $route : $route->toArray();
+            if (isset($arr['schedules'])) {
+                $arr['schedules'] = $this->ensureSequentialArray($arr['schedules']);
+            }
+            return $arr;
+        }, $routesArray);
+
         return response()->json([
             'status'     => 'success',
             'start_date' => $startDate,
             'end_date'   => $endDate,
-            'routes'     => $routes,
+            'routes'     => $routesArray,
         ]);
     }
 }

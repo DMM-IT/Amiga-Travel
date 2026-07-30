@@ -22,7 +22,7 @@ class PromotionController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'promotions' => $promotions,
+            'promotions' => array_values(is_array($promotions) ? $promotions : $promotions->values()->all()),
         ]);
     }
 }
