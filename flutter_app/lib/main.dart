@@ -58,9 +58,10 @@ class UserSession {
   static int graciaPoints = 0;
   static int pointsAwarded = 0;
   static int spendThreshold = 0;
+  static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.18+22';
+  static const String appVersion = '1.0.19+23';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -145,6 +146,10 @@ class BookingData {
 
   // Step 2 — Schedule
   bool hasExtraBaggage = false;
+  int? extraBaggageKg;       // selected kg (e.g. 10, 20, 25, 30)
+  double extraBaggagePrice = 0.0; // price per pax for the selected kg
+  String? extraBaggageType;
+  String? extraBaggageSpecify;
   Map<String, dynamic>? selectedSchedule;
   int? selectedTransportClassId;
   Map<String, dynamic>? selectedTransportClass;
@@ -200,6 +205,10 @@ class BookingData {
       'adults': adults,
       'children': children,
       'hasExtraBaggage': hasExtraBaggage,
+      'extraBaggageKg': extraBaggageKg,
+      'extraBaggagePrice': extraBaggagePrice,
+      'extraBaggageType': extraBaggageType,
+      'extraBaggageSpecify': extraBaggageSpecify,
       'selectedSchedule': selectedSchedule,
       'selectedTransportClassId': selectedTransportClassId,
       'selectedTransportClass': selectedTransportClass,
@@ -239,6 +248,10 @@ class BookingData {
     b.adults = json['adults'] ?? 1;
     b.children = json['children'] ?? 0;
     b.hasExtraBaggage = json['hasExtraBaggage'] ?? false;
+    b.extraBaggageKg = json['extraBaggageKg'];
+    b.extraBaggagePrice = (json['extraBaggagePrice'] ?? 0.0).toDouble();
+    b.extraBaggageType = json['extraBaggageType'];
+    b.extraBaggageSpecify = json['extraBaggageSpecify'];
     
     b.selectedSchedule = json['selectedSchedule'] != null ? Map<String, dynamic>.from(json['selectedSchedule']) : null;
     b.selectedTransportClassId = json['selectedTransportClassId'];
@@ -1578,7 +1591,18 @@ class _ServiceCard extends StatelessWidget {
 // ==========================================
 class TravelScreen extends StatefulWidget {
   final String? initialMode;
-  const TravelScreen({super.key, this.initialMode});
+  final String? initialOperator;
+  final String? initialOrigin;
+  final String? initialDestination;
+  final String? initialDate;
+  const TravelScreen({
+    super.key,
+    this.initialMode,
+    this.initialOperator,
+    this.initialOrigin,
+    this.initialDestination,
+    this.initialDate,
+  });
 
   @override
   State<TravelScreen> createState() => _TravelScreenState();
@@ -1626,7 +1650,20 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       }
     });
     _mode = widget.initialMode ?? 'ferry';
-    _fetchOperators();
+    _operator = widget.initialOperator;
+    _origin = widget.initialOrigin;
+    _destination = widget.initialDestination;
+    if (widget.initialDate != null) {
+      _departureDate = DateTime.tryParse(widget.initialDate!);
+    }
+    _fetchOperators(preserveSelections: true);
+    _fetchOrigins(preserveSelections: true);
+    if (_origin != null) {
+      _fetchDestinations(_origin!);
+    }
+    if (_origin != null && _destination != null) {
+      _fetchAvailableDates();
+    }
     _fetchVehicleRates();
   }
 
@@ -1661,7 +1698,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     } catch (_) {}
   }
 
-  void _fetchOperators() async {
+  void _fetchOperators({bool preserveSelections = false}) async {
     setState(() => _loadingOperators = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
@@ -1670,7 +1707,9 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _operators = List<String>.from(data['operators']);
-          _operator = null;
+          if (!preserveSelections || (_operator != null && !_operators.contains(_operator))) {
+            _operator = null;
+          }
         });
       }
     } catch (e) {
@@ -1680,7 +1719,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     }
   }
 
-  void _fetchOrigins() async {
+  void _fetchOrigins({bool preserveSelections = false}) async {
     setState(() => _loadingOrigins = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
@@ -1690,11 +1729,13 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _origins = List<String>.from(data['origins']);
-          _origin = null;
-          _destination = null;
-          _destinations = [];
-          _availableDepartureDates = [];
-          _availableReturnDates = [];
+          if (!preserveSelections || (_origin != null && !_origins.contains(_origin))) {
+            _origin = null;
+            _destination = null;
+            _destinations = [];
+            _availableDepartureDates = [];
+            _availableReturnDates = [];
+          }
         });
       }
     } catch (e) {
@@ -3951,12 +3992,15 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     width: double.infinity,
                     child: FilledButton.icon(
                       onPressed: () {
-                        final tNum = _booking['transaction_number'];
-                        if (tNum == null) return;
-                        launchUrl(Uri.parse('$_baseUrl/booking/reschedule/${tNum.replaceAll('#', '')}'), mode: LaunchMode.externalApplication);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ServiceCancellationScreen(booking: _booking),
+                          ),
+                        );
                       },
-                      icon: const Icon(Icons.open_in_browser),
-                      label: const Text('Reschedule for free on website'),
+                      icon: const Icon(Icons.swap_horiz_rounded),
+                      label: const Text('Reschedule / Refund Options'),
                       style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700, foregroundColor: Colors.white),
                     ),
                   ),
@@ -4708,24 +4752,179 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
   }
 
   Widget _buildBaggageSwitch() {
+    final isAirline = widget.booking.mode == 'airline';
+    final kgOptions = [10, 15, 20, 25, 30];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
-        child: SwitchListTile(
-          title: const Text('I have Extra Baggage', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-          subtitle: const Text('Additional fees may apply upon check-in at the terminal.', style: TextStyle(fontSize: 12)),
-          value: widget.booking.hasExtraBaggage,
-          activeColor: kGreen,
-          contentPadding: EdgeInsets.zero,
-          onChanged: (val) {
-            setState(() => widget.booking.hasExtraBaggage = val);
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SwitchListTile(
+              title: Text(
+                isAirline ? 'I have Extra Baggage' : 'I have Extra Baggage',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              subtitle: Text(
+                isAirline
+                    ? 'Add prepaid check-in baggage per passenger for your flight.'
+                    : 'Additional fees may apply upon check-in at the terminal.',
+                style: const TextStyle(fontSize: 12),
+              ),
+              value: widget.booking.hasExtraBaggage,
+              activeColor: kGreen,
+              contentPadding: EdgeInsets.zero,
+              onChanged: (val) {
+                setState(() {
+                  widget.booking.hasExtraBaggage = val;
+                  if (!val) {
+                    widget.booking.extraBaggageKg = null;
+                    widget.booking.extraBaggagePrice = 0.0;
+                    widget.booking.extraBaggageType = null;
+                    widget.booking.extraBaggageSpecify = null;
+                  } else {
+                    if (isAirline && widget.booking.extraBaggageKg == null) {
+                      widget.booking.extraBaggageKg = 20;
+                    }
+                    if (!isAirline && widget.booking.extraBaggageType == null) {
+                      widget.booking.extraBaggageType = 'Large Suitcase / Oversized Luggage';
+                    }
+                  }
+                });
+              },
+            ),
+            if (widget.booking.hasExtraBaggage) ...[
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              if (isAirline) ...[
+                // KG dropdown
+                const Text('Select Extra Baggage (kg)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int>(
+                  value: widget.booking.extraBaggageKg ?? 20,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  items: kgOptions.map((kg) => DropdownMenuItem<int>(
+                    value: kg,
+                    child: Text('$kg kg'),
+                  )).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => widget.booking.extraBaggageKg = val);
+                  },
+                ),
+                const SizedBox(height: 12),
+                // Price per pax field
+                const Text('Price per passenger (₱)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: widget.booking.extraBaggagePrice > 0 ? widget.booking.extraBaggagePrice.toStringAsFixed(0) : '',
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'e.g. 700',
+                    prefixText: '₱ ',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  onChanged: (v) {
+                    final parsed = double.tryParse(v) ?? 0.0;
+                    setState(() => widget.booking.extraBaggagePrice = parsed);
+                  },
+                ),
+                if (widget.booking.extraBaggageKg != null && widget.booking.extraBaggagePrice > 0) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(color: kGreen.withOpacity(0.07), borderRadius: BorderRadius.circular(8)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('${widget.booking.extraBaggageKg} kg × ${widget.booking.adults + widget.booking.children} pax', style: const TextStyle(fontSize: 13, color: kSlate700)),
+                        Text(
+                          '₱${(widget.booking.extraBaggagePrice * (widget.booking.adults + widget.booking.children)).toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ] else ...[
+                // Ferry informational note
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.amber.shade200)),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.amber.shade700, size: 18),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Extra baggage fees are settled at the terminal upon check-in. Ferries typically allow up to 50 kg free per passenger.',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF78350F)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Ferry Item Category Dropdown
+                const Text('Select Item Category / Example', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: widget.booking.extraBaggageType ?? 'Large Suitcase / Oversized Luggage',
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  items: const [
+                    'Large Suitcase / Oversized Luggage',
+                    'Balikbayan Box / Packed Carton',
+                    'Musical Instrument (Guitar, Keyboard, etc.)',
+                    'Sports Equipment (Surfboard, Bicycle, Golf Bag)',
+                    'Electronic Appliance / Boxed Equipment',
+                    'Commercial Goods / Merchandise',
+                    'Other Non-Personal Item',
+                  ].map((val) => DropdownMenuItem<String>(
+                    value: val,
+                    child: Text(val, style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis),
+                  )).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => widget.booking.extraBaggageType = val);
+                  },
+                ),
+                const SizedBox(height: 12),
+                // Specify Item Details & Quantity
+                const Text('Specify Item Details & Quantity', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: widget.booking.extraBaggageSpecify ?? '',
+                  decoration: InputDecoration(
+                    hintText: 'e.g. 2 Balikbayan boxes, 1 Surfboard bag (dimensions/description)',
+                    hintStyle: const TextStyle(color: kSlate400, fontSize: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  onChanged: (v) {
+                    setState(() => widget.booking.extraBaggageSpecify = v);
+                  },
+                ),
+              ],
+            ],
+          ],
         ),
       ),
     );
   }
+
 
   Widget _buildHorizontalScheduleList(List<dynamic> schedules, {required bool isReturn}) {
     if (schedules.isEmpty) {
@@ -5079,7 +5278,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                       .where((d) => d['name'].toString().toLowerCase() != 'infant')
                                       .map((d) => DropdownMenuItem<int?>(
                                     value: d['id'] as int,
-                                    child: Text('${d['name']} (${d['percentage']}% off)'),
+                                    child: Text('${d['name']}'),
                                   )),
                                 ],
                                 onChanged: (v) {
@@ -5429,6 +5628,60 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     _clientEmailCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.email : widget.booking.clientEmail);
     _fetchPaymentSettings();
     _fetchPoints();
+    _autoApplySavedVoucher();
+  }
+
+  Future<void> _autoApplySavedVoucher() async {
+    final code = UserSession.autoApplyVoucherCode;
+    if (code == null || code.isEmpty) return;
+    UserSession.autoApplyVoucherCode = null;
+    try {
+      final booking = widget.booking;
+      final body = {
+        'voucher_code': code.trim().toUpperCase(),
+        'schedule_id': booking.selectedSchedule?['id'] ?? 0,
+        'origin': booking.origin,
+        'destination': booking.destination,
+        'trip_type': booking.tripType,
+        'client_email': booking.clientEmail.isNotEmpty ? booking.clientEmail : UserSession.email,
+        'passengers': booking.passengers.isNotEmpty
+            ? booking.passengers.map((p) => {'type': p['type'], 'discount_id': p['discount_id']}).toList()
+            : [{'type': 'adult', 'discount_id': null}],
+        'accommodation_ids': booking.selectedAccommodationIds,
+        'has_vehicle': booking.hasVehicle,
+        if (booking.hasVehicle) 'vehicle_price': booking.vehiclePrice,
+      };
+      final res = await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/validate'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+        },
+        body: jsonEncode(body),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        final d = data['data'];
+        if (mounted) {
+          setState(() {
+            widget.booking.voucherCode = code.trim().toUpperCase();
+            widget.booking.voucherData = {
+              'name': d['voucher_name'],
+              'discount_type': d['discount_type'],
+              'discount_value': d['discount_value'],
+              'eligible_scope': d['eligible_scope'],
+              'discount_amount': d['discount_amount'],
+              'final_total': d['final_total'],
+              'original_subtotal': d['original_subtotal'],
+            };
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Voucher "$code" applied automatically!'), backgroundColor: kGreen),
+          );
+        }
+      }
+    } catch (_) {}
   }
 
   @override
@@ -5526,6 +5779,18 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
           if (widget.booking.voucherCode != null) 'voucher_code': widget.booking.voucherCode,
           if (widget.booking.promotionalTicketId != null) 'promotional_ticket_id': widget.booking.promotionalTicketId,
           if (_usePoints) 'use_points': true,
+          // Extra baggage
+          'has_extra_baggage': widget.booking.hasExtraBaggage,
+          if (widget.booking.hasExtraBaggage) ...{
+            if (widget.booking.extraBaggageKg != null) ...{
+              'extra_baggage_kg': widget.booking.extraBaggageKg,
+              'extra_baggage_price': widget.booking.extraBaggagePrice,
+            },
+            if (widget.booking.extraBaggageType != null)
+              'extra_baggage_type': widget.booking.extraBaggageType,
+            if (widget.booking.extraBaggageSpecify != null)
+              'extra_baggage_specify': widget.booking.extraBaggageSpecify,
+          },
         }),
       );
       final data = jsonDecode(res.body);
@@ -5821,6 +6086,13 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     _SummaryRow('Trip Type', widget.booking.tripType == 'one_way' ? 'One-Way' : 'Round Trip'),
                     _SummaryRow('Schedule', '${s['service']}  ${s['departure']} – ${s['arrival']}'),
                     _SummaryRow('Fare / person', '₱${s['price']}'),
+                    if (widget.booking.hasExtraBaggage && widget.booking.mode == 'airline')
+                      _SummaryRow('Extra Baggage', '${widget.booking.extraBaggageKg ?? 20} kg (₱${widget.booking.extraBaggagePrice.toStringAsFixed(0)}/pax)'),
+                    if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') ...[
+                      _SummaryRow('Extra Baggage Category', widget.booking.extraBaggageType ?? 'Specified'),
+                      if ((widget.booking.extraBaggageSpecify ?? '').isNotEmpty)
+                        _SummaryRow('Baggage Details', widget.booking.extraBaggageSpecify!),
+                    ],
                   ]),
                   const SizedBox(height: 16),
 
@@ -5918,28 +6190,37 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   ],
 
                   Builder(builder: (ctx) {
+                    try {
                     double ticketPrice = 0.0;
                     if (widget.booking.selectedSchedule != null) {
-                       ticketPrice += (widget.booking.adults * (widget.booking.selectedSchedule!['adult_price'] ?? 0).toDouble()) + 
-                                      (widget.booking.children * (widget.booking.selectedSchedule!['child_price'] ?? 0).toDouble());
+                       final adultP = (widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
+                       final childP = (widget.booking.selectedSchedule!['child_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
+                       ticketPrice += (widget.booking.adults * (adultP is num ? adultP.toDouble() : double.tryParse(adultP.toString()) ?? 0)) +
+                                      (widget.booking.children * (childP is num ? childP.toDouble() : double.tryParse(childP.toString()) ?? 0));
                        if (widget.booking.selectedScheduleAccommodation != null) {
-                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (widget.booking.selectedScheduleAccommodation!['price_per_adult'] ?? 0).toDouble());
+                         final accPrice = widget.booking.selectedScheduleAccommodation!['price_per_adult'] ?? 0;
+                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
                        }
                     }
                     if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
-                       ticketPrice += (widget.booking.adults * (widget.booking.selectedReturnSchedule!['adult_price'] ?? 0).toDouble()) + 
-                                      (widget.booking.children * (widget.booking.selectedReturnSchedule!['child_price'] ?? 0).toDouble());
+                       final adultP = (widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0);
+                       final childP = (widget.booking.selectedReturnSchedule!['child_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0);
+                       ticketPrice += (widget.booking.adults * (adultP is num ? adultP.toDouble() : double.tryParse(adultP.toString()) ?? 0)) +
+                                      (widget.booking.children * (childP is num ? childP.toDouble() : double.tryParse(childP.toString()) ?? 0));
                        if (widget.booking.selectedReturnScheduleAccommodation != null) {
-                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (widget.booking.selectedReturnScheduleAccommodation!['price_per_adult'] ?? 0).toDouble());
+                         final accPrice = widget.booking.selectedReturnScheduleAccommodation!['price_per_adult'] ?? 0;
+                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
                        }
                     }
                     
                     double passengerDiscount = 0.0;
                     for (var p in widget.booking.passengers) {
                       if (p['discount_id'] != null && widget.booking.selectedSchedule != null) {
-                         passengerDiscount += ((widget.booking.selectedSchedule!['adult_price'] ?? 0).toDouble() * 0.20); 
+                         final ap = widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0;
+                         passengerDiscount += ((ap is num ? ap.toDouble() : double.tryParse(ap.toString()) ?? 0) * 0.20); 
                          if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
-                             passengerDiscount += ((widget.booking.selectedReturnSchedule!['adult_price'] ?? 0).toDouble() * 0.20);
+                             final rp = widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0;
+                             passengerDiscount += ((rp is num ? rp.toDouble() : double.tryParse(rp.toString()) ?? 0) * 0.20);
                          }
                       }
                     }
@@ -5957,11 +6238,17 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             }
                         }
                     }
+
+                    // Extra baggage cost (airline only — prepaid per pax)
+                    double extraBaggageCost = 0.0;
+                    if (widget.booking.hasExtraBaggage && widget.booking.mode == 'airline' && widget.booking.extraBaggagePrice > 0) {
+                      extraBaggageCost = widget.booking.extraBaggagePrice * (widget.booking.adults + widget.booking.children);
+                    }
                     
                     int travelers = widget.booking.adults + widget.booking.children;
                     double calculationFee = (travelers * _feePerPerson) + (accommodationCost > 0 ? _feePerAccommodation : 0);
                     
-                    double subtotal = ticketPrice + vehicleCost + accommodationCost + calculationFee - passengerDiscount;
+                    double subtotal = ticketPrice + vehicleCost + accommodationCost + calculationFee + extraBaggageCost - passengerDiscount;
                     if (subtotal < 0) subtotal = 0.0;
 
                     final discount = widget.booking.voucherData != null ? (widget.booking.voucherData!['discount_amount'] as num).toDouble() : 0.0;
@@ -5983,6 +6270,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           if (passengerDiscount > 0) _SummaryRow('Passenger Discount', '-₱${passengerDiscount.toStringAsFixed(2)}'),
                           if (vehicleCost > 0) _SummaryRow('Vehicle Freight', '₱${vehicleCost.toStringAsFixed(2)}'),
                           if (accommodationCost > 0) _SummaryRow('Stay', '₱${accommodationCost.toStringAsFixed(2)}'),
+                          if (extraBaggageCost > 0) _SummaryRow('Extra Baggage (${widget.booking.extraBaggageKg} kg)', '₱${extraBaggageCost.toStringAsFixed(2)}'),
+                          if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') _SummaryRow('Extra Baggage (${widget.booking.extraBaggageType ?? 'Specified'})', 'Settled at Terminal'),
                           if (calculationFee > 0) _SummaryRow('Calculation Fee', '₱${calculationFee.toStringAsFixed(2)}'),
                           const Divider(height: 16),
                           _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
@@ -6030,6 +6319,13 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                         }),
                       ],
                     );
+                    } catch (e) {
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange.shade200)),
+                        child: Text('Could not calculate price summary: $e', style: const TextStyle(color: Colors.orange, fontSize: 12)),
+                      );
+                    }
                   }),
 
                   const SizedBox(height: 16),
@@ -8133,14 +8429,19 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         width: double.infinity,
                                         child: ElevatedButton.icon(
                                           onPressed: () {
-                                            Navigator.push(context, MaterialPageRoute(builder: (_) => RequestBookingScreen(
-                                              initialData: {
-                                                'mode': route['mode'] ?? 'ferry',
-                                                'operator': route['operator'] ?? '',
-                                                'origin': route['origin'] ?? '',
-                                                'destination': route['destination'] ?? '',
-                                                'departure_date': s['departure_time'].toString().substring(0, 10),
-                                              },
+                                            Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+                                              appBar: AppBar(
+                                                title: const Text('Book Trip', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                                backgroundColor: kGreen,
+                                                iconTheme: const IconThemeData(color: Colors.white),
+                                              ),
+                                              body: TravelScreen(
+                                                initialMode: route['mode'] ?? 'ferry',
+                                                initialOperator: route['operator'],
+                                                initialOrigin: route['origin'],
+                                                initialDestination: route['destination'],
+                                                initialDate: s['departure_time'].toString().substring(0, 10),
+                                              ),
                                             )));
                                           },
                                           icon: const Icon(Icons.book_online, size: 16),
@@ -8214,6 +8515,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
   bool _isClaiming = false;
   String _error = '';
   List<dynamic> _vouchers = [];
+  String _typeFilter = 'all';
   final TextEditingController _promoCtrl = TextEditingController();
 
   @override
@@ -8315,58 +8617,96 @@ class _VouchersScreenState extends State<VouchersScreen> {
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
-                          // Input Promo Code at top
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 20),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: kSlate200),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.confirmation_num_outlined, color: kPink, size: 20),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _promoCtrl,
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: 'Input promo code',
-                                      hintStyle: TextStyle(color: kSlate400, fontSize: 14),
+                          // Input Promo Code at top and Voucher Type Filter beside it
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 20),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: kSlate200),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.confirmation_num_outlined, color: kPink, size: 20),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _promoCtrl,
+                                          decoration: const InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'Input promo code',
+                                            hintStyle: TextStyle(color: kSlate400, fontSize: 14),
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: _isClaiming ? null : () async {
+                                          final code = _promoCtrl.text.trim();
+                                          if (code.isEmpty) return;
+                                          setState(() => _isClaiming = true);
+                                          try {
+                                            final res = await http.post(
+                                              Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
+                                              headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+                                              body: jsonEncode({'code': code}),
+                                            );
+                                            final data = jsonDecode(res.body);
+                                            if (res.statusCode == 200 && data['status'] == 'success') {
+                                              _promoCtrl.clear();
+                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Voucher added!'), backgroundColor: kGreen));
+                                              _fetchVouchers();
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid code.'), backgroundColor: Colors.red));
+                                            }
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
+                                          } finally {
+                                            if (mounted) setState(() => _isClaiming = false);
+                                          }
+                                        },
+                                        child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                flex: 2,
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 20),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: kSlate200),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _typeFilter,
+                                      isExpanded: true,
+                                      icon: const Icon(Icons.filter_list, color: kGreen, size: 20),
+                                      style: const TextStyle(color: kSlate700, fontSize: 13, fontWeight: FontWeight.w600),
+                                      items: const [
+                                        DropdownMenuItem(value: 'all', child: Text('All Types')),
+                                        DropdownMenuItem(value: 'ticket_fare', child: Text('Ticket Fare Only')),
+                                        DropdownMenuItem(value: 'vehicle', child: Text('Vehicle Only')),
+                                        DropdownMenuItem(value: 'accommodation', child: Text('Accommodation Only')),
+                                        DropdownMenuItem(value: 'booking_total', child: Text('Booking Total')),
+                                      ],
+                                      onChanged: (val) {
+                                        if (val != null) setState(() => _typeFilter = val);
+                                      },
                                     ),
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: _isClaiming ? null : () async {
-                                    final code = _promoCtrl.text.trim();
-                                    if (code.isEmpty) return;
-                                    setState(() => _isClaiming = true);
-                                    try {
-                                      final res = await http.post(
-                                        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
-                                        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
-                                        body: jsonEncode({'code': code}),
-                                      );
-                                      final data = jsonDecode(res.body);
-                                      if (res.statusCode == 200 && data['status'] == 'success') {
-                                        _promoCtrl.clear();
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Voucher added!'), backgroundColor: kGreen));
-                                        _fetchVouchers();
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid code.'), backgroundColor: Colors.red));
-                                      }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
-                                    } finally {
-                                      if (mounted) setState(() => _isClaiming = false);
-                                    }
-                                  },
-                                  child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
 
                           const Text('Available Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
@@ -8480,7 +8820,9 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                     ),
                                   );
                                 },
-                                child: Container(
+                                child: ClipPath(
+                                  clipper: TicketClipper(dividerX: 100, punchRadius: 10),
+                                  child: Container(
                                   margin: const EdgeInsets.only(bottom: 12),
                                   height: 110,
                                   decoration: BoxDecoration(
@@ -8499,22 +8841,8 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                           color: kGreen,
                                           borderRadius: BorderRadius.horizontal(left: Radius.circular(8)),
                                         ),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(scopeIcon, color: kPink, size: 36),
-                                            const SizedBox(height: 8),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 4),
-                                              child: Text(
-                                                scopeLabel,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
+                                        child: Center(
+                                          child: Icon(scopeIcon, color: kPink, size: 54),
                                         ),
                                       ),
                                       // Right side voucher details
@@ -8559,10 +8887,33 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                                 children: [
                                                   OutlinedButton(
                                                     onPressed: () {
+                                                      UserSession.autoApplyVoucherCode = v['code'];
                                                       if (widget.onUseVoucher != null) {
                                                         widget.onUseVoucher!();
-                                                      } else if (Navigator.canPop(context)) {
-                                                        Navigator.pop(context);
+                                                      } else {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (ctx) => AlertDialog(
+                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                            title: const Text('Use Voucher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                                            content: Text('Voucher "${v['code']}" will be automatically applied on your booking submission.\n\nProceed to booking?', style: const TextStyle(fontSize: 14)),
+                                                            actions: [
+                                                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                                                              ElevatedButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(ctx);
+                                                                  Navigator.pushAndRemoveUntil(
+                                                                    context,
+                                                                    MaterialPageRoute(builder: (_) => const MainScreen()),
+                                                                    (route) => false,
+                                                                  );
+                                                                },
+                                                                style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                                                child: const Text('Go to Booking'),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
                                                       }
                                                     },
                                                     style: OutlinedButton.styleFrom(
@@ -8582,6 +8933,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                       ),
                                     ],
                                   ),
+                                ),
                                 ),
                               );
                             }).toList(),
@@ -8612,4 +8964,484 @@ class TicketClipper extends CustomClipper<Path> {
   }
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+// ==========================================
+// SERVICE CANCELLATION SCREEN (In-app reschedule/refund)
+// ==========================================
+class ServiceCancellationScreen extends StatefulWidget {
+  final Map<String, dynamic> booking;
+  const ServiceCancellationScreen({super.key, required this.booking});
+
+  @override
+  State<ServiceCancellationScreen> createState() => _ServiceCancellationScreenState();
+}
+
+class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
+  bool _showRefundForm = false;
+  bool _isSubmitting = false;
+  bool _submitted = false;
+  String _feedback = '';
+
+  // Reschedule state
+  String _depDate = '';
+  List<dynamic> _availableSchedules = [];
+  bool _loadingSchedules = false;
+  int? _selectedScheduleId;
+
+  // Refund form state
+  String _refundMethod = 'GCash';
+  final _accountNumberCtrl = TextEditingController();
+  final _accountNameCtrl = TextEditingController();
+  final _bankNameCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _accountNumberCtrl.dispose();
+    _accountNameCtrl.dispose();
+    _bankNameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchSchedules(String date) async {
+    if (date.isEmpty) return;
+    setState(() { _loadingSchedules = true; _availableSchedules = []; _selectedScheduleId = null; });
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final origin = widget.booking['origin'] ?? '';
+      final dest = widget.booking['destination'] ?? '';
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/schedules/realtime?origin=$origin&destination=$dest&date=$date'),
+        headers: {'Accept': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        setState(() => _availableSchedules = (data['schedules'] ?? data['data'] ?? []));
+      }
+    } catch (_) {}
+    finally { if (mounted) setState(() => _loadingSchedules = false); }
+  }
+
+  Future<void> _submitReschedule() async {
+    if (_selectedScheduleId == null || _depDate.isEmpty) return;
+    setState(() => _isSubmitting = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final bookingId = widget.booking['id'];
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/bookings/$bookingId/submit-replacement'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+        },
+        body: jsonEncode({
+          'email': widget.booking['client_email'],
+          'dep_date': _depDate,
+          'dep_schedule_id': _selectedScheduleId,
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() { _submitted = true; _feedback = data['message'] ?? 'Reschedule submitted successfully!'; });
+      } else {
+        setState(() => _feedback = data['message'] ?? 'Failed to submit reschedule.');
+      }
+    } catch (e) {
+      setState(() => _feedback = 'Network error: $e');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _submitRefund() async {
+    if (_accountNumberCtrl.text.trim().isEmpty || _accountNameCtrl.text.trim().isEmpty) {
+      setState(() => _feedback = 'Please fill in all refund fields.');
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final bookingId = widget.booking['id'];
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/bookings/$bookingId/disruption-refund'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+        },
+        body: jsonEncode({
+          'refund_method': _refundMethod,
+          'refund_account_number': _accountNumberCtrl.text.trim(),
+          'refund_account_name': _accountNameCtrl.text.trim(),
+          if (_refundMethod != 'GCash') 'refund_bank_name': _bankNameCtrl.text.trim(),
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() { _submitted = true; _feedback = data['message'] ?? 'Refund request submitted!'; });
+      } else {
+        setState(() => _feedback = data['message'] ?? 'Failed to submit refund request.');
+      }
+    } catch (e) {
+      setState(() => _feedback = 'Network error: $e');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cancellation = widget.booking['service_cancellation'] as Map<String, dynamic>?;
+    final resumeDate = cancellation?['resume_date'];
+    final carrier = cancellation?['carrier'] ?? 'the operator';
+    final reason = cancellation?['reason_category'] ?? 'service disruption';
+    final customerMsg = cancellation?['customer_message'];
+    final totalPrice = widget.booking['total_price'];
+
+    return Scaffold(
+      backgroundColor: kBgLight,
+      appBar: AppBar(
+        title: const Text('Disruption Options'),
+        backgroundColor: Colors.red.shade700,
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // ── Disruption Banner ──
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [Colors.amber.shade50, Colors.orange.shade50]),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.amber.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(color: Colors.amber.shade200, borderRadius: BorderRadius.circular(20)),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.warning_amber_rounded, size: 16, color: Color(0xFF78350F)),
+                      SizedBox(width: 6),
+                      Text('Unavoidable Schedule Disruption', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Color(0xFF78350F), letterSpacing: 0.5)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Select Replacement Travel Date', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: kSlate800)),
+                const SizedBox(height: 6),
+                Text(
+                  'Your original voyage on ${widget.booking['departure_date'] ?? '—'} was cancelled by $carrier due to ${reason.toString().replaceAll('_', ' ')}.',
+                  style: const TextStyle(fontSize: 13, color: kSlate700),
+                ),
+                if (customerMsg != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.amber.shade200)),
+                    child: Text.rich(
+                      TextSpan(children: [
+                        const TextSpan(text: 'Operator Statement: ', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF78350F))),
+                        TextSpan(text: customerMsg, style: const TextStyle(color: Color(0xFF78350F))),
+                      ]),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Booking Reference', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: kSlate400, letterSpacing: 1)),
+                            const SizedBox(height: 4),
+                            Text(widget.booking['transaction_number'] ?? '—', style: const TextStyle(fontWeight: FontWeight.w900, color: kSlate800)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Service Resume Date', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: kSlate400, letterSpacing: 1)),
+                            const SizedBox(height: 4),
+                            Text(
+                              resumeDate ?? 'To Be Announced',
+                              style: TextStyle(fontWeight: FontWeight.w900, color: resumeDate != null ? kGreen : Colors.amber.shade700),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // ── Feedback ──
+          if (_feedback.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _submitted ? kGreen.withOpacity(0.08) : Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _submitted ? kGreen.withOpacity(0.3) : Colors.red.shade200),
+              ),
+              child: Text(_feedback, style: TextStyle(fontWeight: FontWeight.w600, color: _submitted ? kGreen : Colors.red.shade800)),
+            ),
+
+          if (_submitted) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                child: const Text('Back to Booking Details', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ] else ...[
+            // ── Refund Form ──
+            if (_showRefundForm) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.red.shade200)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Cancel & Request 100% Refund', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.red.shade700)),
+                          IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() => _showRefundForm = false)),
+                        ],
+                      ),
+                      Text(
+                        'Since this cancellation was caused by the operator, you are entitled to a full refund of ₱${totalPrice?.toString() ?? '—'}.',
+                        style: const TextStyle(fontSize: 13, color: kSlate600),
+                      ),
+                      const SizedBox(height: 16),
+                      // Refund Method
+                      const Text('Refund Method', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        value: _refundMethod,
+                        decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                        items: const [
+                          DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                          DropdownMenuItem(value: 'Online Wallet', child: Text('Other Online Wallet')),
+                          DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account')),
+                        ],
+                        onChanged: (v) => setState(() => _refundMethod = v!),
+                      ),
+                      if (_refundMethod != 'GCash') ...[
+                        const SizedBox(height: 12),
+                        const Text('Institution Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: _bankNameCtrl,
+                          decoration: InputDecoration(hintText: 'e.g. BDO, Maya', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      const Text('Account Number / Mobile', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _accountNumberCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(hintText: 'e.g. 09123456789', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text('Account Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _accountNameCtrl,
+                        decoration: InputDecoration(hintText: 'e.g. Juan Dela Cruz', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => setState(() => _showRefundForm = false),
+                              style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                              child: const Text('Cancel'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              onPressed: _isSubmitting ? null : _submitRefund,
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                              child: _isSubmitting
+                                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : const Text('Submit Refund Request', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // ── Reschedule header ──
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Replacement Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                if (!_showRefundForm)
+                  TextButton(
+                    onPressed: () => setState(() => _showRefundForm = true),
+                    child: Text('Or Cancel & Refund instead', style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold, fontSize: 13)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // ── Date picker ──
+            Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Step 1: Pick a Departure Date', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        hintText: 'Select date',
+                        prefixIcon: const Icon(Icons.calendar_today, color: kGreen),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        suffixText: _depDate.isNotEmpty ? _depDate : null,
+                      ),
+                      onTap: () async {
+                        final minDate = resumeDate != null ? DateTime.tryParse(resumeDate) ?? DateTime.now() : DateTime.now();
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: minDate,
+                          firstDate: minDate,
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (picked != null) {
+                          final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                          setState(() => _depDate = dateStr);
+                          _fetchSchedules(dateStr);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // ── Schedule list ──
+            if (_depDate.isNotEmpty) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Available Schedules for $_depDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      if (_loadingSchedules)
+                        const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: kGreen)))
+                      else if (_availableSchedules.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(color: kSlate50, borderRadius: BorderRadius.circular(10)),
+                          child: const Text('No schedules available on this date for this route.', style: TextStyle(color: kSlate500, fontSize: 13)),
+                        )
+                      else
+                        ...(_availableSchedules.map((s) {
+                          final sid = s['id'] as int?;
+                          final isSelected = _selectedScheduleId == sid;
+                          return GestureDetector(
+                            onTap: () => setState(() => _selectedScheduleId = sid),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(s['service'] ?? s['service_name'] ?? 'Schedule', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                        const SizedBox(height: 4),
+                                        Text('${s['departure'] ?? s['formatted_departure'] ?? '—'} → ${s['arrival'] ?? s['formatted_arrival'] ?? '—'}', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected) const Icon(Icons.check_circle, color: kGreen),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList()),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // ── Submit Reschedule Button ──
+            if (_selectedScheduleId != null)
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitReschedule,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                      : const Text('Submit Reschedule Request', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                ),
+              ),
+          ],
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
 }
