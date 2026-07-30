@@ -215,4 +215,18 @@ class ScheduleController extends Controller
             'routes'     => $routesArray,
         ]);
     }
+
+    public function baggageRules(Request $request)
+    {
+        $local = \App\Models\AirlineBaggageRule::getRatesForBooking('local');
+        $international = \App\Models\AirlineBaggageRule::getRatesForBooking('international');
+
+        return response()->json([
+            'status' => 'success',
+            'rules' => [
+                'local' => $local,
+                'international' => $international,
+            ],
+        ]);
+    }
 }

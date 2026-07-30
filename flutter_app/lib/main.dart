@@ -314,7 +314,8 @@ class BookingData {
   static Future<void> clearPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('saved_booking_session');
-}
+  }
+} // end BookingData
 
 List<dynamic> parseJsonList(dynamic raw) {
   if (raw is List) return raw;
@@ -4243,6 +4244,7 @@ class ScheduleSelectScreen extends StatefulWidget {
 class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
   List<dynamic> _schedules = [];
   List<dynamic> _returnSchedules = [];
+  Map<String, dynamic> _baggageRules = {};
   bool _isLoading = true;
   String? _error;
 
@@ -4295,6 +4297,16 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
         } else {
           setState(() => _error = returnData['message'] ?? 'Failed to load returning schedules.');
           return;
+        }
+      }
+
+      if (widget.booking.mode == 'airline') {
+        final baggageRes = await http.get(Uri.parse('$baseUrl/api/baggage-rules'));
+        if (baggageRes.statusCode == 200) {
+          final bData = jsonDecode(baggageRes.body);
+          if (bData['status'] == 'success') {
+            _baggageRules = bData['rules'];
+          }
         }
       }
 
@@ -4757,7 +4769,40 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
 
   Widget _buildBaggageSwitch() {
     final isAirline = widget.booking.mode == 'airline';
-    final kgOptions = [10, 15, 20, 25, 30];
+
+    // Auto-detect rules for current schedule
+    final schedule = widget.booking.selectedSchedule ?? {};
+    final operatorStr = schedule['operator']?.toString().toLowerCase() ?? '';
+    final tripType = schedule['trip_type']?.toString().toLowerCase() ?? 'local';
+    
+    // Convert operator string to baggage key (e.g., 'cebu pacific' -> 'ceb_pac')
+    String? matchedOperator;
+    if (operatorStr.contains('pal') || operatorStr.contains('philippine airline')) matchedOperator = 'pal';
+    else if (operatorStr.contains('cebu')) matchedOperator = 'ceb_pac';
+    else if (operatorStr.contains('airasia')) matchedOperator = 'airasia';
+    
+    // Get options from rules
+    List<dynamic> baggageOptions = [];
+    if (matchedOperator != null && _baggageRules[tripType] != null && _baggageRules[tripType][matchedOperator] != null) {
+      baggageOptions = _baggageRules[tripType][matchedOperator]['options'] ?? [];
+    }
+    
+    // If we have options but no kg is set yet, default to first option
+    if (isAirline && baggageOptions.isNotEmpty && widget.booking.hasExtraBaggage) {
+      if (widget.booking.extraBaggageKg == null) {
+        // Find if we previously selected a price that matches
+        final matchingOption = baggageOptions.firstWhere((opt) => opt['price'] == widget.booking.extraBaggagePrice, orElse: () => baggageOptions.first);
+        // We use Future.microtask to avoid setState during build
+        Future.microtask(() {
+          if (mounted) {
+            setState(() {
+              widget.booking.extraBaggageKg = int.tryParse(matchingOption['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
+              widget.booking.extraBaggagePrice = (matchingOption['price'] as num).toDouble();
+            });
+          }
+        });
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -4790,8 +4835,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                     widget.booking.extraBaggageType = null;
                     widget.booking.extraBaggageSpecify = null;
                   } else {
-                    if (isAirline && widget.booking.extraBaggageKg == null) {
-                      widget.booking.extraBaggageKg = 20;
+                    if (isAirline && baggageOptions.isNotEmpty) {
+                      widget.booking.extraBaggageKg = int.tryParse(baggageOptions.first['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
+                      widget.booking.extraBaggagePrice = (baggageOptions.first['price'] as num).toDouble();
                     }
                     if (!isAirline && widget.booking.extraBaggageType == null) {
                       widget.booking.extraBaggageType = 'Large Suitcase / Oversized Luggage';
@@ -4808,41 +4854,37 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                 // KG dropdown
                 const Text('Select Extra Baggage (kg)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
                 const SizedBox(height: 8),
-                DropdownButtonFormField<int>(
-                  value: widget.booking.extraBaggageKg ?? 20,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                if (baggageOptions.isEmpty)
+                  const Text('No extra baggage rules found for this schedule.', style: TextStyle(color: kSlate500, fontSize: 12))
+                else
+                  DropdownButtonFormField<double>(
+                    value: widget.booking.extraBaggagePrice > 0 ? widget.booking.extraBaggagePrice : (baggageOptions.first['price'] as num).toDouble(),
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: baggageOptions.map((opt) {
+                      final wStr = opt['weight'].toString();
+                      final p = (opt['price'] as num).toDouble();
+                      return DropdownMenuItem<double>(
+                        value: p,
+                        child: Text('$wStr — ₱${p.toStringAsFixed(0)} / pax', style: const TextStyle(fontSize: 14)),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        final matchedOpt = baggageOptions.firstWhere((o) => (o['price'] as num).toDouble() == val, orElse: () => baggageOptions.first);
+                        setState(() {
+                          widget.booking.extraBaggagePrice = val;
+                          widget.booking.extraBaggageKg = int.tryParse(matchedOpt['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
+                        });
+                      }
+                    },
                   ),
-                  items: kgOptions.map((kg) => DropdownMenuItem<int>(
-                    value: kg,
-                    child: Text('$kg kg'),
-                  )).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => widget.booking.extraBaggageKg = val);
-                  },
-                ),
-                const SizedBox(height: 12),
-                // Price per pax field
-                const Text('Price per passenger (₱)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  initialValue: widget.booking.extraBaggagePrice > 0 ? widget.booking.extraBaggagePrice.toStringAsFixed(0) : '',
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'e.g. 700',
-                    prefixText: '₱ ',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                  onChanged: (v) {
-                    final parsed = double.tryParse(v) ?? 0.0;
-                    setState(() => widget.booking.extraBaggagePrice = parsed);
-                  },
-                ),
                 if (widget.booking.extraBaggageKg != null && widget.booking.extraBaggagePrice > 0) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(color: kGreen.withOpacity(0.07), borderRadius: BorderRadius.circular(8)),
@@ -5271,7 +5313,29 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
-                            if (_discounts.isNotEmpty) ...[
+                            if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFF3CD),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFFFD700)),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.local_activity, color: Color(0xFFC08000), size: 18),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Promotional ticket applied — passenger discounts are not applicable.',
+                                        style: TextStyle(fontSize: 12, color: Color(0xFF7B5800), fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ] else if (_discounts.isNotEmpty) ...[
                               const SizedBox(height: 10),
                               DropdownButtonFormField<int?>(
                                 value: pax[i]['discount_id'],
@@ -5630,12 +5694,19 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     super.initState();
     _clientNameCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.username : widget.booking.clientName);
     _clientEmailCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.email : widget.booking.clientEmail);
+    // If promo ticket is active, clear any voucher that may have been applied
+    if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) {
+      widget.booking.voucherCode = null;
+      widget.booking.voucherData = null;
+    }
     _fetchPaymentSettings();
     _fetchPoints();
     _autoApplySavedVoucher();
   }
 
   Future<void> _autoApplySavedVoucher() async {
+    // Don't auto-apply vouchers when promo ticket is active
+    if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) return;
     final code = UserSession.autoApplyVoucherCode;
     if (code == null || code.isEmpty) return;
     UserSession.autoApplyVoucherCode = null;
@@ -5780,9 +5851,10 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             'return_schedule_id': widget.booking.selectedReturnSchedule!['id'],
           if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnScheduleAccommodationId != null)
             'selected_return_schedule_accommodation_id': widget.booking.selectedReturnScheduleAccommodationId,
-          if (widget.booking.voucherCode != null) 'voucher_code': widget.booking.voucherCode,
+          if (widget.booking.voucherCode != null && !(widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null))
+            'voucher_code': widget.booking.voucherCode,
           if (widget.booking.promotionalTicketId != null) 'promotional_ticket_id': widget.booking.promotionalTicketId,
-          if (_usePoints) 'use_points': true,
+          if (_usePoints && !(widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null)) 'use_points': true,
           // Extra baggage
           'has_extra_baggage': widget.booking.hasExtraBaggage,
           if (widget.booking.hasExtraBaggage) ...{
@@ -6168,29 +6240,52 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  const Text('Total Booking Voucher (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
-                  const SizedBox(height: 8),
-                  _VoucherSection(booking: widget.booking, scopeFilter: null, onVoucherChanged: () => setState(() {})),
-                  const SizedBox(height: 16),
-                  
-                  if (UserSession.isLoggedIn) ...[
-                    const Text('Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
-                    const SizedBox(height: 8),
+                  if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) ...[
                     Container(
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: kSlate200),
+                        color: const Color(0xFFFFF3CD),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFFD700)),
                       ),
-                      child: SwitchListTile(
-                        title: const Text('Use Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        subtitle: _fetchingPoints ? const Text('Loading...', style: TextStyle(fontSize: 12)) : Text('Available: ${_availablePoints.toInt()} pts', style: const TextStyle(fontSize: 12, color: kSlate500)),
-                        value: _usePoints,
-                        onChanged: _availablePoints > 0 ? (val) => setState(() => _usePoints = val) : null,
-                        activeColor: kGreen,
+                      child: const Row(
+                        children: [
+                          Icon(Icons.info_outline, color: Color(0xFFC08000), size: 20),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Promotional ticket is active. Vouchers, Gracia Points, and passenger discounts cannot be combined with a promo fare.',
+                              style: TextStyle(fontSize: 12, color: Color(0xFF7B5800), fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                  ] else ...[
+                    const Text('Total Booking Voucher (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                    const SizedBox(height: 8),
+                    _VoucherSection(booking: widget.booking, scopeFilter: null, onVoucherChanged: () => setState(() {})),
+                    const SizedBox(height: 16),
+                    if (UserSession.isLoggedIn) ...[
+                      const Text('Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: kSlate200),
+                        ),
+                        child: SwitchListTile(
+                          title: const Text('Use Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          subtitle: _fetchingPoints ? const Text('Loading...', style: TextStyle(fontSize: 12)) : Text('Available: ${_availablePoints.toInt()} pts', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                          value: _usePoints,
+                          onChanged: _availablePoints > 0 ? (val) => setState(() => _usePoints = val) : null,
+                          activeColor: kGreen,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ],
 
                   Builder(builder: (ctx) {
@@ -6217,15 +6312,19 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                        }
                     }
                     
+                    final bool isPromo = widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null;
+
                     double passengerDiscount = 0.0;
-                    for (var p in widget.booking.passengers) {
-                      if (p['discount_id'] != null && widget.booking.selectedSchedule != null) {
-                         final ap = widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0;
-                         passengerDiscount += ((ap is num ? ap.toDouble() : double.tryParse(ap.toString()) ?? 0) * 0.20); 
-                         if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
-                             final rp = widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0;
-                             passengerDiscount += ((rp is num ? rp.toDouble() : double.tryParse(rp.toString()) ?? 0) * 0.20);
-                         }
+                    if (!isPromo) {
+                      for (var p in widget.booking.passengers) {
+                        if (p['discount_id'] != null && widget.booking.selectedSchedule != null) {
+                           final ap = widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0;
+                           passengerDiscount += ((ap is num ? ap.toDouble() : double.tryParse(ap.toString()) ?? 0) * 0.20);
+                           if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
+                               final rp = widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0;
+                               passengerDiscount += ((rp is num ? rp.toDouble() : double.tryParse(rp.toString()) ?? 0) * 0.20);
+                           }
+                        }
                       }
                     }
                     
@@ -6255,12 +6354,15 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     double subtotal = ticketPrice + vehicleCost + accommodationCost + calculationFee + extraBaggageCost - passengerDiscount;
                     if (subtotal < 0) subtotal = 0.0;
 
-                    final discount = widget.booking.voucherData != null ? (widget.booking.voucherData!['discount_amount'] as num).toDouble() : 0.0;
+                    // Voucher and points are blocked when promo ticket is active
+                    final discount = (!isPromo && widget.booking.voucherData != null)
+                        ? ((widget.booking.voucherData!['discount_amount'] as num?) ?? 0).toDouble()
+                        : 0.0;
                     double totalBeforePoints = subtotal - discount;
                     if (totalBeforePoints < 0) totalBeforePoints = 0.0;
                     
                     double pointsDiscount = 0.0;
-                    if (_usePoints) {
+                    if (!isPromo && _usePoints) {
                         pointsDiscount = _availablePoints > totalBeforePoints ? totalBeforePoints.ceilToDouble() : _availablePoints;
                     }
                     
@@ -6537,7 +6639,7 @@ class BookingSuccessScreen extends StatelessWidget {
 // ==========================================
 // VOUCHER SECTION WIDGET (for booking flow)
 // ==========================================
-class _VoucherSection extends StatelessWidget {
+class _VoucherSection extends StatefulWidget {
   final BookingData booking;
   final String? scopeFilter;
   final VoidCallback onVoucherChanged;
@@ -6549,14 +6651,19 @@ class _VoucherSection extends StatelessWidget {
   });
 
   @override
+  State<_VoucherSection> createState() => _VoucherSectionState();
+}
+
+class _VoucherSectionState extends State<_VoucherSection> {
+  @override
   Widget build(BuildContext context) {
-    final vCode = booking.voucherCode;
-    final vData = booking.voucherData;
+    final vCode = widget.booking.voucherCode;
+    final vData = widget.booking.voucherData;
 
     // Determine if the current voucher matches the scope of this section
     // If the scope filter is specific (e.g., 'vehicle'), only show the applied voucher if it's a vehicle voucher.
     // If scopeFilter is null (Submit screen), show the applied voucher regardless of scope.
-    final bool isApplicableHere = vData == null || scopeFilter == null || vData['eligible_scope'] == scopeFilter;
+    final bool isApplicableHere = vData == null || widget.scopeFilter == null || vData['eligible_scope'] == widget.scopeFilter;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -6567,33 +6674,41 @@ class _VoucherSection extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Platform Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
-                  Text(
-                    scopeFilter == 'vehicle' ? 'Use vehicle vouchers here' :
-                    scopeFilter == 'ticket_fare' ? 'Use ticket fare vouchers here' :
-                    scopeFilter == 'accommodation' ? 'Use accommodation vouchers here' :
-                    'Use any applicable voucher',
-                    style: const TextStyle(color: kSlate500, fontSize: 12),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Platform Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                    Text(
+                      widget.scopeFilter == 'vehicle' ? 'Use vehicle vouchers here' :
+                      widget.scopeFilter == 'ticket_fare' ? 'Use ticket fare vouchers here' :
+                      widget.scopeFilter == 'accommodation' ? 'Use accommodation vouchers here' :
+                      'Use any applicable voucher',
+                      style: const TextStyle(color: kSlate500, fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: () async {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => VoucherPickerScreen(booking: booking, scopeFilter: scopeFilter),
+                      builder: (_) => VoucherPickerScreen(booking: widget.booking, scopeFilter: widget.scopeFilter),
                     ),
                   );
-                  if (result != null || booking.voucherCode == null) {
-                    onVoucherChanged();
+                  if (mounted) {
+                    setState(() {}); // refresh local state
+                    if (result != null || widget.booking.voucherCode == null) {
+                      widget.onVoucherChanged();
+                    }
                   }
                 },
                 icon: const Icon(Icons.local_activity, size: 16, color: kPink),
@@ -6628,24 +6743,45 @@ class _VoucherSection extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(vData!['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                          Text(vData!['name']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
                           const SizedBox(height: 2),
                           Text('Code: $vCode', style: const TextStyle(color: kPink, fontSize: 11, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
-                      '- ₱${(vData['discount_amount'] as num).toStringAsFixed(2)}',
+                      '- ₱${((vData['discount_amount'] as num?) ?? 0).toStringAsFixed(2)}',
                       style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Remove voucher button
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    widget.booking.voucherCode = null;
+                    widget.booking.voucherData = null;
+                  });
+                  widget.onVoucherChanged();
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.close, size: 14, color: kSlate500),
+                    SizedBox(width: 4),
+                    Text('Remove voucher', style: TextStyle(color: kSlate500, fontSize: 12)),
                   ],
                 ),
               ),
             ] else ...[
               const SizedBox(height: 12),
               Text(
-                'A voucher for a different section (${vData!['eligible_scope']}) is currently applied. Remove it first if you want to use a ${scopeFilter} voucher.',
+                'A ${vData!['eligible_scope']?.toString() ?? ''} voucher is currently applied. Remove it first to use a different voucher here.',
                 style: const TextStyle(color: Colors.amber, fontSize: 12),
               ),
             ],
@@ -6655,6 +6791,7 @@ class _VoucherSection extends StatelessWidget {
     );
   }
 }
+
 
 // ==========================================
 // VOUCHER PICKER SCREEN (booking context)
