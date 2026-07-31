@@ -207,7 +207,7 @@
                                                 $selectedOpLogo = null;
                                                 if ($operator) {
                                                     if (stripos($operator, '2GO') !== false) $selectedOpLogo = '2GO-Logo.png';
-                                                    elseif (stripos($operator, 'Starlite') !== false) $selectedOpLogo = 'starlite-Logo.jfif';
+                                                    elseif (stripos($operator, 'Starlite') !== false) $selectedOpLogo = 'Starlite_Logo.png';
                                                     elseif (stripos($operator, 'Cebu') !== false) $selectedOpLogo = 'CebuPecific-Logo.png';
                                                     elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $selectedOpLogo = 'Pal-Logo.jfif';
                                                     elseif (stripos($operator, 'AirAsia') !== false) $selectedOpLogo = 'AirAsia-Logo.png';
@@ -242,7 +242,7 @@
                                                                 @php
                                                                     $opLogo = null;
                                                                     if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
-                                                                    elseif (stripos($op, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
+                                                                    elseif (stripos($op, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
                                                                     elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
                                                                     elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
                                                                     elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
@@ -347,11 +347,11 @@
                                             @endphp
 
                                             @if(!$hasRouteSelected)
-                                                <livewire:date-picker wire:key="departure-no-route" wire:model="departure_date" field="departure_date" label="" :disabled="true" placeholder="Select origin & destination first" />
+                                                <livewire:date-picker wire:key="departure-no-route" wire:model.live="departure_date" field="departure_date" label="" :disabled="true" placeholder="Select origin & destination first" />
                                             @elseif(empty($enabledDepartureDates))
-                                                <livewire:date-picker wire:key="departure-no-schedules" wire:model="departure_date" field="departure_date" label="" :disabled="true" placeholder="No schedules available" />
+                                                <livewire:date-picker wire:key="departure-no-schedules" wire:model.live="departure_date" field="departure_date" label="" :disabled="true" placeholder="No schedules available" />
                                             @else
-                                                <livewire:date-picker wire:key="departure-restricted-{{ md5(json_encode($enabledDepartureDates)) }}" wire:model="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
+                                                <livewire:date-picker wire:key="departure-restricted-{{ md5(json_encode($enabledDepartureDates)) }}" wire:model.live="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
                                             @endif
                                         </div>
                                     @error('departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -369,11 +369,11 @@
                                             @endphp
 
                                             @if(!$hasRouteSelected)
-                                                <livewire:date-picker wire:key="return-no-route" wire:model="return_date" field="return_date" label="" :disabled="true" placeholder="Select origin & destination first" />
+                                                <livewire:date-picker wire:key="return-no-route" wire:model.live="return_date" field="return_date" label="" :disabled="true" placeholder="Select origin & destination first" />
                                             @elseif(empty($enabledReturnDates))
-                                                <livewire:date-picker wire:key="return-no-schedules" wire:model="return_date" field="return_date" label="" :disabled="true" placeholder="No return schedules available" />
+                                                <livewire:date-picker wire:key="return-no-schedules" wire:model.live="return_date" field="return_date" label="" :disabled="true" placeholder="No return schedules available" />
                                             @else
-                                                <livewire:date-picker wire:key="return-restricted-{{ md5(json_encode($enabledReturnDates)) }}" wire:model="return_date" field="return_date" :enabled-dates="$enabledReturnDates" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
+                                                <livewire:date-picker wire:key="return-restricted-{{ md5(json_encode($enabledReturnDates)) }}" wire:model.live="return_date" field="return_date" :enabled-dates="$enabledReturnDates" label="" min="{{ $departure_date ?? date('Y-m-d') }}" />
                                             @endif
                                         </div>
                                         @error('return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -428,7 +428,7 @@
                                 Total travelers: <span class="font-bold text-slate-900">{{ $adults + $children }}</span> / 8
                             </div>
 
-                            @if($mode === 'ferry')
+                            @if($mode === 'ferry' && stripos($operator ?? '', 'Starlite') !== false)
                                 <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                                     <div class="flex flex-wrap items-center justify-between gap-4">
                                         <div>
@@ -498,7 +498,7 @@
 
                                                 <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                     <label class="text-sm font-semibold text-slate-900">Plate Number *</label>
-                                                    <input type="text" wire:model.defer="vehicle_plate_number" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., ABC 1234" />
+                                                    <input type="text" wire:model.blur="vehicle_plate_number" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., ABC 1234" />
                                                     @error('vehicle_plate_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                                 </div>
 
@@ -513,13 +513,13 @@
                                             <div class="mt-6 grid gap-4 sm:grid-cols-2">
                                                 <label class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                     <span class="text-sm font-semibold text-slate-900">Driver name</span>
-                                                    <input type="text" wire:model.defer="driver_name" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., Juan Dela Cruz" />
+                                                    <input type="text" wire:model.blur="driver_name" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., Juan Dela Cruz" />
                                                     @error('driver_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                                 </label>
 
                                                 <label class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                     <span class="text-sm font-semibold text-slate-900">Driver birthday</span>
-                                                    <input type="date" wire:model.defer="driver_birthday" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" />
+                                                    <input type="date" wire:model.blur="driver_birthday" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" />
                                                     @error('driver_birthday')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                                 </label>
                                             </div>
@@ -697,7 +697,10 @@
                                         />
                                     @else
                                         <x-schedule-carousel 
-                                            title="Select a schedule"
+                                            title="Departure Trip"
+                                            subtitle="Select your preferred departure trip vessel"
+                                            :origin="$origin"
+                                            :destination="$destination"
                                             :schedules="$availableSchedules"
                                             selectedId="{{ $selected_schedule_id }}"
                                             selectedAccommodationId="{{ $selected_schedule_accommodation_id }}"
@@ -709,86 +712,90 @@
                                         />
                                     @endif
 
-                                        {{-- Extra Baggage section (bottom of schedule phase) --}}
-                                        <div class="mt-8 border-t border-slate-200 pt-6">
-                                            <div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-                                                <div class="flex flex-wrap items-center justify-between gap-4">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#216417]">
-                                                            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                                            </svg>
+                                        @if($mode === 'airline')
+                                            {{-- Extra Baggage section (bottom of schedule phase) --}}
+                                            <div class="mt-8 border-t border-slate-200 pt-6">
+                                                <div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+                                                    <div class="flex flex-wrap items-center justify-between gap-4">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#216417]">
+                                                                <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <p class="text-slate-900 font-bold text-lg">Prepaid Extra Baggage</p>
+                                                                <p class="text-xs text-slate-500">Add prepaid check-in baggage per passenger for your flight</p>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <p class="text-slate-900 font-bold text-lg">Prepaid Extra Baggage</p>
-                                                            <p class="text-xs text-slate-500">Add prepaid check-in baggage per passenger for your flight</p>
-                                                        </div>
+                                                        <label class="relative inline-flex cursor-pointer items-center gap-3">
+                                                            <input type="checkbox" wire:model.live="hasExtraBaggage" class="peer sr-only">
+                                                            <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#216417] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#216417]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+                                                            <span class="text-sm font-bold text-slate-900">{{ $hasExtraBaggage ? 'Extra Baggage Added' : 'No Extra Baggage' }}</span>
+                                                        </label>
                                                     </div>
-                                                    <label class="relative inline-flex cursor-pointer items-center gap-3">
-                                                        <input type="checkbox" wire:model.live="hasExtraBaggage" class="peer sr-only">
-                                                        <span class="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-[#216417] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#216417]/30 after:absolute after:left-0.5 after:top-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
-                                                        <span class="text-sm font-bold text-slate-900">{{ $hasExtraBaggage ? 'Extra Baggage Added' : 'No Extra Baggage' }}</span>
-                                                    </label>
+
+                                                    @if($hasExtraBaggage)
+                                                        @php
+                                                            $baggageRates = $this->getAirlineExtraBaggageRates();
+                                                            $currentAirlineKey = $selected_baggage_airline ?: $this->autoDetectBaggageAirline();
+                                                            $selectedAirlineData = $baggageRates[$currentAirlineKey] ?? reset($baggageRates);
+                                                            $passengersCount = max(1, count($passengers));
+                                                        @endphp
+                                                        <div class="mt-5 border-t border-slate-200 pt-5">
+                                                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                                                <div>
+                                                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Select Extra Baggage (kg)</label>
+                                                                    <select
+                                                                        wire:change="selectBaggageOption($event.target.options[$event.target.selectedIndex].dataset.weight, $event.target.value)"
+                                                                        class="w-full sm:w-64 rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm focus:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20"
+                                                                    >
+                                                                        @foreach($selectedAirlineData['options'] as $opt)
+                                                                            @php
+                                                                                $isSelected = ($extra_baggage_weight === $opt['weight']);
+                                                                            @endphp
+                                                                            <option
+                                                                                value="{{ $opt['price'] }}"
+                                                                                data-weight="{{ $opt['weight'] }}"
+                                                                                {{ $isSelected ? 'selected' : '' }}
+                                                                            >
+                                                                                {{ $opt['weight'] }} &mdash; &#8369;{{ number_format($opt['price']) }} per pax
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </div>
+                                                                <div class="rounded-xl bg-emerald-50/70 border border-emerald-200 px-4 py-3 text-right">
+                                                                    <div class="text-xs text-slate-600">
+                                                                        Selected Allowance:
+                                                                        <span class="rounded-full bg-[#216417] px-2.5 py-0.5 text-xs font-extrabold text-white">{{ $extra_baggage_weight ?: '20 kg' }}</span>
+                                                                    </div>
+                                                                    <div class="text-xs text-slate-500 mt-1">
+                                                                        Rate: &#8369;{{ number_format($extra_baggage_price ?? 0) }} per passenger &times; {{ $passengersCount }} traveler{{ $passengersCount > 1 ? 's' : '' }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="mt-4 rounded-xl bg-[#216417]/5 border border-[#216417]/20 p-4">
+                                                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <svg class="h-5 w-5 text-[#216417]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                                        </svg>
+                                                                        <span class="text-xs font-semibold text-slate-700">Applied to all {{ $passengersCount }} passenger(s) on your flight.</span>
+                                                                    </div>
+                                                                    <div class="text-left sm:text-right border-t sm:border-t-0 border-emerald-200/60 pt-3 sm:pt-0">
+                                                                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Added Baggage Fee</div>
+                                                                        <div class="text-xl font-extrabold text-[#216417] mt-0.5">
+                                                                            +&#8369;{{ number_format($this->getExtraBaggageTotalPrice(), 2) }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
                                                 </div>
-
-                                                @if($hasExtraBaggage)
-                                                    @php
-                                                        $baggageRates = $this->getAirlineExtraBaggageRates();
-                                                        $currentAirlineKey = $selected_baggage_airline ?: $this->autoDetectBaggageAirline();
-                                                        $selectedAirlineData = $baggageRates[$currentAirlineKey] ?? reset($baggageRates);
-                                                        $passengersCount = max(1, count($passengers));
-                                                    @endphp
-
-                                                    <div class="mt-6 border-t border-slate-100 pt-5 space-y-5">
-                                                        <div>
-                                                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Select Extra Baggage (kg)</label>
-                                                            <select 
-                                                                wire:change="selectBaggageOption($event.target.options[$event.target.selectedIndex].dataset.weight, $event.target.value)"
-                                                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 shadow-sm focus:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20"
-                                                            >
-                                                                    @foreach($selectedAirlineData['options'] as $opt)
-                                                                        @php
-                                                                            $isSelected = ($extra_baggage_weight === $opt['weight']);
-                                                                        @endphp
-                                                                        <option value="{{ $opt['price'] }}" data-weight="{{ $opt['weight'] }}" {{ $isSelected ? 'selected' : '' }}>
-                                                                            {{ $opt['weight'] }} — &#8369;{{ number_format($opt['price']) }} / pax
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-
-                                                        {{-- Visual Image Details & Price Computation Card --}}
-                                                        <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 sm:p-5">
-                                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                                                <div class="flex items-center gap-3">
-                                                                    @if(!empty($selectedAirlineData['logo']))
-                                                                        <div class="w-12 h-12 rounded-xl bg-white p-1 shadow-sm border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
-                                                                            <img src="{{ asset('images/' . $selectedAirlineData['logo']) }}" alt="{{ $selectedAirlineData['name'] }}" class="w-full h-full object-contain">
-                                                                        </div>
-                                                                    @endif
-                                                                    <div>
-                                                                        <div class="flex items-center gap-2">
-                                                                            <span class="font-bold text-slate-900 text-base">{{ $selectedAirlineData['name'] }}</span>
-                                                                            <span class="rounded-full bg-[#216417] px-2.5 py-0.5 text-xs font-extrabold text-white">{{ $extra_baggage_weight ?: '20 kg' }}</span>
-                                                                        </div>
-                                                                        <p class="text-xs text-slate-600 mt-0.5">
-                                                                            Rate: &#8369;{{ number_format($extra_baggage_price ?? 0) }} per passenger &times; {{ $passengersCount }} traveler{{ $passengersCount > 1 ? 's' : '' }}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="text-left sm:text-right border-t sm:border-t-0 border-emerald-200/60 pt-3 sm:pt-0">
-                                                                    <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Added Baggage Fee</div>
-                                                                    <div class="text-xl font-extrabold text-[#216417] mt-0.5">
-                                                                        +&#8369;{{ number_format($this->getExtraBaggageTotalPrice(), 2) }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endif
                                             </div>
-                                        </div>
+                                        @endif
 
                                         {{-- Promo Ticket section --}}
                                         @php
@@ -872,7 +879,7 @@
                                                         <div class="flex items-center justify-between mb-2">
                                                             <p class="text-slate-900 font-bold">Selected flight @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         </div>
-                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} &rarr; {{ $selectedSchedule['arrival'] }}</p>
+                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} - {{ $selectedSchedule['arrival'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedSchedule['duration'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
                                                     </div>
@@ -899,7 +906,7 @@
                                                                 <div class="flex items-center justify-between mb-2">
                                                                     <p class="text-slate-900 font-bold">Selected flight (Returning)</p>
                                                                 </div>
-                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} &rarr; {{ $selectedReturnSchedule['arrival'] }}</p>
+                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} - {{ $selectedReturnSchedule['arrival'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedReturnSchedule['duration'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
                                                             </div>
@@ -952,7 +959,7 @@
                                                         <div class="flex items-center justify-between mb-2">
                                                             <p class="text-slate-900 font-bold">Selected schedule @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         </div>
-                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} &rarr; {{ $selectedSchedule['arrival'] }}</p>
+                                                        <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} - {{ $selectedSchedule['arrival'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedSchedule['duration'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600 font-bold">Fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
                                                     </div>
@@ -981,7 +988,7 @@
                                                                 <div class="flex items-center justify-between mb-2">
                                                                     <p class="text-slate-900 font-bold">Selected schedule (Returning)</p>
                                                                 </div>
-                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} &rarr; {{ $selectedReturnSchedule['arrival'] }}</p>
+                                                                <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} - {{ $selectedReturnSchedule['arrival'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedReturnSchedule['duration'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600 font-bold">Fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
                                                             </div>
@@ -1055,14 +1062,14 @@
                                         <span class="text-slate-900 font-bold text-sm">Name</span>
                                         <div class="mt-3 grid gap-2 sm:grid-cols-3">
                                             <div>
-                                                <input type="text" wire:model.defer="passengers.{{ $index }}.first_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="First" />
+                                                <input type="text" wire:model.blur="passengers.{{ $index }}.first_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="First" />
                                                 @error('passengers.' . $index . '.first_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
                                             </div>
                                             <div>
-                                                <input type="text" wire:model.defer="passengers.{{ $index }}.middle_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Middle" />
+                                                <input type="text" wire:model.blur="passengers.{{ $index }}.middle_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Middle" />
                                             </div>
                                             <div>
-                                                <input type="text" wire:model.defer="passengers.{{ $index }}.last_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Last" />
+                                                <input type="text" wire:model.blur="passengers.{{ $index }}.last_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Last" />
                                                 @error('passengers.' . $index . '.last_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
                                             </div>
                                         </div>
@@ -1070,7 +1077,7 @@
 
                                     <label class="block min-w-0">
                                         <span class="text-slate-900 font-bold text-sm">Date of birth</span>
-                                        <input type="date" wire:model.defer="passengers.{{ $index }}.birthdate" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
+                                        <input type="date" wire:model.blur="passengers.{{ $index }}.birthdate" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
                                         @error('passengers.' . $index . '.birthdate')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                     </label>
 
@@ -1155,19 +1162,19 @@
 
                                         <label class="block min-w-0">
                                             <span class="text-slate-900 font-bold text-sm">Student number</span>
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.student_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Student number" />
+                                            <input type="text" wire:model.blur="passengers.{{ $index }}.student_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Student number" />
                                             @error('passengers.' . $index . '.student_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
                                     @elseif($selectedDiscount && str_contains($discountKey, 'senior'))
                                         <label class="block min-w-0">
                                             <span class="text-slate-900 font-bold text-sm">OSCA number</span>
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.senior_osca_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="OSCA number" />
+                                            <input type="text" wire:model.blur="passengers.{{ $index }}.senior_osca_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="OSCA number" />
                                             @error('passengers.' . $index . '.senior_osca_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
                                     @elseif($selectedDiscount && str_contains($discountKey, 'pwd'))
                                         <label class="block min-w-0">
                                             <span class="text-slate-900 font-bold text-sm">PWD ID number</span>
-                                            <input type="text" wire:model.defer="passengers.{{ $index }}.pwd_id_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="PWD ID number" />
+                                            <input type="text" wire:model.blur="passengers.{{ $index }}.pwd_id_number" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="PWD ID number" />
                                             @error('passengers.' . $index . '.pwd_id_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                         </label>
                                     @endif
@@ -1231,19 +1238,19 @@
                         <div class="grid gap-6 lg:grid-cols-2">
                             <label class="block" data-error="client_name">
                                 <span class="text-slate-900 font-bold text-sm">Your name</span>
-                                <input type="text" wire:model.defer="client_name" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Jane Doe" />
+                                <input type="text" wire:model.blur="client_name" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Jane Doe" />
                                 @error('client_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
 
                             <label class="block" data-error="client_email">
                                 <span class="text-slate-900 font-bold text-sm">Email address</span>
-                                <input type="email" wire:model.defer="client_email" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="you@example.com" />
+                                <input type="email" wire:model.blur="client_email" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="you@example.com" />
                                 @error('client_email')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
 
                             <label class="block lg:col-span-2" data-error="client_phone">
                                 <span class="text-slate-900 font-bold text-sm">Contact number</span>
-                                <input type="tel" wire:model.defer="client_phone" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="e.g. +63 912 345 6789" />
+                                <input type="tel" wire:model.blur="client_phone" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="e.g. +63 912 345 6789" />
                                 @error('client_phone')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
                         </div>
@@ -1374,7 +1381,7 @@
                                         $depOpLogo = null;
                                         if ($operator) {
                                             if (stripos($operator, '2GO') !== false) $depOpLogo = '2GO-Logo.png';
-                                            elseif (stripos($operator, 'Starlite') !== false) $depOpLogo = 'starlite-Logo.jfif';
+                                            elseif (stripos($operator, 'Starlite') !== false) $depOpLogo = 'Starlite_Logo.png';
                                             elseif (stripos($operator, 'Cebu') !== false) $depOpLogo = 'CebuPecific-Logo.png';
                                             elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $depOpLogo = 'Pal-Logo.jfif';
                                             elseif (stripos($operator, 'AirAsia') !== false) $depOpLogo = 'AirAsia-Logo.png';
@@ -1396,7 +1403,7 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <p class="text-[#db2777] font-extrabold text-lg">{{ $departureSchedule['service'] }}</p>
-                                            <p class="text-slate-600 font-medium mt-1">{{ $departureSchedule['departure'] }} &rarr; {{ $departureSchedule['arrival'] }}</p>
+                                            <p class="text-slate-600 font-medium mt-1">{{ $departureSchedule['departure'] }} - {{ $departureSchedule['arrival'] }}</p>
                                         </div>
                                         <div class="text-right">
                                             <p class="text-slate-900 font-bold text-lg">&#8369;{{ number_format($departureSchedule['price'], 2) }}</p>
@@ -1424,7 +1431,7 @@
                                             $retOpLogo = null;
                                             if ($operator) {
                                                 if (stripos($operator, '2GO') !== false) $retOpLogo = '2GO-Logo.png';
-                                                elseif (stripos($operator, 'Starlite') !== false) $retOpLogo = 'starlite-Logo.jfif';
+                                                elseif (stripos($operator, 'Starlite') !== false) $retOpLogo = 'Starlite_Logo.png';
                                                 elseif (stripos($operator, 'Cebu') !== false) $retOpLogo = 'CebuPecific-Logo.png';
                                                 elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $retOpLogo = 'Pal-Logo.jfif';
                                                 elseif (stripos($operator, 'AirAsia') !== false) $retOpLogo = 'AirAsia-Logo.png';
@@ -1446,7 +1453,7 @@
                                         <div class="flex justify-between items-start">
                                             <div>
                                                 <p class="text-[#db2777] font-extrabold text-lg">{{ $returnSchedule['service'] }}</p>
-                                                <p class="text-slate-600 font-medium mt-1">{{ $returnSchedule['departure'] }} &rarr; {{ $returnSchedule['arrival'] }}</p>
+                                                <p class="text-slate-600 font-medium mt-1">{{ $returnSchedule['departure'] }} - {{ $returnSchedule['arrival'] }}</p>
                                             </div>
                                             <div class="text-right">
                                                 <p class="text-slate-900 font-bold text-lg">&#8369;{{ number_format($returnSchedule['price'], 2) }}</p>
@@ -1553,33 +1560,19 @@
                         </div>
 
                         <div class="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            @php
+                                $operatorLabel = !empty($operator) ? $operator : 'the selected operator';
+                            @endphp
                             <div class="flex flex-col gap-3">
                                 <button type="button" wire:click.prevent="$set('showTermsModal', true)" class="text-left w-full text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">
-                                    <h3 class="text-lg font-bold">Amiga Travel Agency Services Terms and Conditions</h3>
+                                    <h3 class="text-lg font-bold">{{ $operatorLabel }} Terms and Conditions</h3>
                                 </button>
-                                <label class="flex items-start gap-3">
-                                    <input type="checkbox" wire:model="hasAcceptedTerms" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#db2777] focus:ring-[#db2777]">
-                                    <div class="text-sm text-slate-700">
-                                        I have read and agree to the <button type="button" wire:click.prevent="$set('showTermsModal', true)" class="font-semibold text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">Amiga Travel Agency Services Terms and Conditions</button>.
-                                    </div>
-                                </label>
-                                @error('hasAcceptedTerms')
-                                    <p class="text-sm text-rose-600">{{ $message }}</p>
-                                @enderror
+                                <p class="text-sm text-slate-600">Please review the full terms in the modal below. The acceptance checkbox will only become available after you reach the end of the document.</p>
 
                                 <button type="button" wire:click.prevent="$set('showPrivacyModal', true)" class="text-left w-full text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">
-                                    <h3 class="text-lg font-bold">Amiga Travel Agency Data Privacy Policy</h3>
+                                    <h3 class="text-lg font-bold">Amiga Gracia Travel Agency Data Privacy Policy</h3>
                                 </button>
-                                <label class="flex items-start gap-3">
-                                    <input type="checkbox" wire:model="hasAcceptedPrivacy" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#db2777] focus:ring-[#db2777]">
-                                    <div class="text-sm text-slate-700">
-                                        I have read and agree to the <button type="button" wire:click.prevent="$set('showPrivacyModal', true)" class="font-semibold text-[#db2777] hover:text-[#be185d] hover:underline focus:outline-none">Amiga Travel Agency Data Privacy Policy</button>.
-                                    </div>
-                                </label>
-                                @error('hasAcceptedPrivacy')
-                                    <p class="text-sm text-rose-600">{{ $message }}</p>
-                                @enderror
-                                <p class="text-sm text-slate-500">If you already agree, you may continue without opening the terms or privacy policy modals.</p>
+                                <p class="text-sm text-slate-600">Please review the full privacy policy in the modal below. The acceptance checkbox will only become available after you reach the end of the document.</p>
                             </div>
                         </div>
 
@@ -1659,13 +1652,16 @@
         </div>
     <!-- Terms and Conditions Modal -->
     @if ($showTermsModal)
-        <div x-data="{ accepted: @entangle('hasAcceptedTerms'), isSubmitting: @entangle('isSubmittingBooking') }" x-init="initBookingModal($el)" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        @php
+            $operatorLabel = !empty($operator) ? $operator : 'the selected operator';
+        @endphp
+        <div x-data="{ accepted: @entangle('hasAcceptedTerms'), isSubmitting: @entangle('isSubmittingBooking'), scrolledToBottom: false }" x-init="initBookingModal($el); $nextTick(() => { const el = $refs.content; if (el) { this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; } })" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-                    <h2 class="text-xl font-bold text-slate-900">Amiga Travel Agency Services Terms and Conditions</h2>
+                    <h2 class="text-xl font-bold text-slate-900">{{ $operatorLabel }} Terms and Conditions</h2>
                 </div>
                 
-                <div class="flex-1 overflow-y-auto px-6 py-4">
+                <div x-ref="content" x-on:scroll.throttle.100ms="scrolledToBottom = $event.target.scrollTop + $event.target.clientHeight >= $event.target.scrollHeight - 24" class="flex-1 overflow-y-auto px-6 py-4">
                     <p class="text-sm text-slate-700 mb-6">
                         Please go through these Terms and Conditions carefully. Your acceptance is required before continuing with your booking.
                     </p>
@@ -1768,9 +1764,11 @@
                 
                 <div class="flex flex-col gap-3 px-6 py-4 border-t border-slate-200">
                     <label class="flex items-start gap-3">
-                        <input type="checkbox" x-model="accepted" id="acceptTerms" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777]">
-                        <span class="text-sm text-slate-700">I have read and agree to the Amiga Travel Agency Services Terms and Conditions.</span>
+                        <input type="checkbox" x-model="accepted" :disabled="!scrolledToBottom" id="acceptTerms" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777] disabled:cursor-not-allowed disabled:opacity-50">
+                        <span class="text-sm text-slate-700">I have read and agree to the {{ $operatorLabel }} Terms and Conditions.</span>
                     </label>
+                    <p class="text-xs text-slate-500" x-show="!scrolledToBottom">Scroll to the end of the document to enable acceptance.</p>
+                    <p class="text-xs text-emerald-600" x-show="scrolledToBottom">You have reached the end of the document. You may now accept.</p>
                     @error('hasAcceptedTerms')
                         <p class="text-sm text-rose-600">{{ $message }}</p>
                     @enderror
@@ -1779,7 +1777,7 @@
                         <button type="button" wire:click.prevent="cancelTermsModal" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">
                             Cancel
                         </button>
-                        <button type="button" wire:click.prevent="confirmTermsAndContinue" :disabled="isSubmitting || !accepted" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="button" wire:click.prevent="confirmTermsAndContinue" :disabled="isSubmitting || !accepted || !scrolledToBottom" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                             @if ($isSubmittingBooking)
                                 <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -1797,13 +1795,13 @@
     @endif
 
     @if ($showPrivacyModal)
-        <div x-data="{ accepted: @entangle('hasAcceptedPrivacy'), isSubmitting: @entangle('isSubmittingBooking') }" x-init="initBookingModal($el)" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div x-data="{ accepted: @entangle('hasAcceptedPrivacy'), isSubmitting: @entangle('isSubmittingBooking'), scrolledToBottom: false }" x-init="initBookingModal($el); $nextTick(() => { const el = $refs.content; if (el) { this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; } })" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-                    <h2 class="text-xl font-bold text-slate-900">Amiga Travel Agency Data Privacy Policy</h2>
+                    <h2 class="text-xl font-bold text-slate-900">Amiga Gracia Travel Agency Data Privacy Policy</h2>
                 </div>
 
-                <div class="flex-1 overflow-y-auto px-6 py-4">
+                <div x-ref="content" x-on:scroll.throttle.100ms="scrolledToBottom = $event.target.scrollTop + $event.target.clientHeight >= $event.target.scrollHeight - 24" class="flex-1 overflow-y-auto px-6 py-4">
                     <p class="text-sm text-slate-700 mb-6">
                         Please review how Amiga Travel Agency collects, stores, and protects your personal data before continuing with your booking.
                     </p>
@@ -1834,9 +1832,11 @@
 
                 <div class="flex flex-col gap-3 px-6 py-4 border-t border-slate-200">
                     <label class="flex items-start gap-3">
-                        <input type="checkbox" x-model="accepted" id="acceptPrivacy" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777]">
-                        <span class="text-sm text-slate-700">I have read and agree to the Amiga Travel Agency Data Privacy Policy.</span>
+                        <input type="checkbox" x-model="accepted" :disabled="!scrolledToBottom" id="acceptPrivacy" class="mt-0.5 h-4 w-4 text-[#db2777] border-slate-300 focus:ring-[#db2777] disabled:cursor-not-allowed disabled:opacity-50">
+                        <span class="text-sm text-slate-700">I have read and agree to the Amiga Gracia Travel Agency Data Privacy Policy.</span>
                     </label>
+                    <p class="text-xs text-slate-500" x-show="!scrolledToBottom">Scroll to the end of the document to enable acceptance.</p>
+                    <p class="text-xs text-emerald-600" x-show="scrolledToBottom">You have reached the end of the document. You may now accept.</p>
                     @error('hasAcceptedPrivacy')
                         <p class="text-sm text-rose-600">{{ $message }}</p>
                     @enderror
@@ -1845,7 +1845,7 @@
                         <button type="button" wire:click.prevent="cancelPrivacyModal" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">
                             Cancel
                         </button>
-                        <button type="button" wire:click.prevent="confirmPrivacyAndContinue" :disabled="isSubmitting || !accepted" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="button" wire:click.prevent="confirmPrivacyAndContinue" :disabled="isSubmitting || !accepted || !scrolledToBottom" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                             @if ($isSubmittingBooking)
                                 <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

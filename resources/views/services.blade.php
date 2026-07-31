@@ -36,7 +36,7 @@
                     'title' => 'Starlite Ferries Inc.',
                     'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings and roll-on/roll-off (RoRo) cargo slots.',
                     'note' => 'Available Online',
-                    'image' => 'images/starlite-Logo.jfif',
+                    'image' => 'images/Starlite_Logo.png',
                     'button_text' => 'Book Now',
                     'link' => '/book/new?operator=' . urlencode('Starlite Ferries Inc.') . '&trip_type=one_way&mode=ferry',
                     'color' => 'text-emerald-700',

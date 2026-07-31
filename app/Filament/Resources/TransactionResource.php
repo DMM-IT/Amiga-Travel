@@ -105,6 +105,16 @@ class TransactionResource extends Resource
                             ->default('No proof uploaded yet.')
                             ->visible(fn (?Transaction $record): bool => blank($record?->proof_of_payment))
                             ->columnSpanFull(),
+                        ViewEntry::make('rebooking_proof_of_payment')
+                            ->label('Rebooking proof of payment')
+                            ->view('filament.infolists.entries.proof-image')
+                            ->visible(fn (?Transaction $record): bool => filled($record?->rebooking_proof_of_payment))
+                            ->columnSpanFull(),
+                        TextEntry::make('rebooking_proof_of_payment')
+                            ->label('Rebooking proof of payment')
+                            ->default('No rebooking proof uploaded yet.')
+                            ->visible(fn (?Transaction $record): bool => blank($record?->rebooking_proof_of_payment))
+                            ->columnSpanFull(),
                         TextEntry::make('confirmation_url')
                             ->label('Confirmation URL')
                             ->visible(fn (?Transaction $record): bool => filled($record?->confirmation_url))

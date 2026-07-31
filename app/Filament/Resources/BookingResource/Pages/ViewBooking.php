@@ -27,6 +27,65 @@ class ViewBooking extends ViewRecord
 {
     protected static string $resource = BookingResource::class;
 
+    private function resolveStorageUrl(?string $path = null): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        $trimmed = trim($path);
+
+        if (filter_var($trimmed, FILTER_VALIDATE_URL)) {
+            return $trimmed;
+        }
+
+        $trimmed = preg_replace('#^/+#', '', $trimmed) ?? $trimmed;
+        $trimmed = preg_replace('#^storage/#', '', $trimmed) ?? $trimmed;
+
+        if (blank($trimmed)) {
+            return null;
+        }
+
+        try {
+            return Storage::disk('public')->url($trimmed);
+        } catch (Throwable $e) {
+            return asset('storage/' . $trimmed);
+        }
+    }
+
+    private function renderProofImageContent(?string $path = null): HtmlString
+    {
+        $url = $this->resolveStorageUrl($path);
+
+        if (!$url) {
+            return new HtmlString('<span class="text-gray-500">No proof uploaded.</span>');
+        }
+
+        return new HtmlString('<a href="' . e($url) . '" target="_blank"><img src="' . e($url) . '" class="rounded-lg border border-gray-700 max-w-full h-auto" alt="Proof of payment" /></a>');
+    }
+
+    private function renderPassengerIdLinkContent(?array $state = null): HtmlString
+    {
+        $url = is_array($state) ? ($state['id_image_front_url'] ?? null) : null;
+
+        if (!$url) {
+            return new HtmlString('<em>No image</em>');
+        }
+
+        return new HtmlString('<a href="' . e($url) . '" target="_blank" class="text-blue-600 underline">View Front ID</a>');
+    }
+
+    private function renderPassengerIdBackLinkContent(?array $state = null): HtmlString
+    {
+        $url = is_array($state) ? ($state['id_image_back_url'] ?? null) : null;
+
+        if (!$url) {
+            return new HtmlString('<em>No image</em>');
+        }
+
+        return new HtmlString('<a href="' . e($url) . '" target="_blank" class="text-blue-600 underline">View Back ID</a>');
+    }
+
     public function form(Form $form): Form
     {
         return $form
@@ -74,9 +133,7 @@ class ViewBooking extends ViewRecord
 
                         Placeholder::make('proof_image')
                             ->label('Proof of payment')
-                            ->content(fn (): HtmlString => $this->record->transaction?->proof_url
-                                ? new HtmlString('<img src="' . e($this->record->transaction->proof_url) . '" class="rounded-lg border border-gray-700 max-w-full h-auto" alt="Proof of payment" />')
-                                : new HtmlString('No proof uploaded')),
+                            ->content(fn (): HtmlString => $this->renderProofImageContent($this->record->transaction?->proof_of_payment ?? $this->record->transaction?->proof_url)),
                         Placeholder::make('student_discount_proofs')
                             ->label('Student discount proof images')
                             ->content(function (): HtmlString {
@@ -88,6 +145,10 @@ class ViewBooking extends ViewRecord
 
                                 $html = '<div class="space-y-4">';
                                 foreach ($proofs as $proof) {
+                                    if (!is_array($proof)) {
+                                        continue;
+                                    }
+
                                     $front = $proof['front'] ?? null;
                                     $back = $proof['back'] ?? null;
                                     $name = $proof['passenger_name'] ?? 'Student proof';
@@ -100,12 +161,14 @@ class ViewBooking extends ViewRecord
                                     }
                                     $html .= '<div class="mt-3 grid gap-3 md:grid-cols-2">';
 
-                                    if ($front) {
-                                        $html .= '<div><p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Front</p><a href="' . e(asset('storage/' . $front)) . '" target="_blank"><img src="' . e(asset('storage/' . $front)) . '" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof front" /></a></div>';
+                                    $frontUrl = $this->resolveStorageUrl($front);
+                                    if ($frontUrl) {
+                                        $html .= '<div><p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Front</p><a href="' . e($frontUrl) . '" target="_blank"><img src="' . e($frontUrl) . '" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof front" /></a></div>';
                                     }
 
-                                    if ($back) {
-                                        $html .= '<div><p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Back</p><a href="' . e(asset('storage/' . $back)) . '" target="_blank"><img src="' . e(asset('storage/' . $back)) . '" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof back" /></a></div>';
+                                    $backUrl = $this->resolveStorageUrl($back);
+                                    if ($backUrl) {
+                                        $html .= '<div><p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Back</p><a href="' . e($backUrl) . '" target="_blank"><img src="' . e($backUrl) . '" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof back" /></a></div>';
                                     }
 
                                     $html .= '</div></div>';
@@ -139,18 +202,10 @@ class ViewBooking extends ViewRecord
                                     ->disabled(),
                                 Placeholder::make('id_image_front_view')
                                     ->label('Front ID Image')
-                                    ->content(function (array $state): HtmlString {
-                                        $url = $state['id_image_front_url'] ?? null;
-                                        if (!$url) return new HtmlString('<em>No image</em>');
-                                        return new HtmlString('<a href="'.e($url).'" target="_blank" class="text-blue-600 underline">View Front ID</a>');
-                                    }),
+                                    ->content(fn (?array $state = null): HtmlString => $this->renderPassengerIdLinkContent($state)),
                                 Placeholder::make('id_image_back_view')
                                     ->label('Back ID Image')
-                                    ->content(function (array $state): HtmlString {
-                                        $url = $state['id_image_back_url'] ?? null;
-                                        if (!$url) return new HtmlString('<em>No image</em>');
-                                        return new HtmlString('<a href="'.e($url).'" target="_blank" class="text-blue-600 underline">View Back ID</a>');
-                                    }),
+                                    ->content(fn (?array $state = null): HtmlString => $this->renderPassengerIdBackLinkContent($state)),
                             ])
                             ->columns(3)
                             ->visible(fn (): bool => $this->record->passengers->isNotEmpty()),
@@ -238,22 +293,22 @@ class ViewBooking extends ViewRecord
                             ->columnSpanFull()
                             ->content(function (): HtmlString {
                                 $proofPath = $this->record->transaction?->rebooking_proof_of_payment;
+                                $url = $this->resolveStorageUrl($proofPath);
 
-                                if (! $proofPath) {
+                                if (! $url) {
                                     return new HtmlString('<span class="text-gray-500">No rebooking proof uploaded.</span>');
                                 }
 
-                                $url = e(Storage::disk('public')->url($proofPath));
                                 $ext = strtolower(pathinfo($proofPath, PATHINFO_EXTENSION));
 
                                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                                     return new HtmlString(
-                                        '<a href="' . $url . '" target="_blank"><img src="' . $url . '" class="rounded-lg border border-gray-700 max-w-full h-auto" alt="Rebooking proof of payment" /></a>'
+                                        '<a href="' . e($url) . '" target="_blank"><img src="' . e($url) . '" class="rounded-lg border border-gray-700 max-w-full h-auto" alt="Rebooking proof of payment" /></a>'
                                     );
                                 }
 
                                 return new HtmlString(
-                                    '<a href="' . $url . '" target="_blank" class="text-primary-600 underline">View rebooking proof of payment</a>'
+                                    '<a href="' . e($url) . '" target="_blank" class="text-primary-600 underline">View rebooking proof of payment</a>'
                                 );
                             }),
                     ])

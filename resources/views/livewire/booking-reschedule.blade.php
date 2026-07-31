@@ -127,7 +127,17 @@
                 @endif
             </div>
 
-            @if($this->isResumeBlocked)
+            @php
+                $resumeDate = $booking->serviceCancellation?->resume_date;
+                $resumeDateString = $resumeDate ? $resumeDate->format('Y-m-d') : null;
+                $isResumeBlocked = ! $resumeDate;
+                $departureDateMin = $resumeDateString ?: today()->format('Y-m-d');
+                $returnDateMin = $dep_date
+                    ? max($dep_date, $resumeDateString ?: $dep_date)
+                    : ($resumeDateString ?: today()->format('Y-m-d'));
+            @endphp
+
+            @if($isResumeBlocked)
                 <div class="rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center shadow-sm">
                     <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -136,11 +146,9 @@
                     </div>
                     <h3 class="text-xl font-black text-amber-900 mb-2">Rescheduling Not Yet Available</h3>
                     <p class="text-sm text-amber-800 max-w-md mx-auto">
-                        The operator has set a service resume date of
-                        <strong>{{ $booking->serviceCancellation->resume_date->format('F d, Y') }}</strong>.
-                        You will be able to pick your new schedule starting on that date.
+                        The operator has not yet announced a service resume date for this disruption.
+                        Please wait until the service resume date is published before selecting replacement travel dates.
                     </p>
-                    <p class="mt-4 text-xs text-amber-700">Please check back on {{ $booking->serviceCancellation->resume_date->format('M d, Y') }} to choose your new travel date.</p>
                 </div>
             @else
             <div class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
@@ -150,7 +158,7 @@
                 @if($step === 'departure_date')
                     <div class="mb-6 pb-6 border-b border-slate-100">
                         <h3 class="text-lg font-bold text-slate-900 mb-4">Step 1: Pick a Departure Date</h3>
-                        <input type="date" wire:model.live="dep_date" min="{{ $cancellation && $cancellation->resume_date ? $cancellation->resume_date->format('Y-m-d') : today()->format('Y-m-d') }}" class="w-full max-w-xs rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        <input type="date" wire:model.live="dep_date" min="{{ $departureDateMin }}" class="w-full max-w-xs rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                     </div>
                     
                     <div>
@@ -213,7 +221,7 @@
                         <button wire:click="setStep('departure_accommodation')" class="text-sm font-semibold text-emerald-600 hover:underline">&larr; Back</button>
                     </div>
                     <div class="mb-6">
-                        <input type="date" wire:model.live="ret_date" min="{{ $dep_date }}" class="w-full max-w-xs rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        <input type="date" wire:model.live="ret_date" min="{{ $returnDateMin }}" class="w-full max-w-xs rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                     </div>
                     
                     <div>
@@ -289,37 +297,70 @@
 
                         <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-6">
                             <h4 class="text-sm font-bold uppercase tracking-wider text-emerald-800 mb-4">Price Computation</h4>
-                            <div class="flex justify-between text-sm text-emerald-900 mb-2">
-                                <span>Original Booking Total</span>
-                                <span>₱{{ number_format($booking->total_price, 2) }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-bold text-emerald-900 pt-2 border-t border-emerald-200">
-                                <span>Difference to Pay</span>
-                                <span>₱{{ number_format($priceDiff, 2) }}</span>
+                            <div class="space-y-3 text-sm text-emerald-900">
+                                <div class="flex justify-between">
+                                    <span>Original Booking Total</span>
+                                    <span>₱{{ number_format($originalFare, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>New Booking Total</span>
+                                    <span>₱{{ number_format($newFare, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between pt-2 border-t border-emerald-200 font-bold">
+                                    <span>Difference to Pay</span>
+                                    <span>₱{{ number_format($priceDiff, 2) }}</span>
+                                </div>
                             </div>
                         </div>
 
                         @if($priceDiff > 0)
+                            @php
+                                $qrCodePath = \App\Models\PaymentSetting::current()->qr_code_path;
+                            @endphp
                             <div class="rounded-2xl border border-amber-200 bg-white p-6 shadow-sm">
                                 <h4 class="text-base font-bold text-slate-900 mb-2">Additional Payment Required</h4>
-                                <p class="text-sm text-slate-600 mb-6">Since your new selections cost more than your original booking, please pay the difference of <strong>₱{{ number_format($priceDiff, 2) }}</strong> via GCash and upload the receipt below.</p>
-                                
-                                <div class="flex items-center gap-6 mb-6">
-                                    <div class="h-32 w-32 shrink-0 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center p-2">
-                                        {{-- Mock QR code --}}
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full text-slate-300" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h-2v2h-2v2h2v-2h2v-2zm-2 4h-2v2h-2v2h2v-2h2v-2zm-2 4h-2v2h2v-2z"/></svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-slate-900">GCash / Maya</p>
-                                        <p class="text-sm text-slate-600">Number: 0917 123 4567</p>
-                                        <p class="text-sm text-slate-600">Name: Amiga Gracia Travel</p>
-                                    </div>
-                                </div>
+                                <p class="text-sm text-slate-600 mb-6">Since your new selections cost more than your original booking, please pay the difference of <strong>₱{{ number_format($priceDiff, 2) }}</strong> and upload the receipt below.</p>
 
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 mb-2">Upload Payment Receipt</label>
-                                    <input type="file" wire:model="paymentProof" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition">
-                                    @error('paymentProof') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                                <div class="grid gap-6 lg:grid-cols-[1fr_auto] items-start">
+                                    <div class="space-y-4">
+                                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                            <div class="flex items-center gap-3 mb-3">
+                                                <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4a1 1 0 010 2H6v12h8V9a1 1 0 112 0v7a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                                                        <path d="M9 7a1 1 0 012 0v4a1 1 0 11-2 0V7z"/>
+                                                    </svg>
+                                                </span>
+                                                <div>
+                                                    <p class="font-bold text-slate-900">Upload Payment Receipt</p>
+                                                    <p class="text-sm text-slate-600">Attach your proof of payment for the rebooking difference.</p>
+                                                </div>
+                                            </div>
+                                            <label class="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 cursor-pointer hover:border-emerald-400 transition">
+                                                <span class="flex items-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 11-2 0V4H5v12h5a1 1 0 110 2H4a1 1 0 01-1-1V3zm9.293 4.293a1 1 0 011.414 0L15 9.586V7a1 1 0 112 0v5a1 1 0 01-1 1h-5a1 1 0 110-2h2.586l-1.293-1.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                    Choose file
+                                                </span>
+                                                <input type="file" wire:model="paymentProof" class="sr-only">
+                                            </label>
+                                            @error('paymentProof') <span class="text-xs text-red-500 mt-2 block">{{ $message }}</span> @enderror
+                                        </div>
+
+                                        <p class="text-sm text-slate-600">Your receipt will be attached to the booking and transaction record so our team can verify your payment.</p>
+                                    </div>
+
+                                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 w-full max-w-[220px]">
+                                        <h5 class="text-sm font-bold text-slate-900 mb-3">Payment QR Code</h5>
+                                        @if($qrCodePath)
+                                            <img src="{{ asset('storage/' . $qrCodePath) }}" alt="Payment QR Code" class="h-44 w-full object-contain rounded-2xl border border-slate-200 bg-white" />
+                                        @else
+                                            <div class="flex h-44 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-4 text-center text-sm text-slate-500">
+                                                QR code not uploaded yet. Please wait for the admin to upload the payment QR code.
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @endif

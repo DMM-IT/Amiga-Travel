@@ -149,12 +149,12 @@ class Schedule extends Model
 
     public function getFormattedDepartureAttribute(): string
     {
-        return Carbon::parse($this->departure_time)->format('H:i');
+        return Carbon::parse($this->departure_time)->format('F j, Y g:i a');
     }
 
     public function getFormattedArrivalAttribute(): string
     {
-        return Carbon::parse($this->arrival_time)->format('H:i');
+        return Carbon::parse($this->arrival_time)->format('F j, Y g:i a');
     }
 
     public function getDurationLabelAttribute(): string

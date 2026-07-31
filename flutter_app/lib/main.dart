@@ -12,7 +12,6 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 
 import 'notification_service.dart';
-import 'replacement_booking_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
@@ -61,7 +60,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.20+24';
+  static const String appVersion = '1.0.21+25';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -506,10 +505,18 @@ class SplashLoaderScreen extends StatefulWidget {
 }
 
 class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
+  Timer? _navigationTimer;
+
   @override
   void initState() {
     super.initState();
     _checkVersionAndProceed();
+  }
+
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkVersionAndProceed() async {
@@ -536,7 +543,7 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
     }
 
     // 2. Proceed to app
-    Future.delayed(const Duration(seconds: 2), () {
+    _navigationTimer = Timer(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -4193,7 +4200,7 @@ class _StepProgress extends StatelessWidget {
       case 'route': return Icons.directions_boat;
       case 'schedule': return Icons.calendar_month;
       case 'discount': return Icons.local_offer;
-      case 'add-ons': return Icons.extension;
+      case 'hotels': return Icons.hotel;
       case 'submit': return Icons.fact_check;
       default: return Icons.circle;
     }
@@ -4265,7 +4272,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
   bool _isLoading = true;
   String? _error;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
@@ -5201,7 +5208,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
   List<String?> _idFrontBase64 = [];
   List<String?> _idBackBase64 = [];
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
@@ -5603,7 +5610,7 @@ class _StayScreenState extends State<StayScreen> {
   List<Map<String, dynamic>> _accommodations = [];
   bool _isLoading = true;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
@@ -5614,7 +5621,11 @@ class _StayScreenState extends State<StayScreen> {
   void _fetchData() async {
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/accommodations'));
+      final destination = widget.booking.destination.trim();
+      final uri = destination.isEmpty
+          ? Uri.parse('$baseUrl/api/accommodations')
+          : Uri.parse('$baseUrl/api/accommodations?destination=${Uri.encodeComponent(destination)}');
+      final res = await http.get(uri);
       final accData = jsonDecode(res.body);
       if (res.statusCode == 200 && accData['status'] == 'success') {
         _accommodations = List<Map<String, dynamic>>.from(accData['accommodations']);
@@ -5629,7 +5640,7 @@ class _StayScreenState extends State<StayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add-ons')),
+      appBar: AppBar(title: const Text('Hotels')),
       body: Column(
         children: [
           _StepProgress(currentStep: 4, steps: _steps),
@@ -5641,7 +5652,7 @@ class _StayScreenState extends State<StayScreen> {
                     children: [
                       // ── Hotel / Accommodation Add-ons ──
                       const Text(
-                        'Hotel & Accommodation Add-ons',
+                        'Hotels',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
                       ),
                       const SizedBox(height: 4),
@@ -5697,23 +5708,6 @@ class _StayScreenState extends State<StayScreen> {
                                           Row(
                                             children: [
                                               Text('₱${a['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14)),
-                                              Builder(builder: (ctx) {
-                                                final p = double.tryParse(a['price'].toString()) ?? 0;
-                                                final pts = UserSession.calculateEarnedPoints(p);
-                                                if (pts > 0) {
-                                                  return Padding(
-                                                    padding: const EdgeInsets.only(left: 8.0),
-                                                    child: Row(
-                                                      children: [
-                                                        const Icon(Icons.star_rounded, color: kPink, size: 14),
-                                                        const SizedBox(width: 4),
-                                                        Text('+$pts pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }
-                                                return const SizedBox();
-                                              }),
                                             ],
                                           ),
                                         ],
@@ -5807,7 +5801,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   double _availablePoints = 0.0;
   bool _fetchingPoints = false;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
@@ -6301,17 +6295,15 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   ]),
                   const SizedBox(height: 16),
 
-                  // Add-ons
+                  // Hotel stays
                   if (widget.booking.selectedAccommodationIds.isNotEmpty) ...[
-                    _SummarySection(title: 'Add-on Stays', children: [
+                    _SummarySection(title: 'Hotel Stays', children: [
                       ...widget.booking.selectedAccommodationIds.map((id) {
                         final acc = widget.booking.availableAccommodations.firstWhere(
                           (a) => a['id'] == id, orElse: () => {'name': 'Accommodation #$id', 'price': '0'},
                         );
                         final p = double.tryParse(acc['price'].toString()) ?? 0;
-                        final pts = UserSession.calculateEarnedPoints(p);
-                        final valStr = pts > 0 ? '₱$p  (+${pts}pts)' : '₱$p';
-                        return _SummaryRow(acc['name'] as String, valStr);
+                        return _SummaryRow(acc['name'] as String, '₱${p.toStringAsFixed(2)}');
                       }),
                     ]),
                     const SizedBox(height: 16),
@@ -6487,6 +6479,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                     
                     final finalTotal = (totalBeforePoints - pointsDiscount) > 0 ? (totalBeforePoints - pointsDiscount) : 0.0;
+                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost).clamp(0.0, double.infinity);
                     
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -6498,7 +6491,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           if (accommodationCost > 0) _SummaryRow('Stay', '₱${accommodationCost.toStringAsFixed(2)}'),
                           if (extraBaggageCost > 0) _SummaryRow('Extra Baggage (${widget.booking.extraBaggageKg} kg)', '₱${extraBaggageCost.toStringAsFixed(2)}'),
                           if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') _SummaryRow('Extra Baggage (${widget.booking.extraBaggageType ?? 'Specified'})', 'Settled at Terminal'),
-                          if (calculationFee > 0) _SummaryRow('Calculation Fee', '₱${calculationFee.toStringAsFixed(2)}'),
+                          if (calculationFee > 0) _SummaryRow('Web Admin Fee', '₱${calculationFee.toStringAsFixed(2)}'),
                           const Divider(height: 16),
                           _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
                           if (discount > 0) _SummaryRow('Voucher Discount', '-₱${discount.toStringAsFixed(2)}'),
@@ -6514,7 +6507,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                         ]),
                         const SizedBox(height: 16),
                         Builder(builder: (ctx) {
-                          final pts = UserSession.calculateEarnedPoints(finalTotal);
+                          final pts = UserSession.calculateEarnedPoints(eligiblePointsTotal);
                           if (pts > 0) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16),
@@ -8208,7 +8201,7 @@ String getOperatorLogoUrl(String operatorName) {
   final lower = operatorName.toLowerCase();
   String logo = '';
   if (lower.contains('2go')) logo = '2GO-Logo.png';
-  else if (lower.contains('starlite')) logo = 'starlite-Logo.jfif';
+  else if (lower.contains('starlite')) logo = 'Starlite_Logo.png';
   else if (lower.contains('cebu')) logo = 'CebuPecific-Logo.png';
   else if (lower.contains('pal') || lower.contains('philippine airlines')) logo = 'Pal-Logo.jfif';
   else if (lower.contains('airasia')) logo = 'AirAsia-Logo.png';
@@ -9258,9 +9251,22 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
 
   // Reschedule state
   String _depDate = '';
+  String _retDate = '';
   List<dynamic> _availableSchedules = [];
+  List<dynamic> _returnSchedules = [];
   bool _loadingSchedules = false;
+  bool _loadingReturnSchedules = false;
   int? _selectedScheduleId;
+  int? _selectedReturnScheduleId;
+  Map<String, dynamic>? _selectedSchedule;
+  Map<String, dynamic>? _selectedReturnSchedule;
+  int? _selectedAccommodationId;
+  double _selectedAccommodationPrice = 0.0;
+  String _selectedAccommodationName = '';
+  int? _selectedReturnAccommodationId;
+  double _selectedReturnAccommodationPrice = 0.0;
+  String _selectedReturnAccommodationName = '';
+  XFile? _priceProofFile;
 
   // Refund form state
   String _refundMethod = 'GCash';
@@ -9278,53 +9284,38 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
 
   Future<void> _fetchSchedules(String date) async {
     if (date.isEmpty) return;
-    setState(() { _loadingSchedules = true; _availableSchedules = []; _selectedScheduleId = null; });
+    setState(() { _loadingSchedules = true; _availableSchedules = []; _selectedScheduleId = null; _selectedSchedule = null; _selectedAccommodationId = null; _selectedAccommodationPrice = 0.0; _selectedAccommodationName = ''; });
     try {
       final baseUrl = UserSession.getBaseUrl();
       final origin = widget.booking['origin'] ?? '';
       final dest = widget.booking['destination'] ?? '';
-      final res = await http.get(
-        Uri.parse('$baseUrl/api/schedules/realtime?origin=$origin&destination=$dest&date=$date'),
-        headers: {'Accept': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/schedules'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+        body: jsonEncode({
+          'origin': origin,
+          'destination': dest,
+          'date': date,
+          if (widget.booking['mode'] != null) 'mode': widget.booking['mode'],
+          if (widget.booking['operator'] != null) 'operator': widget.booking['operator'],
+        }),
       );
       final data = jsonDecode(res.body);
-      if (res.statusCode == 200) {
-        setState(() => _availableSchedules = (data['schedules'] ?? data['data'] ?? []));
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() => _availableSchedules = (data['schedules'] as List<dynamic>? ?? []));
       }
     } catch (_) {}
     finally { if (mounted) setState(() => _loadingSchedules = false); }
   }
 
-  Future<void> _submitReschedule() async {
-    if (_selectedScheduleId == null || _depDate.isEmpty) return;
-    setState(() => _isSubmitting = true);
-    try {
-      final baseUrl = UserSession.getBaseUrl();
-      final bookingId = widget.booking['id'];
-      final res = await http.post(
-        Uri.parse('$baseUrl/api/bookings/$bookingId/submit-replacement'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
-        },
-        body: jsonEncode({
-          'email': widget.booking['client_email'],
-          'dep_date': _depDate,
-          'dep_schedule_id': _selectedScheduleId,
-        }),
-      );
-      final data = jsonDecode(res.body);
-      if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() { _submitted = true; _feedback = data['message'] ?? 'Reschedule submitted successfully!'; });
-      } else {
-        setState(() => _feedback = data['message'] ?? 'Failed to submit reschedule.');
-      }
-    } catch (e) {
-      setState(() => _feedback = 'Network error: $e');
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+  String get _refundDestination {
+    final parts = ['Method: $_refundMethod'];
+    if (_refundMethod != 'GCash' && _bankNameCtrl.text.trim().isNotEmpty) {
+      parts.add('Institution: ${_bankNameCtrl.text.trim()}');
     }
+    parts.add('Account: ${_accountNumberCtrl.text.trim()}');
+    parts.add('Name: ${_accountNameCtrl.text.trim()}');
+    return parts.join(' | ');
   }
 
   Future<void> _submitRefund() async {
@@ -9344,10 +9335,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
           if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
         },
         body: jsonEncode({
-          'refund_method': _refundMethod,
-          'refund_account_number': _accountNumberCtrl.text.trim(),
-          'refund_account_name': _accountNameCtrl.text.trim(),
-          if (_refundMethod != 'GCash') 'refund_bank_name': _bankNameCtrl.text.trim(),
+          'email': widget.booking['client_email'],
+          'refund_destination': _refundDestination,
         }),
       );
       final data = jsonDecode(res.body);
@@ -9355,6 +9344,201 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
         setState(() { _submitted = true; _feedback = data['message'] ?? 'Refund request submitted!'; });
       } else {
         setState(() => _feedback = data['message'] ?? 'Failed to submit refund request.');
+      }
+    } catch (e) {
+      setState(() => _feedback = 'Network error: $e');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  int get _passengerCount {
+    final passengers = widget.booking['passengers'];
+    if (passengers is List) return passengers.length;
+    final adults = widget.booking['adults'] as int? ?? 0;
+    final children = widget.booking['children'] as int? ?? 0;
+    return (adults + children) > 0 ? (adults + children) : 1;
+  }
+
+  double get _oldTotalPrice => (widget.booking['total_price'] as num?)?.toDouble() ?? 0.0;
+
+  double get _selectedDepartureCost {
+    if (_selectedSchedule == null) return 0.0;
+    final schedulePrice = (_selectedSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+    return (schedulePrice + _selectedAccommodationPrice) * _passengerCount;
+  }
+
+  double get _selectedReturnCost {
+    if (_selectedReturnSchedule == null) return 0.0;
+    final schedulePrice = (_selectedReturnSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+    return (schedulePrice + _selectedReturnAccommodationPrice) * _passengerCount;
+  }
+
+  double get _newTotalPrice {
+    final vehiclePrice = (widget.booking['has_vehicle'] as bool? ?? false)
+        ? (widget.booking['vehicle_price'] as num?)?.toDouble() ?? 0.0
+        : 0.0;
+    return _selectedDepartureCost + _selectedReturnCost + vehiclePrice;
+  }
+
+  double get _priceDiff => (_newTotalPrice - _oldTotalPrice) > 0 ? (_newTotalPrice - _oldTotalPrice) : 0.0;
+
+  bool get _isReturnTrip => widget.booking['return_date'] != null;
+
+  String? get _resumeDate => (widget.booking['service_cancellation'] as Map<String, dynamic>?)?['resume_date']?.toString();
+
+  DateTime? get _resumeDateTime {
+    if (_resumeDate == null || _resumeDate!.isEmpty) return null;
+    try {
+      return DateTime.parse(_resumeDate!);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get _isResumeTba => _resumeDate == null || _resumeDate!.isEmpty;
+
+  bool get _isBeforeResumeDate {
+    final resume = _resumeDateTime;
+    if (resume == null || _depDate.isEmpty) return false;
+    try {
+      final chosen = DateTime.parse(_depDate);
+      return chosen.isBefore(resume);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool get _isReturnBeforeResumeDate {
+    final resume = _resumeDateTime;
+    if (resume == null || _retDate.isEmpty) return false;
+    try {
+      final chosen = DateTime.parse(_retDate);
+      return chosen.isBefore(resume);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool get _requiresDepartureAccommodation {
+    final accommodations = (_selectedSchedule?['accommodations'] as List<dynamic>?) ?? [];
+    return accommodations.isNotEmpty;
+  }
+
+  bool get _requiresReturnAccommodation {
+    final accommodations = (_selectedReturnSchedule?['accommodations'] as List<dynamic>?) ?? [];
+    return accommodations.isNotEmpty;
+  }
+
+  Future<void> _fetchReturnSchedules(String date) async {
+    if (date.isEmpty) return;
+    setState(() { _loadingReturnSchedules = true; _returnSchedules = []; _selectedReturnScheduleId = null; _selectedReturnSchedule = null; _selectedReturnAccommodationId = null; _selectedReturnAccommodationPrice = 0.0; _selectedReturnAccommodationName = ''; });
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final origin = widget.booking['destination'] ?? '';
+      final dest = widget.booking['origin'] ?? '';
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/schedules'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+        body: jsonEncode({
+          'origin': origin,
+          'destination': dest,
+          'date': date,
+          if (widget.booking['mode'] != null) 'mode': widget.booking['mode'],
+          if (widget.booking['operator'] != null) 'operator': widget.booking['operator'],
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() => _returnSchedules = (data['schedules'] as List<dynamic>? ?? []));
+      }
+    } catch (_) {}
+    finally { if (mounted) setState(() => _loadingReturnSchedules = false); }
+  }
+
+  Future<void> _pickPriceProof() async {
+    try {
+      final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (proof != null) {
+        setState(() => _priceProofFile = proof);
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Future<void> _submitReschedule() async {
+    if (_isResumeTba) {
+      setState(() => _feedback = 'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
+      return;
+    }
+    if (_selectedScheduleId == null || _depDate.isEmpty) return;
+    if (_isBeforeResumeDate) {
+      setState(() => _feedback = 'Selected departure date cannot be earlier than the operator resume date.');
+      return;
+    }
+    if (_isReturnTrip && _retDate.isNotEmpty && _isReturnBeforeResumeDate) {
+      setState(() => _feedback = 'Selected return date cannot be earlier than the operator resume date.');
+      return;
+    }
+    if (_requiresDepartureAccommodation && _selectedAccommodationId == null) {
+      setState(() => _feedback = 'Please select a departure accommodation.');
+      return;
+    }
+    if (_isReturnTrip && _retDate.isEmpty) {
+      setState(() => _feedback = 'Please select a return date.');
+      return;
+    }
+    if (_isReturnTrip && _selectedReturnScheduleId == null) {
+      setState(() => _feedback = 'Please select a return schedule.');
+      return;
+    }
+    if (_isReturnTrip && _requiresReturnAccommodation && _selectedReturnAccommodationId == null) {
+      setState(() => _feedback = 'Please select a return accommodation.' );
+      return;
+    }
+    if (_priceDiff > 0 && _priceProofFile == null) {
+      setState(() => _feedback = 'Please upload proof of payment for the price difference.');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final bookingId = widget.booking['id'];
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/$bookingId/submit-replacement'));
+      request.headers['Accept'] = 'application/json';
+      if (UserSession.token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer ${UserSession.token}';
+      }
+      request.fields['email'] = widget.booking['client_email']?.toString() ?? '';
+      request.fields['dep_date'] = _depDate;
+      request.fields['dep_schedule_id'] = _selectedScheduleId.toString();
+      if (_selectedAccommodationId != null) {
+        request.fields['dep_accommodation_id'] = _selectedAccommodationId.toString();
+      }
+      if (_isReturnTrip) {
+        request.fields['ret_date'] = _retDate;
+        request.fields['ret_schedule_id'] = _selectedReturnScheduleId.toString();
+        if (_selectedReturnAccommodationId != null) {
+          request.fields['ret_accommodation_id'] = _selectedReturnAccommodationId.toString();
+        }
+      }
+      request.fields['price_diff'] = _priceDiff.toStringAsFixed(2);
+      if (_priceDiff > 0 && _priceProofFile != null) {
+        request.files.add(await http.MultipartFile.fromPath('proof', _priceProofFile!.path));
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _submitted = true;
+          _feedback = data['message'] ?? 'Reschedule submitted successfully!';
+        });
+      } else {
+        setState(() => _feedback = data['message'] ?? 'Failed to submit reschedule.');
       }
     } catch (e) {
       setState(() => _feedback = 'Network error: $e');
@@ -9480,6 +9664,25 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               child: Text(_feedback, style: TextStyle(fontWeight: FontWeight.w600, color: _submitted ? kGreen : Colors.red.shade800)),
             ),
 
+          if (_isResumeTba)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Rescheduling not available yet', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF7A4A04))),
+                  SizedBox(height: 8),
+                  Text('The operator has not announced a resume date. Please wait until a confirmed service resume date is available before selecting a replacement travel date.', style: TextStyle(fontSize: 13, color: Color(0xFF7A4A04))),
+                ],
+              ),
+            ),
+
           if (_submitted) ...[
             const SizedBox(height: 8),
             SizedBox(
@@ -9594,7 +9797,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             ),
             const SizedBox(height: 12),
 
-            // ── Date picker ──
+            // ── Date pickers ──
             Card(
               color: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -9603,39 +9806,89 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Step 1: Pick a Departure Date', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    const Text('Step 1: Pick new travel dates', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
                     const SizedBox(height: 12),
                     TextFormField(
                       readOnly: true,
+                      enabled: !_isResumeTba,
                       decoration: InputDecoration(
-                        hintText: 'Select date',
+                        hintText: _isResumeTba ? 'Awaiting resume date' : 'Select departure date',
                         prefixIcon: const Icon(Icons.calendar_today, color: kGreen),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         suffixText: _depDate.isNotEmpty ? _depDate : null,
                       ),
-                      onTap: () async {
-                        final minDate = resumeDate != null ? DateTime.tryParse(resumeDate) ?? DateTime.now() : DateTime.now();
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: minDate,
-                          firstDate: minDate,
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
-                        );
-                        if (picked != null) {
-                          final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-                          setState(() => _depDate = dateStr);
-                          _fetchSchedules(dateStr);
-                        }
-                      },
+                      onTap: _isResumeTba
+                          ? () {
+                              setState(() => _feedback = 'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
+                            }
+                          : () async {
+                              final minDate = _resumeDateTime ?? DateTime.now();
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: minDate,
+                                firstDate: minDate,
+                                lastDate: DateTime.now().add(const Duration(days: 365)),
+                              );
+                              if (picked != null) {
+                                final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                                setState(() {
+                                  _depDate = dateStr;
+                                  _selectedScheduleId = null;
+                                  _selectedSchedule = null;
+                                  _selectedAccommodationId = null;
+                                  _selectedAccommodationPrice = 0.0;
+                                  _selectedAccommodationName = '';
+                                });
+                                _fetchSchedules(dateStr);
+                              }
+                            },
                     ),
+                    if (_isReturnTrip) ...[
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: 'Select return date',
+                          prefixIcon: const Icon(Icons.calendar_today, color: kGreen),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          suffixText: _retDate.isNotEmpty ? _retDate : null,
+                        ),
+                        onTap: () async {
+                          if (_depDate.isEmpty) {
+                            setState(() => _feedback = _isResumeTba ? 'Rescheduling is not available until the operator publishes a resume date.' : 'Select a departure date first.');
+                            return;
+                          }
+                          final startDate = DateTime.parse(_depDate).add(const Duration(days: 1));
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: startDate,
+                            firstDate: startDate,
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                          );
+                          if (picked != null) {
+                            final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                            setState(() {
+                              _retDate = dateStr;
+                              _selectedReturnScheduleId = null;
+                              _selectedReturnSchedule = null;
+                              _selectedReturnAccommodationId = null;
+                              _selectedReturnAccommodationPrice = 0.0;
+                              _selectedReturnAccommodationName = '';
+                            });
+                            _fetchReturnSchedules(dateStr);
+                          }
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
 
-            // ── Schedule list ──
+            // ── Departure schedule list ──
             if (_depDate.isNotEmpty) ...[
               Card(
                 color: Colors.white,
@@ -9645,7 +9898,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Available Schedules for $_depDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      Text('Available departure schedules for $_depDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
                       const SizedBox(height: 12),
                       if (_loadingSchedules)
                         const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: kGreen)))
@@ -9660,7 +9913,13 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                           final sid = s['id'] as int?;
                           final isSelected = _selectedScheduleId == sid;
                           return GestureDetector(
-                            onTap: () => setState(() => _selectedScheduleId = sid),
+                            onTap: () => setState(() {
+                              _selectedScheduleId = sid;
+                              _selectedSchedule = Map<String, dynamic>.from(s);
+                              _selectedAccommodationId = null;
+                              _selectedAccommodationPrice = 0.0;
+                              _selectedAccommodationName = '';
+                            }),
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(14),
@@ -9694,8 +9953,226 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               const SizedBox(height: 16),
             ],
 
+            if (_selectedSchedule != null && _requiresDepartureAccommodation) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Step 2: Select departure accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      ...((_selectedSchedule!['accommodations'] as List<dynamic>? ?? []).map((acc) {
+                        final accId = acc['id'] as int?;
+                        final isSelected = _selectedAccommodationId == accId;
+                        final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            _selectedAccommodationId = accId;
+                            _selectedAccommodationPrice = price;
+                            _selectedAccommodationName = acc['name']?.toString() ?? '';
+                          }),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(acc['name'] ?? 'Accommodation', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                      if (acc['description'] != null) ...[
+                                        const SizedBox(height: 4),
+                                        Text(acc['description'], style: const TextStyle(color: kSlate600, fontSize: 12)),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Text('+₱${price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: kPink)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList()),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_isReturnTrip && _retDate.isNotEmpty) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Available return schedules for $_retDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      if (_loadingReturnSchedules)
+                        const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: kGreen)))
+                      else if (_returnSchedules.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(color: kSlate50, borderRadius: BorderRadius.circular(10)),
+                          child: const Text('No return schedules available on this date for this route.', style: TextStyle(color: kSlate500, fontSize: 13)),
+                        )
+                      else
+                        ...(_returnSchedules.map((s) {
+                          final sid = s['id'] as int?;
+                          final isSelected = _selectedReturnScheduleId == sid;
+                          return GestureDetector(
+                            onTap: () => setState(() {
+                              _selectedReturnScheduleId = sid;
+                              _selectedReturnSchedule = Map<String, dynamic>.from(s);
+                              _selectedReturnAccommodationId = null;
+                              _selectedReturnAccommodationPrice = 0.0;
+                              _selectedReturnAccommodationName = '';
+                            }),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(s['service'] ?? s['service_name'] ?? 'Schedule', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                        const SizedBox(height: 4),
+                                        Text('${s['departure'] ?? s['formatted_departure'] ?? '—'} → ${s['arrival'] ?? s['formatted_arrival'] ?? '—'}', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected) const Icon(Icons.check_circle, color: kGreen),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList()),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_selectedReturnSchedule != null && _requiresReturnAccommodation) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Step 3: Select return accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      ...((_selectedReturnSchedule!['accommodations'] as List<dynamic>? ?? []).map((acc) {
+                        final accId = acc['id'] as int?;
+                        final isSelected = _selectedReturnAccommodationId == accId;
+                        final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            _selectedReturnAccommodationId = accId;
+                            _selectedReturnAccommodationPrice = price;
+                            _selectedReturnAccommodationName = acc['name']?.toString() ?? '';
+                          }),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(acc['name'] ?? 'Accommodation', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                      if (acc['description'] != null) ...[
+                                        const SizedBox(height: 4),
+                                        Text(acc['description'], style: const TextStyle(color: kSlate600, fontSize: 12)),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Text('+₱${price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: kPink)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList()),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_selectedSchedule != null) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Price summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      _SummaryRow('Original booking total', '₱${_oldTotalPrice.toStringAsFixed(2)}'),
+                      _SummaryRow('New total estimate', '₱${_newTotalPrice.toStringAsFixed(2)}'),
+                      if (_priceDiff > 0) _SummaryRow('Price difference', '₱${_priceDiff.toStringAsFixed(2)}'),
+                      if (_priceDiff == 0) _SummaryRow('Price difference', 'No extra payment required'),
+                      const SizedBox(height: 12),
+                      if (_priceDiff > 0) ...[
+                        const Text('Upload proof of payment for the price difference', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _pickPriceProof,
+                                icon: const Icon(Icons.upload_file),
+                                label: Text(_priceProofFile == null ? 'Upload proof' : 'Change proof'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_priceProofFile != null) ...[
+                          const SizedBox(height: 8),
+                          Text('Selected file: ${_priceProofFile!.name}', style: const TextStyle(color: kSlate600, fontSize: 12)),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
             // ── Submit Reschedule Button ──
-            if (_selectedScheduleId != null)
+            if (_selectedScheduleId != null && (!_isReturnTrip || _selectedReturnScheduleId != null))
               SizedBox(
                 width: double.infinity,
                 height: 50,

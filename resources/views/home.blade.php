@@ -206,7 +206,7 @@
                 [
                     'title' => 'Starlite Ferries Inc.',
                     'description' => 'Affordable regional ferry departures between Batangas, Calapan, and Roxas.',
-                    'image' => 'images/starlite-Logo.jfif',
+                    'image' => 'images/Starlite_Logo.png',
                     'booking_button_text' => 'Book Now',
                     'link' => '/book/new?operator=' . urlencode('Starlite Ferries Inc.') . '&trip_type=one_way&mode=ferry',
                 ],

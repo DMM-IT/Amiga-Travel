@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Kreait\Firebase\Contract\Messaging;
 
 class AppNotification extends Model
 {
@@ -19,7 +20,7 @@ class AppNotification extends Model
     {
         static::created(function ($model) {
             try {
-                $messaging = app('firebase.messaging');
+                $messaging = app(Messaging::class);
 
                 $notification = \Kreait\Firebase\Messaging\Notification::create($model->title, $model->body);
                 if ($model->image_path) {

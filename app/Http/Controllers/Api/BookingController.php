@@ -11,6 +11,7 @@ use App\Services\VoucherService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
+use Kreait\Firebase\Contract\Messaging;
 
 class BookingController extends Controller
 {
@@ -211,7 +212,7 @@ class BookingController extends Controller
             ->with('transaction')
             ->firstOrFail();
 
-        if (! $booking->canCancelOrRebook() || $booking->status !== 'pending' || ! $booking->transaction || ! in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
+        if (! $booking->canCancelOrRebook() || $booking->status !== Booking::STATUS_PENDING || ! $booking->transaction || ! in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'This booking can no longer be cancelled.'
@@ -241,7 +242,7 @@ class BookingController extends Controller
         $request->validate(['refund_destination' => 'required|string|max:255']);
 
         $booking->update([
-            'status' => 'cancelled',
+            'status' => Booking::STATUS_CANCELLED,
             'cancellation_fee' => $booking->getCancellationFeeAmount(),
             'refund_amount' => $booking->getRefundAmount(),
             'refund_destination' => $request->input('refund_destination'),
@@ -362,6 +363,32 @@ class BookingController extends Controller
              ], 400);
         }
 
+        $resumeDate = $booking->serviceCancellation->resume_date;
+        if (empty($resumeDate)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Service resume date is still to be announced. Please request a refund or wait until a resume date is published.',
+            ], 400);
+        }
+
+        $requestedDepDate = \Carbon\Carbon::parse($request->input('dep_date'));
+        if ($requestedDepDate->lt(\Carbon\Carbon::parse($resumeDate))) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Departure date must be on or after the service resume date (' . \Carbon\Carbon::parse($resumeDate)->format('M d, Y') . ').',
+            ], 400);
+        }
+
+        if ($request->filled('ret_date')) {
+            $requestedRetDate = \Carbon\Carbon::parse($request->input('ret_date'));
+            if ($requestedRetDate->lt(\Carbon\Carbon::parse($resumeDate))) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Return date must be on or after the service resume date (' . \Carbon\Carbon::parse($resumeDate)->format('M d, Y') . ').',
+                ], 400);
+            }
+        }
+
         $proofPath = null;
         if ($request->input('price_diff', 0) > 0) {
             $request->validate(['proof' => 'required|image|max:2048']);
@@ -413,7 +440,7 @@ class BookingController extends Controller
         }
 
         $booking->update([
-            'status' => 'cancelled',
+            'status' => $booking->status === Booking::STATUS_OPERATOR_CANCELLED ? Booking::STATUS_OPERATOR_CANCELLED : Booking::STATUS_CANCELLED,
             'disruption_status' => 'refund_requested',
             'refund_destination' => $request->refund_destination,
             'refund_amount' => $booking->total_price, // 100% full refund

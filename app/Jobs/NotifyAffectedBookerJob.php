@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Kreait\Firebase\Contract\Messaging;
 
 class NotifyAffectedBookerJob implements ShouldQueue
 {
@@ -49,7 +50,7 @@ class NotifyAffectedBookerJob implements ShouldQueue
             // Send user-specific FCM push to only the affected user's device
             if (filled($this->booking->client_email)) {
                 $userTopic = 'user_' . md5(strtolower(trim($this->booking->client_email)));
-                $messaging = app('firebase.messaging');
+                $messaging = app(Messaging::class);
                 $notification = \Kreait\Firebase\Messaging\Notification::create(
                     "✈️ {$this->cancellation->carrier} Disruption",
                     "Booking #{$this->booking->transaction_number} was cancelled due to {$this->cancellation->reason_category}. {$resumeText}"

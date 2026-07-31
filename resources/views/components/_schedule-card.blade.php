@@ -8,14 +8,17 @@
     $opName = $schedule['operator'] ?? '';
     $opLogo = null;
     if (stripos($opName, '2GO') !== false) $opLogo = '2GO-Logo.png';
-    elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
+    elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
     elseif (stripos($opName, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
     elseif (stripos($opName, 'Pal') !== false || stripos($opName, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
     elseif (stripos($opName, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+
+    $safeSelectMethod = is_string($selectMethod) && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $selectMethod) ? $selectMethod : 'selectSchedule';
+    $scheduleId = (int) ($schedule['id'] ?? 0);
 @endphp
 <button
     type="button"
-    wire:click.prevent="{{ $selectMethod }}({{ $schedule['id'] }})"
+    wire:click.prevent="{{ $safeSelectMethod }}({{ $scheduleId }})"
     class="w-full h-full min-h-[168px] sm:min-h-[190px] rounded-xl sm:rounded-2xl border p-3 sm:p-4 text-left transition duration-200 flex flex-col {{ $isSelected
         ? 'border-[#db2777] bg-[#db2777] text-white shadow-md ring-2 ring-[#db2777]/20 ring-offset-2 ring-offset-slate-50'
         : 'border-slate-200 bg-white text-slate-900 hover:border-[#db2777]/50 hover:shadow-sm'
@@ -58,7 +61,7 @@
         </p>
     @endif
     <p class="mt-1.5 text-[10px] sm:text-xs font-semibold {{ $isSelected ? 'text-white' : 'text-slate-900' }}">
-        {{ $schedule['departure'] ?? '' }} &rarr; {{ $schedule['arrival'] ?? '' }}
+        {{ $schedule['departure'] ?? '' }} - {{ $schedule['arrival'] ?? '' }}
     </p>
 
     <div class="mt-auto pt-2 sm:pt-3 border-t {{ $isSelected ? 'border-white/20' : 'border-slate-100' }}">

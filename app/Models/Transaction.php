@@ -45,7 +45,7 @@ class Transaction extends Model
             return null;
         }
 
-        return $this->created_at->copy()->addMinutes(10);
+        return $this->created_at->copy()->addMinutes(5);
     }
 
     public function isVerificationLocked(): bool
@@ -86,7 +86,7 @@ class Transaction extends Model
         }
 
         if ($unlockTime->isPast()) {
-            return '10-minute hold complete. Ready for verification.';
+            return '5-minute cancellation window complete. Ready for verification.';
         }
 
         return 'Unlocks at ' . $unlockTime->format('h:i:s A');

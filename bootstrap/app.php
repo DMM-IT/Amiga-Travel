@@ -61,6 +61,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401);
             }
 
+            if ($request->is('admin') || $request->is('admin/*') || $request->routeIs('filament.*')) {
+                return redirect()->guest(route('filament.admin.auth.login'));
+            }
+
             return redirect()->guest(route('login'))->withErrors([
                 'message' => 'Please log in to continue.',
             ]);

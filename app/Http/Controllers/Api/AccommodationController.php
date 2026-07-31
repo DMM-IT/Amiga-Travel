@@ -9,23 +9,33 @@ class AccommodationController extends Controller
 {
     public function index()
     {
-        $accommodations = \Illuminate\Support\Facades\Cache::remember('api:accommodations', now()->addHours(6), function () {
-            return Accommodation::where('is_active', true)
-                ->orderBy('name')
-                ->get()
-                ->map(function ($a) {
+        $destination = request()->query('destination');
+
+        $accommodations = \Illuminate\Support\Facades\Cache::remember(
+            'api:accommodations:' . ($destination ? strtolower(trim($destination)) : 'all'),
+            now()->addHours(6),
+            function () use ($destination) {
+                $query = Accommodation::query()->where('is_active', true);
+
+                if (!blank($destination)) {
+                    $query->whereRaw('LOWER(destination) = ?', [strtolower(trim($destination))]);
+                }
+
+                return $query->orderBy('name')->get()->map(function ($a) {
                     $images = is_array($a->images) ? $a->images : [];
                     return [
                         'id'          => $a->id,
                         'name'        => $a->name,
                         'description' => $a->description,
                         'price'       => floatval($a->price),
+                        'destination' => $a->destination,
                         'cover_image' => count($images) > 0
                             ? url('storage/' . $images[0])
                             : null,
                     ];
                 });
-        });
+            }
+        );
 
         return response()->json([
             'status'         => 'success',

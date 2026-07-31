@@ -158,7 +158,7 @@ Route::get('/flutter-app', function () {
 })->name('flutter.app');
 
 // Booking Export Routes (Admin only)
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth:admin,web', 'admin'])->group(function () {
     Route::get('/admin/bookings/export/pdf', [BookingExportController::class, 'exportPdf'])->name('bookings.export.pdf')->middleware('staff.permission:bookings');
     Route::get('/admin/bookings/export/csv', [BookingExportController::class, 'exportCsv'])->name('bookings.export.csv')->middleware('staff.permission:bookings');
     Route::get('/admin/bookings/export/print', [BookingExportController::class, 'exportPrint'])->name('bookings.export.print')->middleware('staff.permission:bookings');

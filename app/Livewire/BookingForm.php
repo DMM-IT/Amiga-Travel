@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Carbon\Carbon;
@@ -547,6 +548,33 @@ public function selectedSchedule(): ?array
         $this->saveDraft();
     }
 
+    public function updatedReturnDate(?string $value): void
+    {
+        $this->return_date = $value;
+        $this->selected_return_schedule_id = null;
+        $this->availableReturnSchedules = [];
+        $this->saveDraft();
+    }
+
+    #[On('datePickerUpdated')]
+    public function onDatePickerUpdated($field = null, $value = null): void
+    {
+        if (is_array($field)) {
+            $value = $field['value'] ?? null;
+            $field = $field['field'] ?? null;
+        }
+
+        if ($field === 'departure_date') {
+            if ($this->departure_date !== $value) {
+                $this->updatedDepartureDate($value);
+            }
+        } elseif ($field === 'return_date') {
+            if ($this->return_date !== $value) {
+                $this->updatedReturnDate($value);
+            }
+        }
+    }
+
     public function updatedDurationDays(): void
     {
         $this->updateReturnDateFromDuration();
@@ -671,13 +699,14 @@ public function selectedSchedule(): ?array
         $this->selected_return_schedule_id = null;
         $this->availableSchedules = [];
         $this->showOperatorDropdown = false;
+        $this->resetVehicleData();
         $this->updateAvailableScheduleDates();
         $this->saveDraft();
     }
 
     protected function resetVehicleData(): void
     {
-        if ($this->mode === 'airline') {
+        if ($this->mode === 'airline' || ($this->mode === 'ferry' && stripos($this->operator ?? '', 'Starlite') === false)) {
             $this->has_vehicle = false;
             $this->selected_vehicle_rate_id = null;
             $this->vehicle_type = '';
@@ -869,6 +898,8 @@ public function selectedSchedule(): ?array
         $this->availableSchedules = [];
         $this->showOriginDropdown = false;
         $this->originSearch = '';
+        $this->updateAvailableScheduleDates();
+        $this->saveDraft();
     }
 
     public function selectDestination(string $destination): void
@@ -1073,8 +1104,12 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        $this->validateOnly($propertyName, $this->allRules());
         $this->saveDraft();
+        try {
+            $this->validateOnly($propertyName, $this->allRules());
+        } catch (\Throwable $e) {
+            // Ignore validation exception during typing
+        }
     }
 
     public function closePresentIdWarning(): void
@@ -1136,6 +1171,7 @@ public function selectedSchedule(): ?array
             if (($this->tour_id || $this->prefilled_from_package) && $this->step === 2) {
                 $this->step = 1;
             }
+            $this->saveDraft();
         }
     }
 
@@ -2392,6 +2428,7 @@ public function selectedSchedule(): ?array
         }
 
         $this->adults++;
+        $this->saveDraft();
     }
 
     public function decrementAdults(): void
@@ -2401,6 +2438,7 @@ public function selectedSchedule(): ?array
         }
 
         $this->adults--;
+        $this->saveDraft();
     }
 
     public function incrementChildren(): void
@@ -2410,6 +2448,7 @@ public function selectedSchedule(): ?array
         }
 
         $this->children++;
+        $this->saveDraft();
 
         if (! $this->hasSeenMinorAgeWarning) {
             $this->showMinorAgeWarning = true;
@@ -2424,6 +2463,7 @@ public function selectedSchedule(): ?array
         }
 
         $this->children--;
+        $this->saveDraft();
     }
 
     public function closeMinorAgeWarning(): void

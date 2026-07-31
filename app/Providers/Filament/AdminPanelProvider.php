@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->authGuard('web')
+            ->authGuard('admin')
             ->path('admin')
             ->login()
             ->brandName('AMIGA GRACIA')
@@ -110,6 +110,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\UseAdminGuard::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
