@@ -1940,8 +1940,8 @@
     "semantic_hash": ""
   },
   "resources/views/filament/partials/body-end-extras.blade.php": {
-    "mtime": 1785168152.9593537,
-    "ast_hash": "cafc5c4076964c62cdd2e5ec1f6620c5",
+    "mtime": 1785514956.838078,
+    "ast_hash": "3233a1dcb21a6c3661983f75a87abc9f",
     "semantic_hash": ""
   },
   "resources/views/filament/partials/chart-assets.blade.php": {
