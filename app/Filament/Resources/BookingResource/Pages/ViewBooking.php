@@ -66,6 +66,43 @@ class ViewBooking extends ViewRecord
                             ->content(fn (): HtmlString => $this->record->transaction?->proof_url
                                 ? new HtmlString('<img src="' . e($this->record->transaction->proof_url) . '" class="rounded-lg border border-gray-700 max-w-full h-auto" alt="Proof of payment" />')
                                 : new HtmlString('No proof uploaded')),
+                        Placeholder::make('student_discount_proofs')
+                            ->label('Student discount proof images')
+                            ->content(function (): HtmlString {
+                                $proofs = $this->record->transaction?->student_discount_proofs ?? [];
+
+                                if (empty($proofs)) {
+                                    return new HtmlString('<span class="text-gray-500">No student discount proof uploaded.</span>');
+                                }
+
+                                $html = '<div class="space-y-4">';
+                                foreach ($proofs as $proof) {
+                                    $front = $proof['front'] ?? null;
+                                    $back = $proof['back'] ?? null;
+                                    $name = $proof['passenger_name'] ?? 'Student proof';
+                                    $studentNumber = $proof['student_number'] ?? null;
+
+                                    $html .= '<div class="rounded-lg border border-gray-200 p-3">';
+                                    $html .= '<p class="font-semibold text-sm">' . e($name) . '</p>';
+                                    if ($studentNumber) {
+                                        $html .= '<p class="text-xs text-gray-500">Student number: ' . e($studentNumber) . '</p>';
+                                    }
+                                    $html .= '<div class="mt-3 grid gap-3 md:grid-cols-2">';
+
+                                    if ($front) {
+                                        $html .= '<div><p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Front</p><a href="' . e(asset('storage/' . $front)) . '" target="_blank"><img src="' . e(asset('storage/' . $front)) . '" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof front" /></a></div>';
+                                    }
+
+                                    if ($back) {
+                                        $html .= '<div><p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Back</p><a href="' . e(asset('storage/' . $back)) . '" target="_blank"><img src="' . e(asset('storage/' . $back)) . '" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof back" /></a></div>';
+                                    }
+
+                                    $html .= '</div></div>';
+                                }
+
+                                return new HtmlString($html . '</div>');
+                            })
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
                 Section::make('Passenger details')

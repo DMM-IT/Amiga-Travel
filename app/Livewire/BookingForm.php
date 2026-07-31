@@ -1732,6 +1732,25 @@ public function selectedSchedule(): ?array
                     'booking_id' => $booking->id,
                     'payment_status' => 'unpaid',
                 ]);
+
+                $studentProofEntries = $this->collectStudentDiscountProofEntries();
+                if (! empty($studentProofEntries)) {
+                    $frontFiles = [];
+                    $backFiles = [];
+                    $passengerData = [];
+
+                    foreach ($studentProofEntries as $index => $entry) {
+                        $frontFiles[$index] = $entry['front'] ?? null;
+                        $backFiles[$index] = $entry['back'] ?? null;
+                        $passengerData[$index] = [
+                            'name' => $entry['passenger_name'] ?? null,
+                            'student_number' => $entry['student_number'] ?? null,
+                            'discount_name' => $entry['discount_name'] ?? null,
+                        ];
+                    }
+
+                    $transaction->storeStudentDiscountProofs($frontFiles, $backFiles, $passengerData);
+                }
             });
         } catch (\RuntimeException $e) {
             $this->isSubmittingBooking = false;
@@ -2470,6 +2489,36 @@ public function selectedSchedule(): ?array
     public function togglePassengerInfoModal(): void
     {
         $this->showPassengerInfoModal = ! $this->showPassengerInfoModal;
+    }
+
+    protected function collectStudentDiscountProofEntries(): array
+    {
+        $proofEntries = [];
+
+        foreach ($this->passengers as $index => $passenger) {
+            $discount = $this->discounts->firstWhere('id', $passenger['discount_id'] ?? null);
+
+            if (! $discount || ! str_contains(strtolower($discount->name), 'student')) {
+                continue;
+            }
+
+            $front = $this->studentIdProofFronts[$index] ?? null;
+            $back = $this->studentIdProofBacks[$index] ?? null;
+
+            if (blank($front) && blank($back)) {
+                continue;
+            }
+
+            $proofEntries[$index] = [
+                'front' => $front,
+                'back' => $back,
+                'passenger_name' => trim((string) ($passenger['name'] ?? '')) ?: trim((string) (($passenger['first_name'] ?? '') . ' ' . ($passenger['last_name'] ?? ''))),
+                'student_number' => $passenger['student_number'] ?? null,
+                'discount_name' => $discount->name,
+            ];
+        }
+
+        return $proofEntries;
     }
 
     protected function getSelectedReturnScheduleAccommodationPrice(): float

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-transparent flex items-center justify-center px-4 py-12">
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background-image: url('{{ asset('images/amiga-backgrounds/bg-2.jpg') }}'); background-size: cover; background-position: center;">
     <div class="w-full max-w-md">
         <div class="rounded-[2rem] bg-white/85 backdrop-blur-md shadow-xl ring-1 ring-slate-200 overflow-hidden">
             <div class="px-6 py-8 sm:px-10 text-center" style="background: linear-gradient(135deg, #216417 0%, #14400e 100%);">

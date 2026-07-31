@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 class Transaction extends Model
@@ -16,12 +17,14 @@ class Transaction extends Model
         'confirmation_pdf',
         'rebooking_fee',
         'rebooking_proof_of_payment',
+        'student_discount_proofs',
         'verified_by_user_id',
         'verified_at',
     ];
 
     protected $casts = [
         'rebooking_fee' => 'decimal:2',
+        'student_discount_proofs' => 'array',
         'verified_at' => 'datetime',
     ];
 
@@ -60,6 +63,51 @@ class Transaction extends Model
 
         $this->update([
             'proof_of_payment' => null,
+        ]);
+    }
+
+    public function storeStudentDiscountProofs(array $frontFiles, array $backFiles, array $passengerData = []): void
+    {
+        $proofEntries = is_array($this->student_discount_proofs) ? $this->student_discount_proofs : [];
+
+        foreach (array_keys($frontFiles + $backFiles) as $index) {
+            $frontFile = $frontFiles[$index] ?? null;
+            $backFile = $backFiles[$index] ?? null;
+
+            if (blank($frontFile) && blank($backFile)) {
+                continue;
+            }
+
+            $entry = $proofEntries[$index] ?? [];
+            $entry['passenger_name'] = $entry['passenger_name'] ?? data_get($passengerData, $index . '.name') ?? null;
+            $entry['student_number'] = $entry['student_number'] ?? data_get($passengerData, $index . '.student_number') ?? null;
+            $entry['discount_name'] = $entry['discount_name'] ?? data_get($passengerData, $index . '.discount_name') ?? null;
+
+            if ($frontFile instanceof UploadedFile) {
+                $entry['front'] = $frontFile->storeAs(
+                    'student-discount-proofs/' . $this->getKey(),
+                    'front-' . $index . '-' . md5(uniqid()) . '.' . $frontFile->getClientOriginalExtension(),
+                    'public'
+                );
+            } elseif (is_string($frontFile) && filled($frontFile)) {
+                $entry['front'] = $frontFile;
+            }
+
+            if ($backFile instanceof UploadedFile) {
+                $entry['back'] = $backFile->storeAs(
+                    'student-discount-proofs/' . $this->getKey(),
+                    'back-' . $index . '-' . md5(uniqid()) . '.' . $backFile->getClientOriginalExtension(),
+                    'public'
+                );
+            } elseif (is_string($backFile) && filled($backFile)) {
+                $entry['back'] = $backFile;
+            }
+
+            $proofEntries[$index] = $entry;
+        }
+
+        $this->update([
+            'student_discount_proofs' => array_values($proofEntries),
         ]);
     }
 }

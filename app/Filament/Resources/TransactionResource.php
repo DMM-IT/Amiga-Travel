@@ -106,6 +106,11 @@ class TransactionResource extends Resource
                             ->url(fn (?Transaction $record): ?string => $record?->confirmation_url)
                             ->default(fn (?Transaction $record) => $record?->confirmation_url)
                             ->columnSpanFull(),
+                        ViewEntry::make('student_discount_proofs')
+                            ->label('Student discount proof images')
+                            ->view('filament.infolists.entries.student-proof-images')
+                            ->visible(fn (?Transaction $record): bool => ! empty($record?->student_discount_proofs))
+                            ->columnSpanFull(),
                     ])
                     ->columns(3),
 

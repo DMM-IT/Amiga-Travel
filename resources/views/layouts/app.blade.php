@@ -107,6 +107,11 @@
         </style>
     </head>
     <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+        @php
+            $isAuthPage = request()->is('login*') || request()->is('register*') || request()->is('admin/login*') || request()->is('admin/register*');
+        @endphp
+
+        @if(! $isAuthPage)
         <header class="bg-[#216417] text-white sticky top-0 z-50 shadow-md relative">
             <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
                 <div class="absolute inset-0 pointer-events-none" style="background-image: url('{{ asset('images/tribal-pattern.svg') }}'); background-repeat: repeat; opacity: 0.15;"></div>
@@ -207,9 +212,10 @@
                 </div>
             </div>
         </header>
+        @endif
 
         <main class="flex-grow">
-            @unless(request()->routeIs('book.new') || request()->is('book/new') || request()->is('schedules') || request()->is('schedules*') || request()->is('download') || request()->is('download*'))
+            @unless($isAuthPage || request()->routeIs('book.new') || request()->is('book/new') || request()->is('schedules') || request()->is('schedules*') || request()->is('download') || request()->is('download*'))
                 @if(session()->has('booking_draft'))
                     <div class="max-w-7xl mx-auto px-4 pb-0 pt-4 sm:pt-6">
                         <div class="rounded-[1.5rem] border border-pink-200 bg-pink-50 p-4 text-slate-900 shadow-sm">
@@ -234,6 +240,7 @@
             @yield('content')
         </main>
 
+        @if(! $isAuthPage)
         <footer class="relative overflow-hidden bg-[#0e2709] text-white pt-16 pb-8 mt-12">
             <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-12 border-b border-white/10">
@@ -347,6 +354,7 @@
                 <span class="text-[12vw] font-black uppercase tracking-widest whitespace-nowrap text-white">AMIGA GRACIA</span>
             </div>
         </footer>
+        @endif
         @livewireScripts
         <script>
             document.addEventListener('DOMContentLoaded', () => {
