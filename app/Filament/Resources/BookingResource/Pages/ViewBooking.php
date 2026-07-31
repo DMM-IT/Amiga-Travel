@@ -128,11 +128,31 @@ class ViewBooking extends ViewRecord
                                 TextInput::make('type')
                                     ->label('Type')
                                     ->disabled(),
+                                TextInput::make('birthdate')
+                                    ->label('Birthdate')
+                                    ->disabled(),
                                 TextInput::make('discount')
                                     ->label('Discount')
                                     ->disabled(),
+                                TextInput::make('id_number')
+                                    ->label('ID Number')
+                                    ->disabled(),
+                                Placeholder::make('id_image_front_view')
+                                    ->label('Front ID Image')
+                                    ->content(function (array $state): HtmlString {
+                                        $url = $state['id_image_front_url'] ?? null;
+                                        if (!$url) return new HtmlString('<em>No image</em>');
+                                        return new HtmlString('<a href="'.e($url).'" target="_blank" class="text-blue-600 underline">View Front ID</a>');
+                                    }),
+                                Placeholder::make('id_image_back_view')
+                                    ->label('Back ID Image')
+                                    ->content(function (array $state): HtmlString {
+                                        $url = $state['id_image_back_url'] ?? null;
+                                        if (!$url) return new HtmlString('<em>No image</em>');
+                                        return new HtmlString('<a href="'.e($url).'" target="_blank" class="text-blue-600 underline">View Back ID</a>');
+                                    }),
                             ])
-                            ->columns(2)
+                            ->columns(3)
                             ->visible(fn (): bool => $this->record->passengers->isNotEmpty()),
                     ]),
                 Section::make('Cancellation Details')
@@ -351,6 +371,10 @@ class ViewBooking extends ViewRecord
                 'name' => $passenger->name,
                 'type' => $passenger->type,
                 'discount' => $passenger->discount?->name ?: 'None',
+                'birthdate' => $passenger->birthdate?->format('Y-m-d') ?: 'N/A',
+                'id_number' => $passenger->id_number ?: 'N/A',
+                'id_image_front_url' => $passenger->id_image_front_url,
+                'id_image_back_url' => $passenger->id_image_back_url,
             ])->toArray(),
             'proof_url' => $this->record->transaction?->proof_url ? $this->record->transaction->proof_url : 'No proof uploaded',
         ];

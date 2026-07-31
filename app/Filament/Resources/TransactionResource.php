@@ -181,8 +181,21 @@ class TransactionResource extends Resource
                                         }
 
                                         $discount = $passenger->discount?->name ?? 'No discount';
+                                        $details = "{$label} ({$discount})";
+                                        if ($passenger->birthdate) {
+                                            $details .= " | Bday: " . $passenger->birthdate->format('Y-m-d');
+                                        }
+                                        if ($passenger->id_number) {
+                                            $details .= " | ID: " . $passenger->id_number;
+                                        }
+                                        if ($passenger->id_image_front) {
+                                            $details .= " | [Front ID Attached]";
+                                        }
+                                        if ($passenger->id_image_back) {
+                                            $details .= " | [Back ID Attached]";
+                                        }
 
-                                        return "{$label} ({$discount})";
+                                        return $details;
                                     })
                                     ->all();
                             })

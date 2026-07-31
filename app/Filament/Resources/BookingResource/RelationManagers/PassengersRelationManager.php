@@ -40,6 +40,16 @@ class PassengersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('birthdate')
+                    ->date(),
+                Tables\Columns\TextColumn::make('id_number')
+                    ->label('ID No.'),
+                Tables\Columns\ImageColumn::make('id_image_front_url')
+                    ->label('Front ID')
+                    ->height(40),
+                Tables\Columns\ImageColumn::make('id_image_back_url')
+                    ->label('Back ID')
+                    ->height(40),
             ])
             ->filters([
                 //

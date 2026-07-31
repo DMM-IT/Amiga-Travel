@@ -220,8 +220,18 @@
                                 <div class="space-y-2">
                                     @foreach($booking->passengers as $passenger)
                                         <div class="rounded-2xl bg-white p-4 border border-slate-200 flex items-center justify-between">
-                                            <span class="text-slate-800">{{ ucfirst($passenger->type) }}{{ $passenger->name ? ' — ' . $passenger->name : '' }}</span>
-                                            <span class="text-sm text-slate-600">{{ $passenger->discount->name ?? 'No discount' }}</span>
+                                            <div>
+                                                <span class="text-slate-800">{{ ucfirst($passenger->type) }}{{ $passenger->name ? ' — ' . $passenger->name : '' }}</span>
+                                                @if($passenger->birthdate)
+                                                    <span class="text-xs text-slate-500 ml-2">(Bday: {{ $passenger->birthdate->format('Y-m-d') }})</span>
+                                                @endif
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-sm text-slate-600">{{ $passenger->discount->name ?? 'No discount' }}</span>
+                                                @if($passenger->id_number)
+                                                    <p class="text-xs text-slate-400">ID: {{ $passenger->id_number }}</p>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>

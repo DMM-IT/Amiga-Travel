@@ -61,7 +61,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.19+23';
+  static const String appVersion = '1.0.20+24';
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -4026,6 +4026,23 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           _booking['schedule_summary'] ?? _booking['schedule_service'] ?? 'Schedule not recorded',
         ]),
         _detailSection('Payment', ['Status: ${_paymentStatus.toUpperCase()}', 'Total: ₱${_booking['total_price'] ?? '0.00'}']),
+        if (_booking['passengers'] != null && (_booking['passengers'] as List).isNotEmpty)
+          _detailSection(
+            'Passengers & Discount IDs',
+            (_booking['passengers'] as List).map((p) {
+              final name = p['name'] ?? 'Passenger';
+              final type = (p['type'] ?? 'adult').toString().toUpperCase();
+              final bday = p['birthdate'] ?? 'N/A';
+              final idNum = p['id_number'];
+              final front = p['id_image_front_url'] ?? p['id_image_front'];
+              final back = p['id_image_back_url'] ?? p['id_image_back'];
+              String str = '$name ($type) • Bday: $bday';
+              if (idNum != null && idNum.toString().isNotEmpty) str += ' • ID: $idNum';
+              if (front != null) str += ' • Front ID: Attached';
+              if (back != null) str += ' • Back ID: Attached';
+              return str;
+            }).toList(),
+          ),
         if (_paymentStatus == 'unpaid' || _paymentStatus == 'pending') ...[
           OutlinedButton.icon(onPressed: _busy ? null : _uploadPaymentProof, icon: const Icon(Icons.upload_file), label: const Text('Upload payment proof')),
         ],
@@ -5049,42 +5066,87 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Show promo price if schedule has an active promotional ticket
-                              if (s['promotional_ticket'] != null) ...[
-                                Text(
-                                  '₱${s['price']}',
-                                  style: TextStyle(color: isSelected ? Colors.white54 : kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough),
-                                ),
-                                Text(
-                                  '₱${s['promotional_ticket']['promo_price']}',
-                                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : Colors.orange),
-                                ),
-                              ] else
-                                Text('₱${s['price']}', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : kPink)),
-                            ],
-                          ),
                           Row(
                             children: [
-                              // PROMO badge
-                              if (s['promotional_ticket'] != null)
-                                Container(
-                                  margin: const EdgeInsets.only(right: 6),
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                  decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(6)),
-                                  child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                                ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
-                                child: Text(
-                                  s['operator'] ?? 'Operator',
-                                  style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 12),
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Show promo price if schedule has an active promotional ticket
+                                  if (s['promotional_ticket'] != null) ...[
+                                    Text(
+                                      '₱${s['price']}',
+                                      style: TextStyle(color: isSelected ? Colors.white54 : kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough),
+                                    ),
+                                    Text(
+                                      '₱${s['promotional_ticket']['promo_price']}',
+                                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : Colors.orange),
+                                    ),
+                                  ] else
+                                    Text('₱${s['price']}', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : kPink)),
+                                ],
                               ),
+                              Builder(builder: (ctx) {
+                                final p = double.tryParse((s['promotional_ticket'] != null ? s['promotional_ticket']['promo_price'] : s['price']).toString()) ?? 0;
+                                final pts = UserSession.calculateEarnedPoints(p);
+                                if (pts > 0) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.star_rounded, color: isSelected ? Colors.white : kPink, size: 14),
+                                        const SizedBox(width: 3),
+                                        Text('+$pts pts', style: TextStyle(color: isSelected ? Colors.white : kPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return const SizedBox();
+                              }),
                             ],
+                          ),
+                          Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // PROMO badge
+                                if (s['promotional_ticket'] != null)
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(6)),
+                                    child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                                  ),
+                                if (getOperatorLogoUrl(s['operator'] ?? '').isNotEmpty)
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.all(3),
+                                    height: 26,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: kSlate200),
+                                    ),
+                                    child: Image.network(
+                                      getOperatorLogoUrl(s['operator'] ?? ''),
+                                      height: 18,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                                    ),
+                                  ),
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                    child: Text(
+                                      s['operator'] ?? 'Operator',
+                                      style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 11),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -5135,8 +5197,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
   List<Map<String, dynamic>> _discounts = [];
   List<TextEditingController> _nameControllers = [];
   List<TextEditingController> _birthdateControllers = [];
-  List<TextEditingController> _schoolControllers = [];
   List<TextEditingController> _idControllers = [];
+  List<String?> _idFrontBase64 = [];
+  List<String?> _idBackBase64 = [];
 
   static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
 
@@ -5149,11 +5212,14 @@ class _DiscountScreenState extends State<DiscountScreen> {
     _birthdateControllers = List.generate(widget.booking.passengers.length, (i) {
       return TextEditingController(text: widget.booking.passengers[i]['birthdate'] ?? '');
     });
-    _schoolControllers = List.generate(widget.booking.passengers.length, (i) {
-      return TextEditingController(text: widget.booking.passengers[i]['school_name'] ?? '');
-    });
     _idControllers = List.generate(widget.booking.passengers.length, (i) {
       return TextEditingController(text: widget.booking.passengers[i]['id_number'] ?? '');
+    });
+    _idFrontBase64 = List.generate(widget.booking.passengers.length, (i) {
+      return widget.booking.passengers[i]['id_image_front'];
+    });
+    _idBackBase64 = List.generate(widget.booking.passengers.length, (i) {
+      return widget.booking.passengers[i]['id_image_back'];
     });
     _fetchDiscounts();
   }
@@ -5162,9 +5228,80 @@ class _DiscountScreenState extends State<DiscountScreen> {
   void dispose() {
     for (var c in _nameControllers) c.dispose();
     for (var c in _birthdateControllers) c.dispose();
-    for (var c in _schoolControllers) c.dispose();
     for (var c in _idControllers) c.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickIdImage(int index, bool isFront) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70, maxWidth: 800, maxHeight: 800);
+    if (picked != null) {
+      final bytes = await picked.readAsBytes();
+      final b64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      setState(() {
+        if (isFront) {
+          _idFrontBase64[index] = b64;
+          widget.booking.passengers[index]['id_image_front'] = b64;
+        } else {
+          _idBackBase64[index] = b64;
+          widget.booking.passengers[index]['id_image_back'] = b64;
+        }
+      });
+    }
+  }
+
+  Widget _buildIdImagePicker(int i, String label, bool isFront) {
+    final b64 = isFront ? _idFrontBase64[i] : _idBackBase64[i];
+    final hasImg = b64 != null && b64.isNotEmpty;
+    return InkWell(
+      onTap: () => _pickIdImage(i, isFront),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: hasImg ? kGreen.withOpacity(0.08) : Colors.grey.shade50,
+          border: Border.all(color: hasImg ? kGreen : Colors.grey.shade300, width: hasImg ? 1.5 : 1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              hasImg ? Icons.check_circle : (isFront ? Icons.badge_outlined : Icons.credit_card_outlined),
+              color: hasImg ? kGreen : kSlate600,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: hasImg ? kGreen : kSlate700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasImg ? 'Image attached • Tap to change' : 'Tap to upload picture',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: hasImg ? kGreen.withOpacity(0.8) : kSlate400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasImg)
+              const Icon(Icons.refresh, color: kGreen, size: 18)
+            else
+              const Icon(Icons.add_a_photo_outlined, color: kSlate500, size: 20),
+          ],
+        ),
+      ),
+    );
   }
 
   void _fetchDiscounts() async {
@@ -5190,15 +5327,25 @@ class _DiscountScreenState extends State<DiscountScreen> {
       final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
       final discName = disc['name']?.toString().toLowerCase() ?? '';
       
-      if (discName == 'student') {
-        widget.booking.passengers[i]['school_name'] = _schoolControllers[i].text.trim();
-        widget.booking.passengers[i]['id_number'] = _idControllers[i].text.trim();
-      } else if (discName == 'senior citizen' || discName == 'pwd') {
+      if (discId != null && discName != 'infant') {
+        if (_idFrontBase64[i] == null || _idBackBase64[i] == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please upload both Front and Back ID images for Passenger #${i + 1}.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
         widget.booking.passengers[i]['school_name'] = null;
         widget.booking.passengers[i]['id_number'] = _idControllers[i].text.trim();
+        widget.booking.passengers[i]['id_image_front'] = _idFrontBase64[i];
+        widget.booking.passengers[i]['id_image_back'] = _idBackBase64[i];
       } else {
         widget.booking.passengers[i]['school_name'] = null;
         widget.booking.passengers[i]['id_number'] = null;
+        widget.booking.passengers[i]['id_image_front'] = null;
+        widget.booking.passengers[i]['id_image_back'] = null;
       }
     }
     widget.booking.savedStep = 3;
@@ -5307,11 +5454,12 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 }
                               },
                               decoration: InputDecoration(
-                                labelText: 'Birthdate',
+                                labelText: 'Birthdate *',
                                 hintText: 'YYYY-MM-DD',
                                 suffixIcon: const Icon(Icons.calendar_today, size: 20),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
+                              validator: (v) => (v == null || v.trim().isEmpty) ? 'Birthdate is required' : null,
                             ),
                             if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) ...[
                               const SizedBox(height: 10),
@@ -5381,55 +5529,27 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
                                   final discName = disc['name']?.toString().toLowerCase() ?? '';
 
-                                  if (discName == 'student') {
-                                    return Column(
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        TextFormField(
-                                          controller: _schoolControllers[i],
-                                          decoration: InputDecoration(
-                                            labelText: 'School Name *',
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                          ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'School name is required' : null,
-                                        ),
-                                        const SizedBox(height: 10),
-                                        TextFormField(
-                                          controller: _idControllers[i],
-                                          decoration: InputDecoration(
-                                            labelText: 'Student ID Number *',
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                          ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Student ID is required' : null,
-                                        ),
-                                      ],
-                                    );
-                                  } else if (discName == 'senior citizen') {
+                                  if (discId != null && discName != 'infant') {
+                                    String idLabel = 'ID Number *';
+                                    if (discName == 'student') idLabel = 'Student ID Number *';
+                                    else if (discName == 'senior citizen') idLabel = 'Senior Citizen ID Number *';
+                                    else if (discName == 'pwd') idLabel = 'PWD ID Number *';
+
                                     return Column(
                                       children: [
                                         const SizedBox(height: 10),
                                         TextFormField(
                                           controller: _idControllers[i],
                                           decoration: InputDecoration(
-                                            labelText: 'Senior Citizen ID Number *',
+                                            labelText: idLabel,
                                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                           ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Senior ID is required' : null,
+                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'ID number is required' : null,
                                         ),
-                                      ],
-                                    );
-                                  } else if (discName == 'pwd') {
-                                    return Column(
-                                      children: [
+                                        const SizedBox(height: 12),
+                                        _buildIdImagePicker(i, 'ID Image (Front) *', true),
                                         const SizedBox(height: 10),
-                                        TextFormField(
-                                          controller: _idControllers[i],
-                                          decoration: InputDecoration(
-                                            labelText: 'PWD ID Number *',
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                          ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'PWD ID is required' : null,
-                                        ),
+                                        _buildIdImagePicker(i, 'ID Image (Back) *', false),
                                       ],
                                     );
                                   }
@@ -6263,7 +6383,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     ),
                     const SizedBox(height: 16),
                   ] else ...[
-                    const Text('Total Booking Voucher (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                    const Text('Discount Coupon (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
                     const SizedBox(height: 8),
                     _VoucherSection(booking: widget.booking, scopeFilter: null, onVoucherChanged: () => setState(() {})),
                     const SizedBox(height: 16),
@@ -6660,11 +6780,6 @@ class _VoucherSectionState extends State<_VoucherSection> {
     final vCode = widget.booking.voucherCode;
     final vData = widget.booking.voucherData;
 
-    // Determine if the current voucher matches the scope of this section
-    // If the scope filter is specific (e.g., 'vehicle'), only show the applied voucher if it's a vehicle voucher.
-    // If scopeFilter is null (Submit screen), show the applied voucher regardless of scope.
-    final bool isApplicableHere = vData == null || widget.scopeFilter == null || vData['eligible_scope'] == widget.scopeFilter;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -6683,15 +6798,9 @@ class _VoucherSectionState extends State<_VoucherSection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Platform Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
-                    Text(
-                      widget.scopeFilter == 'vehicle' ? 'Use vehicle vouchers here' :
-                      widget.scopeFilter == 'ticket_fare' ? 'Use ticket fare vouchers here' :
-                      widget.scopeFilter == 'accommodation' ? 'Use accommodation vouchers here' :
-                      'Use any applicable voucher',
-                      style: const TextStyle(color: kSlate500, fontSize: 12),
-                    ),
+                  children: const [
+                    Text('Discount Coupon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                    Text('Apply your discount coupon here', style: TextStyle(color: kSlate500, fontSize: 12)),
                   ],
                 ),
               ),
@@ -6701,19 +6810,19 @@ class _VoucherSectionState extends State<_VoucherSection> {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => VoucherPickerScreen(booking: widget.booking, scopeFilter: widget.scopeFilter),
+                      builder: (_) => VoucherPickerScreen(booking: widget.booking, scopeFilter: null),
                     ),
                   );
                   if (mounted) {
-                    setState(() {}); // refresh local state
+                    setState(() {});
                     if (result != null || widget.booking.voucherCode == null) {
                       widget.onVoucherChanged();
                     }
                   }
                 },
-                icon: const Icon(Icons.local_activity, size: 16, color: kPink),
+                icon: const Icon(Icons.card_giftcard, size: 16, color: kPink),
                 label: Text(
-                  (vCode != null && isApplicableHere) ? 'Change' : 'Select',
+                  vCode != null ? 'Change' : 'Select',
                   style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 style: OutlinedButton.styleFrom(
@@ -6727,64 +6836,29 @@ class _VoucherSectionState extends State<_VoucherSection> {
             ],
           ),
           if (vCode != null) ...[
-            if (isApplicableHere) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: kPink.withOpacity(0.05),
-                  border: Border.all(color: kPink.withOpacity(0.3)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: kPink, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(vData!['name']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
-                          const SizedBox(height: 2),
-                          Text('Code: $vCode', style: const TextStyle(color: kPink, fontSize: 11, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '- ₱${((vData['discount_amount'] as num?) ?? 0).toStringAsFixed(2)}',
-                      style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 14),
+            _DiscountCouponCard(
+              voucher: vData,
+              isSelected: true,
+            ),
+            const SizedBox(height: 4),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  widget.booking.voucherCode = null;
+                  widget.booking.voucherData = null;
+                });
+                widget.onVoucherChanged();
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.close, size: 14, color: kSlate500),
+                  SizedBox(width: 4),
+                  Text('Remove coupon', style: TextStyle(color: kSlate500, fontSize: 12)),
+                ],
               ),
-              const SizedBox(height: 8),
-              // Remove voucher button
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    widget.booking.voucherCode = null;
-                    widget.booking.voucherData = null;
-                  });
-                  widget.onVoucherChanged();
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.close, size: 14, color: kSlate500),
-                    SizedBox(width: 4),
-                    Text('Remove voucher', style: TextStyle(color: kSlate500, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ] else ...[
-              const SizedBox(height: 12),
-              Text(
-                'A ${vData!['eligible_scope']?.toString() ?? ''} voucher is currently applied. Remove it first to use a different voucher here.',
-                style: const TextStyle(color: Colors.amber, fontSize: 12),
-              ),
-            ],
+            ),
           ],
         ],
       ),
@@ -6901,33 +6975,13 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
     }
   }
 
-  String _scopeTitle(String? scope) {
-    switch (scope) {
-      case 'ticket_fare': return 'Ticket Fare Only';
-      case 'vehicle': return 'Vehicle Only';
-      case 'accommodation': return 'Accommodation Only';
-      case 'booking_total': return 'Booking Total';
-      default: return 'Any Booking';
-    }
-  }
-
-  IconData _scopeIcon(String? scope) {
-    switch (scope) {
-      case 'ticket_fare': return Icons.airplane_ticket;
-      case 'vehicle': return Icons.directions_car;
-      case 'accommodation': return Icons.hotel;
-      case 'booking_total': return Icons.receipt_long;
-      default: return Icons.local_activity;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final currentCode = widget.booking.voucherCode;
     return Scaffold(
       backgroundColor: kBgLight,
       appBar: AppBar(
-        title: Text(widget.scopeFilter != null ? '${_scopeTitle(widget.scopeFilter)} Voucher' : 'Select Voucher'),
+        title: const Text('Select Discount Coupon'),
         backgroundColor: kGreen,
         foregroundColor: Colors.white,
       ),
@@ -7022,94 +7076,11 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                         itemCount: _vouchers.length,
                         itemBuilder: (context, i) {
                           final v = _vouchers[i];
-                          final scope = v['eligible_scope'] as String?;
                           final isSelected = widget.booking.voucherCode == v['code'];
-                          return GestureDetector(
+                          return _DiscountCouponCard(
+                            voucher: v,
+                            isSelected: isSelected,
                             onTap: () => _applyCode(v['code'] as String),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))],
-                              ),
-                              height: 100,
-                              child: Row(
-                                children: [
-                                  // Left badge
-                                  Container(
-                                    width: 90,
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? kPink : kGreen,
-                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(_scopeIcon(scope), color: Colors.white, size: 28),
-                                        const SizedBox(height: 6),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                                          child: Text(
-                                            _scopeTitle(scope),
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Right details
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            v['discount_type'] == 'percentage'
-                                                ? '${v['discount_value']}% off${v['max_discount'] != null ? " (max ₱${v['max_discount']})" : ""}'
-                                                : '₱${v['discount_value']} off',
-                                            style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12),
-                                          ),
-                                          if (v['min_booking_amount'] != null) Text('Min. Spend ₱${v['min_booking_amount']}', style: const TextStyle(color: kSlate500, fontSize: 11)),
-                                          const Spacer(),
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.access_time, size: 11, color: kSlate400),
-                                              const SizedBox(width: 4),
-                                              Text(v['end_at'] != null ? 'Valid till: ${v['end_at'].toString().substring(0, 10)}' : 'No expiry', style: const TextStyle(color: kSlate500, fontSize: 11)),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  // Select indicator
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 12),
-                                    child: isSelected
-                                        ? const Icon(Icons.check_circle, color: kGreen, size: 24)
-                                        : OutlinedButton(
-                                            onPressed: () => _applyCode(v['code'] as String),
-                                            style: OutlinedButton.styleFrom(
-                                              side: const BorderSide(color: kPink),
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                              minimumSize: Size.zero,
-                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                            ),
-                                            child: const Text('Use', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
-                                          ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           );
                         },
                       ),
@@ -8485,7 +8456,6 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               separatorBuilder: (_, __) => const SizedBox(width: 16),
                               itemBuilder: (context, sIndex) {
                                 final s = schedules[sIndex];
-                                final price = s['price'] ?? 0;
 
                                 DateTime? depTime;
                                 DateTime? arrTime;
@@ -8656,7 +8626,6 @@ class _VouchersScreenState extends State<VouchersScreen> {
   bool _isClaiming = false;
   String _error = '';
   List<dynamic> _vouchers = [];
-  String _typeFilter = 'all';
   final TextEditingController _promoCtrl = TextEditingController();
 
   @override
@@ -8715,7 +8684,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
     return Scaffold(
       backgroundColor: kBgLight,
       appBar: AppBar(
-        title: const Text('Vouchers'),
+        title: const Text('Discount Coupons'),
         backgroundColor: kGreen,
         foregroundColor: Colors.white,
       ),
@@ -8732,12 +8701,12 @@ class _VouchersScreenState extends State<VouchersScreen> {
                         color: kPink.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.local_activity, size: 56, color: kPink),
+                      child: const Icon(Icons.card_giftcard, size: 56, color: kPink),
                     ),
                     const SizedBox(height: 20),
                     const Text('Login Required', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
                     const SizedBox(height: 8),
-                    const Text('Please log in to view your available vouchers.', style: TextStyle(color: kSlate500, fontSize: 14), textAlign: TextAlign.center),
+                    const Text('Please log in to view your available discount coupons.', style: TextStyle(color: kSlate500, fontSize: 14), textAlign: TextAlign.center),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context),
@@ -8758,99 +8727,62 @@ class _VouchersScreenState extends State<VouchersScreen> {
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
-                          // Input Promo Code at top and Voucher Type Filter beside it
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 20),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: kSlate200),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.confirmation_num_outlined, color: kPink, size: 20),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _promoCtrl,
-                                          decoration: const InputDecoration(
-                                            border: InputBorder.none,
-                                            hintText: 'Input promo code',
-                                            hintStyle: TextStyle(color: kSlate400, fontSize: 14),
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: _isClaiming ? null : () async {
-                                          final code = _promoCtrl.text.trim();
-                                          if (code.isEmpty) return;
-                                          setState(() => _isClaiming = true);
-                                          try {
-                                            final res = await http.post(
-                                              Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
-                                              headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
-                                              body: jsonEncode({'code': code}),
-                                            );
-                                            final data = jsonDecode(res.body);
-                                            if (res.statusCode == 200 && data['status'] == 'success') {
-                                              _promoCtrl.clear();
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Voucher added!'), backgroundColor: kGreen));
-                                              _fetchVouchers();
-                                            } else {
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid code.'), backgroundColor: Colors.red));
-                                            }
-                                          } catch (e) {
-                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
-                                          } finally {
-                                            if (mounted) setState(() => _isClaiming = false);
-                                          }
-                                        },
-                                        child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                flex: 2,
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 20),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: kSlate200),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _typeFilter,
-                                      isExpanded: true,
-                                      icon: const Icon(Icons.filter_list, color: kGreen, size: 20),
-                                      style: const TextStyle(color: kSlate700, fontSize: 13, fontWeight: FontWeight.w600),
-                                      items: const [
-                                        DropdownMenuItem(value: 'all', child: Text('All Types')),
-                                        DropdownMenuItem(value: 'ticket_fare', child: Text('Ticket Fare Only')),
-                                        DropdownMenuItem(value: 'vehicle', child: Text('Vehicle Only')),
-                                        DropdownMenuItem(value: 'accommodation', child: Text('Accommodation Only')),
-                                        DropdownMenuItem(value: 'booking_total', child: Text('Booking Total')),
-                                      ],
-                                      onChanged: (val) {
-                                        if (val != null) setState(() => _typeFilter = val);
-                                      },
+                          // Input Promo Code at top
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: kSlate200),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.card_giftcard, color: kPink, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _promoCtrl,
+                                    textCapitalization: TextCapitalization.characters,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Input promo code / discount coupon',
+                                      hintStyle: TextStyle(color: kSlate400, fontSize: 14),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                                TextButton(
+                                  onPressed: _isClaiming ? null : () async {
+                                    final code = _promoCtrl.text.trim();
+                                    if (code.isEmpty) return;
+                                    setState(() => _isClaiming = true);
+                                    try {
+                                      final res = await http.post(
+                                        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
+                                        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+                                        body: jsonEncode({'code': code}),
+                                      );
+                                      final data = jsonDecode(res.body);
+                                      if (res.statusCode == 200 && data['status'] == 'success') {
+                                        _promoCtrl.clear();
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Discount coupon added!'), backgroundColor: kGreen));
+                                        _fetchVouchers();
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid coupon code.'), backgroundColor: Colors.red));
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
+                                    } finally {
+                                      if (mounted) setState(() => _isClaiming = false);
+                                    }
+                                  },
+                                  child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
                           ),
 
-                          const Text('Available Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                          const Text('Available Discount Coupons', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
                           const SizedBox(height: 12),
                           if (_vouchers.isEmpty)
                             const Center(
@@ -8858,224 +8790,48 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                 padding: EdgeInsets.symmetric(vertical: 48),
                                 child: Column(
                                   children: [
-                                    Icon(Icons.local_activity, size: 64, color: kSlate200),
+                                    Icon(Icons.card_giftcard, size: 64, color: kSlate200),
                                     SizedBox(height: 16),
-                                    Text('No vouchers available', style: TextStyle(color: kSlate400, fontSize: 16)),
+                                    Text('No discount coupons available', style: TextStyle(color: kSlate400, fontSize: 16)),
                                   ],
                                 ),
                               ),
                             )
                           else
                             ..._vouchers.map((v) {
-                              IconData scopeIcon;
-                              String scopeLabel;
-                              switch (v['eligible_scope']) {
-                                case 'ticket_fare':
-                                  scopeIcon = Icons.airplane_ticket;
-                                  scopeLabel = 'Ticket Fare Only';
-                                  break;
-                                case 'vehicle':
-                                  scopeIcon = Icons.directions_car;
-                                  scopeLabel = 'Vehicle Only';
-                                  break;
-                                case 'accommodation':
-                                  scopeIcon = Icons.hotel;
-                                  scopeLabel = 'Accommodation Only';
-                                  break;
-                                case 'booking_total':
-                                  scopeIcon = Icons.receipt_long;
-                                  scopeLabel = 'Booking Total';
-                                  break;
-                                default:
-                                  scopeIcon = Icons.local_activity;
-                                  scopeLabel = 'Any Booking';
-                              }
-
-                              return GestureDetector(
+                              return _DiscountCouponCard(
+                                voucher: v,
+                                isSelected: false,
                                 onTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: Colors.white,
-                                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                                    builder: (ctx) => Padding(
-                                      padding: const EdgeInsets.all(24),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(12),
-                                                decoration: BoxDecoration(color: kGreen.withOpacity(0.1), shape: BoxShape.circle),
-                                                child: Icon(scopeIcon, color: kPink, size: 28),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
-                                                    const SizedBox(height: 4),
-                                                    Text(scopeLabel, style: const TextStyle(color: kGreen, fontSize: 13, fontWeight: FontWeight.bold)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const Divider(height: 32),
-                                          const Text('Voucher Code', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: kPink, letterSpacing: 1.5)),
-                                          const SizedBox(height: 16),
-                                          const Text('Description / Internal Notes', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['description'] ?? 'No additional details.', style: const TextStyle(color: kSlate800, fontSize: 14)),
-                                          const SizedBox(height: 16),
-                                          const Text('Minimum Spend', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['min_booking_amount'] != null ? '₱${v['min_booking_amount']}' : 'No minimum spend', style: const TextStyle(color: kSlate800, fontSize: 14, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 16),
-                                          const Text('Valid Until', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['end_at'] != null ? v['end_at'].toString().substring(0,10) : 'No expiration', style: const TextStyle(color: kSlate800, fontSize: 14, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 32),
-                                          SizedBox(
-                                            width: double.infinity,
-                                            height: 50,
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.pop(ctx);
-                                                if (widget.onUseVoucher != null) {
-                                                  widget.onUseVoucher!();
-                                                } else if (Navigator.canPop(context)) {
-                                                  Navigator.pop(context);
-                                                }
-                                              },
-                                              style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                                              child: const Text('Use Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                            ),
+                                  UserSession.autoApplyVoucherCode = v['code'];
+                                  if (widget.onUseVoucher != null) {
+                                    widget.onUseVoucher!();
+                                  } else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                        title: const Text('Use Discount Coupon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                        content: Text('Discount Coupon "${v['code']}" (${_getVoucherPercentage(v)}% OFF) will be automatically applied on your booking submission.\n\nProceed to booking?', style: const TextStyle(fontSize: 14)),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(ctx);
+                                              Navigator.pushAndRemoveUntil(
+                                                context,
+                                                MaterialPageRoute(builder: (_) => const MainScreen()),
+                                                (route) => false,
+                                              );
+                                            },
+                                            style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                            child: const Text('Go to Booking'),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  }
                                 },
-                                child: ClipPath(
-                                  clipper: TicketClipper(dividerX: 100, punchRadius: 10),
-                                  child: Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  height: 110,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 3)),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      // Left side colored block (1/4 width)
-                                      Container(
-                                        width: 100,
-                                        decoration: const BoxDecoration(
-                                          color: kGreen,
-                                          borderRadius: BorderRadius.horizontal(left: Radius.circular(8)),
-                                        ),
-                                        child: Center(
-                                          child: Icon(scopeIcon, color: kPink, size: 54),
-                                        ),
-                                      ),
-                                      // Right side voucher details
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                                    const SizedBox(height: 6),
-                                                    if (v['min_booking_amount'] != null)
-                                                      Text('Min. Spend ₱${v['min_booking_amount']}', style: const TextStyle(color: kSlate500, fontSize: 12)),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      v['description'] ?? 'Exclusive Voucher',
-                                                      style: const TextStyle(color: kSlate500, fontSize: 11),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const Spacer(),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(Icons.access_time, size: 12, color: kSlate400),
-                                                        const SizedBox(width: 4),
-                                                        Text(
-                                                          v['end_at'] != null ? 'Expiring: ${v['end_at'].toString().substring(0,10)}' : 'No expiration',
-                                                          style: const TextStyle(color: kSlate500, fontSize: 11),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              // Use button
-                                              const SizedBox(width: 8),
-                                              Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  OutlinedButton(
-                                                    onPressed: () {
-                                                      UserSession.autoApplyVoucherCode = v['code'];
-                                                      if (widget.onUseVoucher != null) {
-                                                        widget.onUseVoucher!();
-                                                      } else {
-                                                        showDialog(
-                                                          context: context,
-                                                          builder: (ctx) => AlertDialog(
-                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                            title: const Text('Use Voucher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                                            content: Text('Voucher "${v['code']}" will be automatically applied on your booking submission.\n\nProceed to booking?', style: const TextStyle(fontSize: 14)),
-                                                            actions: [
-                                                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                                                              ElevatedButton(
-                                                                onPressed: () {
-                                                                  Navigator.pop(ctx);
-                                                                  Navigator.pushAndRemoveUntil(
-                                                                    context,
-                                                                    MaterialPageRoute(builder: (_) => const MainScreen()),
-                                                                    (route) => false,
-                                                                  );
-                                                                },
-                                                                style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                                                                child: const Text('Go to Booking'),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        );
-                                                      }
-                                                    },
-                                                    style: OutlinedButton.styleFrom(
-                                                      side: const BorderSide(color: kPink, width: 1.5),
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                                      minimumSize: Size.zero,
-                                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                    ),
-                                                    child: const Text('Use', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                ),
                               );
                             }).toList(),
                         ],
@@ -9085,6 +8841,382 @@ class _VouchersScreenState extends State<VouchersScreen> {
   }
 }
 
+int _getVoucherPercentage(dynamic v) {
+  if (v == null) return 35;
+  if (v['discount_type'] == 'percentage' && v['discount_value'] != null) {
+    final val = double.tryParse(v['discount_value'].toString());
+    if (val != null && val > 0) return val.toInt();
+  }
+  if (v['discount_value'] != null) {
+    final val = double.tryParse(v['discount_value'].toString());
+    if (val != null && val > 0 && val <= 100) return val.toInt();
+  }
+  final name = v['name']?.toString() ?? '';
+  final match = RegExp(r'(\d+)\s*%').firstMatch(name);
+  if (match != null) {
+    final p = int.tryParse(match.group(1) ?? '');
+    if (p != null && p > 0 && p <= 100) return p;
+  }
+  return 35;
+}
+
+String _formatVoucherDate(String? dateStr) {
+  if (dateStr == null || dateStr.isEmpty) return 'Valid Until August 2027';
+  try {
+    final dt = DateTime.parse(dateStr);
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return 'Valid Until ${months[dt.month - 1]} ${dt.year}';
+  } catch (_) {
+    return 'Valid Until August 2027';
+  }
+}
+
+class _CouponCardClipper extends CustomClipper<Path> {
+  final double dividerRatio;
+  final int notchCount;
+  final double notchRadius;
+
+  _CouponCardClipper({
+    this.dividerRatio = 0.63,
+    this.notchCount = 13,
+    this.notchRadius = 4.5,
+  });
+
+  @override
+  Path getClip(Size size) {
+    Path outer = Path();
+    final double r = 16.0;
+    outer.addRRect(RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Radius.circular(r),
+    ));
+
+    Path notches = Path();
+    final double divX = size.width * dividerRatio;
+    final double step = size.height / (notchCount + 1);
+    for (int i = 1; i <= notchCount; i++) {
+      final double y = step * i;
+      notches.addOval(Rect.fromCircle(
+        center: Offset(divX, y),
+        radius: notchRadius,
+      ));
+    }
+
+    return Path.combine(PathOperation.difference, outer, notches);
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class _DiscountCouponCard extends StatelessWidget {
+  final Map<String, dynamic>? voucher;
+  final bool isSelected;
+  final VoidCallback? onTap;
+
+  const _DiscountCouponCard({
+    super.key,
+    this.voucher,
+    this.isSelected = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final int percentage = _getVoucherPercentage(voucher);
+    final String validDate = _formatVoucherDate(voucher?['end_at']?.toString());
+    const Color voucherGreen = Color(0xFF137F28);
+    const Color voucherPink = Color(0xFFFF1694);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        height: 165,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: ClipPath(
+          clipper: _CouponCardClipper(dividerRatio: 0.63, notchCount: 13, notchRadius: 4.5),
+          child: Stack(
+            children: [
+              Row(
+                children: [
+                  // Left GREEN section (63%)
+                  Expanded(
+                    flex: 63,
+                    child: Container(
+                      color: voucherGreen,
+                      padding: const EdgeInsets.fromLTRB(18, 14, 20, 14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Logo Header
+                          Row(
+                            children: [
+                              Image.asset(
+                                'assets/icon/app_icon.png',
+                                height: 28,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.location_on,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text(
+                                    'AMIGA GRACIA',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    'TRAVEL SERVICES',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 8.5,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          // Main Title (TALL EXTRA-BOLD DISCOUNT COUPON)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'DISCOUNT\nCOUPON',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 38,
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.86,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                validDate,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Bottom row: barcode + email & 1st percentage OFF
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: List.generate(24, (i) {
+                                      final widths = [1.5, 1.0, 2.5, 1.0, 1.5, 3.0, 1.0, 2.0];
+                                      return Container(
+                                        margin: const EdgeInsets.only(right: 2),
+                                        width: widths[i % widths.length],
+                                        height: 12,
+                                        color: Colors.white,
+                                      );
+                                    }),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  const Text(
+                                    'amigagracia.travelservices@gmail.com',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                '$percentage% OFF',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Right PINK section (37%)
+                  Expanded(
+                    flex: 37,
+                    child: Container(
+                      color: voucherPink,
+                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Gift box bow loops on top
+                          SizedBox(
+                            height: 16,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.white, width: 2.5),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(12),
+                                      topRight: Radius.circular(12),
+                                      bottomLeft: Radius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.white, width: 2.5),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(12),
+                                      topRight: Radius.circular(12),
+                                      bottomRight: Radius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Box Lid
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            height: 11,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 2.5),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Center(
+                              child: Container(
+                                width: 2.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          // Box Body with 2nd % OFF and vertical center ribbon
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 2.5),
+                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Positioned.fill(
+                                  child: Center(
+                                    child: Container(
+                                      width: 2.5,
+                                      color: Colors.white.withOpacity(0.6),
+                                    ),
+                                  ),
+                                ),
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '$percentage%',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w900,
+                                        height: 0.88,
+                                      ),
+                                    ),
+                                    const Text(
+                                      'OFF',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        height: 0.95,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'AMIGA GRACIA TRAVEL SERVICES\nONLINE COUPON',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 7.5,
+                              fontWeight: FontWeight.w700,
+                              height: 1.25,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (isSelected)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: kGreen,
+                      size: 20,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class TicketClipper extends CustomClipper<Path> {
   final double punchRadius;
