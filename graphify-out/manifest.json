@@ -1480,22 +1480,22 @@
     "semantic_hash": ""
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1785528118.6202495,
-    "ast_hash": "611574a7cb2b24453cab70d2b3c1697e",
+    "mtime": 1785529161.4158938,
+    "ast_hash": "2248ba73bf5438ddde9f72260ecc0475",
     "semantic_hash": ""
   },
   "flutter_app/lib/notification_service.dart": {
-    "mtime": 1785312479.9100277,
-    "ast_hash": "03216edcbcb8ab2abc8affbe29d6a6c2",
+    "mtime": 1785529161.1933682,
+    "ast_hash": "941688de4468e118a8c769202b9c30db",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1785527930.626799,
+    "mtime": 1785528973.4629838,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1785527930.6257966,
+    "mtime": 1785528973.4609811,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": ""
   },
@@ -1515,8 +1515,8 @@
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1785527930.6299834,
-    "ast_hash": "7a4226f9f26cf589d8edb01fea66c9f7",
+    "mtime": 1785528973.4704082,
+    "ast_hash": "ef6d46c46887632256e21aec216ab062",
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/ephemeral/flutter_export_environment.sh": {
@@ -1555,12 +1555,12 @@
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1785527930.6360543,
+    "mtime": 1785528973.4764187,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1785527930.6337006,
+    "mtime": 1785528973.4744163,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": ""
   },
@@ -2445,8 +2445,8 @@
     "semantic_hash": ""
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1785528118.4172285,
-    "ast_hash": "f0d77b336c74bb3618e188e2a75617d4",
+    "mtime": 1785529161.1933682,
+    "ast_hash": "12a097ca603d3f592c39bbc302d13cc5",
     "semantic_hash": ""
   },
   "flutter_app/submit_screen_dump.txt": {
