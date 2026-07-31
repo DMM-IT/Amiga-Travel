@@ -53,6 +53,7 @@ class UserSession {
   static bool isEmailVerified = false;
   static String username = 'Traveler';
   static String email = 'user@amigagracia.com';
+  static String phone = '';
   static String token = '';
   static String lookupToken = '';
   static int graciaPoints = 0;
@@ -61,7 +62,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.21+25';
+  static const String appVersion = '1.0.22+26';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -70,6 +71,7 @@ class UserSession {
     isEmailVerified = prefs.getBool('isEmailVerified') ?? false;
     username = prefs.getString('username') ?? 'Traveler';
     email = prefs.getString('email') ?? 'user@amigagracia.com';
+    phone = prefs.getString('phone') ?? '';
     token = prefs.getString('token') ?? '';
     lookupToken = prefs.getString('lookupToken') ?? '';
     graciaPoints = prefs.getInt('graciaPoints') ?? 0;
@@ -90,6 +92,7 @@ class UserSession {
     await prefs.setBool('isEmailVerified', isEmailVerified);
     await prefs.setString('username', username);
     await prefs.setString('email', email);
+    await prefs.setString('phone', phone);
     await prefs.setString('token', token);
     await prefs.setString('lookupToken', lookupToken);
     await prefs.setInt('graciaPoints', graciaPoints);
@@ -103,6 +106,7 @@ class UserSession {
     await prefs.remove('isEmailVerified');
     await prefs.remove('username');
     await prefs.remove('email');
+    await prefs.remove('phone');
     await prefs.remove('token');
     await prefs.remove('lookupToken');
     await prefs.remove('graciaPoints');
@@ -112,6 +116,7 @@ class UserSession {
     isEmailVerified = false;
     username = 'Traveler';
     email = 'user@amigagracia.com';
+    phone = '';
     token = '';
     lookupToken = '';
     graciaPoints = 0;
@@ -186,6 +191,7 @@ class BookingData {
   // Step 5 — Contact
   String clientName = '';
   String clientEmail = '';
+  String clientPhone = '';
 
   // Voucher
   String? voucherCode;
@@ -235,6 +241,7 @@ class BookingData {
       'availableAccommodations': availableAccommodations,
       'clientName': clientName,
       'clientEmail': clientEmail,
+      'clientPhone': clientPhone,
       'voucherCode': voucherCode,
       'voucherData': voucherData,
       'promotionalTicketId': promotionalTicketId,
@@ -290,6 +297,7 @@ class BookingData {
     
     b.clientName = json['clientName'] ?? '';
     b.clientEmail = json['clientEmail'] ?? '';
+    b.clientPhone = json['clientPhone'] ?? '';
     b.voucherCode = json['voucherCode'];
     b.voucherData = json['voucherData'] != null ? Map<String, dynamic>.from(json['voucherData']) : null;
     b.promotionalTicketId = json['promotionalTicketId'];
@@ -790,11 +798,26 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: AppDrawer(onLogout: _handleLogout),
+      drawer: AppDrawer(onLogout: _handleLogout, onProfileUpdated: () => setState(() {})),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        leading: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+            if (UserSession.isLoggedIn && UserSession.phone.trim().isEmpty)
+              Positioned(
+                right: 10,
+                top: 10,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                ),
+              ),
+          ],
         ),
         title: Row(
           children: [
@@ -1934,7 +1957,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       ..adults = _adults
       ..children = _children;
 
-    if (_mode == 'ferry' && _isVehicleBookingEnabled) {
+    final bool is2GoOperator = _mode == 'ferry' && (_operator?.toLowerCase().contains('2go') ?? false);
+    if (_mode == 'ferry' && _isVehicleBookingEnabled && !is2GoOperator) {
        booking.hasVehicle = true;
        booking.vehiclePlateNumber = _plateCtrl.text;
        final selected = _vehicleRates.where((r) => r['selected'] == true).toList();
@@ -2210,8 +2234,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           ],
                           const SizedBox(height: 24),
 
-                          // Vehicle / Car Booking (Ferry only)
-                          if (_mode == 'ferry') ...[
+                          // Vehicle / Car Booking (Ferry only, hidden for 2GO)
+                          if (_mode == 'ferry' && !(_operator?.toLowerCase().contains('2go') ?? false)) ...[
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -4101,12 +4125,148 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   Widget _detailSection(String title, List<String> values) => Card(margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)), const SizedBox(height: 8), ...values.map((value) => Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(value, style: const TextStyle(color: kSlate600))))])));
 }
 
+class _NotificationDot extends StatelessWidget {
+  const _NotificationDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+    );
+  }
+}
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _emailCtrl;
+  late final TextEditingController _phoneCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: UserSession.username);
+    _emailCtrl = TextEditingController(text: UserSession.email);
+    _phoneCtrl = TextEditingController(text: UserSession.phone);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProfile() async {
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final phone = _phoneCtrl.text.trim();
+
+    UserSession.username = name.isNotEmpty ? name : 'Traveler';
+    UserSession.email = email.isNotEmpty ? email : 'user@amigagracia.com';
+    UserSession.phone = phone;
+    await UserSession.save();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated'), backgroundColor: kGreen),
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final missingPhone = UserSession.phone.trim().isEmpty;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('My Profile')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('Profile Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                      const Spacer(),
+                      if (missingPhone) const _NotificationDot(),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _nameCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      prefixIcon: const Icon(Icons.person_outline, color: kGreen),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'Mobile Phone Number',
+                      prefixIcon: const Icon(Icons.phone_android_outlined, color: kGreen),
+                      suffixIcon: missingPhone ? const _NotificationDot() : null,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _saveProfile,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kPink,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Save Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ==========================================
 // DRAWER
 // ==========================================
 class AppDrawer extends StatelessWidget {
   final VoidCallback onLogout;
-  const AppDrawer({super.key, required this.onLogout});
+  final VoidCallback onProfileUpdated;
+  const AppDrawer({super.key, required this.onLogout, required this.onProfileUpdated});
 
   @override
   Widget build(BuildContext context) {
@@ -4134,7 +4294,15 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.person_outline, color: kGreen),
             title: const Text('My Profile'),
-            onTap: () => Navigator.pop(context),
+            trailing: UserSession.isLoggedIn && UserSession.phone.trim().isEmpty
+                ? const _NotificationDot()
+                : null,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())).then((_) {
+                onProfileUpdated();
+              });
+            },
           ),
           ListTile(
             leading: const Icon(Icons.info_outline, color: kGreen),
@@ -4642,8 +4810,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               _buildHorizontalScheduleList(_returnSchedules, isReturn: true),
                               if (widget.booking.selectedReturnSchedule != null && widget.booking.selectedReturnSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedReturnSchedule!['promotional_ticket'], isReturn: true),
-                              _buildBaggageSwitch(),
-
                               const SizedBox(height: 20),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -4688,7 +4854,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
                               if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
-                              _buildBaggageSwitch(),
                               
                               if (widget.booking.selectedSchedule != null) ...[
                                 Padding(
@@ -4800,209 +4965,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     );
   }
 
-  Widget _buildBaggageSwitch() {
-    final isAirline = widget.booking.mode == 'airline';
-
-    // Auto-detect rules for current schedule
-    final schedule = widget.booking.selectedSchedule ?? {};
-    final operatorStr = schedule['operator']?.toString().toLowerCase() ?? '';
-    final tripType = schedule['trip_type']?.toString().toLowerCase() ?? 'local';
-    
-    // Convert operator string to baggage key (e.g., 'cebu pacific' -> 'ceb_pac')
-    String? matchedOperator;
-    if (operatorStr.contains('pal') || operatorStr.contains('philippine airline')) matchedOperator = 'pal';
-    else if (operatorStr.contains('cebu')) matchedOperator = 'ceb_pac';
-    else if (operatorStr.contains('airasia')) matchedOperator = 'airasia';
-    
-    // Get options from rules
-    List<dynamic> baggageOptions = [];
-    if (matchedOperator != null && _baggageRules[tripType] != null && _baggageRules[tripType][matchedOperator] != null) {
-      baggageOptions = _baggageRules[tripType][matchedOperator]['options'] ?? [];
-    }
-    
-    // If we have options but no kg is set yet, default to first option
-    if (isAirline && baggageOptions.isNotEmpty && widget.booking.hasExtraBaggage) {
-      if (widget.booking.extraBaggageKg == null) {
-        // Find if we previously selected a price that matches
-        final matchingOption = baggageOptions.firstWhere((opt) => opt['price'] == widget.booking.extraBaggagePrice, orElse: () => baggageOptions.first);
-        // We use Future.microtask to avoid setState during build
-        Future.microtask(() {
-          if (mounted) {
-            setState(() {
-              widget.booking.extraBaggageKg = int.tryParse(matchingOption['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
-              widget.booking.extraBaggagePrice = (matchingOption['price'] as num).toDouble();
-            });
-          }
-        });
-      }
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SwitchListTile(
-              title: Text(
-                isAirline ? 'I have Extra Baggage' : 'I have Extra Baggage',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-              subtitle: Text(
-                isAirline
-                    ? 'Add prepaid check-in baggage per passenger for your flight.'
-                    : 'Additional fees may apply upon check-in at the terminal.',
-                style: const TextStyle(fontSize: 12),
-              ),
-              value: widget.booking.hasExtraBaggage,
-              activeColor: kGreen,
-              contentPadding: EdgeInsets.zero,
-              onChanged: (val) {
-                setState(() {
-                  widget.booking.hasExtraBaggage = val;
-                  if (!val) {
-                    widget.booking.extraBaggageKg = null;
-                    widget.booking.extraBaggagePrice = 0.0;
-                    widget.booking.extraBaggageType = null;
-                    widget.booking.extraBaggageSpecify = null;
-                  } else {
-                    if (isAirline && baggageOptions.isNotEmpty) {
-                      widget.booking.extraBaggageKg = int.tryParse(baggageOptions.first['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
-                      widget.booking.extraBaggagePrice = (baggageOptions.first['price'] as num).toDouble();
-                    }
-                    if (!isAirline && widget.booking.extraBaggageType == null) {
-                      widget.booking.extraBaggageType = 'Large Suitcase / Oversized Luggage';
-                    }
-                  }
-                });
-              },
-            ),
-            if (widget.booking.hasExtraBaggage) ...[
-              const SizedBox(height: 12),
-              const Divider(height: 1),
-              const SizedBox(height: 12),
-              if (isAirline) ...[
-                // KG dropdown
-                const Text('Select Extra Baggage (kg)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
-                const SizedBox(height: 8),
-                if (baggageOptions.isEmpty)
-                  const Text('No extra baggage rules found for this schedule.', style: TextStyle(color: kSlate500, fontSize: 12))
-                else
-                  DropdownButtonFormField<double>(
-                    value: widget.booking.extraBaggagePrice > 0 ? widget.booking.extraBaggagePrice : (baggageOptions.first['price'] as num).toDouble(),
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
-                    items: baggageOptions.map((opt) {
-                      final wStr = opt['weight'].toString();
-                      final p = (opt['price'] as num).toDouble();
-                      return DropdownMenuItem<double>(
-                        value: p,
-                        child: Text('$wStr — ₱${p.toStringAsFixed(0)} / pax', style: const TextStyle(fontSize: 14)),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        final matchedOpt = baggageOptions.firstWhere((o) => (o['price'] as num).toDouble() == val, orElse: () => baggageOptions.first);
-                        setState(() {
-                          widget.booking.extraBaggagePrice = val;
-                          widget.booking.extraBaggageKg = int.tryParse(matchedOpt['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
-                        });
-                      }
-                    },
-                  ),
-                if (widget.booking.extraBaggageKg != null && widget.booking.extraBaggagePrice > 0) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: kGreen.withOpacity(0.07), borderRadius: BorderRadius.circular(8)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('${widget.booking.extraBaggageKg} kg × ${widget.booking.adults + widget.booking.children} pax', style: const TextStyle(fontSize: 13, color: kSlate700)),
-                        Text(
-                          '₱${(widget.booking.extraBaggagePrice * (widget.booking.adults + widget.booking.children)).toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ] else ...[
-                // Ferry informational note
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.amber.shade200)),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.amber.shade700, size: 18),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          'Extra baggage fees are settled at the terminal upon check-in. Ferries typically allow up to 50 kg free per passenger.',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF78350F)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Ferry Item Category Dropdown
-                const Text('Select Item Category / Example', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: widget.booking.extraBaggageType ?? 'Large Suitcase / Oversized Luggage',
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                  items: const [
-                    'Large Suitcase / Oversized Luggage',
-                    'Balikbayan Box / Packed Carton',
-                    'Musical Instrument (Guitar, Keyboard, etc.)',
-                    'Sports Equipment (Surfboard, Bicycle, Golf Bag)',
-                    'Electronic Appliance / Boxed Equipment',
-                    'Commercial Goods / Merchandise',
-                    'Other Non-Personal Item',
-                  ].map((val) => DropdownMenuItem<String>(
-                    value: val,
-                    child: Text(val, style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis),
-                  )).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => widget.booking.extraBaggageType = val);
-                  },
-                ),
-                const SizedBox(height: 12),
-                // Specify Item Details & Quantity
-                const Text('Specify Item Details & Quantity', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  initialValue: widget.booking.extraBaggageSpecify ?? '',
-                  decoration: InputDecoration(
-                    hintText: 'e.g. 2 Balikbayan boxes, 1 Surfboard bag (dimensions/description)',
-                    hintStyle: const TextStyle(color: kSlate400, fontSize: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                  onChanged: (v) {
-                    setState(() => widget.booking.extraBaggageSpecify = v);
-                  },
-                ),
-              ],
-            ],
-          ],
-        ),
-      ),
-    );
-  }
 
 
   Widget _buildHorizontalScheduleList(List<dynamic> schedules, {required bool isReturn}) {
@@ -5338,25 +5300,32 @@ class _DiscountScreenState extends State<DiscountScreen> {
     for (int i = 0; i < widget.booking.passengers.length; i++) {
       widget.booking.passengers[i]['name'] = _nameControllers[i].text.trim();
       widget.booking.passengers[i]['birthdate'] = _birthdateControllers[i].text.trim();
-      
+
       final discId = widget.booking.passengers[i]['discount_id'];
       final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
       final discName = disc['name']?.toString().toLowerCase() ?? '';
-      
+
       if (discId != null && discName != 'infant') {
-        if (_idFrontBase64[i] == null || _idBackBase64[i] == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Please upload both Front and Back ID images for Passenger #${i + 1}.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
+        final idNumber = _idControllers[i].text.trim();
+        widget.booking.passengers[i]['id_number'] = idNumber;
+
+        if (discName == 'student') {
+          if (_idFrontBase64[i] == null || _idBackBase64[i] == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please upload both Front and Back ID images for Passenger #${i + 1}.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+          widget.booking.passengers[i]['id_image_front'] = _idFrontBase64[i];
+          widget.booking.passengers[i]['id_image_back'] = _idBackBase64[i];
+        } else {
+          widget.booking.passengers[i]['id_image_front'] = null;
+          widget.booking.passengers[i]['id_image_back'] = null;
         }
         widget.booking.passengers[i]['school_name'] = null;
-        widget.booking.passengers[i]['id_number'] = _idControllers[i].text.trim();
-        widget.booking.passengers[i]['id_image_front'] = _idFrontBase64[i];
-        widget.booking.passengers[i]['id_image_back'] = _idBackBase64[i];
       } else {
         widget.booking.passengers[i]['school_name'] = null;
         widget.booking.passengers[i]['id_number'] = null;
@@ -5562,10 +5531,12 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                           ),
                                           validator: (v) => (v == null || v.trim().isEmpty) ? 'ID number is required' : null,
                                         ),
-                                        const SizedBox(height: 12),
-                                        _buildIdImagePicker(i, 'ID Image (Front) *', true),
-                                        const SizedBox(height: 10),
-                                        _buildIdImagePicker(i, 'ID Image (Back) *', false),
+                                        if (discName == 'student') ...[
+                                          const SizedBox(height: 12),
+                                          _buildIdImagePicker(i, 'ID Image (Front) *', true),
+                                          const SizedBox(height: 10),
+                                          _buildIdImagePicker(i, 'ID Image (Back) *', false),
+                                        ],
                                       ],
                                     );
                                   }
@@ -5787,9 +5758,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _clientNameCtrl;
   late TextEditingController _clientEmailCtrl;
+  late TextEditingController _clientPhoneCtrl;
   bool _isSubmitting = false;
-  bool _agreeTerms = UserSession.isLoggedIn;
-  bool _agreePrivacy = UserSession.isLoggedIn;
 
   // Payment / QR
   String? _qrCodeUrl;
@@ -5817,6 +5787,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     super.initState();
     _clientNameCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.username : widget.booking.clientName);
     _clientEmailCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.email : widget.booking.clientEmail);
+    _clientPhoneCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.phone : widget.booking.clientPhone);
     // If promo ticket is active, clear any voucher that may have been applied
     if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) {
       widget.booking.voucherCode = null;
@@ -5886,6 +5857,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   void dispose() {
     _clientNameCtrl.dispose();
     _clientEmailCtrl.dispose();
+    _clientPhoneCtrl.dispose();
     super.dispose();
   }
 
@@ -5929,15 +5901,13 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (!_agreeTerms || !_agreePrivacy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please accept the Terms & Conditions and Data Privacy Policy before submitting.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
+
+    final phone = _clientPhoneCtrl.text.trim();
+    if (phone.isNotEmpty) {
+      UserSession.phone = phone;
+      await UserSession.save();
     }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -5958,6 +5928,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
           'return_date': widget.booking.returnDate,
           'client_name': _clientNameCtrl.text.trim(),
           'client_email': _clientEmailCtrl.text.trim(),
+          'client_phone': _clientPhoneCtrl.text.trim(),
           'passengers': widget.booking.passengers,
           'accommodation_ids': widget.booking.selectedAccommodationIds,
           // Vehicle
@@ -6355,6 +6326,19 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             decoration: InputDecoration(labelText: 'Email', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                             validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                           ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _clientPhoneCtrl,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              labelText: 'Mobile Phone Number',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              suffixIcon: _clientPhoneCtrl.text.trim().isEmpty
+                                  ? const _NotificationDot()
+                                  : null,
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                          ),
                         ],
                       ),
                     ),
@@ -6556,61 +6540,6 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                   }),
 
-                  const SizedBox(height: 16),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Checkbox(
-                        value: _agreeTerms,
-                        onChanged: (val) => setState(() => _agreeTerms = val ?? false),
-                        activeColor: kPink,
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => showTermsModal(context),
-                          child: RichText(
-                            text: const TextSpan(
-                              style: TextStyle(fontSize: 12, color: kSlate700),
-                              children: [
-                                TextSpan(text: 'I agree to the '),
-                                TextSpan(
-                                  text: 'Terms and Conditions / Agreement',
-                                  style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Checkbox(
-                        value: _agreePrivacy,
-                        onChanged: (val) => setState(() => _agreePrivacy = val ?? false),
-                        activeColor: kPink,
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => showPrivacyModal(context),
-                          child: RichText(
-                            text: const TextSpan(
-                              style: TextStyle(fontSize: 12, color: kSlate700),
-                              children: [
-                                TextSpan(text: 'I agree to the '),
-                                TextSpan(
-                                  text: 'Data Privacy Policy',
-                                  style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 16),
 
                   SizedBox(
@@ -7760,6 +7689,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
       _notesCtrl.text = pkg['inclusions'] ?? '';
       _nameCtrl.text = UserSession.username;
       _emailCtrl.text = UserSession.email;
+      _phoneCtrl.text = UserSession.phone;
     } else if (widget.initialData != null) {
       final init = widget.initialData!;
       _serviceType = init['mode'] == 'airline' ? 'Airline Ticket' : 'Ferry Ticket';
@@ -7771,6 +7701,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
       }
       _nameCtrl.text = UserSession.username;
       _emailCtrl.text = UserSession.email;
+      _phoneCtrl.text = UserSession.phone;
     }
   }
 
