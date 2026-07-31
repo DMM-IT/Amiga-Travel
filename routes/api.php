@@ -40,6 +40,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/accommodations',   [AccommodationController::class, 'index']);
     Route::get('/tours',            [\App\Http\Controllers\Api\TourController::class, 'index']);
     Route::get('/vehicle-rates',    [BookingController::class, 'vehicleRates']);
+    Route::get('/baggage-rules',    [ScheduleController::class, 'baggageRules']);
 
     Route::get('/services', function () {
         $settings = \App\Models\WebsiteSetting::where('page', 'services')->first();

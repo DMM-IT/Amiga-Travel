@@ -621,6 +621,5 @@
   "619": "aRs",
   "620": "BelongsToMany",
   "621": "HasOne",
-  "622": "Panel",
-  "623": "Request"
+  "622": "Panel"
 }
