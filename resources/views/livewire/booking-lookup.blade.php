@@ -147,6 +147,9 @@
                                 </div>
                                 <span class="rounded-full px-4 py-1.5 text-sm font-semibold" @style(['background' => $statusStyle['bg'], 'color' => $statusStyle['text']])>
                                     {{ $booking->status === 'operator_cancelled' ? 'Cancelled by Operator' : ucfirst($booking->status) }}
+                                    @if($booking->rebooking_status === 'pending')
+                                        (Rebooking Pending)
+                                    @endif
                                 </span>
                             </div>
 
@@ -175,8 +178,29 @@
                                     <p class="font-medium text-slate-900">{{ $booking->departure_date->format('M d, Y') }}{{ $booking->return_date ? ' → ' . $booking->return_date->format('M d, Y') : ' (One-way)' }}</p>
                                 </div>
                                 <div class="rounded-2xl bg-white p-4 border border-slate-200">
-                                    <p class="text-sm text-slate-500">Ferry Schedule</p>
-                                    <p class="font-medium text-slate-900">{{ $booking->schedule_summary ?? 'Not recorded' }}</p>
+                                    <p class="text-sm text-slate-500">Schedule</p>
+                                    @if($booking->schedule_departure_time || $booking->schedule_service)
+                                        <p class="font-medium text-slate-900">
+                                            {{ $booking->schedule_service }}
+                                            @if($booking->schedule_departure_time && $booking->schedule_arrival_time)
+                                                ({{ $booking->schedule_departure_time }} → {{ $booking->schedule_arrival_time }})
+                                            @elseif($booking->schedule_departure_time)
+                                                ({{ $booking->schedule_departure_time }})
+                                            @endif
+                                        </p>
+                                        @if($booking->return_date && ($booking->return_schedule_departure_time || $booking->return_schedule_service))
+                                            <p class="text-sm text-slate-600 mt-1">
+                                                Return: {{ $booking->return_schedule_service }}
+                                                @if($booking->return_schedule_departure_time && $booking->return_schedule_arrival_time)
+                                                    ({{ $booking->return_schedule_departure_time }} → {{ $booking->return_schedule_arrival_time }})
+                                                @elseif($booking->return_schedule_departure_time)
+                                                    ({{ $booking->return_schedule_departure_time }})
+                                                @endif
+                                            </p>
+                                        @endif
+                                    @else
+                                        <p class="font-medium text-slate-900">Not recorded</p>
+                                    @endif
                                     @if($booking->schedule_price)
                                         <p class="text-sm text-slate-600 mt-1">₱{{ number_format($booking->schedule_price, 2) }} per passenger{{ $booking->return_date ? ' (round trip)' : '' }}</p>
                                     @endif

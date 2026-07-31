@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class Transaction extends Model
@@ -36,6 +37,59 @@ class Transaction extends Model
     public function verifiedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by_user_id');
+    }
+
+    public function verificationUnlockAt(): ?Carbon
+    {
+        if (! $this->created_at) {
+            return null;
+        }
+
+        return $this->created_at->copy()->addMinutes(10);
+    }
+
+    public function isVerificationLocked(): bool
+    {
+        $unlockTime = $this->verificationUnlockAt();
+
+        return $this->payment_status === 'pending'
+            && $unlockTime !== null
+            && $unlockTime->isFuture();
+    }
+
+    public function verificationTimerLabel(): string
+    {
+        if ($this->payment_status !== 'pending') {
+            return '—';
+        }
+
+        $unlockTime = $this->verificationUnlockAt();
+        if (! $unlockTime || $unlockTime->isPast()) {
+            return 'Ready';
+        }
+
+        $diff = now()->diff($unlockTime);
+        $minutes = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
+
+        return sprintf('%dm %ds', $minutes, $diff->s);
+    }
+
+    public function verificationTimerTooltip(): ?string
+    {
+        if ($this->payment_status !== 'pending') {
+            return null;
+        }
+
+        $unlockTime = $this->verificationUnlockAt();
+        if (! $unlockTime) {
+            return null;
+        }
+
+        if ($unlockTime->isPast()) {
+            return '10-minute hold complete. Ready for verification.';
+        }
+
+        return 'Unlocks at ' . $unlockTime->format('h:i:s A');
     }
 
     public function getProofUrlAttribute(): ?string

@@ -178,43 +178,17 @@ class BookingResource extends Resource
                     ->icon(fn (Booking $record): string => match (true) {
                         $record->status !== 'pending' => 'heroicon-m-check-circle',
                         ! $record->transaction => 'heroicon-m-clock',
-                        $record->transaction->created_at->addMinutes(10)->isPast() => 'heroicon-m-check-badge',
+                        ! $record->isVerificationLocked() => 'heroicon-m-check-badge',
                         default => 'heroicon-m-clock',
                     })
                     ->color(fn (Booking $record): string => match (true) {
                         $record->status !== 'pending' => 'gray',
                         ! $record->transaction => 'warning',
-                        $record->transaction->created_at->addMinutes(10)->isPast() => 'success',
+                        ! $record->isVerificationLocked() => 'success',
                         default => 'warning',
                     })
-                    ->state(function (Booking $record): string {
-                        if ($record->status !== 'pending') {
-                            return '—';
-                        }
-                        if (! $record->transaction) {
-                            return 'No tx';
-                        }
-
-                        $unlockTime = $record->transaction->created_at->addMinutes(10);
-                        if ($unlockTime->isPast()) {
-                            return 'Ready';
-                        }
-
-                        $diff = now()->diff($unlockTime);
-                        return sprintf('%dm %ds', $diff->i, $diff->s);
-                    })
-                    ->tooltip(function (Booking $record): ?string {
-                        if ($record->status !== 'pending' || ! $record->transaction) {
-                            return null;
-                        }
-
-                        $unlockTime = $record->transaction->created_at->addMinutes(10);
-                        if ($unlockTime->isPast()) {
-                            return '10-minute hold complete. Ready for verification.';
-                        }
-
-                        return 'Unlocks at ' . $unlockTime->format('h:i:s A');
-                    }),
+                    ->state(fn (Booking $record): string => $record->verificationTimerLabel())
+                    ->tooltip(fn (Booking $record): ?string => $record->verificationTimerTooltip()),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -264,10 +238,10 @@ class BookingResource extends Resource
                             ->maxSize(10240),
                     ])
                     ->visible(fn (Booking $record): bool => $record->status === 'pending')
-                    ->disabled(fn (Booking $record): bool => ! $record->transaction || $record->transaction->created_at->greaterThan(now()->subMinutes(10)))
-                    ->tooltip(fn (Booking $record): ?string => $record->transaction && $record->transaction->created_at->greaterThan(now()->subMinutes(10))
-                        ? 'This booking can be verified after 10 minutes from payment submission.'
-                        : null)
+                    ->disabled(fn (Booking $record): bool => ! $record->transaction || $record->isVerificationLocked())
+                    ->tooltip(fn (Booking $record): ?string => ! $record->transaction
+                        ? 'No payment transaction found for this booking.'
+                        : $record->verificationTimerTooltip())
                     ->requiresConfirmation()
                     ->action(function (Booking $record, array $data): void {
                         if (empty($data['confirmation_url']) && empty($data['confirmation_pdf'])) {

@@ -8,6 +8,7 @@ use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Storage;
 
 class ListFerryRoutes extends ListRecords
 {
@@ -33,11 +34,12 @@ class ListFerryRoutes extends ListRecords
                         ->disk('local')
                         ->directory('temp-csv-imports')
                         ->required()
-                        ->helperText('Upload a CSV or Excel (.xlsx) file with columns: Mode, Operator, Vehicle Tail No., Origin, Destination, Departure Date, Departure Time, Arrival Time, Return Date, Transport Class, Rate'),
+                        ->helperText('Upload a CSV or Excel (.xlsx) file with columns: Mode, Operator, Vehicle Tail No., Origin, Destination, Departure Date, Departure Time, Arrival Time, Return Date, Transport Class, Rate. Use DD/MM/YYYY for Departure Date and Return Date.'),
                 ])
                 ->action(function (array $data, ScheduleCsvImportService $importService): void {
                     try {
                         $relativeFilePath = $data['csv_file'] ?? null;
+                        $disk = Storage::disk('local');
 
                         if (! $relativeFilePath) {
                             Notification::make()
@@ -49,13 +51,24 @@ class ListFerryRoutes extends ListRecords
                             return;
                         }
 
-                        $fullPath = storage_path('app/' . $relativeFilePath);
+                        $fullPath = $disk->path($relativeFilePath);
+
+                        if (! $disk->exists($relativeFilePath) || ! is_readable($fullPath)) {
+                            Notification::make()
+                                ->title('Import Failed')
+                                ->body("Uploaded file could not be found on disk: {$relativeFilePath}")
+                                ->danger()
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
 
                         $result = $importService->import($fullPath);
 
                         // Clean up temp file
-                        if (file_exists($fullPath)) {
-                            @unlink($fullPath);
+                        if ($disk->exists($relativeFilePath)) {
+                            $disk->delete($relativeFilePath);
                         }
 
                         if (! empty($result['errors'])) {

@@ -372,8 +372,39 @@ class BookingReschedule extends Component
         $this->feedback = 'Our support team has been notified. We will reach out to your email shortly to assist with custom travel arrangements.';
     }
 
+    /**
+     * Returns true if the admin has set a resume date that has not yet been reached.
+     */
+    public function getIsResumeBlockedProperty(): bool
+    {
+        $cancellation = $this->booking?->serviceCancellation;
+        if (! $cancellation || ! $cancellation->resume_date) {
+            return false;
+        }
+        return Carbon::today()->lt(Carbon::parse($cancellation->resume_date));
+    }
+
+    /**
+     * Get the original per-passenger accommodation price for comparison on cards.
+     * dep/ret: which leg. Returns null if not applicable.
+     */
+    public function getOriginalDepAccommodationPrice(): ?float
+    {
+        if (! $this->booking) return null;
+        return (float) ($this->booking->schedule_accommodation_price ?? 0);
+    }
+
+    public function getOriginalRetAccommodationPrice(): ?float
+    {
+        if (! $this->booking) return null;
+        return (float) ($this->booking->return_schedule_accommodation_price ?? 0);
+    }
+
     public function render()
     {
-        return view('livewire.booking-reschedule');
+        return view('livewire.booking-reschedule', [
+            'originalDepAccPrice' => $this->getOriginalDepAccommodationPrice(),
+            'originalRetAccPrice' => $this->getOriginalRetAccommodationPrice(),
+        ]);
     }
 }

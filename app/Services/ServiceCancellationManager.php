@@ -221,51 +221,151 @@ class ServiceCancellationManager
 
     /**
      * Process staff approval or decline of customer reschedule request.
+     * Supports two data sources:
+     *  1. preferred_replacement_schedule_id (legacy single-schedule path)
+     *  2. disruption_notes JSON (wizard free-pick path from BookingReschedule)
      */
     public function processStaffApproval(Booking $booking, bool $approve, ?string $staffNote, User $staffUser): void
     {
         if ($approve) {
-            if (! $booking->preferred_replacement_schedule_id || ! $booking->preferred_replacement_date) {
+            // --- Detect data source ---
+            $wizardData = null;
+            if (! $booking->preferred_replacement_schedule_id && filled($booking->disruption_notes)) {
+                $decoded = json_decode($booking->disruption_notes, true);
+                if (is_array($decoded) && isset($decoded['dep_schedule_id'])) {
+                    $wizardData = $decoded;
+                }
+            }
+
+            if (! $wizardData && (! $booking->preferred_replacement_schedule_id || ! $booking->preferred_replacement_date)) {
                 throw new \InvalidArgumentException('No preferred replacement schedule is selected for this booking.');
             }
 
-            $newSchedule = Schedule::findOrFail($booking->preferred_replacement_schedule_id);
-            $newDepartureDate = Carbon::parse($booking->preferred_replacement_date);
+            // ---- PATH A: Wizard free-pick (disruption_notes JSON) ----
+            if ($wizardData) {
+                $depSchedule = Schedule::find($wizardData['dep_schedule_id']);
+                if (! $depSchedule) {
+                    throw new \InvalidArgumentException('The departure schedule selected by the customer no longer exists.');
+                }
 
-            // Calculate return date offset if round trip
-            $newReturnDate = null;
-            if ($booking->return_date && $booking->departure_date) {
-                $dayOffset = $booking->departure_date->diffInDays($booking->return_date);
-                $newReturnDate = $newDepartureDate->copy()->addDays($dayOffset);
+                $retSchedule = isset($wizardData['ret_schedule_id']) ? Schedule::find($wizardData['ret_schedule_id']) : null;
+
+                // Resolve accommodation details
+                $depAccommodation = null;
+                $depAccPrice = 0;
+                if (isset($wizardData['dep_accommodation_id'])) {
+                    $depAccommodation = $this->resolveAccommodation($wizardData['dep_accommodation_id']);
+                    $depAccPrice = $depAccommodation?->price ?? 0;
+                }
+
+                $retAccommodation = null;
+                $retAccPrice = 0;
+                if (isset($wizardData['ret_accommodation_id'])) {
+                    $retAccommodation = $this->resolveAccommodation($wizardData['ret_accommodation_id']);
+                    $retAccPrice = $retAccommodation?->price ?? 0;
+                }
+
+                $newDepartureDate = Carbon::parse($booking->rebooking_departure_date ?? $booking->preferred_replacement_date);
+                $newReturnDate = $booking->rebooking_return_date
+                    ? Carbon::parse($booking->rebooking_return_date)
+                    : null;
+
+                DB::transaction(function () use (
+                    $booking, $depSchedule, $retSchedule,
+                    $depAccommodation, $depAccPrice,
+                    $retAccommodation, $retAccPrice,
+                    $newDepartureDate, $newReturnDate,
+                    $staffNote, $staffUser, $wizardData
+                ) {
+                    $passengerCount = max(1, $booking->passengers()->count());
+                    $newTotal = ($depSchedule->price + $depAccPrice) * $passengerCount;
+                    if ($retSchedule) {
+                        $newTotal += ($retSchedule->price + $retAccPrice) * $passengerCount;
+                    }
+                    if ($booking->has_vehicle) {
+                        $newTotal += $booking->vehicle_price;
+                    }
+
+                    $booking->update([
+                        // Departure leg
+                        'schedule_id'                     => $depSchedule->id,
+                        'schedule_service'                => $depSchedule->service_name,
+                        'schedule_departure_time'         => $depSchedule->formatted_departure,
+                        'schedule_arrival_time'           => $depSchedule->formatted_arrival,
+                        'schedule_price'                  => $depSchedule->price,
+                        'schedule_accommodation_id'       => $depAccommodation?->id,
+                        'schedule_accommodation_name'     => $depAccommodation?->name,
+                        'schedule_accommodation_price'    => $depAccPrice,
+                        'departure_date'                  => $newDepartureDate,
+                        // Return leg
+                        'return_schedule_id'              => $retSchedule?->id,
+                        'return_schedule_service'         => $retSchedule?->service_name,
+                        'return_schedule_departure_time'  => $retSchedule?->formatted_departure,
+                        'return_schedule_arrival_time'    => $retSchedule?->formatted_arrival,
+                        'return_schedule_price'           => $retSchedule?->price,
+                        'return_schedule_accommodation_id'    => $retAccommodation?->id,
+                        'return_schedule_accommodation_name'  => $retAccommodation?->name,
+                        'return_schedule_accommodation_price' => $retAccPrice,
+                        'return_date'                     => $newReturnDate ?? $booking->return_date,
+                        // Totals & status
+                        'total_price'            => $newTotal,
+                        'status'                 => 'confirmed',
+                        'disruption_status'      => 'rescheduled_approved',
+                        'disruption_notes'       => $staffNote,
+                        'is_rebooked'            => true,
+                        'rebooking_status'       => 'verified',
+                        'verified_by_user_id'    => $staffUser->id,
+                        'verified_at'            => now(),
+                    ]);
+
+                    if ($booking->transaction) {
+                        $booking->transaction->update([
+                            'payment_status'      => 'paid',
+                            'verified_by_user_id' => $staffUser->id,
+                            'verified_at'         => now(),
+                        ]);
+                    }
+                });
+
+            // ---- PATH B: Legacy preferred_replacement_schedule_id ----
+            } else {
+                $newSchedule = Schedule::findOrFail($booking->preferred_replacement_schedule_id);
+                $newDepartureDate = Carbon::parse($booking->preferred_replacement_date);
+
+                $newReturnDate = null;
+                if ($booking->return_date && $booking->departure_date) {
+                    $dayOffset = $booking->departure_date->diffInDays($booking->return_date);
+                    $newReturnDate = $newDepartureDate->copy()->addDays($dayOffset);
+                }
+
+                DB::transaction(function () use ($booking, $newSchedule, $newDepartureDate, $newReturnDate, $staffNote, $staffUser) {
+                    $booking->update([
+                        'schedule_id'            => $newSchedule->id,
+                        'schedule_service'       => $newSchedule->service_name,
+                        'schedule_departure_time'=> $newSchedule->formatted_departure,
+                        'schedule_arrival_time'  => $newSchedule->formatted_arrival,
+                        'departure_date'         => $newDepartureDate,
+                        'return_date'            => $newReturnDate ?? $booking->return_date,
+                        'status'                 => 'confirmed',
+                        'disruption_status'      => 'rescheduled_approved',
+                        'disruption_notes'       => $staffNote,
+                        'is_rebooked'            => true,
+                        'rebooking_status'       => 'verified',
+                        'verified_by_user_id'    => $staffUser->id,
+                        'verified_at'            => now(),
+                    ]);
+
+                    if ($booking->transaction) {
+                        $booking->transaction->update([
+                            'payment_status'      => 'paid',
+                            'verified_by_user_id' => $staffUser->id,
+                            'verified_at'         => now(),
+                        ]);
+                    }
+                });
             }
 
-            DB::transaction(function () use ($booking, $newSchedule, $newDepartureDate, $newReturnDate, $staffNote, $staffUser) {
-                $booking->update([
-                    'schedule_id' => $newSchedule->id,
-                    'schedule_service' => $newSchedule->service_name,
-                    'schedule_departure_time' => $newSchedule->formatted_departure,
-                    'schedule_arrival_time' => $newSchedule->formatted_arrival,
-                    'departure_date' => $newDepartureDate,
-                    'return_date' => $newReturnDate ?? $booking->return_date,
-                    'status' => 'confirmed',
-                    'disruption_status' => 'rescheduled_approved',
-                    'disruption_notes' => $staffNote,
-                    'is_rebooked' => true,
-                    'rebooking_status' => 'verified',
-                    'verified_by_user_id' => $staffUser->id,
-                    'verified_at' => now(),
-                ]);
-
-                if ($booking->transaction) {
-                    $booking->transaction->update([
-                        'payment_status' => 'paid',
-                        'verified_by_user_id' => $staffUser->id,
-                        'verified_at' => now(),
-                    ]);
-                }
-            });
-
-            // Send approval confirmation email
+            // Send approval confirmation email (both paths)
             if (filled($booking->client_email)) {
                 try {
                     Mail::to($booking->client_email)->send(new RescheduleApprovalNotificationMail($booking, true, $staffNote));
@@ -273,10 +373,12 @@ class ServiceCancellationManager
                     Log::error("Failed sending reschedule approval mail to {$booking->client_email}: " . $e->getMessage());
                 }
             }
+
         } else {
+            // ---- DECLINE ----
             $booking->update([
                 'disruption_status' => 'rescheduled_declined',
-                'disruption_notes' => $staffNote,
+                'disruption_notes'  => $staffNote,
             ]);
 
             if (filled($booking->client_email)) {
@@ -285,6 +387,102 @@ class ServiceCancellationManager
                 } catch (\Exception $e) {
                     Log::error("Failed sending reschedule decline mail to {$booking->client_email}: " . $e->getMessage());
                 }
+            }
+        }
+    }
+
+    /**
+     * Resolve an accommodation object from a prefixed ID string.
+     * Prefix 'acc_' = ScheduleAccommodation, 'tc_' = TransportClass pivot.
+     */
+    private function resolveAccommodation(string $prefixedId): ?object
+    {
+        if (str_starts_with($prefixedId, 'acc_')) {
+            $id = (int) substr($prefixedId, 4);
+            return \App\Models\ScheduleAccommodation::find($id);
+        }
+
+        if (str_starts_with($prefixedId, 'tc_')) {
+            $id = (int) substr($prefixedId, 3);
+            $tc = \App\Models\TransportClass::find($id);
+            if ($tc) {
+                return (object) [
+                    'id'    => $prefixedId,
+                    'name'  => $tc->name,
+                    'price' => $tc->pivot?->additional_price ?? 0,
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Automatically find matching schedule on the new date and approve rebooking.
+     */
+    public function processAutomaticRebookingApproval(Booking $booking, User $staffUser): void
+    {
+        if (! $booking->rebooking_departure_date) {
+            throw new \InvalidArgumentException('No rebooking departure date was specified.');
+        }
+
+        $originalSchedule = Schedule::find($booking->schedule_id);
+        if (! $originalSchedule) {
+            throw new \InvalidArgumentException('Original schedule not found.');
+        }
+
+        $originalDepartureTimeStr = Carbon::parse($originalSchedule->departure_time)->format('H:i:s');
+        
+        $newSchedule = Schedule::query()
+            ->active()
+            ->where('ferry_route_id', $originalSchedule->ferry_route_id)
+            ->whereDate('departure_time', $booking->rebooking_departure_date)
+            ->whereTime('departure_time', $originalDepartureTimeStr)
+            ->first();
+
+        if (! $newSchedule) {
+            throw new \Exception("Cannot automatically rebook: No matching schedule found on " . Carbon::parse($booking->rebooking_departure_date)->format('M d, Y') . " at " . Carbon::parse($originalSchedule->departure_time)->format('g:i A') . ".");
+        }
+
+        $newDepartureDate = Carbon::parse($booking->rebooking_departure_date);
+
+        $newReturnDate = null;
+        if ($booking->return_date && $booking->departure_date) {
+            $dayOffset = $booking->departure_date->diffInDays($booking->return_date);
+            $newReturnDate = $newDepartureDate->copy()->addDays($dayOffset);
+        } elseif ($booking->rebooking_return_date) {
+            $newReturnDate = Carbon::parse($booking->rebooking_return_date);
+        }
+
+        DB::transaction(function () use ($booking, $newSchedule, $newDepartureDate, $newReturnDate, $staffUser) {
+            $booking->update([
+                'schedule_id' => $newSchedule->id,
+                'schedule_service' => $newSchedule->service_name,
+                'schedule_departure_time' => $newSchedule->formatted_departure,
+                'schedule_arrival_time' => $newSchedule->formatted_arrival,
+                'departure_date' => $newDepartureDate,
+                'return_date' => $newReturnDate ?? $booking->return_date,
+                'status' => 'confirmed',
+                'is_rebooked' => true,
+                'rebooking_status' => 'verified',
+                'verified_by_user_id' => $staffUser->id,
+                'verified_at' => now(),
+            ]);
+
+            if ($booking->transaction) {
+                $booking->transaction->update([
+                    'verified_by_user_id' => $staffUser->id,
+                    'verified_at' => now(),
+                ]);
+            }
+        });
+
+        if (filled($booking->client_email)) {
+            try {
+                $pdfPath = $booking->transaction?->confirmation_pdf ? \Illuminate\Support\Facades\Storage::disk('public')->path($booking->transaction->confirmation_pdf) : null;
+                Mail::to($booking->client_email)->send(new \App\Mail\BookingConfirmation($booking, $booking->transaction?->confirmation_url, $pdfPath, 'public'));
+            } catch (\Exception $e) {
+                Log::error("Failed sending rebooking confirmation mail to {$booking->client_email}: " . $e->getMessage());
             }
         }
     }

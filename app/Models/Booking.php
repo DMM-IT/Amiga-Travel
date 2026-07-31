@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -200,6 +201,44 @@ class Booking extends Model
             ->implode(' → ');
 
         return trim("{$this->schedule_service}" . ($times ? " ({$times})" : ''));
+    }
+
+    public function verificationUnlockAt(): ?Carbon
+    {
+        return $this->transaction?->verificationUnlockAt();
+    }
+
+    public function isVerificationLocked(): bool
+    {
+        return $this->status === 'pending'
+            && $this->transaction !== null
+            && $this->transaction->isVerificationLocked();
+    }
+
+    public function verificationTimerLabel(): string
+    {
+        if ($this->status !== 'pending') {
+            return '—';
+        }
+
+        if (! $this->transaction) {
+            return 'No tx';
+        }
+
+        return $this->transaction->verificationTimerLabel();
+    }
+
+    public function verificationTimerTooltip(): ?string
+    {
+        if ($this->status !== 'pending') {
+            return null;
+        }
+
+        if (! $this->transaction) {
+            return 'No payment transaction found for this booking.';
+        }
+
+        return $this->transaction->verificationTimerTooltip();
     }
 
     public function canCancelOrRebook(): bool

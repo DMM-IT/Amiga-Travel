@@ -300,10 +300,10 @@ class ScheduleCsvImportService
         // 3. Parse Departure & Arrival Datetimes
         $depTimeStrClean = trim($depTimeStr);
         $depDateStrClean = trim($depDateStr);
-        $departureDateTime = Carbon::parse("{$depDateStrClean} {$depTimeStrClean}");
+        $departureDateTime = $this->parseImportedDateTime($depDateStrClean, $depTimeStrClean);
 
         if (filled($arrTimeStr)) {
-            $arrivalDateTime = Carbon::parse("{$depDateStrClean} " . trim($arrTimeStr));
+            $arrivalDateTime = $this->parseImportedDateTime($depDateStrClean, trim($arrTimeStr));
             if ($arrivalDateTime->lessThan($departureDateTime)) {
                 $arrivalDateTime->addDay();
             }
@@ -427,10 +427,10 @@ class ScheduleCsvImportService
             ]);
         }
 
-        $departureDateTime = Carbon::parse("{$returnDateStr} {$depTimeStr}");
+        $departureDateTime = $this->parseImportedDateTime($returnDateStr, $depTimeStr);
 
         if (filled($arrTimeStr)) {
-            $arrivalDateTime = Carbon::parse("{$returnDateStr} " . trim($arrTimeStr));
+            $arrivalDateTime = $this->parseImportedDateTime($returnDateStr, trim($arrTimeStr));
             if ($arrivalDateTime->lessThan($departureDateTime)) {
                 $arrivalDateTime->addDay();
             }
@@ -506,6 +506,35 @@ class ScheduleCsvImportService
         }
 
         return $clean;
+    }
+
+    /**
+     * Parse imported schedule datetimes with explicit support for DD/MM/YYYY files.
+     */
+    protected function parseImportedDateTime(string $date, string $time): Carbon
+    {
+        $dateTime = trim($date) . ' ' . trim($time);
+
+        foreach (['d/m/Y H:i:s', 'd/m/Y H:i', 'Y-m-d H:i:s', 'Y-m-d H:i'] as $format) {
+            try {
+                $parsed = Carbon::createFromFormat($format, $dateTime);
+
+                if ($parsed !== false) {
+                    return $parsed;
+                }
+            } catch (Throwable) {
+                // Try the next supported format.
+            }
+        }
+
+        try {
+            return Carbon::parse($dateTime);
+        } catch (Throwable $e) {
+            throw new \InvalidArgumentException(
+                "Could not parse '{$dateTime}'. Expected DD/MM/YYYY with time like HH:MM or HH:MM:SS.",
+                previous: $e,
+            );
+        }
     }
 
     /**

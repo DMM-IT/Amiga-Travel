@@ -127,7 +127,24 @@
                 @endif
             </div>
 
+            @if($this->isResumeBlocked)
+                <div class="rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center shadow-sm">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-black text-amber-900 mb-2">Rescheduling Not Yet Available</h3>
+                    <p class="text-sm text-amber-800 max-w-md mx-auto">
+                        The operator has set a service resume date of
+                        <strong>{{ $booking->serviceCancellation->resume_date->format('F d, Y') }}</strong>.
+                        You will be able to pick your new schedule starting on that date.
+                    </p>
+                    <p class="mt-4 text-xs text-amber-700">Please check back on {{ $booking->serviceCancellation->resume_date->format('M d, Y') }} to choose your new travel date.</p>
+                </div>
+            @else
             <div class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+
 
                 {{-- WIZARD STEP 1: DEPARTURE SCHEDULE --}}
                 @if($step === 'departure_date')
@@ -167,10 +184,20 @@
 
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach($this->departureAccommodations as $acc)
+                            @php
+                                $priceDiffBadge = $acc->price - ($originalDepAccPrice ?? 0);
+                            @endphp
                             <div wire:click="selectDepartureAccommodation('{{ $acc->id }}', {{ $acc->price }})" class="group cursor-pointer rounded-2xl border border-slate-200 p-5 hover:border-emerald-500 hover:shadow-md transition text-center">
                                 <h4 class="font-bold text-slate-900">{{ $acc->name }}</h4>
                                 <p class="text-xs text-slate-500 mt-1">{{ $acc->description }}</p>
                                 <p class="mt-3 font-black text-emerald-700">₱{{ number_format($acc->price, 2) }}</p>
+                                @if($priceDiffBadge > 0)
+                                    <p class="mt-1 text-xs font-bold text-amber-600">+₱{{ number_format($priceDiffBadge, 2) }} extra vs original</p>
+                                @elseif($priceDiffBadge < 0)
+                                    <p class="mt-1 text-xs font-bold text-emerald-600">₱{{ number_format(abs($priceDiffBadge), 2) }} cheaper than original</p>
+                                @else
+                                    <p class="mt-1 text-xs text-slate-400">Same price as original</p>
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -220,10 +247,20 @@
 
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach($this->returnAccommodations as $acc)
+                            @php
+                                $retDiffBadge = $acc->price - ($originalRetAccPrice ?? 0);
+                            @endphp
                             <div wire:click="selectReturnAccommodation('{{ $acc->id }}', {{ $acc->price }})" class="group cursor-pointer rounded-2xl border border-slate-200 p-5 hover:border-emerald-500 hover:shadow-md transition text-center">
                                 <h4 class="font-bold text-slate-900">{{ $acc->name }}</h4>
                                 <p class="text-xs text-slate-500 mt-1">{{ $acc->description }}</p>
                                 <p class="mt-3 font-black text-emerald-700">₱{{ number_format($acc->price, 2) }}</p>
+                                @if($retDiffBadge > 0)
+                                    <p class="mt-1 text-xs font-bold text-amber-600">+₱{{ number_format($retDiffBadge, 2) }} extra vs original</p>
+                                @elseif($retDiffBadge < 0)
+                                    <p class="mt-1 text-xs font-bold text-emerald-600">₱{{ number_format(abs($retDiffBadge), 2) }} cheaper than original</p>
+                                @else
+                                    <p class="mt-1 text-xs text-slate-400">Same price as original</p>
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -294,7 +331,8 @@
                         </div>
                     </div>
                 @endif
-            </div>
+            </div> {{-- end wizard card --}}
+            @endif {{-- end resume blocked check --}}
 
         @endif
     @endif

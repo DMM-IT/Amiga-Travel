@@ -102,7 +102,11 @@ class DatePicker extends Component
     public function selectDate(int $day): void
     {
         $date = sprintf('%04d-%02d-%02d', $this->viewYear, $this->viewMonth, $day);
+        $this->selectDateString($date);
+    }
 
+    public function selectDateString(string $date): void
+    {
         if ($this->min !== null && $date < $this->min) {
             return;
         }

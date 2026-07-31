@@ -90,6 +90,11 @@ class TransactionResource extends Resource
                         TextEntry::make('updated_at')
                             ->label('Last updated')
                             ->dateTime(),
+                        TextEntry::make('verification_timer')
+                            ->label('Lock Timer')
+                            ->badge()
+                            ->state(fn (Transaction $record): string => $record->verificationTimerLabel())
+                            ->tooltip(fn (Transaction $record): ?string => $record->verificationTimerTooltip()),
                         ViewEntry::make('proof_of_payment')
                             ->label('Proof of payment')
                             ->view('filament.infolists.entries.proof-image')
@@ -105,6 +110,13 @@ class TransactionResource extends Resource
                             ->visible(fn (?Transaction $record): bool => filled($record?->confirmation_url))
                             ->url(fn (?Transaction $record): ?string => $record?->confirmation_url)
                             ->default(fn (?Transaction $record) => $record?->confirmation_url)
+                            ->columnSpanFull(),
+                        TextEntry::make('confirmation_pdf')
+                            ->label('Confirmation PDF')
+                            ->visible(fn (?Transaction $record): bool => filled($record?->confirmation_pdf))
+                            ->state('View PDF')
+                            ->url(fn (?Transaction $record): ?string => $record?->confirmation_pdf ? Storage::disk('public')->url($record->confirmation_pdf) : null)
+                            ->openUrlInNewTab()
                             ->columnSpanFull(),
                         ViewEntry::make('student_discount_proofs')
                             ->label('Student discount proof images')
@@ -232,39 +244,16 @@ class TransactionResource extends Resource
                     ->badge()
                     ->icon(fn (Transaction $record): string => match (true) {
                         $record->payment_status !== 'pending' => 'heroicon-m-check-circle',
-                        $record->created_at->addMinutes(10)->isPast() => 'heroicon-m-check-badge',
+                        ! $record->isVerificationLocked() => 'heroicon-m-check-badge',
                         default => 'heroicon-m-clock',
                     })
                     ->color(fn (Transaction $record): string => match (true) {
                         $record->payment_status !== 'pending' => 'gray',
-                        $record->created_at->addMinutes(10)->isPast() => 'success',
+                        ! $record->isVerificationLocked() => 'success',
                         default => 'warning',
                     })
-                    ->state(function (Transaction $record): string {
-                        if ($record->payment_status !== 'pending') {
-                            return '—';
-                        }
-
-                        $unlockTime = $record->created_at->addMinutes(10);
-                        if ($unlockTime->isPast()) {
-                            return 'Ready';
-                        }
-
-                        $diff = now()->diff($unlockTime);
-                        return sprintf('%dm %ds', $diff->i, $diff->s);
-                    })
-                    ->tooltip(function (Transaction $record): ?string {
-                        if ($record->payment_status !== 'pending') {
-                            return null;
-                        }
-
-                        $unlockTime = $record->created_at->addMinutes(10);
-                        if ($unlockTime->isPast()) {
-                            return '10-minute hold complete. Ready for verification.';
-                        }
-
-                        return 'Unlocks at ' . $unlockTime->format('h:i:s A');
-                    }),
+                    ->state(fn (Transaction $record): string => $record->verificationTimerLabel())
+                    ->tooltip(fn (Transaction $record): ?string => $record->verificationTimerTooltip()),
                 TextColumn::make('booking.client_name')
                     ->label('Client name')
                     ->searchable()
@@ -295,20 +284,29 @@ class TransactionResource extends Resource
                         FileUpload::make('confirmation_pdf')
                             ->label('Confirmation PDF')
                             ->directory('receipts')
+                            ->disk('public')
                             ->acceptedFileTypes(['application/pdf'])
                             ->maxSize(10240),
                     ])
+                    ->disabled(fn (Transaction $record): bool => $record->isVerificationLocked())
+                    ->tooltip(fn (Transaction $record): ?string => $record->verificationTimerTooltip())
                     ->action(function (Transaction $record, array $data): void {
                         if (empty($data['confirmation_url']) && empty($data['confirmation_pdf'])) {
                             throw new \Exception('Please provide either a confirmation URL or upload a PDF before verifying.');
                         }
 
+                        $confirmationPdfPath = null;
+
                         if (! empty($data['confirmation_pdf'])) {
                             $pdfPath = is_string($data['confirmation_pdf'])
                                 ? $data['confirmation_pdf']
                                 : $data['confirmation_pdf']->storeAs('receipts', 'receipt-'.$record->booking->transaction_number.'.pdf', 'public');
+                            $confirmationPdfPath = $pdfPath;
                             $ticketUrl = null;
-                            $record->update(['confirmation_url' => null]);
+                            $record->update([
+                                'confirmation_url' => null,
+                                'confirmation_pdf' => $confirmationPdfPath,
+                            ]);
 
                             if (Storage::disk('public')->exists($pdfPath)) {
                                 $receiptPath = Storage::disk('public')->path($pdfPath);
@@ -319,7 +317,10 @@ class TransactionResource extends Resource
                             $receiptDisk = 'public';
                         } else {
                             $ticketUrl = $data['confirmation_url'];
-                            $record->update(['confirmation_url' => $data['confirmation_url']]);
+                            $record->update([
+                                'confirmation_url' => $data['confirmation_url'],
+                                'confirmation_pdf' => null,
+                            ]);
                             $receiptPath = null;
                             $receiptDisk = null;
                         }
@@ -329,6 +330,8 @@ class TransactionResource extends Resource
 
                         $record->update([
                             'payment_status' => 'paid',
+                            'confirmation_url' => $ticketUrl,
+                            'confirmation_pdf' => $confirmationPdfPath,
                             'verified_by_user_id' => $staffUserId,
                             'verified_at' => $now,
                         ]);
