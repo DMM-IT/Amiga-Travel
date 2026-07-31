@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
@@ -61,6 +62,7 @@ class UserSession {
 
   // Match this with pubspec.yaml version
   static const String appVersion = '1.0.21+25';
+  static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -73,6 +75,13 @@ class UserSession {
     graciaPoints = prefs.getInt('graciaPoints') ?? 0;
     pointsAwarded = prefs.getInt('pointsAwarded') ?? 0;
     spendThreshold = prefs.getInt('spendThreshold') ?? 0;
+
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      installedAppVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+    } catch (_) {
+      installedAppVersion = appVersion;
+    }
   }
 
   static Future<void> save() async {
@@ -365,7 +374,7 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
-        if (latestVersion != UserSession.appVersion && mounted) {
+        if (latestVersion != UserSession.installedAppVersion && mounted) {
           final context = navigatorKey.currentContext;
           if (context != null) {
             UpdateChecker.showUpdateDialog(context, latestVersion);
@@ -530,7 +539,7 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
         final latestVersion = data['version'] as String;
         
         // If versions don't match, show update prompt
-        if (latestVersion != UserSession.appVersion) {
+        if (latestVersion != UserSession.installedAppVersion) {
           if (mounted) {
             UpdateChecker.showUpdateDialog(context, latestVersion);
           }
