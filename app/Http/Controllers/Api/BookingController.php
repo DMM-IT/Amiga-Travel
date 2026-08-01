@@ -23,7 +23,7 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'schedule_id'                               => 'required|integer|exists:schedules,id',
             'origin'                                    => 'required|string',
             'destination'                               => 'required|string',
@@ -55,7 +55,7 @@ class BookingController extends Controller
         try {
             /** @var \App\Models\Booking $booking */
             $booking = app(\App\Actions\Bookings\CreateBookingAction::class)
-                ->execute($request->validated(), auth()->guard('api')->user());
+                ->execute($validated, auth()->guard('api')->user());
 
             // Dispatch the PDF generation + email to the queue (non-blocking)
             \App\Jobs\SendBookingConfirmationJob::dispatch($booking);
