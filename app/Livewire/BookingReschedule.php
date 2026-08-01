@@ -226,26 +226,91 @@ class BookingReschedule extends Component
         if (!$this->booking) return;
 
         $passengerCount = $this->booking->passengers()->count();
-        if ($passengerCount === 0) $passengerCount = 1;
+        if ($passengerCount === 0) {
+            $passengerCount = 1;
+        }
 
-        $newTotal = 0.0;
-        
-        // Add departure costs
-        $newTotal += ($this->dep_schedule_price ?? 0) * $passengerCount;
-        $newTotal += ($this->dep_accommodation_price ?? 0) * $passengerCount;
+        $originalFare = 0.0;
+        $originalFare += ($this->booking->schedule_price ?? 0) * $passengerCount;
+        $originalFare += ($this->booking->schedule_accommodation_price ?? 0) * $passengerCount;
 
-        // Add return costs if round trip
         if ($this->isRoundTrip()) {
-            $newTotal += ($this->ret_schedule_price ?? 0) * $passengerCount;
-            $newTotal += ($this->ret_accommodation_price ?? 0) * $passengerCount;
+            $originalFare += ($this->booking->return_schedule_price ?? 0) * $passengerCount;
+            $originalFare += ($this->booking->return_schedule_accommodation_price ?? 0) * $passengerCount;
+        }
+        $originalFare += $this->getBookingTransportClassTotal();
+        $originalFare += $this->booking->has_vehicle ? $this->booking->vehicle_price : 0;
+
+        $newFare = $this->newFare;
+
+        $this->priceDiff = max(0, $newFare - $originalFare);
+    }
+
+    public function getOriginalFareProperty(): float
+    {
+        $passengerCount = $this->booking->passengers()->count();
+        if ($passengerCount === 0) {
+            $passengerCount = 1;
         }
 
-        // Add vehicle cost if preserved
-        if ($this->booking->has_vehicle) {
-            $newTotal += $this->booking->vehicle_price;
+        $originalFare = 0.0;
+        $originalFare += ($this->booking->schedule_price ?? 0) * $passengerCount;
+        $originalFare += ($this->booking->schedule_accommodation_price ?? 0) * $passengerCount;
+
+        if ($this->isRoundTrip()) {
+            $originalFare += ($this->booking->return_schedule_price ?? 0) * $passengerCount;
+            $originalFare += ($this->booking->return_schedule_accommodation_price ?? 0) * $passengerCount;
         }
 
-        $this->priceDiff = max(0, $newTotal - $this->booking->total_price);
+        $originalFare += $this->getBookingTransportClassTotal();
+        $originalFare += $this->booking->has_vehicle ? $this->booking->vehicle_price : 0;
+
+        return $originalFare;
+    }
+
+    public function getNewFareProperty(): float
+    {
+        $passengerCount = $this->booking->passengers()->count();
+        if ($passengerCount === 0) {
+            $passengerCount = 1;
+        }
+
+        $newFare = 0.0;
+        $newFare += ($this->dep_schedule_price ?? 0) * $passengerCount;
+        $newFare += $this->getSelectedAccommodationCost($this->dep_accommodation_id, $this->dep_accommodation_price, $passengerCount);
+
+        if ($this->isRoundTrip()) {
+            $newFare += ($this->ret_schedule_price ?? 0) * $passengerCount;
+            $newFare += $this->getSelectedAccommodationCost($this->ret_accommodation_id, $this->ret_accommodation_price, $passengerCount);
+        }
+
+        $newFare += $this->booking->has_vehicle ? $this->booking->vehicle_price : 0;
+
+        return $newFare;
+    }
+
+    protected function getSelectedAccommodationCost(?string $accommodationId, ?float $price, int $passengerCount): float
+    {
+        if (! $accommodationId || $price === null) {
+            return 0.0;
+        }
+
+        if (str_starts_with($accommodationId, 'tc_')) {
+            return $price;
+        }
+
+        return $price * $passengerCount;
+    }
+
+    protected function getBookingTransportClassTotal(): float
+    {
+        if (! $this->booking) {
+            return 0.0;
+        }
+
+        return $this->booking->transportClasses->sum(function ($transportClass) {
+            return floatval($transportClass->pivot->price ?? 0);
+        });
     }
 
     public function submitReschedule(): void
@@ -285,6 +350,12 @@ class BookingReschedule extends Component
                     'proof_path' => $proofPath
                 ])
             ]);
+
+            if ($proofPath && $this->booking->transaction) {
+                $this->booking->transaction->update([
+                    'rebooking_proof_of_payment' => $proofPath,
+                ]);
+            }
 
             $this->loadBooking();
             $this->submitted = true;
@@ -373,15 +444,17 @@ class BookingReschedule extends Component
     }
 
     /**
-     * Returns true if the admin has set a resume date that has not yet been reached.
+     * Returns true if rescheduling should be blocked.
+     * This includes only cases where no resume date has been announced yet.
      */
     public function getIsResumeBlockedProperty(): bool
     {
         $cancellation = $this->booking?->serviceCancellation;
-        if (! $cancellation || ! $cancellation->resume_date) {
+        if (! $cancellation) {
             return false;
         }
-        return Carbon::today()->lt(Carbon::parse($cancellation->resume_date));
+
+        return ! $cancellation->resume_date;
     }
 
     /**
@@ -405,6 +478,8 @@ class BookingReschedule extends Component
         return view('livewire.booking-reschedule', [
             'originalDepAccPrice' => $this->getOriginalDepAccommodationPrice(),
             'originalRetAccPrice' => $this->getOriginalRetAccommodationPrice(),
+            'originalFare' => $this->originalFare,
+            'newFare' => $this->newFare,
         ]);
     }
 }

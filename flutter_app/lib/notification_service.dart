@@ -18,7 +18,8 @@ class NotificationService {
     await Firebase.initializeApp();
     
     // Request permissions
-    await Permission.notification.request();
+    final permissionStatus = await Permission.notification.request();
+    debugPrint('Notification permission status: $permissionStatus');
 
     // Initialize local notifications for foreground
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -37,7 +38,21 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-    // Foreground listener
+    // Ensure notification presentation options are enabled for iOS and macOS.
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    debugPrint('FCM token: $fcmToken');
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      debugPrint('FCM notification opened: ${message.messageId}');
+      // Optionally handle deep links or navigation here.
+    });
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
@@ -75,8 +90,12 @@ class NotificationService {
       }
     });
 
-    // Subscribe to all_users
-    await FirebaseMessaging.instance.subscribeToTopic('all_users');
+    try {
+      await FirebaseMessaging.instance.subscribeToTopic('all_users');
+      debugPrint('Subscribed to FCM topic all_users');
+    } catch (error) {
+      debugPrint('Failed to subscribe to all_users topic: $error');
+    }
   }
 
   /// Subscribe to a user-specific FCM topic so booking notifications

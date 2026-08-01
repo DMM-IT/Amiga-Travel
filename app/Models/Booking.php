@@ -15,6 +15,11 @@ use Throwable;
 
 class Booking extends Model
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_CONFIRMED = 'confirmed';
+    public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_OPERATOR_CANCELLED = 'operator_cancelled';
+
     protected $fillable = [
         'user_id',
         'transaction_number',
@@ -78,6 +83,21 @@ class Booking extends Model
         'preferred_replacement_date',
         'disruption_notes',
     ];
+
+    public function isUserCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    public function isOperatorCancelled(): bool
+    {
+        return $this->status === self::STATUS_OPERATOR_CANCELLED;
+    }
+
+    public function isServiceCancellation(): bool
+    {
+        return $this->isOperatorCancelled() || filled($this->service_cancellation_id);
+    }
 
     protected $casts = [
         'departure_date' => 'date',

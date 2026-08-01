@@ -29,8 +29,8 @@
             slides: [
                 @if($heroImages->count() > 0)
                     @foreach($heroImages as $heroImage)
-                        '{{ asset('storage/' . $heroImage) }}',
-                    @endforeach
+                            '{{ storage_asset_path($heroImage) }}',
+                        @endforeach
                 @endif
             ],
             init() {
@@ -206,7 +206,7 @@
                 [
                     'title' => 'Starlite Ferries Inc.',
                     'description' => 'Affordable regional ferry departures between Batangas, Calapan, and Roxas.',
-                    'image' => 'images/starlite-Logo.jfif',
+                    'image' => 'images/Starlite_Logo.png',
                     'booking_button_text' => 'Book Now',
                     'link' => '/book/new?operator=' . urlencode('Starlite Ferries Inc.') . '&trip_type=one_way&mode=ferry',
                 ],
@@ -257,8 +257,11 @@
                 }
 
                 $cardImage = $rawCardImage
-                    ? (str_starts_with($rawCardImage, 'http') || str_starts_with($rawCardImage, '/'
-                        ) ? asset(ltrim($rawCardImage, '/')) : asset($rawCardImage))
+                    ? (str_starts_with($rawCardImage, 'http://') || str_starts_with($rawCardImage, 'https://')
+                        ? $rawCardImage
+                        : (str_starts_with($rawCardImage, 'images/')
+                            ? asset($rawCardImage)
+                            : (storage_asset_path($rawCardImage) ?: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80')))
                     : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
 
                 $cardTitle = data_get($card, 'title', 'Travel Booking');
@@ -268,7 +271,7 @@
             @endphp
             <a href="{{ url($cardLink) }}" class="group rounded-xl sm:rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col overflow-hidden">
                 <div class="h-20 sm:h-36 w-full bg-white flex items-center justify-center p-2 sm:p-8 border-b border-slate-100">
-                    <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                    <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';">
                 </div>
                 <div class="p-2.5 sm:p-6 flex flex-col flex-grow">
                     <span class="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-1 sm:mb-3 leading-tight truncate">

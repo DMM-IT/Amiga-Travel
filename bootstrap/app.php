@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/../app/Support/helpers.php';
+
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -59,6 +61,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'message' => 'Unauthenticated.',
                 ], 401);
+            }
+
+            if ($request->is('admin') || $request->is('admin/*') || $request->routeIs('filament.*')) {
+                return redirect()->guest(route('filament.admin.auth.login'));
             }
 
             return redirect()->guest(route('login'))->withErrors([

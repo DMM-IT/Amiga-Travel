@@ -62,20 +62,20 @@
                                         </button>
                                     </div>
 
-                                    <h2 class="mt-4 text-xl font-bold text-slate-900">You have 5 minutes to cancel</h2>
+                                    <h2 class="mt-4 text-xl font-bold text-slate-900">Your booking has been submitted.</h2>
                                     <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-                                        Your booking is now submitted. If you need to cancel it, you have a <strong>5-minute window</strong> from the time you uploaded your payment proof. After this window expires, cancellations will be subject to a <strong>50% fee</strong>.
+                                        Cancellation is free within 5 minutes after providing proof of payment.
                                     </p>
 
                                     <div class="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                                        ⚠️ This window closes shortly. Act now if you wish to cancel.
+                                        Please complete payment to issue your tickets.
                                     </div>
 
                                     <div class="mt-6 flex flex-wrap gap-3 justify-end">
                                         <button wire:click="dismissCancellationReminder" type="button" class="rounded-3xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                             Keep my booking
                                         </button>
-                                        <button wire:click="showCancellationWarning" type="button" class="rounded-3xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
+                                        <button wire:click="requestCancellation" type="button" class="rounded-3xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
                                             Cancel my booking
                                         </button>
                                     </div>
@@ -111,9 +111,13 @@
                                                 Cancellation fee: 50% of total price.
                                             </div>
                                         @else
-                                            <p>Rebooking requires a new travel date selection and proof of payment for the 30% rebooking fee. Same-day departures cannot be rebooked online.</p>
+                                            <ul class="space-y-2 list-disc pl-5">
+                                                <li>Would you like to proceed with rebooking?</li>
+                                                <li>Please select your preferred new travel date.</li>
+                                                <li>Rebooking charges apply and fare difference (if applicable.)</li>
+                                            </ul>
                                             <div class="rounded-2xl border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
-                                                Rebooking fee: 30% of total price.
+                                                To proceed with rebooking, please select your preferred new travel date and submit your proof of payment for the rebooking fee.
                                             </div>
                                         @endif
                                     </div>
@@ -220,8 +224,18 @@
                                 <div class="space-y-2">
                                     @foreach($booking->passengers as $passenger)
                                         <div class="rounded-2xl bg-white p-4 border border-slate-200 flex items-center justify-between">
-                                            <span class="text-slate-800">{{ ucfirst($passenger->type) }}{{ $passenger->name ? ' — ' . $passenger->name : '' }}</span>
-                                            <span class="text-sm text-slate-600">{{ $passenger->discount->name ?? 'No discount' }}</span>
+                                            <div>
+                                                <span class="text-slate-800">{{ ucfirst($passenger->type) }}{{ $passenger->name ? ' — ' . $passenger->name : '' }}</span>
+                                                @if($passenger->birthdate)
+                                                    <span class="text-xs text-slate-500 ml-2">(Bday: {{ $passenger->birthdate->format('Y-m-d') }})</span>
+                                                @endif
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-sm text-slate-600">{{ $passenger->discount->name ?? 'No discount' }}</span>
+                                                @if($passenger->id_number)
+                                                    <p class="text-xs text-slate-400">ID: {{ $passenger->id_number }}</p>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -284,7 +298,12 @@
                                 </div>
 
                                 @if($cancellationRequested)
-                                    @if(! $cancellationWindowActive)
+                                    @if($cancellationExpired)
+                                        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                                            <p class="text-sm font-semibold text-amber-800">Cancellation window expired</p>
+                                            <p class="mt-2 text-sm text-amber-700">The 5-minute cancellation window has ended. You can no longer cancel this booking.</p>
+                                        </div>
+                                    @elseif(! $cancellationWindowActive)
                                         <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                                             <p class="text-sm font-semibold text-amber-800">Cancellation</p>
                                             <p class="mt-2 text-sm text-amber-700">Select your refund method and fill in your details. Cancellation fee: 50% of total price (₱{{ number_format($booking->getCancellationFeeAmount(), 2) }}), Refund amount: 50% (₱{{ number_format($booking->getRefundAmount(), 2) }}).</p>
@@ -339,7 +358,7 @@
                                                 <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                                     Cancel Request
                                                 </button>
-                                                <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                <button wire:click.prevent="confirmRebookingRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
                                                     Switch to Rebook
                                                 </button>
                                             </div>
@@ -413,7 +432,7 @@
                                                 <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                                     Cancel Request
                                                 </button>
-                                                <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                <button wire:click.prevent="confirmRebookingRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
                                                     Switch to Rebook
                                                 </button>
                                             </div>
@@ -422,152 +441,353 @@
                                 @endif
 
                                 @if($rebookingRequested && ! $rebookingPaid)
-                                    <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                                        <p class="text-sm font-semibold text-blue-800">Rebooking</p>
-                                        <p class="mt-2 text-sm text-blue-700">To rebook, please select your new travel dates and upload proof of payment for the 30% rebooking fee: ₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}.</p>
-
-                                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                                            <!-- Left Column: Trip Type & Departure Date -->
-                                            <div class="space-y-4">
-                                                <div class="rounded-2xl border border-slate-200 bg-white p-4">
-                                                    <p class="text-sm font-medium text-slate-700">Trip Type</p>
-                                                    <p class="mt-2 text-base font-semibold text-slate-900">{{ $booking->return_date ? 'Round trip' : 'One-way' }}</p>
-                                                </div>
-                                                <label class="block">
-                                                    <span class="mb-2 block text-sm font-medium text-slate-700">Departure Date</span>
-                                                    <div
-                                                        class="relative"
-                                                        wire:ignore
-                                                        x-data="{ enabledDates: @js($availableRebookingDates) }"
-                                                        x-init="
-                                                            $nextTick(() => {
-                                                                if (enabledDates.length === 0) {
-                                                                    $el.querySelector('input').disabled = true;
-                                                                    $el.querySelector('input').placeholder = 'No available dates';
-                                                                } else {
-                                                                    flatpickr($el.querySelector('input'), {
-                                                                        dateFormat: 'Y-m-d',
-                                                                        altInput: true,
-                                                                        altFormat: 'F j, Y',
-                                                                        minDate: 'today',
-                                                                        enable: enabledDates,
-                                                                        disableMobile: true,
-                                                                        onChange: function(sel, dateStr) {
-                                                                            $wire.set('rebooking_departure_date', dateStr);
-                                                                        }
-                                                                    });
-                                                                }
-                                                            })
-                                                        "
-                                                    >
-                                                        <input
-                                                            type="text"
-                                                            readonly
-                                                            placeholder="Select departure date"
-                                                            class="block w-full rounded-2xl border border-slate-300 bg-white pl-4 pr-10 py-3 text-sm shadow-sm cursor-pointer focus:outline-none focus:ring-2"
-                                                            style="--tw-ring-color:#3b82f6;"
-                                                        />
-                                                        <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                                    </div>
-                                                    @error('rebooking_departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                                </label>
+                                    <div class="rounded-2xl border border-blue-200 bg-blue-50/50 p-6 shadow-sm">
+                                        <div class="flex items-center justify-between border-b border-blue-200/60 pb-4 mb-6">
+                                            <div>
+                                                <p class="text-base font-bold text-blue-900">Rebook Booking #{{ $booking->transaction_number }}</p>
+                                                <p class="text-xs text-blue-700">Select your new travel dates, preferred schedule, and accommodation.</p>
                                             </div>
+                                            <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-800">
+                                                @if($rebooking_step === 'departure_date') Step 1: Departure @elseif($rebooking_step === 'departure_accommodation') Step 2: Departure Accommodation @elseif($rebooking_step === 'return_date') Step 3: Return @elseif($rebooking_step === 'return_accommodation') Step 4: Return Accommodation @else Review & Payment @endif
+                                            </span>
+                                        </div>
 
-                                            <!-- Right Column: QR Code & Return Date -->
+                                        {{-- STEP 1: DEPARTURE DATE & SCHEDULE --}}
+                                        @if($rebooking_step === 'departure_date')
                                             <div class="space-y-4">
-                                                @php 
-                                                    $rebookingQrPath = App\Models\PaymentSetting::current()->qr_code_path ?? null;
-                                                @endphp
-                                                <div class="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-4">
-                                                    <div>
-                                                        <p class="text-sm font-medium text-slate-700">Scan to Pay Fee</p>
-                                                        <p class="mt-2 text-base font-semibold text-blue-600">₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}</p>
+                                                <div>
+                                                    <label class="block text-sm font-bold text-slate-700 mb-2">1. Select New Departure Date</label>
+                                                    <input 
+                                                        type="date" 
+                                                        wire:model.live="rebooking_departure_date" 
+                                                        min="{{ today()->format('Y-m-d') }}"
+                                                        class="w-full max-w-xs rounded-xl border border-slate-300 px-4 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white" 
+                                                    />
+                                                    @error('rebooking_departure_date')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+
+                                                @if($rebooking_departure_date)
+                                                    <div class="mt-6">
+                                                        <h4 class="text-sm font-bold text-slate-900 mb-3">Available Departure Schedules for {{ \Carbon\Carbon::parse($rebooking_departure_date)->format('M d, Y') }}</h4>
+                                                        @php $depSchedules = $this->availableRebookingDepartureSchedules; @endphp
+                                                        @if($depSchedules->isEmpty())
+                                                            <div class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+                                                                No available schedules found for this date. Please try selecting another date.
+                                                            </div>
+                                                        @else
+                                                            <div class="grid gap-3 sm:grid-cols-2">
+                                                                @foreach($depSchedules as $sch)
+                                                                    <div 
+                                                                        wire:click="selectRebookingDepartureSchedule({{ $sch->id }}, {{ $sch->price }})"
+                                                                        class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
+                                                                    >
+                                                                        <div>
+                                                                            <div class="flex items-center justify-between">
+                                                                                <span class="text-base font-bold text-slate-900">{{ \Carbon\Carbon::parse($sch->departure_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($sch->arrival_time)->format('g:i A') }}</span>
+                                                                                <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">{{ $sch->ferryRoute->mode ?? 'ferry' }}</span>
+                                                                            </div>
+                                                                            <p class="mt-1 text-xs text-slate-500">{{ $sch->ferryRoute->operator ?? 'Operator' }}</p>
+                                                                            <p class="mt-1 text-xs text-slate-600 font-medium">{{ $sch->ferryRoute->origin ?? '' }} &rarr; {{ $sch->ferryRoute->destination ?? '' }}</p>
+                                                                        </div>
+                                                                        <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                            <span class="text-xs text-slate-500">Base Fare</span>
+                                                                            <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                    @if($rebookingQrPath)
-                                                        <div class="flex-shrink-0 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                                                            <a href="{{ asset('storage/' . $rebookingQrPath) }}" target="_blank" title="Click to enlarge QR code">
-                                                                <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="QR code" class="h-12 w-12 rounded-lg object-contain cursor-pointer hover:opacity-80 transition" />
-                                                            </a>
-                                                        </div>
-                                                    @else
-                                                        <div class="flex-shrink-0 bg-slate-100 p-2 rounded-xl text-xs text-slate-400">
-                                                            No QR Code
+                                                @endif
+
+                                                <div class="pt-4 flex justify-end">
+                                                    <button wire:click.prevent="$set('rebookingRequested', false); $set('feedback', null)" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                        Cancel Rebooking
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        {{-- STEP 2: DEPARTURE ACCOMMODATION --}}
+                                        @if($rebooking_step === 'departure_accommodation')
+                                            <div class="space-y-4">
+                                                <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                                                    <div>
+                                                        <h4 class="text-base font-bold text-slate-900">2. Choose Departure Accommodation</h4>
+                                                        <p class="text-xs text-slate-500">Select your preferred accommodation for the chosen schedule.</p>
+                                                    </div>
+                                                    <button wire:click="setRebookingStep('departure_date')" type="button" class="text-xs font-semibold text-blue-600 hover:underline">&larr; Change Schedule</button>
+                                                </div>
+
+                                                @php $depAccommodations = $this->rebookingDepartureAccommodations; @endphp
+                                                @if($depAccommodations->isEmpty())
+                                                    <div class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+                                                        No accommodation options found for this schedule.
+                                                    </div>
+                                                @else
+                                                    <div class="grid gap-3 sm:grid-cols-2">
+                                                        @foreach($depAccommodations as $acc)
+                                                            <div 
+                                                                wire:click="selectRebookingDepartureAccommodation('{{ $acc->id }}', {{ $acc->price }})"
+                                                                class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
+                                                            >
+                                                                <div>
+                                                                    <span class="text-sm font-bold text-slate-900">{{ $acc->name }}</span>
+                                                                    @if($acc->description)
+                                                                        <p class="mt-1 text-xs text-slate-500 line-clamp-2">{{ $acc->description }}</p>
+                                                                    @endif
+                                                                </div>
+                                                                <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                    <span class="text-xs text-slate-500">Price per passenger</span>
+                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format($acc->price, 2) }}</span>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        {{-- STEP 3: RETURN DATE & SCHEDULE --}}
+                                        @if($rebooking_step === 'return_date')
+                                            <div class="space-y-4">
+                                                <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                                                    <h4 class="text-base font-bold text-slate-900">3. Select Return Date & Schedule</h4>
+                                                    <button wire:click="setRebookingStep('departure_accommodation')" type="button" class="text-xs font-semibold text-blue-600 hover:underline">&larr; Back to Departure</button>
+                                                </div>
+
+                                                <div>
+                                                    <label class="block text-sm font-bold text-slate-700 mb-2">Select Return Date</label>
+                                                    <input 
+                                                        type="date" 
+                                                        wire:model.live="rebooking_return_date" 
+                                                        min="{{ $rebooking_departure_date ?? today()->format('Y-m-d') }}"
+                                                        class="w-full max-w-xs rounded-xl border border-slate-300 px-4 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white" 
+                                                    />
+                                                    @error('rebooking_return_date')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                                </div>
+
+                                                @if($rebooking_return_date)
+                                                    <div class="mt-6">
+                                                        <h4 class="text-sm font-bold text-slate-900 mb-3">Available Return Schedules for {{ \Carbon\Carbon::parse($rebooking_return_date)->format('M d, Y') }}</h4>
+                                                        @php $retSchedules = $this->availableRebookingReturnSchedules; @endphp
+                                                        @if($retSchedules->isEmpty())
+                                                            <div class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+                                                                No available schedules found for this date.
+                                                            </div>
+                                                        @else
+                                                            <div class="grid gap-3 sm:grid-cols-2">
+                                                                @foreach($retSchedules as $sch)
+                                                                    <div 
+                                                                        wire:click="selectRebookingReturnSchedule({{ $sch->id }}, {{ $sch->price }})"
+                                                                        class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
+                                                                    >
+                                                                        <div>
+                                                                            <div class="flex items-center justify-between">
+                                                                                <span class="text-base font-bold text-slate-900">{{ \Carbon\Carbon::parse($sch->departure_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($sch->arrival_time)->format('g:i A') }}</span>
+                                                                                <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">{{ $sch->ferryRoute->mode ?? 'ferry' }}</span>
+                                                                            </div>
+                                                                            <p class="mt-1 text-xs text-slate-500">{{ $sch->ferryRoute->operator ?? 'Operator' }}</p>
+                                                                            <p class="mt-1 text-xs text-slate-600 font-medium">{{ $sch->ferryRoute->origin ?? '' }} &rarr; {{ $sch->ferryRoute->destination ?? '' }}</p>
+                                                                        </div>
+                                                                        <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                            <span class="text-xs text-slate-500">Base Fare</span>
+                                                                            <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        {{-- STEP 4: RETURN ACCOMMODATION --}}
+                                        @if($rebooking_step === 'return_accommodation')
+                                            <div class="space-y-4">
+                                                <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                                                    <div>
+                                                        <h4 class="text-base font-bold text-slate-900">4. Choose Return Accommodation</h4>
+                                                        <p class="text-xs text-slate-500">Select your preferred accommodation for the return schedule.</p>
+                                                    </div>
+                                                    <button wire:click="setRebookingStep('return_date')" type="button" class="text-xs font-semibold text-blue-600 hover:underline">&larr; Change Return Schedule</button>
+                                                </div>
+
+                                                @php $retAccommodations = $this->rebookingReturnAccommodations; @endphp
+                                                @if($retAccommodations->isEmpty())
+                                                    <div class="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+                                                        No accommodation options found for this schedule.
+                                                    </div>
+                                                @else
+                                                    <div class="grid gap-3 sm:grid-cols-2">
+                                                        @foreach($retAccommodations as $acc)
+                                                            <div 
+                                                                wire:click="selectRebookingReturnAccommodation('{{ $acc->id }}', {{ $acc->price }})"
+                                                                class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
+                                                            >
+                                                                <div>
+                                                                    <span class="text-sm font-bold text-slate-900">{{ $acc->name }}</span>
+                                                                    @if($acc->description)
+                                                                        <p class="mt-1 text-xs text-slate-500 line-clamp-2">{{ $acc->description }}</p>
+                                                                    @endif
+                                                                </div>
+                                                                <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                    <span class="text-xs text-slate-500">Price per passenger</span>
+                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format($acc->price, 2) }}</span>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        {{-- STEP 5: REVIEW & PAYMENT --}}
+                                        @if($rebooking_step === 'confirm')
+                                            <div class="space-y-6">
+                                                <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                                                    <div>
+                                                        <h4 class="text-base font-bold text-slate-900">Review & Payment Before / After Booking</h4>
+                                                        <p class="text-xs text-slate-500">Review your new schedule and fare difference computation.</p>
+                                                    </div>
+                                                    <button wire:click="setRebookingStep('{{ $rebooking_is_round_trip ? 'return_accommodation' : 'departure_accommodation' }}')" type="button" class="text-xs font-semibold text-blue-600 hover:underline">&larr; Back to edits</button>
+                                                </div>
+
+                                                <div class="grid gap-4 sm:grid-cols-2">
+                                                    <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">New Departure Selection</p>
+                                                        <p class="font-bold text-slate-900">{{ \Carbon\Carbon::parse($rebooking_departure_date)->format('M d, Y') }}</p>
+                                                        @if($rebooking_dep_schedule_id)
+                                                            @php $sch = \App\Models\Schedule::find($rebooking_dep_schedule_id); @endphp
+                                                            @if($sch)
+                                                                <p class="text-xs text-slate-600 mt-1">{{ \Carbon\Carbon::parse($sch->departure_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($sch->arrival_time)->format('g:i A') }}</p>
+                                                            @endif
+                                                        @endif
+                                                    </div>
+
+                                                    @if($rebooking_is_round_trip && $rebooking_return_date)
+                                                        <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                                            <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">New Return Selection</p>
+                                                            <p class="font-bold text-slate-900">{{ \Carbon\Carbon::parse($rebooking_return_date)->format('M d, Y') }}</p>
+                                                            @if($rebooking_ret_schedule_id)
+                                                                @php $rsch = \App\Models\Schedule::find($rebooking_ret_schedule_id); @endphp
+                                                                @if($rsch)
+                                                                    <p class="text-xs text-slate-600 mt-1">{{ \Carbon\Carbon::parse($rsch->departure_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($rsch->arrival_time)->format('g:i A') }}</p>
+                                                                @endif
+                                                            @endif
                                                         </div>
                                                     @endif
                                                 </div>
-                                                @if($booking->return_date)
-                                                    <label class="block">
-                                                        <span class="mb-2 block text-sm font-medium text-slate-700">Return Date</span>
-                                                        <div
-                                                            class="relative"
-                                                            wire:ignore
-                                                            x-data="{ enabledDates: @js($availableRebookingReturnDates) }"
-                                                            x-init="
-                                                                $nextTick(() => {
-                                                                    if (enabledDates.length === 0) {
-                                                                        $el.querySelector('input').disabled = true;
-                                                                        $el.querySelector('input').placeholder = 'No available dates';
-                                                                    } else {
-                                                                        flatpickr($el.querySelector('input'), {
-                                                                            dateFormat: 'Y-m-d',
-                                                                            altInput: true,
-                                                                            altFormat: 'F j, Y',
-                                                                            minDate: 'today',
-                                                                            enable: enabledDates,
-                                                                            disableMobile: true,
-                                                                            onChange: function(sel, dateStr) {
-                                                                                $wire.set('rebooking_return_date', dateStr);
-                                                                            }
-                                                                        });
-                                                                    }
-                                                                })
-                                                            "
-                                                        >
-                                                            <input
-                                                                type="text"
-                                                                readonly
-                                                                placeholder="Select return date"
-                                                                class="block w-full rounded-2xl border border-slate-300 bg-white pl-4 pr-10 py-3 text-sm shadow-sm cursor-pointer focus:outline-none focus:ring-2"
-                                                                style="--tw-ring-color:#3b82f6;"
-                                                            />
-                                                            <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+
+                                                <!-- Before and After Fare Breakdown Box -->
+                                                <div class="rounded-2xl border border-blue-300 bg-white p-6 shadow-sm">
+                                                    <h4 class="text-xs font-bold uppercase tracking-wider text-blue-800 mb-4">Payment Computation (Before vs After)</h4>
+                                                    <div class="space-y-3 text-sm">
+                                                        <div class="flex justify-between text-slate-600">
+                                                            <span>Original Booking Total (Before)</span>
+                                                            <span class="font-medium">₱{{ number_format($booking->total_price, 2) }}</span>
                                                         </div>
-                                                        @error('rebooking_return_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                                    </label>
-                                                @endif
+                                                        <div class="flex justify-between text-slate-900 font-semibold">
+                                                            <span>New Schedule & Accommodation Total (After)</span>
+                                                            <span>₱{{ number_format($rebooking_new_total, 2) }}</span>
+                                                        </div>
+                                                        <div class="flex justify-between text-slate-600">
+                                                            <span>Schedule Fare Difference</span>
+                                                            <span class="font-medium">
+                                                                @if($rebooking_price_diff > 0)
+                                                                    +₱{{ number_format($rebooking_price_diff, 2) }}
+                                                                @else
+                                                                    ₱0.00 (No Fare Difference)
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex justify-between text-slate-600">
+                                                            <span>30% Rebooking Fee</span>
+                                                            <span class="font-medium">₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}</span>
+                                                        </div>
+                                                        <div class="border-t border-slate-200 pt-3 flex justify-between text-base font-bold text-blue-900">
+                                                            <span>Total Payment Required (Fee + Difference)</span>
+                                                            <span>₱{{ number_format($rebooking_total_to_pay, 2) }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                @php 
+                                                    $rebookingQrPath = App\Models\PaymentSetting::current()->qr_code_path ?? null;
+                                                @endphp
+                                                <div class="rounded-2xl border border-slate-200 bg-white p-4" x-data="{ qrModalOpen: false }">
+                                                    <div class="flex items-start justify-between gap-4">
+                                                        <div>
+                                                            <p class="text-sm font-bold text-slate-900">Scan QR to Pay Rebooking Total</p>
+                                                            <p class="mt-1 text-xs text-slate-500">Please pay ₱{{ number_format($rebooking_total_to_pay, 2) }} and upload your receipt below.</p>
+                                                        </div>
+                                                        <button type="button" class="flex-shrink-0 rounded-xl border border-slate-200 bg-slate-50 p-2 text-left transition hover:border-blue-300 hover:bg-blue-50" @click="qrModalOpen = true" aria-label="View payment QR code">
+                                                            @if($rebookingQrPath)
+                                                                <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="QR code" class="h-14 w-14 rounded-lg object-contain" />
+                                                            @else
+                                                                <div class="flex h-14 w-14 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-slate-400">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                                                        <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                                                                        <path d="M8 8h.01M8 12h.01M8 16h.01M12 8h4M12 12h4M12 16h4"></path>
+                                                                    </svg>
+                                                                </div>
+                                                            @endif
+                                                        </button>
+                                                    </div>
+                                                    <p class="mt-2 text-xs text-slate-500">Tap the QR preview to enlarge it.</p>
+
+                                                    <div x-show="qrModalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4" style="display: none;">
+                                                        <div class="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl" role="dialog" aria-modal="true" aria-label="Enlarged QR code preview">
+                                                            <div class="flex items-center justify-between">
+                                                                <p class="text-sm font-semibold text-slate-900">Payment QR Code</p>
+                                                                <button type="button" class="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100" @click="qrModalOpen = false">Close</button>
+                                                            </div>
+                                                            <div class="mt-4">
+                                                                @if($rebookingQrPath)
+                                                                    <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="Enlarged QR code" class="mx-auto max-h-96 w-full rounded-2xl object-contain" />
+                                                                @else
+                                                                    <div class="flex min-h-48 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                                                                        <div>
+                                                                            <p class="text-sm font-semibold text-slate-700">No QR code available</p>
+                                                                            <p class="mt-1 text-sm text-slate-500">The admin has not uploaded a payment QR image yet.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <label class="block">
+                                                    <span class="mb-2 block text-sm font-medium text-slate-700">Proof of Payment (GCash / Maya Receipt)</span>
+                                                    <input type="file" wire:model="rebookingProof" class="mt-2 block w-full text-sm text-slate-600" />
+                                                    @error('rebookingProof')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+                                                </label>
+
+                                                <div class="flex flex-wrap gap-3 pt-2">
+                                                    <button 
+                                                        type="button" 
+                                                        wire:click.prevent="submitRebookingProof" 
+                                                        class="inline-flex items-center justify-center rounded-3xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+                                                        @disabled($isUploadingRebooking || !$rebookingProof)
+                                                    >
+                                                        @if($isUploadingRebooking)
+                                                            <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Uploading...
+                                                        @else
+                                                            Upload & Confirm Rebooking
+                                                        @endif
+                                                    </button>
+                                                    <button wire:click.prevent="$set('rebookingRequested', false); $set('feedback', null)" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                        Cancel
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <label class="mt-4 block">
-                                            <span class="mb-2 block text-sm font-medium text-slate-700">Proof of Rebooking Fee Payment</span>
-                                            <input type="file" wire:model="rebookingProof" class="mt-2 block w-full text-sm text-slate-600" />
-                                            @error('rebookingProof')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                        </label>
-
-                                        <div class="mt-4 flex flex-wrap gap-3">
-                                            <button 
-                                                type="button" 
-                                                wire:click.prevent="submitRebookingProof" 
-                                                class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition"
-                                                style="background:#3b82f6;"
-                                                onmouseover="this.style.background='#2563eb'"
-                                                onmouseout="this.style.background='#3b82f6'"
-                                                @disabled($isUploadingRebooking || !$rebookingProof)
-                                            >
-                                                @if($isUploadingRebooking)
-                                                    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                    </svg>
-                                                    Uploading...
-                                                @else
-                                                    Upload & Confirm Rebooking
-                                                @endif
-                                            </button>
-                                            <button wire:click.prevent="$set('rebookingRequested', false); $set('feedback', null)" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                                                Cancel
-                                            </button>
-                                        </div>
+                                        @endif
                                     </div>
                                 @endif
 

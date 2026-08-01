@@ -374,7 +374,7 @@
                         <img src="{{ asset('images/2GO-Logo.png') }}" alt="2GO Travel" class="max-h-full max-w-full object-contain">
                     </div>
                     <div class="bg-white backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-50 transition shadow-sm">
-                        <img src="{{ asset('images/starlite-Logo.jfif') }}" alt="Starlite Ferries Inc." class="max-h-full max-w-full object-contain">
+                        <img src="{{ asset('images/Starlite_Logo.png') }}" alt="Starlite Ferries Inc." class="max-h-full max-w-full object-contain">
                     </div>
                     <div class="bg-white backdrop-blur-sm px-4 py-4 rounded-2xl w-full text-center flex items-center justify-center h-24 hover:bg-pink-50 transition shadow-sm">
                         <img src="{{ asset('images/Pal-Logo.jfif') }}" alt="Philippine Airlines" class="max-h-full max-w-full object-contain">

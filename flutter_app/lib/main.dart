@@ -6,13 +6,13 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 
 import 'notification_service.dart';
-import 'replacement_booking_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
@@ -53,6 +53,7 @@ class UserSession {
   static bool isEmailVerified = false;
   static String username = 'Traveler';
   static String email = 'user@amigagracia.com';
+  static String phone = '';
   static String token = '';
   static String lookupToken = '';
   static int graciaPoints = 0;
@@ -61,7 +62,8 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.19+23';
+  static const String appVersion = '1.0.24+28';
+  static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -69,11 +71,48 @@ class UserSession {
     isEmailVerified = prefs.getBool('isEmailVerified') ?? false;
     username = prefs.getString('username') ?? 'Traveler';
     email = prefs.getString('email') ?? 'user@amigagracia.com';
+    phone = prefs.getString('phone') ?? '';
     token = prefs.getString('token') ?? '';
     lookupToken = prefs.getString('lookupToken') ?? '';
     graciaPoints = prefs.getInt('graciaPoints') ?? 0;
     pointsAwarded = prefs.getInt('pointsAwarded') ?? 0;
     spendThreshold = prefs.getInt('spendThreshold') ?? 0;
+
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final version = packageInfo.version.trim();
+      final buildNumber = packageInfo.buildNumber.trim().isEmpty ? '0' : packageInfo.buildNumber.trim();
+      installedAppVersion = '${version}+${buildNumber}';
+    } catch (_) {
+      installedAppVersion = appVersion;
+    }
+  }
+
+  static bool isUpdateRequired(String latestVersion) {
+    final normalizedLatest = latestVersion.trim();
+    final normalizedInstalled = installedAppVersion.trim();
+    if (normalizedLatest == normalizedInstalled) {
+      return false;
+    }
+
+    final latest = _AppVersion.parse(normalizedLatest);
+    final current = _AppVersion.parse(normalizedInstalled);
+    if (latest == null || current == null) {
+      return normalizedLatest != normalizedInstalled;
+    }
+
+    return latest.compareTo(current) > 0;
+  }
+
+  static Future<void> refreshInstalledAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final version = packageInfo.version.trim();
+      final buildNumber = packageInfo.buildNumber.trim().isEmpty ? '0' : packageInfo.buildNumber.trim();
+      installedAppVersion = '${version}+${buildNumber}';
+    } catch (_) {
+      installedAppVersion = appVersion;
+    }
   }
 
   static Future<void> save() async {
@@ -82,6 +121,7 @@ class UserSession {
     await prefs.setBool('isEmailVerified', isEmailVerified);
     await prefs.setString('username', username);
     await prefs.setString('email', email);
+    await prefs.setString('phone', phone);
     await prefs.setString('token', token);
     await prefs.setString('lookupToken', lookupToken);
     await prefs.setInt('graciaPoints', graciaPoints);
@@ -95,6 +135,7 @@ class UserSession {
     await prefs.remove('isEmailVerified');
     await prefs.remove('username');
     await prefs.remove('email');
+    await prefs.remove('phone');
     await prefs.remove('token');
     await prefs.remove('lookupToken');
     await prefs.remove('graciaPoints');
@@ -104,6 +145,7 @@ class UserSession {
     isEmailVerified = false;
     username = 'Traveler';
     email = 'user@amigagracia.com';
+    phone = '';
     token = '';
     lookupToken = '';
     graciaPoints = 0;
@@ -125,6 +167,39 @@ class UserSession {
     if (spendThreshold <= 0 || pointsAwarded <= 0) return 0;
     final centavos = (price * 100).toInt();
     return (centavos ~/ spendThreshold) * pointsAwarded;
+  }
+}
+
+class _AppVersion implements Comparable<_AppVersion> {
+  final List<int> versionParts;
+  final int buildNumber;
+
+  _AppVersion(this.versionParts, this.buildNumber);
+
+  static _AppVersion? parse(String raw) {
+    final parts = raw.split('+');
+    if (parts.isEmpty) return null;
+
+    final versionNumbers = parts[0].split('.');
+    final parsedParts = <int>[];
+    for (final number in versionNumbers) {
+      final parsed = int.tryParse(number);
+      if (parsed == null) return null;
+      parsedParts.add(parsed);
+    }
+
+    final build = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    return _AppVersion(parsedParts, build);
+  }
+
+  @override
+  int compareTo(_AppVersion other) {
+    for (var i = 0; i < versionParts.length || i < other.versionParts.length; i++) {
+      final a = i < versionParts.length ? versionParts[i] : 0;
+      final b = i < other.versionParts.length ? other.versionParts[i] : 0;
+      if (a != b) return a.compareTo(b);
+    }
+    return buildNumber.compareTo(other.buildNumber);
   }
 }
 
@@ -178,6 +253,7 @@ class BookingData {
   // Step 5 — Contact
   String clientName = '';
   String clientEmail = '';
+  String clientPhone = '';
 
   // Voucher
   String? voucherCode;
@@ -227,6 +303,7 @@ class BookingData {
       'availableAccommodations': availableAccommodations,
       'clientName': clientName,
       'clientEmail': clientEmail,
+      'clientPhone': clientPhone,
       'voucherCode': voucherCode,
       'voucherData': voucherData,
       'promotionalTicketId': promotionalTicketId,
@@ -282,6 +359,7 @@ class BookingData {
     
     b.clientName = json['clientName'] ?? '';
     b.clientEmail = json['clientEmail'] ?? '';
+    b.clientPhone = json['clientPhone'] ?? '';
     b.voucherCode = json['voucherCode'];
     b.voucherData = json['voucherData'] != null ? Map<String, dynamic>.from(json['voucherData']) : null;
     b.promotionalTicketId = json['promotionalTicketId'];
@@ -362,14 +440,16 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
     if (_isChecking) return;
     _isChecking = true;
     try {
+      await UserSession.refreshInstalledAppVersion();
       final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version')).timeout(const Duration(seconds: 5));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
-        if (latestVersion != UserSession.appVersion && mounted) {
+        final forceUpdate = data['force_update'] as bool? ?? true;
+        if (forceUpdate && UserSession.isUpdateRequired(latestVersion) && mounted) {
           final context = navigatorKey.currentContext;
           if (context != null) {
-            UpdateChecker.showUpdateDialog(context, latestVersion);
+            await UpdateChecker.showUpdateDialog(context, latestVersion);
           }
         }
       }
@@ -384,8 +464,18 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
 }
 
 class UpdateChecker {
-  static void showUpdateDialog(BuildContext context, String latestVersion) {
-    showDialog(
+  static String? _lastPromptedVersion;
+  static bool _dialogAlreadyVisible = false;
+
+  static Future<void> showUpdateDialog(BuildContext context, String latestVersion) async {
+    if (_dialogAlreadyVisible && _lastPromptedVersion == latestVersion) {
+      return;
+    }
+
+    _dialogAlreadyVisible = true;
+    _lastPromptedVersion = latestVersion;
+
+    await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
@@ -425,12 +515,12 @@ class UpdateChecker {
                         final request = http.Request('GET', Uri.parse(apkUrl));
                         final response = await http.Client().send(request);
                         if (response.statusCode != 200) throw Exception('Server returned ${response.statusCode}');
-                        
+
                         final contentLength = response.contentLength ?? 1;
                         final dir = await getExternalStorageDirectory();
                         final file = File('${dir!.path}/update_$latestVersion.apk');
                         final sink = file.openWrite();
-                        
+
                         int bytes = 0;
                         await response.stream.listen((List<int> chunk) {
                           bytes += chunk.length;
@@ -438,10 +528,21 @@ class UpdateChecker {
                           sink.add(chunk);
                         }).asFuture();
                         await sink.close();
-                        
+
+                        // Persist the current login/session state before leaving the app for APK install.
+                        await UserSession.save();
+                        if (BookingData.activeSession != null) {
+                          await BookingData.activeSession!.saveToPrefs(BookingData.activeSession!.savedStep);
+                        }
+
                         final result = await OpenFilex.open(file.path);
                         if (result.type != ResultType.done) throw Exception(result.message);
-                        setState(() => isDownloading = false);
+
+                        if (context.mounted) {
+                          Navigator.of(context, rootNavigator: true).pop();
+                        }
+
+                        return;
                       } catch (e) {
                         debugPrint('Download error: $e');
                         setState(() {
@@ -458,6 +559,8 @@ class UpdateChecker {
         );
       },
     );
+
+    _dialogAlreadyVisible = false;
   }
 }
 
@@ -506,14 +609,25 @@ class SplashLoaderScreen extends StatefulWidget {
 }
 
 class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
+  Timer? _navigationTimer;
+
   @override
   void initState() {
     super.initState();
     _checkVersionAndProceed();
   }
 
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _checkVersionAndProceed() async {
-    // 1. Check for app updates
+    // 1. Refresh the installed app version before checking for updates.
+    await UserSession.refreshInstalledAppVersion();
+
+    // 2. Check for app updates
     try {
       final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version'))
           .timeout(const Duration(seconds: 5));
@@ -521,11 +635,11 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
-        
-        // If versions don't match, show update prompt
-        if (latestVersion != UserSession.appVersion) {
+        final forceUpdate = data['force_update'] as bool? ?? true;
+
+        if (forceUpdate && UserSession.isUpdateRequired(latestVersion)) {
           if (mounted) {
-            UpdateChecker.showUpdateDialog(context, latestVersion);
+            await UpdateChecker.showUpdateDialog(context, latestVersion);
           }
           return; // Stop initialization, wait for update
         }
@@ -536,7 +650,7 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
     }
 
     // 2. Proceed to app
-    Future.delayed(const Duration(seconds: 2), () {
+    _navigationTimer = Timer(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -774,11 +888,26 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: AppDrawer(onLogout: _handleLogout),
+      drawer: AppDrawer(onLogout: _handleLogout, onProfileUpdated: () => setState(() {})),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        leading: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+            if (UserSession.isLoggedIn && UserSession.phone.trim().isEmpty)
+              Positioned(
+                right: 10,
+                top: 10,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                ),
+              ),
+          ],
         ),
         title: Row(
           children: [
@@ -1918,7 +2047,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       ..adults = _adults
       ..children = _children;
 
-    if (_mode == 'ferry' && _isVehicleBookingEnabled) {
+    final bool is2GoOperator = _mode == 'ferry' && (_operator?.toLowerCase().contains('2go') ?? false);
+    if (_mode == 'ferry' && _isVehicleBookingEnabled && !is2GoOperator) {
        booking.hasVehicle = true;
        booking.vehiclePlateNumber = _plateCtrl.text;
        final selected = _vehicleRates.where((r) => r['selected'] == true).toList();
@@ -2194,8 +2324,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           ],
                           const SizedBox(height: 24),
 
-                          // Vehicle / Car Booking (Ferry only)
-                          if (_mode == 'ferry') ...[
+                          // Vehicle / Car Booking (Ferry only, hidden for 2GO)
+                          if (_mode == 'ferry' && !(_operator?.toLowerCase().contains('2go') ?? false)) ...[
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -3890,12 +4020,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Submit rebooking request'),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
+        title: const Text('Would you like to proceed with rebooking?'),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('• Please select your preferred new travel date.'),
+          const SizedBox(height: 8),
+          const Text('• Rebooking charges apply and fare difference (if applicable.)'),
+          const SizedBox(height: 12),
           Text('Rebooking fee: ₱${fee.toStringAsFixed(2)}'),
           if (_qrCodeUrl != null) ...[const SizedBox(height: 12), Image.network(_qrCodeUrl!, height: 120, width: 120, errorBuilder: (_, __, ___) => const SizedBox.shrink())],
           const SizedBox(height: 12),
-          const Text('Payment proof selected. Submit it for staff verification?'),
+          const Text('To proceed with rebooking, please select your preferred new travel date and submit your proof of payment for the rebooking fee.'),
         ]),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit'))],
       ),
@@ -4026,6 +4160,23 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           _booking['schedule_summary'] ?? _booking['schedule_service'] ?? 'Schedule not recorded',
         ]),
         _detailSection('Payment', ['Status: ${_paymentStatus.toUpperCase()}', 'Total: ₱${_booking['total_price'] ?? '0.00'}']),
+        if (_booking['passengers'] != null && (_booking['passengers'] as List).isNotEmpty)
+          _detailSection(
+            'Passengers & Discount IDs',
+            (_booking['passengers'] as List).map((p) {
+              final name = p['name'] ?? 'Passenger';
+              final type = (p['type'] ?? 'adult').toString().toUpperCase();
+              final bday = p['birthdate'] ?? 'N/A';
+              final idNum = p['id_number'];
+              final front = p['id_image_front_url'] ?? p['id_image_front'];
+              final back = p['id_image_back_url'] ?? p['id_image_back'];
+              String str = '$name ($type) • Bday: $bday';
+              if (idNum != null && idNum.toString().isNotEmpty) str += ' • ID: $idNum';
+              if (front != null) str += ' • Front ID: Attached';
+              if (back != null) str += ' • Back ID: Attached';
+              return str;
+            }).toList(),
+          ),
         if (_paymentStatus == 'unpaid' || _paymentStatus == 'pending') ...[
           OutlinedButton.icon(onPressed: _busy ? null : _uploadPaymentProof, icon: const Icon(Icons.upload_file), label: const Text('Upload payment proof')),
         ],
@@ -4068,12 +4219,147 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   Widget _detailSection(String title, List<String> values) => Card(margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)), const SizedBox(height: 8), ...values.map((value) => Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(value, style: const TextStyle(color: kSlate600))))])));
 }
 
+class _NotificationDot extends StatelessWidget {
+  final double size;
+  const _NotificationDot({this.size = 10});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+    );
+  }
+}
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _emailCtrl;
+  late final TextEditingController _phoneCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: UserSession.username);
+    _emailCtrl = TextEditingController(text: UserSession.email);
+    _phoneCtrl = TextEditingController(text: UserSession.phone);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProfile() async {
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final phone = _phoneCtrl.text.trim();
+
+    UserSession.username = name.isNotEmpty ? name : 'Traveler';
+    UserSession.email = email.isNotEmpty ? email : 'user@amigagracia.com';
+    UserSession.phone = phone;
+    await UserSession.save();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated'), backgroundColor: kGreen),
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final missingPhone = UserSession.phone.trim().isEmpty;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('My Profile')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('Profile Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _nameCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      prefixIcon: const Icon(Icons.person_outline, color: kGreen),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'Mobile Phone Number',
+                      prefixIcon: const Icon(Icons.phone_android_outlined, color: kGreen),
+                      suffixIcon: missingPhone ? const _NotificationDot(size: 6) : null,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _saveProfile,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kPink,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Save Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ==========================================
 // DRAWER
 // ==========================================
 class AppDrawer extends StatelessWidget {
   final VoidCallback onLogout;
-  const AppDrawer({super.key, required this.onLogout});
+  final VoidCallback onProfileUpdated;
+  const AppDrawer({super.key, required this.onLogout, required this.onProfileUpdated});
 
   @override
   Widget build(BuildContext context) {
@@ -4101,7 +4387,15 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.person_outline, color: kGreen),
             title: const Text('My Profile'),
-            onTap: () => Navigator.pop(context),
+            trailing: UserSession.isLoggedIn && UserSession.phone.trim().isEmpty
+                ? const _NotificationDot()
+                : null,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())).then((_) {
+                onProfileUpdated();
+              });
+            },
           ),
           ListTile(
             leading: const Icon(Icons.info_outline, color: kGreen),
@@ -4176,7 +4470,7 @@ class _StepProgress extends StatelessWidget {
       case 'route': return Icons.directions_boat;
       case 'schedule': return Icons.calendar_month;
       case 'discount': return Icons.local_offer;
-      case 'add-ons': return Icons.extension;
+      case 'hotels': return Icons.hotel;
       case 'submit': return Icons.fact_check;
       default: return Icons.circle;
     }
@@ -4248,7 +4542,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
   bool _isLoading = true;
   String? _error;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
@@ -4609,8 +4903,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               _buildHorizontalScheduleList(_returnSchedules, isReturn: true),
                               if (widget.booking.selectedReturnSchedule != null && widget.booking.selectedReturnSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedReturnSchedule!['promotional_ticket'], isReturn: true),
-                              _buildBaggageSwitch(),
-
                               const SizedBox(height: 20),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -4655,7 +4947,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                               _buildHorizontalScheduleList(_schedules, isReturn: false),
                               if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
                                 _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
-                              _buildBaggageSwitch(),
                               
                               if (widget.booking.selectedSchedule != null) ...[
                                 Padding(
@@ -4767,209 +5058,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     );
   }
 
-  Widget _buildBaggageSwitch() {
-    final isAirline = widget.booking.mode == 'airline';
-
-    // Auto-detect rules for current schedule
-    final schedule = widget.booking.selectedSchedule ?? {};
-    final operatorStr = schedule['operator']?.toString().toLowerCase() ?? '';
-    final tripType = schedule['trip_type']?.toString().toLowerCase() ?? 'local';
-    
-    // Convert operator string to baggage key (e.g., 'cebu pacific' -> 'ceb_pac')
-    String? matchedOperator;
-    if (operatorStr.contains('pal') || operatorStr.contains('philippine airline')) matchedOperator = 'pal';
-    else if (operatorStr.contains('cebu')) matchedOperator = 'ceb_pac';
-    else if (operatorStr.contains('airasia')) matchedOperator = 'airasia';
-    
-    // Get options from rules
-    List<dynamic> baggageOptions = [];
-    if (matchedOperator != null && _baggageRules[tripType] != null && _baggageRules[tripType][matchedOperator] != null) {
-      baggageOptions = _baggageRules[tripType][matchedOperator]['options'] ?? [];
-    }
-    
-    // If we have options but no kg is set yet, default to first option
-    if (isAirline && baggageOptions.isNotEmpty && widget.booking.hasExtraBaggage) {
-      if (widget.booking.extraBaggageKg == null) {
-        // Find if we previously selected a price that matches
-        final matchingOption = baggageOptions.firstWhere((opt) => opt['price'] == widget.booking.extraBaggagePrice, orElse: () => baggageOptions.first);
-        // We use Future.microtask to avoid setState during build
-        Future.microtask(() {
-          if (mounted) {
-            setState(() {
-              widget.booking.extraBaggageKg = int.tryParse(matchingOption['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
-              widget.booking.extraBaggagePrice = (matchingOption['price'] as num).toDouble();
-            });
-          }
-        });
-      }
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SwitchListTile(
-              title: Text(
-                isAirline ? 'I have Extra Baggage' : 'I have Extra Baggage',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-              subtitle: Text(
-                isAirline
-                    ? 'Add prepaid check-in baggage per passenger for your flight.'
-                    : 'Additional fees may apply upon check-in at the terminal.',
-                style: const TextStyle(fontSize: 12),
-              ),
-              value: widget.booking.hasExtraBaggage,
-              activeColor: kGreen,
-              contentPadding: EdgeInsets.zero,
-              onChanged: (val) {
-                setState(() {
-                  widget.booking.hasExtraBaggage = val;
-                  if (!val) {
-                    widget.booking.extraBaggageKg = null;
-                    widget.booking.extraBaggagePrice = 0.0;
-                    widget.booking.extraBaggageType = null;
-                    widget.booking.extraBaggageSpecify = null;
-                  } else {
-                    if (isAirline && baggageOptions.isNotEmpty) {
-                      widget.booking.extraBaggageKg = int.tryParse(baggageOptions.first['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
-                      widget.booking.extraBaggagePrice = (baggageOptions.first['price'] as num).toDouble();
-                    }
-                    if (!isAirline && widget.booking.extraBaggageType == null) {
-                      widget.booking.extraBaggageType = 'Large Suitcase / Oversized Luggage';
-                    }
-                  }
-                });
-              },
-            ),
-            if (widget.booking.hasExtraBaggage) ...[
-              const SizedBox(height: 12),
-              const Divider(height: 1),
-              const SizedBox(height: 12),
-              if (isAirline) ...[
-                // KG dropdown
-                const Text('Select Extra Baggage (kg)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
-                const SizedBox(height: 8),
-                if (baggageOptions.isEmpty)
-                  const Text('No extra baggage rules found for this schedule.', style: TextStyle(color: kSlate500, fontSize: 12))
-                else
-                  DropdownButtonFormField<double>(
-                    value: widget.booking.extraBaggagePrice > 0 ? widget.booking.extraBaggagePrice : (baggageOptions.first['price'] as num).toDouble(),
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
-                    items: baggageOptions.map((opt) {
-                      final wStr = opt['weight'].toString();
-                      final p = (opt['price'] as num).toDouble();
-                      return DropdownMenuItem<double>(
-                        value: p,
-                        child: Text('$wStr — ₱${p.toStringAsFixed(0)} / pax', style: const TextStyle(fontSize: 14)),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        final matchedOpt = baggageOptions.firstWhere((o) => (o['price'] as num).toDouble() == val, orElse: () => baggageOptions.first);
-                        setState(() {
-                          widget.booking.extraBaggagePrice = val;
-                          widget.booking.extraBaggageKg = int.tryParse(matchedOpt['weight'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 20;
-                        });
-                      }
-                    },
-                  ),
-                if (widget.booking.extraBaggageKg != null && widget.booking.extraBaggagePrice > 0) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: kGreen.withOpacity(0.07), borderRadius: BorderRadius.circular(8)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('${widget.booking.extraBaggageKg} kg × ${widget.booking.adults + widget.booking.children} pax', style: const TextStyle(fontSize: 13, color: kSlate700)),
-                        Text(
-                          '₱${(widget.booking.extraBaggagePrice * (widget.booking.adults + widget.booking.children)).toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ] else ...[
-                // Ferry informational note
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.amber.shade200)),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.amber.shade700, size: 18),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          'Extra baggage fees are settled at the terminal upon check-in. Ferries typically allow up to 50 kg free per passenger.',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF78350F)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Ferry Item Category Dropdown
-                const Text('Select Item Category / Example', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: widget.booking.extraBaggageType ?? 'Large Suitcase / Oversized Luggage',
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.luggage, color: kGreen, size: 20),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                  items: const [
-                    'Large Suitcase / Oversized Luggage',
-                    'Balikbayan Box / Packed Carton',
-                    'Musical Instrument (Guitar, Keyboard, etc.)',
-                    'Sports Equipment (Surfboard, Bicycle, Golf Bag)',
-                    'Electronic Appliance / Boxed Equipment',
-                    'Commercial Goods / Merchandise',
-                    'Other Non-Personal Item',
-                  ].map((val) => DropdownMenuItem<String>(
-                    value: val,
-                    child: Text(val, style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis),
-                  )).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => widget.booking.extraBaggageType = val);
-                  },
-                ),
-                const SizedBox(height: 12),
-                // Specify Item Details & Quantity
-                const Text('Specify Item Details & Quantity', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate700)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  initialValue: widget.booking.extraBaggageSpecify ?? '',
-                  decoration: InputDecoration(
-                    hintText: 'e.g. 2 Balikbayan boxes, 1 Surfboard bag (dimensions/description)',
-                    hintStyle: const TextStyle(color: kSlate400, fontSize: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                  onChanged: (v) {
-                    setState(() => widget.booking.extraBaggageSpecify = v);
-                  },
-                ),
-              ],
-            ],
-          ],
-        ),
-      ),
-    );
-  }
 
 
   Widget _buildHorizontalScheduleList(List<dynamic> schedules, {required bool isReturn}) {
@@ -4998,10 +5086,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             child: Card(
               color: isSelected ? kPink : Colors.white,
               elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16), 
-                side: BorderSide(color: isSelected ? kPink : kSlate200, width: 2)
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: InkWell(
                 onTap: () {
                   setState(() {
@@ -5049,42 +5134,92 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Show promo price if schedule has an active promotional ticket
-                              if (s['promotional_ticket'] != null) ...[
-                                Text(
-                                  '₱${s['price']}',
-                                  style: TextStyle(color: isSelected ? Colors.white54 : kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough),
-                                ),
-                                Text(
-                                  '₱${s['promotional_ticket']['promo_price']}',
-                                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : Colors.orange),
-                                ),
-                              ] else
-                                Text('₱${s['price']}', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : kPink)),
-                            ],
-                          ),
                           Row(
                             children: [
-                              // PROMO badge
-                              if (s['promotional_ticket'] != null)
-                                Container(
-                                  margin: const EdgeInsets.only(right: 6),
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                  decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(6)),
-                                  child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                                ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
-                                child: Text(
-                                  s['operator'] ?? 'Operator',
-                                  style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 12),
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Show promo price if schedule has an active promotional ticket
+                                  if (s['promotional_ticket'] != null) ...[
+                                    Text(
+                                      '₱${s['price']}',
+                                      style: TextStyle(color: isSelected ? Colors.white54 : kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough),
+                                    ),
+                                    Text(
+                                      '₱${s['promotional_ticket']['promo_price']}',
+                                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : Colors.orange),
+                                    ),
+                                  ] else
+                                    Text('₱${s['price']}', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : kPink)),
+                                ],
                               ),
+                              Builder(builder: (ctx) {
+                                final p = double.tryParse((s['promotional_ticket'] != null ? s['promotional_ticket']['promo_price'] : s['price']).toString()) ?? 0;
+                                final pts = UserSession.calculateEarnedPoints(p);
+                                if (pts > 0) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.star_rounded, color: isSelected ? Colors.white : kPink, size: 14),
+                                        const SizedBox(width: 3),
+                                        Text('+$pts pts', style: TextStyle(color: isSelected ? Colors.white : kPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return const SizedBox();
+                              }),
                             ],
+                          ),
+                          Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // PROMO badge
+                                if (s['promotional_ticket'] != null)
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(6)),
+                                    child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                                  ),
+                                if (getOperatorLogoUrl(s['operator'] ?? '').isNotEmpty)
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(height: 60, child: Image.network(
+                                          getOperatorLogoUrl(s['operator'] ?? ''),
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                                        )),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          s['operator'] ?? 'Operator',
+                                          style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (getOperatorLogoUrl(s['operator'] ?? '').isEmpty)
+                                  Flexible(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                      child: Text(
+                                        s['operator'] ?? 'Operator',
+                                        style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 11),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -5135,10 +5270,11 @@ class _DiscountScreenState extends State<DiscountScreen> {
   List<Map<String, dynamic>> _discounts = [];
   List<TextEditingController> _nameControllers = [];
   List<TextEditingController> _birthdateControllers = [];
-  List<TextEditingController> _schoolControllers = [];
   List<TextEditingController> _idControllers = [];
+  List<String?> _idFrontBase64 = [];
+  List<String?> _idBackBase64 = [];
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
@@ -5149,11 +5285,14 @@ class _DiscountScreenState extends State<DiscountScreen> {
     _birthdateControllers = List.generate(widget.booking.passengers.length, (i) {
       return TextEditingController(text: widget.booking.passengers[i]['birthdate'] ?? '');
     });
-    _schoolControllers = List.generate(widget.booking.passengers.length, (i) {
-      return TextEditingController(text: widget.booking.passengers[i]['school_name'] ?? '');
-    });
     _idControllers = List.generate(widget.booking.passengers.length, (i) {
       return TextEditingController(text: widget.booking.passengers[i]['id_number'] ?? '');
+    });
+    _idFrontBase64 = List.generate(widget.booking.passengers.length, (i) {
+      return widget.booking.passengers[i]['id_image_front'];
+    });
+    _idBackBase64 = List.generate(widget.booking.passengers.length, (i) {
+      return widget.booking.passengers[i]['id_image_back'];
     });
     _fetchDiscounts();
   }
@@ -5162,9 +5301,80 @@ class _DiscountScreenState extends State<DiscountScreen> {
   void dispose() {
     for (var c in _nameControllers) c.dispose();
     for (var c in _birthdateControllers) c.dispose();
-    for (var c in _schoolControllers) c.dispose();
     for (var c in _idControllers) c.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickIdImage(int index, bool isFront) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70, maxWidth: 800, maxHeight: 800);
+    if (picked != null) {
+      final bytes = await picked.readAsBytes();
+      final b64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      setState(() {
+        if (isFront) {
+          _idFrontBase64[index] = b64;
+          widget.booking.passengers[index]['id_image_front'] = b64;
+        } else {
+          _idBackBase64[index] = b64;
+          widget.booking.passengers[index]['id_image_back'] = b64;
+        }
+      });
+    }
+  }
+
+  Widget _buildIdImagePicker(int i, String label, bool isFront) {
+    final b64 = isFront ? _idFrontBase64[i] : _idBackBase64[i];
+    final hasImg = b64 != null && b64.isNotEmpty;
+    return InkWell(
+      onTap: () => _pickIdImage(i, isFront),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: hasImg ? kGreen.withOpacity(0.08) : Colors.grey.shade50,
+          border: Border.all(color: hasImg ? kGreen : Colors.grey.shade300, width: hasImg ? 1.5 : 1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              hasImg ? Icons.check_circle : (isFront ? Icons.badge_outlined : Icons.credit_card_outlined),
+              color: hasImg ? kGreen : kSlate600,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: hasImg ? kGreen : kSlate700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasImg ? 'Image attached • Tap to change' : 'Tap to upload picture',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: hasImg ? kGreen.withOpacity(0.8) : kSlate400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasImg)
+              const Icon(Icons.refresh, color: kGreen, size: 18)
+            else
+              const Icon(Icons.add_a_photo_outlined, color: kSlate500, size: 20),
+          ],
+        ),
+      ),
+    );
   }
 
   void _fetchDiscounts() async {
@@ -5185,20 +5395,37 @@ class _DiscountScreenState extends State<DiscountScreen> {
     for (int i = 0; i < widget.booking.passengers.length; i++) {
       widget.booking.passengers[i]['name'] = _nameControllers[i].text.trim();
       widget.booking.passengers[i]['birthdate'] = _birthdateControllers[i].text.trim();
-      
+
       final discId = widget.booking.passengers[i]['discount_id'];
       final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
       final discName = disc['name']?.toString().toLowerCase() ?? '';
-      
-      if (discName == 'student') {
-        widget.booking.passengers[i]['school_name'] = _schoolControllers[i].text.trim();
-        widget.booking.passengers[i]['id_number'] = _idControllers[i].text.trim();
-      } else if (discName == 'senior citizen' || discName == 'pwd') {
+
+      if (discId != null && discName != 'infant') {
+        final idNumber = _idControllers[i].text.trim();
+        widget.booking.passengers[i]['id_number'] = idNumber;
+
+        if (discName == 'student') {
+          if (_idFrontBase64[i] == null || _idBackBase64[i] == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please upload both Front and Back ID images for Passenger #${i + 1}.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+          widget.booking.passengers[i]['id_image_front'] = _idFrontBase64[i];
+          widget.booking.passengers[i]['id_image_back'] = _idBackBase64[i];
+        } else {
+          widget.booking.passengers[i]['id_image_front'] = null;
+          widget.booking.passengers[i]['id_image_back'] = null;
+        }
         widget.booking.passengers[i]['school_name'] = null;
-        widget.booking.passengers[i]['id_number'] = _idControllers[i].text.trim();
       } else {
         widget.booking.passengers[i]['school_name'] = null;
         widget.booking.passengers[i]['id_number'] = null;
+        widget.booking.passengers[i]['id_image_front'] = null;
+        widget.booking.passengers[i]['id_image_back'] = null;
       }
     }
     widget.booking.savedStep = 3;
@@ -5307,11 +5534,12 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 }
                               },
                               decoration: InputDecoration(
-                                labelText: 'Birthdate',
+                                labelText: 'Birthdate *',
                                 hintText: 'YYYY-MM-DD',
                                 suffixIcon: const Icon(Icons.calendar_today, size: 20),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
+                              validator: (v) => (v == null || v.trim().isEmpty) ? 'Birthdate is required' : null,
                             ),
                             if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) ...[
                               const SizedBox(height: 10),
@@ -5358,7 +5586,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                       context: context,
                                       builder: (c) => AlertDialog(
                                         title: const Text('Discount Applied'),
-                                        content: const Text('Please ensure you have a valid ID to present upon boarding to claim this discount.'),
+                                        content: const Text('Your discount has been applied.\n\nKindly present a valid ID upon boarding to verify and enjoy your discount'),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(c),
@@ -5381,55 +5609,29 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
                                   final discName = disc['name']?.toString().toLowerCase() ?? '';
 
-                                  if (discName == 'student') {
-                                    return Column(
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        TextFormField(
-                                          controller: _schoolControllers[i],
-                                          decoration: InputDecoration(
-                                            labelText: 'School Name *',
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                          ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'School name is required' : null,
-                                        ),
-                                        const SizedBox(height: 10),
-                                        TextFormField(
-                                          controller: _idControllers[i],
-                                          decoration: InputDecoration(
-                                            labelText: 'Student ID Number *',
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                          ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Student ID is required' : null,
-                                        ),
-                                      ],
-                                    );
-                                  } else if (discName == 'senior citizen') {
+                                  if (discId != null && discName != 'infant') {
+                                    String idLabel = 'ID Number *';
+                                    if (discName == 'student') idLabel = 'Student ID Number *';
+                                    else if (discName == 'senior citizen') idLabel = 'Senior Citizen ID Number *';
+                                    else if (discName == 'pwd') idLabel = 'PWD ID Number *';
+
                                     return Column(
                                       children: [
                                         const SizedBox(height: 10),
                                         TextFormField(
                                           controller: _idControllers[i],
                                           decoration: InputDecoration(
-                                            labelText: 'Senior Citizen ID Number *',
+                                            labelText: idLabel,
                                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                           ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Senior ID is required' : null,
+                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'ID number is required' : null,
                                         ),
-                                      ],
-                                    );
-                                  } else if (discName == 'pwd') {
-                                    return Column(
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        TextFormField(
-                                          controller: _idControllers[i],
-                                          decoration: InputDecoration(
-                                            labelText: 'PWD ID Number *',
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                          ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'PWD ID is required' : null,
-                                        ),
+                                        if (discName == 'student') ...[
+                                          const SizedBox(height: 12),
+                                          _buildIdImagePicker(i, 'ID Image (Front) *', true),
+                                          const SizedBox(height: 10),
+                                          _buildIdImagePicker(i, 'ID Image (Back) *', false),
+                                        ],
                                       ],
                                     );
                                   }
@@ -5483,7 +5685,7 @@ class _StayScreenState extends State<StayScreen> {
   List<Map<String, dynamic>> _accommodations = [];
   bool _isLoading = true;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
@@ -5494,7 +5696,11 @@ class _StayScreenState extends State<StayScreen> {
   void _fetchData() async {
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/accommodations'));
+      final destination = widget.booking.destination.trim();
+      final uri = destination.isEmpty
+          ? Uri.parse('$baseUrl/api/accommodations')
+          : Uri.parse('$baseUrl/api/accommodations?destination=${Uri.encodeComponent(destination)}');
+      final res = await http.get(uri);
       final accData = jsonDecode(res.body);
       if (res.statusCode == 200 && accData['status'] == 'success') {
         _accommodations = List<Map<String, dynamic>>.from(accData['accommodations']);
@@ -5509,7 +5715,7 @@ class _StayScreenState extends State<StayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add-ons')),
+      appBar: AppBar(title: const Text('Hotels')),
       body: Column(
         children: [
           _StepProgress(currentStep: 4, steps: _steps),
@@ -5521,7 +5727,7 @@ class _StayScreenState extends State<StayScreen> {
                     children: [
                       // ── Hotel / Accommodation Add-ons ──
                       const Text(
-                        'Hotel & Accommodation Add-ons',
+                        'Hotels',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
                       ),
                       const SizedBox(height: 4),
@@ -5577,23 +5783,6 @@ class _StayScreenState extends State<StayScreen> {
                                           Row(
                                             children: [
                                               Text('₱${a['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14)),
-                                              Builder(builder: (ctx) {
-                                                final p = double.tryParse(a['price'].toString()) ?? 0;
-                                                final pts = UserSession.calculateEarnedPoints(p);
-                                                if (pts > 0) {
-                                                  return Padding(
-                                                    padding: const EdgeInsets.only(left: 8.0),
-                                                    child: Row(
-                                                      children: [
-                                                        const Icon(Icons.star_rounded, color: kPink, size: 14),
-                                                        const SizedBox(width: 4),
-                                                        Text('+$pts pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }
-                                                return const SizedBox();
-                                              }),
                                             ],
                                           ),
                                         ],
@@ -5664,9 +5853,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _clientNameCtrl;
   late TextEditingController _clientEmailCtrl;
+  late TextEditingController _clientPhoneCtrl;
   bool _isSubmitting = false;
-  bool _agreeTerms = UserSession.isLoggedIn;
-  bool _agreePrivacy = UserSession.isLoggedIn;
 
   // Payment / QR
   String? _qrCodeUrl;
@@ -5687,13 +5875,14 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   double _availablePoints = 0.0;
   bool _fetchingPoints = false;
 
-  static const _steps = ['Route', 'Schedule', 'Discount', 'Add-ons', 'Submit'];
+  static const _steps = ['Route', 'Schedule', 'Discount', 'Hotels', 'Submit'];
 
   @override
   void initState() {
     super.initState();
     _clientNameCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.username : widget.booking.clientName);
     _clientEmailCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.email : widget.booking.clientEmail);
+    _clientPhoneCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.phone : widget.booking.clientPhone);
     // If promo ticket is active, clear any voucher that may have been applied
     if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) {
       widget.booking.voucherCode = null;
@@ -5763,6 +5952,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   void dispose() {
     _clientNameCtrl.dispose();
     _clientEmailCtrl.dispose();
+    _clientPhoneCtrl.dispose();
     super.dispose();
   }
 
@@ -5806,15 +5996,13 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (!_agreeTerms || !_agreePrivacy) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please accept the Terms & Conditions and Data Privacy Policy before submitting.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
+
+    final phone = _clientPhoneCtrl.text.trim();
+    if (phone.isNotEmpty) {
+      UserSession.phone = phone;
+      await UserSession.save();
     }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -5835,6 +6023,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
           'return_date': widget.booking.returnDate,
           'client_name': _clientNameCtrl.text.trim(),
           'client_email': _clientEmailCtrl.text.trim(),
+          'client_phone': _clientPhoneCtrl.text.trim(),
           'passengers': widget.booking.passengers,
           'accommodation_ids': widget.booking.selectedAccommodationIds,
           // Vehicle
@@ -6181,17 +6370,15 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   ]),
                   const SizedBox(height: 16),
 
-                  // Add-ons
+                  // Hotel stays
                   if (widget.booking.selectedAccommodationIds.isNotEmpty) ...[
-                    _SummarySection(title: 'Add-on Stays', children: [
+                    _SummarySection(title: 'Hotel Stays', children: [
                       ...widget.booking.selectedAccommodationIds.map((id) {
                         final acc = widget.booking.availableAccommodations.firstWhere(
                           (a) => a['id'] == id, orElse: () => {'name': 'Accommodation #$id', 'price': '0'},
                         );
                         final p = double.tryParse(acc['price'].toString()) ?? 0;
-                        final pts = UserSession.calculateEarnedPoints(p);
-                        final valStr = pts > 0 ? '₱$p  (+${pts}pts)' : '₱$p';
-                        return _SummaryRow(acc['name'] as String, valStr);
+                        return _SummaryRow(acc['name'] as String, '₱${p.toStringAsFixed(2)}');
                       }),
                     ]),
                     const SizedBox(height: 16),
@@ -6234,6 +6421,16 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             decoration: InputDecoration(labelText: 'Email', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                             validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                           ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _clientPhoneCtrl,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              labelText: 'Mobile Phone Number',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                          ),
                         ],
                       ),
                     ),
@@ -6263,7 +6460,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     ),
                     const SizedBox(height: 16),
                   ] else ...[
-                    const Text('Total Booking Voucher (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                    const Text('Discount Coupon (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
                     const SizedBox(height: 8),
                     _VoucherSection(booking: widget.booking, scopeFilter: null, onVoucherChanged: () => setState(() {})),
                     const SizedBox(height: 16),
@@ -6367,6 +6564,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                     
                     final finalTotal = (totalBeforePoints - pointsDiscount) > 0 ? (totalBeforePoints - pointsDiscount) : 0.0;
+                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost).clamp(0.0, double.infinity);
                     
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -6378,7 +6576,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           if (accommodationCost > 0) _SummaryRow('Stay', '₱${accommodationCost.toStringAsFixed(2)}'),
                           if (extraBaggageCost > 0) _SummaryRow('Extra Baggage (${widget.booking.extraBaggageKg} kg)', '₱${extraBaggageCost.toStringAsFixed(2)}'),
                           if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') _SummaryRow('Extra Baggage (${widget.booking.extraBaggageType ?? 'Specified'})', 'Settled at Terminal'),
-                          if (calculationFee > 0) _SummaryRow('Calculation Fee', '₱${calculationFee.toStringAsFixed(2)}'),
+                          if (calculationFee > 0) _SummaryRow('Web Admin Fee', '₱${calculationFee.toStringAsFixed(2)}'),
                           const Divider(height: 16),
                           _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
                           if (discount > 0) _SummaryRow('Voucher Discount', '-₱${discount.toStringAsFixed(2)}'),
@@ -6394,7 +6592,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                         ]),
                         const SizedBox(height: 16),
                         Builder(builder: (ctx) {
-                          final pts = UserSession.calculateEarnedPoints(finalTotal);
+                          final pts = UserSession.calculateEarnedPoints(eligiblePointsTotal);
                           if (pts > 0) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16),
@@ -6434,61 +6632,6 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                   }),
 
-                  const SizedBox(height: 16),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Checkbox(
-                        value: _agreeTerms,
-                        onChanged: (val) => setState(() => _agreeTerms = val ?? false),
-                        activeColor: kPink,
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => showTermsModal(context),
-                          child: RichText(
-                            text: const TextSpan(
-                              style: TextStyle(fontSize: 12, color: kSlate700),
-                              children: [
-                                TextSpan(text: 'I agree to the '),
-                                TextSpan(
-                                  text: 'Terms and Conditions / Agreement',
-                                  style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Checkbox(
-                        value: _agreePrivacy,
-                        onChanged: (val) => setState(() => _agreePrivacy = val ?? false),
-                        activeColor: kPink,
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => showPrivacyModal(context),
-                          child: RichText(
-                            text: const TextSpan(
-                              style: TextStyle(fontSize: 12, color: kSlate700),
-                              children: [
-                                TextSpan(text: 'I agree to the '),
-                                TextSpan(
-                                  text: 'Data Privacy Policy',
-                                  style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 16),
 
                   SizedBox(
@@ -6553,11 +6696,20 @@ class _SummaryRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: Text(label, style: const TextStyle(color: kSlate500, fontSize: 13))),
+          Expanded(
+            flex: 1,
+            child: Text(label, style: const TextStyle(color: kSlate500, fontSize: 13)),
+          ),
           const SizedBox(width: 16),
-          Text(value, style: const TextStyle(color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.end),
+          Expanded(
+            flex: 2,
+            child: Text(
+              value,
+              style: const TextStyle(color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
@@ -6587,7 +6739,7 @@ class BookingSuccessScreen extends StatelessWidget {
             const Text('Booking Submitted!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: kGreen)),
             const SizedBox(height: 8),
             const Text(
-              'Your booking has been submitted. Please complete payment to issue your tickets.',
+              'Your booking has been submitted.\n\nCancellation is free within 5 minutes after providing proof of payment.',
               textAlign: TextAlign.center,
               style: TextStyle(color: kSlate600, fontSize: 14),
             ),
@@ -6660,11 +6812,6 @@ class _VoucherSectionState extends State<_VoucherSection> {
     final vCode = widget.booking.voucherCode;
     final vData = widget.booking.voucherData;
 
-    // Determine if the current voucher matches the scope of this section
-    // If the scope filter is specific (e.g., 'vehicle'), only show the applied voucher if it's a vehicle voucher.
-    // If scopeFilter is null (Submit screen), show the applied voucher regardless of scope.
-    final bool isApplicableHere = vData == null || widget.scopeFilter == null || vData['eligible_scope'] == widget.scopeFilter;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -6683,15 +6830,9 @@ class _VoucherSectionState extends State<_VoucherSection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Platform Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
-                    Text(
-                      widget.scopeFilter == 'vehicle' ? 'Use vehicle vouchers here' :
-                      widget.scopeFilter == 'ticket_fare' ? 'Use ticket fare vouchers here' :
-                      widget.scopeFilter == 'accommodation' ? 'Use accommodation vouchers here' :
-                      'Use any applicable voucher',
-                      style: const TextStyle(color: kSlate500, fontSize: 12),
-                    ),
+                  children: const [
+                    Text('Discount Coupon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                    Text('Apply your discount coupon here', style: TextStyle(color: kSlate500, fontSize: 12)),
                   ],
                 ),
               ),
@@ -6701,19 +6842,19 @@ class _VoucherSectionState extends State<_VoucherSection> {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => VoucherPickerScreen(booking: widget.booking, scopeFilter: widget.scopeFilter),
+                      builder: (_) => VoucherPickerScreen(booking: widget.booking, scopeFilter: null),
                     ),
                   );
                   if (mounted) {
-                    setState(() {}); // refresh local state
+                    setState(() {});
                     if (result != null || widget.booking.voucherCode == null) {
                       widget.onVoucherChanged();
                     }
                   }
                 },
-                icon: const Icon(Icons.local_activity, size: 16, color: kPink),
+                icon: const Icon(Icons.card_giftcard, size: 16, color: kPink),
                 label: Text(
-                  (vCode != null && isApplicableHere) ? 'Change' : 'Select',
+                  vCode != null ? 'Change' : 'Select',
                   style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 style: OutlinedButton.styleFrom(
@@ -6727,64 +6868,29 @@ class _VoucherSectionState extends State<_VoucherSection> {
             ],
           ),
           if (vCode != null) ...[
-            if (isApplicableHere) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: kPink.withOpacity(0.05),
-                  border: Border.all(color: kPink.withOpacity(0.3)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: kPink, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(vData!['name']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
-                          const SizedBox(height: 2),
-                          Text('Code: $vCode', style: const TextStyle(color: kPink, fontSize: 11, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '- ₱${((vData['discount_amount'] as num?) ?? 0).toStringAsFixed(2)}',
-                      style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 14),
+            _DiscountCouponCard(
+              voucher: vData,
+              isSelected: true,
+            ),
+            const SizedBox(height: 4),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  widget.booking.voucherCode = null;
+                  widget.booking.voucherData = null;
+                });
+                widget.onVoucherChanged();
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.close, size: 14, color: kSlate500),
+                  SizedBox(width: 4),
+                  Text('Remove coupon', style: TextStyle(color: kSlate500, fontSize: 12)),
+                ],
               ),
-              const SizedBox(height: 8),
-              // Remove voucher button
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    widget.booking.voucherCode = null;
-                    widget.booking.voucherData = null;
-                  });
-                  widget.onVoucherChanged();
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.close, size: 14, color: kSlate500),
-                    SizedBox(width: 4),
-                    Text('Remove voucher', style: TextStyle(color: kSlate500, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ] else ...[
-              const SizedBox(height: 12),
-              Text(
-                'A ${vData!['eligible_scope']?.toString() ?? ''} voucher is currently applied. Remove it first to use a different voucher here.',
-                style: const TextStyle(color: Colors.amber, fontSize: 12),
-              ),
-            ],
+            ),
           ],
         ],
       ),
@@ -6901,33 +7007,13 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
     }
   }
 
-  String _scopeTitle(String? scope) {
-    switch (scope) {
-      case 'ticket_fare': return 'Ticket Fare Only';
-      case 'vehicle': return 'Vehicle Only';
-      case 'accommodation': return 'Accommodation Only';
-      case 'booking_total': return 'Booking Total';
-      default: return 'Any Booking';
-    }
-  }
-
-  IconData _scopeIcon(String? scope) {
-    switch (scope) {
-      case 'ticket_fare': return Icons.airplane_ticket;
-      case 'vehicle': return Icons.directions_car;
-      case 'accommodation': return Icons.hotel;
-      case 'booking_total': return Icons.receipt_long;
-      default: return Icons.local_activity;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final currentCode = widget.booking.voucherCode;
     return Scaffold(
       backgroundColor: kBgLight,
       appBar: AppBar(
-        title: Text(widget.scopeFilter != null ? '${_scopeTitle(widget.scopeFilter)} Voucher' : 'Select Voucher'),
+        title: const Text('Select Discount Coupon'),
         backgroundColor: kGreen,
         foregroundColor: Colors.white,
       ),
@@ -7022,94 +7108,11 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                         itemCount: _vouchers.length,
                         itemBuilder: (context, i) {
                           final v = _vouchers[i];
-                          final scope = v['eligible_scope'] as String?;
                           final isSelected = widget.booking.voucherCode == v['code'];
-                          return GestureDetector(
+                          return _DiscountCouponCard(
+                            voucher: v,
+                            isSelected: isSelected,
                             onTap: () => _applyCode(v['code'] as String),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))],
-                              ),
-                              height: 100,
-                              child: Row(
-                                children: [
-                                  // Left badge
-                                  Container(
-                                    width: 90,
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? kPink : kGreen,
-                                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(_scopeIcon(scope), color: Colors.white, size: 28),
-                                        const SizedBox(height: 6),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                                          child: Text(
-                                            _scopeTitle(scope),
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Right details
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            v['discount_type'] == 'percentage'
-                                                ? '${v['discount_value']}% off${v['max_discount'] != null ? " (max ₱${v['max_discount']})" : ""}'
-                                                : '₱${v['discount_value']} off',
-                                            style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12),
-                                          ),
-                                          if (v['min_booking_amount'] != null) Text('Min. Spend ₱${v['min_booking_amount']}', style: const TextStyle(color: kSlate500, fontSize: 11)),
-                                          const Spacer(),
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.access_time, size: 11, color: kSlate400),
-                                              const SizedBox(width: 4),
-                                              Text(v['end_at'] != null ? 'Valid till: ${v['end_at'].toString().substring(0, 10)}' : 'No expiry', style: const TextStyle(color: kSlate500, fontSize: 11)),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  // Select indicator
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 12),
-                                    child: isSelected
-                                        ? const Icon(Icons.check_circle, color: kGreen, size: 24)
-                                        : OutlinedButton(
-                                            onPressed: () => _applyCode(v['code'] as String),
-                                            style: OutlinedButton.styleFrom(
-                                              side: const BorderSide(color: kPink),
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                              minimumSize: Size.zero,
-                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                            ),
-                                            child: const Text('Use', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
-                                          ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           );
                         },
                       ),
@@ -7787,6 +7790,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
       _notesCtrl.text = pkg['inclusions'] ?? '';
       _nameCtrl.text = UserSession.username;
       _emailCtrl.text = UserSession.email;
+      _phoneCtrl.text = UserSession.phone;
     } else if (widget.initialData != null) {
       final init = widget.initialData!;
       _serviceType = init['mode'] == 'airline' ? 'Airline Ticket' : 'Ferry Ticket';
@@ -7798,6 +7802,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
       }
       _nameCtrl.text = UserSession.username;
       _emailCtrl.text = UserSession.email;
+      _phoneCtrl.text = UserSession.phone;
     }
   }
 
@@ -8174,17 +8179,19 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                                   Text('Rules & Guidelines', style: TextStyle(fontSize: 18)),
                                 ],
                               ),
-                              content: Column(
+                              content: const Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('• Earn points every time you book a ferry or flight.'),
-                                  const SizedBox(height: 8),
-                                  Text('• Currently, you earn ${_activeRule?['points_awarded'] ?? 0} points for every ₱${((_activeRule?['spend_threshold_centavos'] ?? 0) / 100).toStringAsFixed(0)} spent.'),
-                                  const SizedBox(height: 8),
-                                  const Text('• Points are awarded automatically once your booking is paid and verified.'),
-                                  const SizedBox(height: 8),
-                                  const Text('• Use your points to claim exciting rewards and discounts on your future travels!'),
+                                  Text('Gracia coins Guidelines'),
+                                  SizedBox(height: 8),
+                                  Text('• Book your ferry or flight and earn points along the way.'),
+                                  SizedBox(height: 8),
+                                  Text('• For every ₱1,000 spent, you will earn 5 Gracia coins.'),
+                                  SizedBox(height: 8),
+                                  Text('• Points will be automatically credited once your booking has been paid and verified.'),
+                                  SizedBox(height: 8),
+                                  Text('• Redeem your Gracia coins to enjoy exciting rewards and discounts on your future travels.'),
                                 ],
                               ),
                               actions: [
@@ -8237,7 +8244,7 @@ String getOperatorLogoUrl(String operatorName) {
   final lower = operatorName.toLowerCase();
   String logo = '';
   if (lower.contains('2go')) logo = '2GO-Logo.png';
-  else if (lower.contains('starlite')) logo = 'starlite-Logo.jfif';
+  else if (lower.contains('starlite')) logo = 'Starlite_Logo.png';
   else if (lower.contains('cebu')) logo = 'CebuPecific-Logo.png';
   else if (lower.contains('pal') || lower.contains('philippine airlines')) logo = 'Pal-Logo.jfif';
   else if (lower.contains('airasia')) logo = 'AirAsia-Logo.png';
@@ -8485,7 +8492,6 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               separatorBuilder: (_, __) => const SizedBox(width: 16),
                               itemBuilder: (context, sIndex) {
                                 final s = schedules[sIndex];
-                                final price = s['price'] ?? 0;
 
                                 DateTime? depTime;
                                 DateTime? arrTime;
@@ -8656,7 +8662,6 @@ class _VouchersScreenState extends State<VouchersScreen> {
   bool _isClaiming = false;
   String _error = '';
   List<dynamic> _vouchers = [];
-  String _typeFilter = 'all';
   final TextEditingController _promoCtrl = TextEditingController();
 
   @override
@@ -8715,7 +8720,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
     return Scaffold(
       backgroundColor: kBgLight,
       appBar: AppBar(
-        title: const Text('Vouchers'),
+        title: const Text('Discount Coupons'),
         backgroundColor: kGreen,
         foregroundColor: Colors.white,
       ),
@@ -8732,12 +8737,12 @@ class _VouchersScreenState extends State<VouchersScreen> {
                         color: kPink.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.local_activity, size: 56, color: kPink),
+                      child: const Icon(Icons.card_giftcard, size: 56, color: kPink),
                     ),
                     const SizedBox(height: 20),
                     const Text('Login Required', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
                     const SizedBox(height: 8),
-                    const Text('Please log in to view your available vouchers.', style: TextStyle(color: kSlate500, fontSize: 14), textAlign: TextAlign.center),
+                    const Text('Please log in to view your available discount coupons.', style: TextStyle(color: kSlate500, fontSize: 14), textAlign: TextAlign.center),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context),
@@ -8758,99 +8763,62 @@ class _VouchersScreenState extends State<VouchersScreen> {
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
-                          // Input Promo Code at top and Voucher Type Filter beside it
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 20),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: kSlate200),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.confirmation_num_outlined, color: kPink, size: 20),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _promoCtrl,
-                                          decoration: const InputDecoration(
-                                            border: InputBorder.none,
-                                            hintText: 'Input promo code',
-                                            hintStyle: TextStyle(color: kSlate400, fontSize: 14),
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: _isClaiming ? null : () async {
-                                          final code = _promoCtrl.text.trim();
-                                          if (code.isEmpty) return;
-                                          setState(() => _isClaiming = true);
-                                          try {
-                                            final res = await http.post(
-                                              Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
-                                              headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
-                                              body: jsonEncode({'code': code}),
-                                            );
-                                            final data = jsonDecode(res.body);
-                                            if (res.statusCode == 200 && data['status'] == 'success') {
-                                              _promoCtrl.clear();
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Voucher added!'), backgroundColor: kGreen));
-                                              _fetchVouchers();
-                                            } else {
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid code.'), backgroundColor: Colors.red));
-                                            }
-                                          } catch (e) {
-                                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
-                                          } finally {
-                                            if (mounted) setState(() => _isClaiming = false);
-                                          }
-                                        },
-                                        child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                flex: 2,
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 20),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: kSlate200),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _typeFilter,
-                                      isExpanded: true,
-                                      icon: const Icon(Icons.filter_list, color: kGreen, size: 20),
-                                      style: const TextStyle(color: kSlate700, fontSize: 13, fontWeight: FontWeight.w600),
-                                      items: const [
-                                        DropdownMenuItem(value: 'all', child: Text('All Types')),
-                                        DropdownMenuItem(value: 'ticket_fare', child: Text('Ticket Fare Only')),
-                                        DropdownMenuItem(value: 'vehicle', child: Text('Vehicle Only')),
-                                        DropdownMenuItem(value: 'accommodation', child: Text('Accommodation Only')),
-                                        DropdownMenuItem(value: 'booking_total', child: Text('Booking Total')),
-                                      ],
-                                      onChanged: (val) {
-                                        if (val != null) setState(() => _typeFilter = val);
-                                      },
+                          // Input Promo Code at top
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: kSlate200),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.card_giftcard, color: kPink, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _promoCtrl,
+                                    textCapitalization: TextCapitalization.characters,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Input promo code / discount coupon',
+                                      hintStyle: TextStyle(color: kSlate400, fontSize: 14),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                                TextButton(
+                                  onPressed: _isClaiming ? null : () async {
+                                    final code = _promoCtrl.text.trim();
+                                    if (code.isEmpty) return;
+                                    setState(() => _isClaiming = true);
+                                    try {
+                                      final res = await http.post(
+                                        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
+                                        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+                                        body: jsonEncode({'code': code}),
+                                      );
+                                      final data = jsonDecode(res.body);
+                                      if (res.statusCode == 200 && data['status'] == 'success') {
+                                        _promoCtrl.clear();
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Discount coupon added!'), backgroundColor: kGreen));
+                                        _fetchVouchers();
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid coupon code.'), backgroundColor: Colors.red));
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
+                                    } finally {
+                                      if (mounted) setState(() => _isClaiming = false);
+                                    }
+                                  },
+                                  child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
                           ),
 
-                          const Text('Available Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                          const Text('Available Discount Coupons', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
                           const SizedBox(height: 12),
                           if (_vouchers.isEmpty)
                             const Center(
@@ -8858,224 +8826,48 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                 padding: EdgeInsets.symmetric(vertical: 48),
                                 child: Column(
                                   children: [
-                                    Icon(Icons.local_activity, size: 64, color: kSlate200),
+                                    Icon(Icons.card_giftcard, size: 64, color: kSlate200),
                                     SizedBox(height: 16),
-                                    Text('No vouchers available', style: TextStyle(color: kSlate400, fontSize: 16)),
+                                    Text('No discount coupons available', style: TextStyle(color: kSlate400, fontSize: 16)),
                                   ],
                                 ),
                               ),
                             )
                           else
                             ..._vouchers.map((v) {
-                              IconData scopeIcon;
-                              String scopeLabel;
-                              switch (v['eligible_scope']) {
-                                case 'ticket_fare':
-                                  scopeIcon = Icons.airplane_ticket;
-                                  scopeLabel = 'Ticket Fare Only';
-                                  break;
-                                case 'vehicle':
-                                  scopeIcon = Icons.directions_car;
-                                  scopeLabel = 'Vehicle Only';
-                                  break;
-                                case 'accommodation':
-                                  scopeIcon = Icons.hotel;
-                                  scopeLabel = 'Accommodation Only';
-                                  break;
-                                case 'booking_total':
-                                  scopeIcon = Icons.receipt_long;
-                                  scopeLabel = 'Booking Total';
-                                  break;
-                                default:
-                                  scopeIcon = Icons.local_activity;
-                                  scopeLabel = 'Any Booking';
-                              }
-
-                              return GestureDetector(
+                              return _DiscountCouponCard(
+                                voucher: v,
+                                isSelected: false,
                                 onTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: Colors.white,
-                                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                                    builder: (ctx) => Padding(
-                                      padding: const EdgeInsets.all(24),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(12),
-                                                decoration: BoxDecoration(color: kGreen.withOpacity(0.1), shape: BoxShape.circle),
-                                                child: Icon(scopeIcon, color: kPink, size: 28),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
-                                                    const SizedBox(height: 4),
-                                                    Text(scopeLabel, style: const TextStyle(color: kGreen, fontSize: 13, fontWeight: FontWeight.bold)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const Divider(height: 32),
-                                          const Text('Voucher Code', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['code'] ?? '', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: kPink, letterSpacing: 1.5)),
-                                          const SizedBox(height: 16),
-                                          const Text('Description / Internal Notes', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['description'] ?? 'No additional details.', style: const TextStyle(color: kSlate800, fontSize: 14)),
-                                          const SizedBox(height: 16),
-                                          const Text('Minimum Spend', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['min_booking_amount'] != null ? '₱${v['min_booking_amount']}' : 'No minimum spend', style: const TextStyle(color: kSlate800, fontSize: 14, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 16),
-                                          const Text('Valid Until', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                          const SizedBox(height: 4),
-                                          Text(v['end_at'] != null ? v['end_at'].toString().substring(0,10) : 'No expiration', style: const TextStyle(color: kSlate800, fontSize: 14, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 32),
-                                          SizedBox(
-                                            width: double.infinity,
-                                            height: 50,
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.pop(ctx);
-                                                if (widget.onUseVoucher != null) {
-                                                  widget.onUseVoucher!();
-                                                } else if (Navigator.canPop(context)) {
-                                                  Navigator.pop(context);
-                                                }
-                                              },
-                                              style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                                              child: const Text('Use Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                            ),
+                                  UserSession.autoApplyVoucherCode = v['code'];
+                                  if (widget.onUseVoucher != null) {
+                                    widget.onUseVoucher!();
+                                  } else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                        title: const Text('Use Discount Coupon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                        content: Text('Discount Coupon "${v['code']}" (${_getVoucherPercentage(v)}% OFF) will be automatically applied on your booking submission.\n\nProceed to booking?', style: const TextStyle(fontSize: 14)),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(ctx);
+                                              Navigator.pushAndRemoveUntil(
+                                                context,
+                                                MaterialPageRoute(builder: (_) => const MainScreen()),
+                                                (route) => false,
+                                              );
+                                            },
+                                            style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                            child: const Text('Go to Booking'),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  }
                                 },
-                                child: ClipPath(
-                                  clipper: TicketClipper(dividerX: 100, punchRadius: 10),
-                                  child: Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  height: 110,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 3)),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      // Left side colored block (1/4 width)
-                                      Container(
-                                        width: 100,
-                                        decoration: const BoxDecoration(
-                                          color: kGreen,
-                                          borderRadius: BorderRadius.horizontal(left: Radius.circular(8)),
-                                        ),
-                                        child: Center(
-                                          child: Icon(scopeIcon, color: kPink, size: 54),
-                                        ),
-                                      ),
-                                      // Right side voucher details
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(v['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                                    const SizedBox(height: 6),
-                                                    if (v['min_booking_amount'] != null)
-                                                      Text('Min. Spend ₱${v['min_booking_amount']}', style: const TextStyle(color: kSlate500, fontSize: 12)),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      v['description'] ?? 'Exclusive Voucher',
-                                                      style: const TextStyle(color: kSlate500, fontSize: 11),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const Spacer(),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(Icons.access_time, size: 12, color: kSlate400),
-                                                        const SizedBox(width: 4),
-                                                        Text(
-                                                          v['end_at'] != null ? 'Expiring: ${v['end_at'].toString().substring(0,10)}' : 'No expiration',
-                                                          style: const TextStyle(color: kSlate500, fontSize: 11),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              // Use button
-                                              const SizedBox(width: 8),
-                                              Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  OutlinedButton(
-                                                    onPressed: () {
-                                                      UserSession.autoApplyVoucherCode = v['code'];
-                                                      if (widget.onUseVoucher != null) {
-                                                        widget.onUseVoucher!();
-                                                      } else {
-                                                        showDialog(
-                                                          context: context,
-                                                          builder: (ctx) => AlertDialog(
-                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                            title: const Text('Use Voucher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                                            content: Text('Voucher "${v['code']}" will be automatically applied on your booking submission.\n\nProceed to booking?', style: const TextStyle(fontSize: 14)),
-                                                            actions: [
-                                                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                                                              ElevatedButton(
-                                                                onPressed: () {
-                                                                  Navigator.pop(ctx);
-                                                                  Navigator.pushAndRemoveUntil(
-                                                                    context,
-                                                                    MaterialPageRoute(builder: (_) => const MainScreen()),
-                                                                    (route) => false,
-                                                                  );
-                                                                },
-                                                                style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                                                                child: const Text('Go to Booking'),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        );
-                                                      }
-                                                    },
-                                                    style: OutlinedButton.styleFrom(
-                                                      side: const BorderSide(color: kPink, width: 1.5),
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                                      minimumSize: Size.zero,
-                                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                    ),
-                                                    child: const Text('Use', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                ),
                               );
                             }).toList(),
                         ],
@@ -9085,6 +8877,343 @@ class _VouchersScreenState extends State<VouchersScreen> {
   }
 }
 
+String _getVoucherLabel(dynamic v) {
+  if (v == null) return '30% OFF';
+
+  if (v['discount_type'] == 'percentage' && v['discount_value'] != null) {
+    final val = double.tryParse(v['discount_value'].toString());
+    if (val != null && val > 0) {
+      return '${val.toInt()}% OFF';
+    }
+  }
+
+  if (v['discount_type'] != 'percentage' && v['discount_value'] != null) {
+    final val = double.tryParse(v['discount_value'].toString());
+    if (val != null && val > 0) {
+      return '₱${val.toStringAsFixed(0)} OFF';
+    }
+  }
+
+  final name = v['name']?.toString() ?? '';
+  final match = RegExp(r'(\d+)\s*%').firstMatch(name);
+  if (match != null) {
+    final p = int.tryParse(match.group(1) ?? '');
+    if (p != null && p > 0 && p <= 100) return '$p% OFF';
+  }
+
+  return '30% OFF';
+}
+
+int _getVoucherPercentage(dynamic v) {
+  if (v == null) return 30;
+
+  if (v['discount_type'] == 'percentage' && v['discount_value'] != null) {
+    final val = double.tryParse(v['discount_value'].toString());
+    if (val != null && val > 0) {
+      return val.toInt();
+    }
+  }
+
+  final name = v['name']?.toString() ?? '';
+  final match = RegExp(r'(\d+)\s*%').firstMatch(name);
+  if (match != null) {
+    final p = int.tryParse(match.group(1) ?? '');
+    if (p != null && p > 0 && p <= 100) return p;
+  }
+
+  return 30;
+}
+
+String _formatVoucherDate(String? dateStr) {
+  if (dateStr == null || dateStr.isEmpty) return 'Valid Until August 2027';
+  try {
+    final dt = DateTime.parse(dateStr);
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return 'Valid Until ${months[dt.month - 1]} ${dt.year}';
+  } catch (_) {
+    return 'Valid Until August 2027';
+  }
+}
+
+class _CouponCardClipper extends CustomClipper<Path> {
+  final double dividerRatio;
+  final int notchCount;
+  final double notchRadius;
+
+  _CouponCardClipper({
+    this.dividerRatio = 0.63,
+    this.notchCount = 13,
+    this.notchRadius = 4.5,
+  });
+
+  @override
+  Path getClip(Size size) {
+    Path outer = Path();
+    final double r = 16.0;
+    outer.addRRect(RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Radius.circular(r),
+    ));
+
+    Path notches = Path();
+    final double divX = size.width * dividerRatio;
+    final double step = size.height / (notchCount + 1);
+    for (int i = 1; i <= notchCount; i++) {
+      final double y = step * i;
+      notches.addOval(Rect.fromCircle(
+        center: Offset(divX, y),
+        radius: notchRadius,
+      ));
+    }
+
+    return Path.combine(PathOperation.difference, outer, notches);
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class _DiscountCouponCard extends StatelessWidget {
+  final Map<String, dynamic>? voucher;
+  final bool isSelected;
+  final VoidCallback? onTap;
+
+  const _DiscountCouponCard({
+    super.key,
+    this.voucher,
+    this.isSelected = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String discountLabel = _getVoucherLabel(voucher);
+    final int percentage = _getVoucherPercentage(voucher);
+    final String validDate = _formatVoucherDate(voucher?['end_at']?.toString());
+    const Color voucherGreen = Color(0xFF137F28);
+    const Color voucherPink = Color(0xFFFF1694);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        height: 165,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: ClipPath(
+          clipper: _CouponCardClipper(dividerRatio: 0.63, notchCount: 13, notchRadius: 4.5),
+          child: Stack(
+            children: [
+              Row(
+                children: [
+                  // Left GREEN section (63%)
+                  Expanded(
+                    flex: 63,
+                    child: Container(
+                      color: voucherGreen,
+                      padding: const EdgeInsets.fromLTRB(18, 14, 20, 14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Logo Header
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/icon/app_icon_foreground.png',
+                                height: 40,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.location_on,
+                                  color: Colors.white,
+                                  size: 34,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text(
+                                    'AMIGA GRACIA',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 14,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'TRAVEL SERVICES',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 9,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          // Main Title
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 10),
+                              const Text(
+                                'DISCOUNT',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.92,
+                                  letterSpacing: -0.6,
+                                ),
+                              ),
+                              const Text(
+                                'COUPON',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.92,
+                                  letterSpacing: -0.6,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                validDate,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          Text(
+                            discountLabel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Right PINK section (37%)
+                  Expanded(
+                    flex: 37,
+                    child: Container(
+                      color: voucherPink,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.16),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.card_giftcard,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Text(
+                            '$percentage%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 40,
+                              fontWeight: FontWeight.w900,
+                              height: 0.85,
+                            ),
+                          ),
+                          const Text(
+                            'OFF',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              height: 0.95,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'AMIGA GRACIA TRAVEL SERVICES',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                              height: 1.25,
+                            ),
+                          ),
+                          const Text(
+                            'ONLINE COUPON',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                              height: 1.25,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (isSelected)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: kGreen,
+                      size: 20,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class TicketClipper extends CustomClipper<Path> {
   final double punchRadius;
@@ -9126,9 +9255,22 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
 
   // Reschedule state
   String _depDate = '';
+  String _retDate = '';
   List<dynamic> _availableSchedules = [];
+  List<dynamic> _returnSchedules = [];
   bool _loadingSchedules = false;
+  bool _loadingReturnSchedules = false;
   int? _selectedScheduleId;
+  int? _selectedReturnScheduleId;
+  Map<String, dynamic>? _selectedSchedule;
+  Map<String, dynamic>? _selectedReturnSchedule;
+  int? _selectedAccommodationId;
+  double _selectedAccommodationPrice = 0.0;
+  String _selectedAccommodationName = '';
+  int? _selectedReturnAccommodationId;
+  double _selectedReturnAccommodationPrice = 0.0;
+  String _selectedReturnAccommodationName = '';
+  XFile? _priceProofFile;
 
   // Refund form state
   String _refundMethod = 'GCash';
@@ -9146,53 +9288,38 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
 
   Future<void> _fetchSchedules(String date) async {
     if (date.isEmpty) return;
-    setState(() { _loadingSchedules = true; _availableSchedules = []; _selectedScheduleId = null; });
+    setState(() { _loadingSchedules = true; _availableSchedules = []; _selectedScheduleId = null; _selectedSchedule = null; _selectedAccommodationId = null; _selectedAccommodationPrice = 0.0; _selectedAccommodationName = ''; });
     try {
       final baseUrl = UserSession.getBaseUrl();
       final origin = widget.booking['origin'] ?? '';
       final dest = widget.booking['destination'] ?? '';
-      final res = await http.get(
-        Uri.parse('$baseUrl/api/schedules/realtime?origin=$origin&destination=$dest&date=$date'),
-        headers: {'Accept': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/schedules'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+        body: jsonEncode({
+          'origin': origin,
+          'destination': dest,
+          'date': date,
+          if (widget.booking['mode'] != null) 'mode': widget.booking['mode'],
+          if (widget.booking['operator'] != null) 'operator': widget.booking['operator'],
+        }),
       );
       final data = jsonDecode(res.body);
-      if (res.statusCode == 200) {
-        setState(() => _availableSchedules = (data['schedules'] ?? data['data'] ?? []));
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() => _availableSchedules = (data['schedules'] as List<dynamic>? ?? []));
       }
     } catch (_) {}
     finally { if (mounted) setState(() => _loadingSchedules = false); }
   }
 
-  Future<void> _submitReschedule() async {
-    if (_selectedScheduleId == null || _depDate.isEmpty) return;
-    setState(() => _isSubmitting = true);
-    try {
-      final baseUrl = UserSession.getBaseUrl();
-      final bookingId = widget.booking['id'];
-      final res = await http.post(
-        Uri.parse('$baseUrl/api/bookings/$bookingId/submit-replacement'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
-        },
-        body: jsonEncode({
-          'email': widget.booking['client_email'],
-          'dep_date': _depDate,
-          'dep_schedule_id': _selectedScheduleId,
-        }),
-      );
-      final data = jsonDecode(res.body);
-      if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() { _submitted = true; _feedback = data['message'] ?? 'Reschedule submitted successfully!'; });
-      } else {
-        setState(() => _feedback = data['message'] ?? 'Failed to submit reschedule.');
-      }
-    } catch (e) {
-      setState(() => _feedback = 'Network error: $e');
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+  String get _refundDestination {
+    final parts = ['Method: $_refundMethod'];
+    if (_refundMethod != 'GCash' && _bankNameCtrl.text.trim().isNotEmpty) {
+      parts.add('Institution: ${_bankNameCtrl.text.trim()}');
     }
+    parts.add('Account: ${_accountNumberCtrl.text.trim()}');
+    parts.add('Name: ${_accountNameCtrl.text.trim()}');
+    return parts.join(' | ');
   }
 
   Future<void> _submitRefund() async {
@@ -9212,10 +9339,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
           if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
         },
         body: jsonEncode({
-          'refund_method': _refundMethod,
-          'refund_account_number': _accountNumberCtrl.text.trim(),
-          'refund_account_name': _accountNameCtrl.text.trim(),
-          if (_refundMethod != 'GCash') 'refund_bank_name': _bankNameCtrl.text.trim(),
+          'email': widget.booking['client_email'],
+          'refund_destination': _refundDestination,
         }),
       );
       final data = jsonDecode(res.body);
@@ -9223,6 +9348,201 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
         setState(() { _submitted = true; _feedback = data['message'] ?? 'Refund request submitted!'; });
       } else {
         setState(() => _feedback = data['message'] ?? 'Failed to submit refund request.');
+      }
+    } catch (e) {
+      setState(() => _feedback = 'Network error: $e');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  int get _passengerCount {
+    final passengers = widget.booking['passengers'];
+    if (passengers is List) return passengers.length;
+    final adults = widget.booking['adults'] as int? ?? 0;
+    final children = widget.booking['children'] as int? ?? 0;
+    return (adults + children) > 0 ? (adults + children) : 1;
+  }
+
+  double get _oldTotalPrice => (widget.booking['total_price'] as num?)?.toDouble() ?? 0.0;
+
+  double get _selectedDepartureCost {
+    if (_selectedSchedule == null) return 0.0;
+    final schedulePrice = (_selectedSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+    return (schedulePrice + _selectedAccommodationPrice) * _passengerCount;
+  }
+
+  double get _selectedReturnCost {
+    if (_selectedReturnSchedule == null) return 0.0;
+    final schedulePrice = (_selectedReturnSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+    return (schedulePrice + _selectedReturnAccommodationPrice) * _passengerCount;
+  }
+
+  double get _newTotalPrice {
+    final vehiclePrice = (widget.booking['has_vehicle'] as bool? ?? false)
+        ? (widget.booking['vehicle_price'] as num?)?.toDouble() ?? 0.0
+        : 0.0;
+    return _selectedDepartureCost + _selectedReturnCost + vehiclePrice;
+  }
+
+  double get _priceDiff => (_newTotalPrice - _oldTotalPrice) > 0 ? (_newTotalPrice - _oldTotalPrice) : 0.0;
+
+  bool get _isReturnTrip => widget.booking['return_date'] != null;
+
+  String? get _resumeDate => (widget.booking['service_cancellation'] as Map<String, dynamic>?)?['resume_date']?.toString();
+
+  DateTime? get _resumeDateTime {
+    if (_resumeDate == null || _resumeDate!.isEmpty) return null;
+    try {
+      return DateTime.parse(_resumeDate!);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get _isResumeTba => _resumeDate == null || _resumeDate!.isEmpty;
+
+  bool get _isBeforeResumeDate {
+    final resume = _resumeDateTime;
+    if (resume == null || _depDate.isEmpty) return false;
+    try {
+      final chosen = DateTime.parse(_depDate);
+      return chosen.isBefore(resume);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool get _isReturnBeforeResumeDate {
+    final resume = _resumeDateTime;
+    if (resume == null || _retDate.isEmpty) return false;
+    try {
+      final chosen = DateTime.parse(_retDate);
+      return chosen.isBefore(resume);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool get _requiresDepartureAccommodation {
+    final accommodations = (_selectedSchedule?['accommodations'] as List<dynamic>?) ?? [];
+    return accommodations.isNotEmpty;
+  }
+
+  bool get _requiresReturnAccommodation {
+    final accommodations = (_selectedReturnSchedule?['accommodations'] as List<dynamic>?) ?? [];
+    return accommodations.isNotEmpty;
+  }
+
+  Future<void> _fetchReturnSchedules(String date) async {
+    if (date.isEmpty) return;
+    setState(() { _loadingReturnSchedules = true; _returnSchedules = []; _selectedReturnScheduleId = null; _selectedReturnSchedule = null; _selectedReturnAccommodationId = null; _selectedReturnAccommodationPrice = 0.0; _selectedReturnAccommodationName = ''; });
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final origin = widget.booking['destination'] ?? '';
+      final dest = widget.booking['origin'] ?? '';
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/schedules'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+        body: jsonEncode({
+          'origin': origin,
+          'destination': dest,
+          'date': date,
+          if (widget.booking['mode'] != null) 'mode': widget.booking['mode'],
+          if (widget.booking['operator'] != null) 'operator': widget.booking['operator'],
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() => _returnSchedules = (data['schedules'] as List<dynamic>? ?? []));
+      }
+    } catch (_) {}
+    finally { if (mounted) setState(() => _loadingReturnSchedules = false); }
+  }
+
+  Future<void> _pickPriceProof() async {
+    try {
+      final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (proof != null) {
+        setState(() => _priceProofFile = proof);
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Future<void> _submitReschedule() async {
+    if (_isResumeTba) {
+      setState(() => _feedback = 'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
+      return;
+    }
+    if (_selectedScheduleId == null || _depDate.isEmpty) return;
+    if (_isBeforeResumeDate) {
+      setState(() => _feedback = 'Selected departure date cannot be earlier than the operator resume date.');
+      return;
+    }
+    if (_isReturnTrip && _retDate.isNotEmpty && _isReturnBeforeResumeDate) {
+      setState(() => _feedback = 'Selected return date cannot be earlier than the operator resume date.');
+      return;
+    }
+    if (_requiresDepartureAccommodation && _selectedAccommodationId == null) {
+      setState(() => _feedback = 'Please select a departure accommodation.');
+      return;
+    }
+    if (_isReturnTrip && _retDate.isEmpty) {
+      setState(() => _feedback = 'Please select a return date.');
+      return;
+    }
+    if (_isReturnTrip && _selectedReturnScheduleId == null) {
+      setState(() => _feedback = 'Please select a return schedule.');
+      return;
+    }
+    if (_isReturnTrip && _requiresReturnAccommodation && _selectedReturnAccommodationId == null) {
+      setState(() => _feedback = 'Please select a return accommodation.' );
+      return;
+    }
+    if (_priceDiff > 0 && _priceProofFile == null) {
+      setState(() => _feedback = 'Please upload proof of payment for the price difference.');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final bookingId = widget.booking['id'];
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/$bookingId/submit-replacement'));
+      request.headers['Accept'] = 'application/json';
+      if (UserSession.token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer ${UserSession.token}';
+      }
+      request.fields['email'] = widget.booking['client_email']?.toString() ?? '';
+      request.fields['dep_date'] = _depDate;
+      request.fields['dep_schedule_id'] = _selectedScheduleId.toString();
+      if (_selectedAccommodationId != null) {
+        request.fields['dep_accommodation_id'] = _selectedAccommodationId.toString();
+      }
+      if (_isReturnTrip) {
+        request.fields['ret_date'] = _retDate;
+        request.fields['ret_schedule_id'] = _selectedReturnScheduleId.toString();
+        if (_selectedReturnAccommodationId != null) {
+          request.fields['ret_accommodation_id'] = _selectedReturnAccommodationId.toString();
+        }
+      }
+      request.fields['price_diff'] = _priceDiff.toStringAsFixed(2);
+      if (_priceDiff > 0 && _priceProofFile != null) {
+        request.files.add(await http.MultipartFile.fromPath('proof', _priceProofFile!.path));
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _submitted = true;
+          _feedback = data['message'] ?? 'Reschedule submitted successfully!';
+        });
+      } else {
+        setState(() => _feedback = data['message'] ?? 'Failed to submit reschedule.');
       }
     } catch (e) {
       setState(() => _feedback = 'Network error: $e');
@@ -9348,6 +9668,25 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               child: Text(_feedback, style: TextStyle(fontWeight: FontWeight.w600, color: _submitted ? kGreen : Colors.red.shade800)),
             ),
 
+          if (_isResumeTba)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Rescheduling not available yet', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF7A4A04))),
+                  SizedBox(height: 8),
+                  Text('The operator has not announced a resume date. Please wait until a confirmed service resume date is available before selecting a replacement travel date.', style: TextStyle(fontSize: 13, color: Color(0xFF7A4A04))),
+                ],
+              ),
+            ),
+
           if (_submitted) ...[
             const SizedBox(height: 8),
             SizedBox(
@@ -9462,7 +9801,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             ),
             const SizedBox(height: 12),
 
-            // ── Date picker ──
+            // ── Date pickers ──
             Card(
               color: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -9471,39 +9810,89 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Step 1: Pick a Departure Date', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    const Text('Step 1: Pick new travel dates', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
                     const SizedBox(height: 12),
                     TextFormField(
                       readOnly: true,
+                      enabled: !_isResumeTba,
                       decoration: InputDecoration(
-                        hintText: 'Select date',
+                        hintText: _isResumeTba ? 'Awaiting resume date' : 'Select departure date',
                         prefixIcon: const Icon(Icons.calendar_today, color: kGreen),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         suffixText: _depDate.isNotEmpty ? _depDate : null,
                       ),
-                      onTap: () async {
-                        final minDate = resumeDate != null ? DateTime.tryParse(resumeDate) ?? DateTime.now() : DateTime.now();
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: minDate,
-                          firstDate: minDate,
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
-                        );
-                        if (picked != null) {
-                          final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-                          setState(() => _depDate = dateStr);
-                          _fetchSchedules(dateStr);
-                        }
-                      },
+                      onTap: _isResumeTba
+                          ? () {
+                              setState(() => _feedback = 'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
+                            }
+                          : () async {
+                              final minDate = _resumeDateTime ?? DateTime.now();
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: minDate,
+                                firstDate: minDate,
+                                lastDate: DateTime.now().add(const Duration(days: 365)),
+                              );
+                              if (picked != null) {
+                                final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                                setState(() {
+                                  _depDate = dateStr;
+                                  _selectedScheduleId = null;
+                                  _selectedSchedule = null;
+                                  _selectedAccommodationId = null;
+                                  _selectedAccommodationPrice = 0.0;
+                                  _selectedAccommodationName = '';
+                                });
+                                _fetchSchedules(dateStr);
+                              }
+                            },
                     ),
+                    if (_isReturnTrip) ...[
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: 'Select return date',
+                          prefixIcon: const Icon(Icons.calendar_today, color: kGreen),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          suffixText: _retDate.isNotEmpty ? _retDate : null,
+                        ),
+                        onTap: () async {
+                          if (_depDate.isEmpty) {
+                            setState(() => _feedback = _isResumeTba ? 'Rescheduling is not available until the operator publishes a resume date.' : 'Select a departure date first.');
+                            return;
+                          }
+                          final startDate = DateTime.parse(_depDate).add(const Duration(days: 1));
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: startDate,
+                            firstDate: startDate,
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                          );
+                          if (picked != null) {
+                            final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                            setState(() {
+                              _retDate = dateStr;
+                              _selectedReturnScheduleId = null;
+                              _selectedReturnSchedule = null;
+                              _selectedReturnAccommodationId = null;
+                              _selectedReturnAccommodationPrice = 0.0;
+                              _selectedReturnAccommodationName = '';
+                            });
+                            _fetchReturnSchedules(dateStr);
+                          }
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
 
-            // ── Schedule list ──
+            // ── Departure schedule list ──
             if (_depDate.isNotEmpty) ...[
               Card(
                 color: Colors.white,
@@ -9513,7 +9902,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Available Schedules for $_depDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      Text('Available departure schedules for $_depDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
                       const SizedBox(height: 12),
                       if (_loadingSchedules)
                         const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: kGreen)))
@@ -9528,7 +9917,13 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                           final sid = s['id'] as int?;
                           final isSelected = _selectedScheduleId == sid;
                           return GestureDetector(
-                            onTap: () => setState(() => _selectedScheduleId = sid),
+                            onTap: () => setState(() {
+                              _selectedScheduleId = sid;
+                              _selectedSchedule = Map<String, dynamic>.from(s);
+                              _selectedAccommodationId = null;
+                              _selectedAccommodationPrice = 0.0;
+                              _selectedAccommodationName = '';
+                            }),
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(14),
@@ -9562,8 +9957,226 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               const SizedBox(height: 16),
             ],
 
+            if (_selectedSchedule != null && _requiresDepartureAccommodation) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Step 2: Select departure accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      ...((_selectedSchedule!['accommodations'] as List<dynamic>? ?? []).map((acc) {
+                        final accId = acc['id'] as int?;
+                        final isSelected = _selectedAccommodationId == accId;
+                        final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            _selectedAccommodationId = accId;
+                            _selectedAccommodationPrice = price;
+                            _selectedAccommodationName = acc['name']?.toString() ?? '';
+                          }),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(acc['name'] ?? 'Accommodation', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                      if (acc['description'] != null) ...[
+                                        const SizedBox(height: 4),
+                                        Text(acc['description'], style: const TextStyle(color: kSlate600, fontSize: 12)),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Text('+₱${price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: kPink)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList()),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_isReturnTrip && _retDate.isNotEmpty) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Available return schedules for $_retDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      if (_loadingReturnSchedules)
+                        const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: kGreen)))
+                      else if (_returnSchedules.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(color: kSlate50, borderRadius: BorderRadius.circular(10)),
+                          child: const Text('No return schedules available on this date for this route.', style: TextStyle(color: kSlate500, fontSize: 13)),
+                        )
+                      else
+                        ...(_returnSchedules.map((s) {
+                          final sid = s['id'] as int?;
+                          final isSelected = _selectedReturnScheduleId == sid;
+                          return GestureDetector(
+                            onTap: () => setState(() {
+                              _selectedReturnScheduleId = sid;
+                              _selectedReturnSchedule = Map<String, dynamic>.from(s);
+                              _selectedReturnAccommodationId = null;
+                              _selectedReturnAccommodationPrice = 0.0;
+                              _selectedReturnAccommodationName = '';
+                            }),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(s['service'] ?? s['service_name'] ?? 'Schedule', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                        const SizedBox(height: 4),
+                                        Text('${s['departure'] ?? s['formatted_departure'] ?? '—'} → ${s['arrival'] ?? s['formatted_arrival'] ?? '—'}', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected) const Icon(Icons.check_circle, color: kGreen),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList()),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_selectedReturnSchedule != null && _requiresReturnAccommodation) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Step 3: Select return accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      ...((_selectedReturnSchedule!['accommodations'] as List<dynamic>? ?? []).map((acc) {
+                        final accId = acc['id'] as int?;
+                        final isSelected = _selectedReturnAccommodationId == accId;
+                        final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            _selectedReturnAccommodationId = accId;
+                            _selectedReturnAccommodationPrice = price;
+                            _selectedReturnAccommodationName = acc['name']?.toString() ?? '';
+                          }),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(acc['name'] ?? 'Accommodation', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                      if (acc['description'] != null) ...[
+                                        const SizedBox(height: 4),
+                                        Text(acc['description'], style: const TextStyle(color: kSlate600, fontSize: 12)),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Text('+₱${price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: kPink)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList()),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            if (_selectedSchedule != null) ...[
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Price summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const SizedBox(height: 12),
+                      _SummaryRow('Original booking total', '₱${_oldTotalPrice.toStringAsFixed(2)}'),
+                      _SummaryRow('New total estimate', '₱${_newTotalPrice.toStringAsFixed(2)}'),
+                      if (_priceDiff > 0) _SummaryRow('Price difference', '₱${_priceDiff.toStringAsFixed(2)}'),
+                      if (_priceDiff == 0) _SummaryRow('Price difference', 'No extra payment required'),
+                      const SizedBox(height: 12),
+                      if (_priceDiff > 0) ...[
+                        const Text('Upload proof of payment for the price difference', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _pickPriceProof,
+                                icon: const Icon(Icons.upload_file),
+                                label: Text(_priceProofFile == null ? 'Upload proof' : 'Change proof'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_priceProofFile != null) ...[
+                          const SizedBox(height: 8),
+                          Text('Selected file: ${_priceProofFile!.name}', style: const TextStyle(color: kSlate600, fontSize: 12)),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
             // ── Submit Reschedule Button ──
-            if (_selectedScheduleId != null)
+            if (_selectedScheduleId != null && (!_isReturnTrip || _selectedReturnScheduleId != null))
               SizedBox(
                 width: double.infinity,
                 height: 50,

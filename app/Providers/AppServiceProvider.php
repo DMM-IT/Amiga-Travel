@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Console\Commands\PurgeExpiredSchedules;
 use App\Models\WebsiteSetting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -18,7 +19,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        require_once app_path('Support/helpers.php');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                PurgeExpiredSchedules::class,
+            ]);
+        }
     }
 
     /**

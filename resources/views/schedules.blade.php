@@ -287,7 +287,7 @@
                                                             $opName = $schedule->vehicle->operator ?? $route->operator ?? '';
                                                             $opLogo = null;
                                                             if (stripos($opName, '2GO') !== false) $opLogo = '2GO-Logo.png';
-                                                            elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'starlite-Logo.jfif';
+                                                            elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
                                                             elseif (stripos($opName, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
                                                             elseif (stripos($opName, 'Pal') !== false || stripos($opName, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
                                                             elseif (stripos($opName, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
@@ -309,7 +309,7 @@
                                                 {{-- Time Bar --}}
                                                 <div class="flex items-center gap-3 py-3 border-t border-b border-slate-100">
                                                     <div class="text-center">
-                                                        <p class="text-lg font-bold text-slate-900 leading-none">{{ $schedule->formatted_departure }}</p>
+                                                        <p class="text-sm sm:text-base font-bold text-slate-900 leading-tight">{{ $schedule->formatted_departure }}</p>
                                                         <p class="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Depart</p>
                                                     </div>
                                                     <div class="flex-1 flex flex-col items-center">
@@ -327,7 +327,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="text-center">
-                                                        <p class="text-lg font-bold text-slate-900 leading-none">{{ $schedule->formatted_arrival }}</p>
+                                                        <p class="text-sm sm:text-base font-bold text-slate-900 leading-tight">{{ $schedule->formatted_arrival }}</p>
                                                         <p class="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Arrive</p>
                                                     </div>
                                                 </div>

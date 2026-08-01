@@ -10,9 +10,13 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (! Auth::check() || ! Auth::user()?->is_admin) {
+        $user = Auth::guard('admin')->user() ?? Auth::user();
+
+        if (! $user || ! $user->is_admin) {
             abort(403, 'Unauthorized');
         }
+
+        Auth::shouldUse(Auth::guard('admin')->check() ? 'admin' : 'web');
 
         return $next($request);
     }

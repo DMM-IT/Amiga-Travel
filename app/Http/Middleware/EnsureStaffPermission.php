@@ -10,7 +10,7 @@ class EnsureStaffPermission
 {
     public function handle(Request $request, Closure $next, string $permission): mixed
     {
-        $user = Auth::user();
+        $user = Auth::guard('admin')->user() ?? Auth::user();
 
         if (! $user || ! $user->isStaff()) {
             if ($request->expectsJson()) {

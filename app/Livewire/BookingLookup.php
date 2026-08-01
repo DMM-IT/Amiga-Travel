@@ -6,6 +6,7 @@ use App\Mail\BookingCancellation;
 use App\Mail\RebookingRequested;
 use App\Models\Booking;
 use App\Models\Transaction;
+use App\Models\Schedule;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -35,6 +36,27 @@ class BookingLookup extends Component
     public bool $isUploadingRebooking = false;
     public ?string $rebooking_departure_date = null;
     public ?string $rebooking_return_date = null;
+
+    // Customer Rebooking Wizard State
+    public string $rebooking_step = 'departure_date';
+
+    // Departure Leg Selection
+    public ?int $rebooking_dep_schedule_id = null;
+    public ?string $rebooking_dep_accommodation_id = null;
+    public ?float $rebooking_dep_schedule_price = null;
+    public ?float $rebooking_dep_accommodation_price = null;
+
+    // Return Leg Selection
+    public ?int $rebooking_ret_schedule_id = null;
+    public ?string $rebooking_ret_accommodation_id = null;
+    public ?float $rebooking_ret_schedule_price = null;
+    public ?float $rebooking_ret_accommodation_price = null;
+
+    // Price computation (before and after booking)
+    public float $rebooking_new_total = 0.0;
+    public float $rebooking_price_diff = 0.0;
+    public float $rebooking_total_to_pay = 0.0;
+
     public bool $showCancellationWarning = false;
     public bool $showRebookingWarning = false;
     public bool $showCancellationReminder = false;
@@ -63,6 +85,11 @@ class BookingLookup extends Component
                 $this->showCancellationReminder = true;
             }
             $this->loadCancellationWindowFromSession();
+
+            if ($this->cancellationExpired) {
+                $this->showCancellationWarning = false;
+                $this->showCancellationReminder = false;
+            }
         }
     }
 
@@ -93,6 +120,11 @@ class BookingLookup extends Component
         }
 
         $this->loadCancellationWindowFromSession();
+
+        if ($this->cancellationExpired) {
+            $this->showCancellationWarning = false;
+            $this->showCancellationReminder = false;
+        }
     }
 
     public function showCancellationWarning(): void
@@ -119,7 +151,45 @@ class BookingLookup extends Component
 
     public function requestCancellation(): void
     {
-        $this->showCancellationWarning();
+        if (! $this->booking) {
+            $this->feedback = 'Booking not found.';
+            return;
+        }
+
+        if (! $this->booking->canCancelOrRebook()) {
+            $this->feedback = 'You cannot cancel this booking as the departure date has passed.';
+            return;
+        }
+
+        if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
+            $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
+            return;
+        }
+
+        $this->resetRebookingState();
+        $this->showCancellationWarning = false;
+        $this->showCancellationReminder = false;
+
+        if ($this->cancellationExpired || $this->cancellationWindowActive) {
+            $this->feedback = 'The 5-minute cancellation window has already been used or expired.';
+            return;
+        }
+
+        $this->cancellationRequested = true;
+        $this->cancellationWindowActive = true;
+        $this->cancellationExpired = false;
+        $this->cancelCountdown = 300;
+        $this->refund_destination = null;
+        $this->refund_method = 'GCash';
+        $this->refund_bank_name = '';
+        $this->refund_account_number = '';
+        $this->refund_account_name = '';
+
+        $key = $this->getCancellationSessionKey();
+        session([$key => now()->addSeconds($this->cancelCountdown)->timestamp]);
+        session()->forget($this->getCancellationExpiredKey());
+
+        $this->feedback = 'A 5-minute cancellation window has started. Confirm cancellation before it expires.';
     }
 
     public function dismissCancellationReminder(): void
@@ -131,17 +201,26 @@ class BookingLookup extends Component
     {
         $this->resetRebookingState();
         $this->showCancellationWarning = false;
+
+        if ($this->cancellationExpired || $this->cancellationWindowActive) {
+            $this->feedback = 'The 5-minute cancellation window is already active or has expired.';
+            return;
+        }
+
         $this->cancellationRequested = true;
-        $this->cancellationWindowActive = false;
+        $this->cancellationWindowActive = true;
+        $this->cancellationExpired = false;
         $this->cancelCountdown = 300;
         $this->refund_destination = null;
+        $this->refund_method = 'GCash';
+        $this->refund_bank_name = '';
+        $this->refund_account_number = '';
+        $this->refund_account_name = '';
         $this->feedback = 'Enter where you would like the refund sent. Cancellation fee is 50% of total price, you will receive a 50% refund.';
 
-        $this->loadCancellationWindowFromSession();
-
-        if ($this->cancellationWindowActive) {
-            $this->feedback = 'Your 5-minute cancellation window is active. Confirm cancellation before it expires. Refund is 50% of total price.';
-        }
+        $key = $this->getCancellationSessionKey();
+        session([$key => now()->addSeconds($this->cancelCountdown)->timestamp]);
+        session()->forget($this->getCancellationExpiredKey());
     }
 
     public function cancelBooking(): void
@@ -347,98 +426,176 @@ class BookingLookup extends Component
     public function confirmRebookingRequest(): void
     {
         $this->resetCancellationState();
+        $this->resetRebookingState();
         $this->showRebookingWarning = false;
         $this->rebookingRequested = true;
         $this->rebooking_is_round_trip = filled($this->booking->return_date);
         $this->rebooking_departure_date = $this->booking->departure_date?->format('Y-m-d');
         $this->rebooking_return_date = $this->booking->return_date?->format('Y-m-d');
-        $this->feedback = "To rebook, please select your new travel dates and upload proof of payment for the 30% rebooking fee. Rebooking fee: ₱" . number_format($this->booking->getRebookingFeeAmount(), 2) . ".";
-
-        $this->calculateAvailableRebookingDates();
+        $this->rebooking_step = 'departure_date';
+        $this->feedback = "Please select your new travel date, schedule, and preferred accommodation below.";
     }
 
-    private function calculateAvailableRebookingDates(): void
+    public function setRebookingStep(string $step): void
     {
-        $this->availableRebookingDates = [];
-        $this->availableRebookingReturnDates = [];
-
-        if (! $this->booking || ! $this->booking->schedule) {
-            return;
-        }
-
-        $this->availableRebookingDates = $this->getValidDatesForSchedule(
-            $this->booking->schedule, 
-            $this->booking->schedule_accommodation_name,
-            $this->booking->transportClasses
-        );
-
-        if ($this->rebooking_is_round_trip && $this->booking->returnSchedule) {
-            $this->availableRebookingReturnDates = $this->getValidDatesForSchedule(
-                $this->booking->returnSchedule,
-                $this->booking->return_schedule_accommodation_name,
-                $this->booking->transportClasses
-            );
+        $this->rebooking_step = $step;
+        $this->feedback = null;
+        if ($step === 'confirm') {
+            $this->calculateRebookingPriceDiff();
         }
     }
 
-    private function getValidDatesForSchedule(\App\Models\Schedule $originalSchedule, ?string $accommodationName, \Illuminate\Database\Eloquent\Collection $transportClasses): array
+    public function updatedRebookingDepartureDate(): void
     {
-        $timeStr = \Carbon\Carbon::parse($originalSchedule->departure_time)->format('H:i:s');
-        
-        $query = \App\Models\Schedule::where('ferry_route_id', $originalSchedule->ferry_route_id)
-            ->whereTime('departure_time', $timeStr)
-            ->where('departure_time', '>', now()->startOfDay())
-            ->active();
+        $this->rebooking_dep_schedule_id = null;
+        $this->rebooking_dep_accommodation_id = null;
+        $this->rebooking_dep_schedule_price = null;
+        $this->rebooking_dep_accommodation_price = null;
+    }
 
-        $matchingSchedules = $query->get();
+    public function updatedRebookingReturnDate(): void
+    {
+        $this->rebooking_ret_schedule_id = null;
+        $this->rebooking_ret_accommodation_id = null;
+        $this->rebooking_ret_schedule_price = null;
+        $this->rebooking_ret_accommodation_price = null;
+    }
 
-        $validDates = [];
+    public function selectRebookingDepartureSchedule(int $scheduleId, float $price): void
+    {
+        $this->rebooking_dep_schedule_id = $scheduleId;
+        $this->rebooking_dep_schedule_price = $price;
+        $this->rebooking_dep_accommodation_id = null;
+        $this->rebooking_dep_accommodation_price = null;
+        $this->setRebookingStep('departure_accommodation');
+    }
 
-        foreach ($matchingSchedules as $schedule) {
-            $isValid = false;
+    public function selectRebookingDepartureAccommodation(string $accId, float $price): void
+    {
+        $this->rebooking_dep_accommodation_id = $accId;
+        $this->rebooking_dep_accommodation_price = $price;
+        if ($this->rebooking_is_round_trip) {
+            $this->setRebookingStep('return_date');
+        } else {
+            $this->setRebookingStep('confirm');
+        }
+    }
 
-            if ($schedule->ferryRoute?->mode === 'airline') {
-                if ($transportClasses->isEmpty()) {
-                    $isValid = true;
-                } else {
-                    $requiredClassIds = $transportClasses->pluck('id')->all();
-                    
-                    $availableClassIds = $schedule->transportClasses()
-                        ->where('schedule_transport_class.tickets_available', '>', 0)
-                        ->where(function($q) {
-                             $q->where('schedule_transport_class.is_active', true)->orWhereNull('schedule_transport_class.is_active');
-                        })
-                        ->pluck('transport_classes.id')
-                        ->all();
-                        
-                    $isValid = empty(array_diff($requiredClassIds, $availableClassIds));
-                }
-            } else {
-                if (! $accommodationName) {
-                    $isValid = true;
-                } else {
-                    $isValid = $schedule->scheduleAccommodations()
-                        ->where('name', $accommodationName)
-                        ->where(function($q) {
-                             $q->where('is_active', true)->orWhereNull('is_active');
-                        })
-                        ->where('tickets_available', '>', 0)
-                        ->exists();
-                }
-            }
+    public function selectRebookingReturnSchedule(int $scheduleId, float $price): void
+    {
+        $this->rebooking_ret_schedule_id = $scheduleId;
+        $this->rebooking_ret_schedule_price = $price;
+        $this->rebooking_ret_accommodation_id = null;
+        $this->rebooking_ret_accommodation_price = null;
+        $this->setRebookingStep('return_accommodation');
+    }
 
-            if ($isValid) {
-                $validDates[] = \Carbon\Carbon::parse($schedule->departure_time)->format('Y-m-d');
-            }
+    public function selectRebookingReturnAccommodation(string $accId, float $price): void
+    {
+        $this->rebooking_ret_accommodation_id = $accId;
+        $this->rebooking_ret_accommodation_price = $price;
+        $this->setRebookingStep('confirm');
+    }
+
+    public function getAvailableRebookingDepartureSchedulesProperty()
+    {
+        if (!$this->booking || !$this->rebooking_departure_date) return collect();
+        return Schedule::forRouteAndDate($this->booking->origin, $this->booking->destination, $this->rebooking_departure_date)
+            ->with(['ferryRoute', 'vehicle'])
+            ->get();
+    }
+
+    public function getAvailableRebookingReturnSchedulesProperty()
+    {
+        if (!$this->booking || !$this->rebooking_return_date) return collect();
+        return Schedule::forRouteAndDate($this->booking->destination, $this->booking->origin, $this->rebooking_return_date)
+            ->with(['ferryRoute', 'vehicle'])
+            ->get();
+    }
+
+    public function getRebookingDepartureAccommodationsProperty()
+    {
+        if (!$this->rebooking_dep_schedule_id) return collect();
+        $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->rebooking_dep_schedule_id);
+        if (!$schedule) return collect();
+
+        $items = collect();
+        foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
+            $items->push((object)[
+                'id' => 'acc_' . $acc->id,
+                'name' => $acc->name,
+                'description' => $acc->description,
+                'price' => $acc->price,
+            ]);
+        }
+        foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
+            $items->push((object)[
+                'id' => 'tc_' . $tc->id,
+                'name' => $tc->name,
+                'description' => $tc->pivot->description ?? $tc->description,
+                'price' => $tc->pivot->additional_price,
+            ]);
+        }
+        return $items;
+    }
+
+    public function getRebookingReturnAccommodationsProperty()
+    {
+        if (!$this->rebooking_ret_schedule_id) return collect();
+        $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->rebooking_ret_schedule_id);
+        if (!$schedule) return collect();
+
+        $items = collect();
+        foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
+            $items->push((object)[
+                'id' => 'acc_' . $acc->id,
+                'name' => $acc->name,
+                'description' => $acc->description,
+                'price' => $acc->price,
+            ]);
+        }
+        foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
+            $items->push((object)[
+                'id' => 'tc_' . $tc->id,
+                'name' => $tc->name,
+                'description' => $tc->pivot->description ?? $tc->description,
+                'price' => $tc->pivot->additional_price,
+            ]);
+        }
+        return $items;
+    }
+
+    public function calculateRebookingPriceDiff(): void
+    {
+        if (!$this->booking) return;
+
+        $passengerCount = $this->booking->passengers()->count() ?: 1;
+
+        $newTotal = 0.0;
+        $newTotal += ($this->rebooking_dep_schedule_price ?? 0) * $passengerCount;
+        $newTotal += ($this->rebooking_dep_accommodation_price ?? 0) * $passengerCount;
+
+        if ($this->rebooking_is_round_trip) {
+            $newTotal += ($this->rebooking_ret_schedule_price ?? 0) * $passengerCount;
+            $newTotal += ($this->rebooking_ret_accommodation_price ?? 0) * $passengerCount;
         }
 
-        return array_values(array_unique($validDates));
+        if ($this->booking->has_vehicle) {
+            $newTotal += $this->booking->vehicle_price;
+        }
+
+        $this->rebooking_new_total = $newTotal;
+        $this->rebooking_price_diff = max(0, $newTotal - $this->booking->total_price);
+        $rebookingFee = $this->booking->getRebookingFeeAmount();
+        $this->rebooking_total_to_pay = $rebookingFee + $this->rebooking_price_diff;
     }
 
 
     public function submitRebookingProof(): void
     {
-        $this->validate();
+        $this->validate([
+            'rebookingProof' => 'required|image|max:2048',
+        ]);
 
         $this->isUploadingRebooking = true;
 
@@ -447,14 +604,26 @@ class BookingLookup extends Component
         $rebookingFee = $this->booking->getRebookingFeeAmount();
 
         $this->booking->transaction->update([
-            'rebooking_fee' => $rebookingFee,
+            'rebooking_fee' => $this->rebooking_total_to_pay,
             'rebooking_proof_of_payment' => $path,
         ]);
 
         $this->booking->update([
             'rebooking_status' => 'pending',
+            'preferred_replacement_schedule_id' => $this->rebooking_dep_schedule_id,
+            'preferred_replacement_date' => $this->rebooking_departure_date,
             'rebooking_departure_date' => $this->rebooking_departure_date,
             'rebooking_return_date' => $this->rebooking_is_round_trip ? $this->rebooking_return_date : null,
+            'disruption_notes' => json_encode([
+                'dep_schedule_id' => $this->rebooking_dep_schedule_id,
+                'dep_accommodation_id' => $this->rebooking_dep_accommodation_id,
+                'ret_schedule_id' => $this->rebooking_ret_schedule_id,
+                'ret_accommodation_id' => $this->rebooking_ret_accommodation_id,
+                'price_diff' => $this->rebooking_price_diff,
+                'rebooking_fee' => $rebookingFee,
+                'total_paid' => $this->rebooking_total_to_pay,
+                'proof_path' => $path,
+            ]),
         ]);
 
         try {
@@ -470,7 +639,7 @@ class BookingLookup extends Component
         $this->isUploadingRebooking = false;
         $this->rebookingPaid = true;
 
-        $this->feedback = "Rebooking fee payment received and is now pending verification. Rebooking fee: ₱" . number_format($rebookingFee, 2) . ".";
+        $this->feedback = "Rebooking fee & payment received and is now pending verification. Total paid: ₱" . number_format($this->rebooking_total_to_pay, 2) . ".";
     }
 
     private function getCancellationSessionKey(): string
@@ -490,6 +659,8 @@ class BookingLookup extends Component
             $this->cancellationExpired = true;
             $this->cancellationWindowActive = false;
             $this->cancellationRequested = false;
+            $this->showCancellationWarning = false;
+            $this->showCancellationReminder = false;
             return;
         }
 
@@ -507,6 +678,8 @@ class BookingLookup extends Component
             $this->cancellationExpired = true;
             $this->cancellationWindowActive = false;
             $this->cancellationRequested = false;
+            $this->showCancellationWarning = false;
+            $this->showCancellationReminder = false;
             $this->feedback = 'The cancellation window has expired. This booking can no longer be cancelled.';
             return;
         }
@@ -542,6 +715,18 @@ class BookingLookup extends Component
         $this->isUploadingRebooking = false;
         $this->rebooking_departure_date = null;
         $this->rebooking_return_date = null;
+        $this->rebooking_step = 'departure_date';
+        $this->rebooking_dep_schedule_id = null;
+        $this->rebooking_dep_accommodation_id = null;
+        $this->rebooking_dep_schedule_price = null;
+        $this->rebooking_dep_accommodation_price = null;
+        $this->rebooking_ret_schedule_id = null;
+        $this->rebooking_ret_accommodation_id = null;
+        $this->rebooking_ret_schedule_price = null;
+        $this->rebooking_ret_accommodation_price = null;
+        $this->rebooking_new_total = 0.0;
+        $this->rebooking_price_diff = 0.0;
+        $this->rebooking_total_to_pay = 0.0;
     }
 
     public function render()

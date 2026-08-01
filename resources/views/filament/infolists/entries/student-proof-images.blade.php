@@ -20,20 +20,22 @@
                 @endif
 
                 <div class="mt-3 grid gap-3 md:grid-cols-2">
-                    @if ($front)
+                    @php $frontUrl = storage_asset_path($front); @endphp
+                    @if ($frontUrl)
                         <div>
                             <p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Front</p>
-                            <a href="{{ asset('storage/' . $front) }}" target="_blank">
-                                <img src="{{ asset('storage/' . $front) }}" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof front" />
+                            <a href="{{ $frontUrl }}" target="_blank">
+                                <img src="{{ $frontUrl }}" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof front" />
                             </a>
                         </div>
                     @endif
 
-                    @if ($back)
+                    @php $backUrl = storage_asset_path($back); @endphp
+                    @if ($backUrl)
                         <div>
                             <p class="mb-1 text-xs uppercase tracking-wide text-gray-500">Back</p>
-                            <a href="{{ asset('storage/' . $back) }}" target="_blank">
-                                <img src="{{ asset('storage/' . $back) }}" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof back" />
+                            <a href="{{ $backUrl }}" target="_blank">
+                                <img src="{{ $backUrl }}" class="max-h-60 rounded-md border border-gray-300 object-contain" alt="Student proof back" />
                             </a>
                         </div>
                     @endif

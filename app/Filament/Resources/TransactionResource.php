@@ -105,6 +105,16 @@ class TransactionResource extends Resource
                             ->default('No proof uploaded yet.')
                             ->visible(fn (?Transaction $record): bool => blank($record?->proof_of_payment))
                             ->columnSpanFull(),
+                        ViewEntry::make('rebooking_proof_of_payment')
+                            ->label('Rebooking proof of payment')
+                            ->view('filament.infolists.entries.proof-image')
+                            ->visible(fn (?Transaction $record): bool => filled($record?->rebooking_proof_of_payment))
+                            ->columnSpanFull(),
+                        TextEntry::make('rebooking_proof_of_payment')
+                            ->label('Rebooking proof of payment')
+                            ->default('No rebooking proof uploaded yet.')
+                            ->visible(fn (?Transaction $record): bool => blank($record?->rebooking_proof_of_payment))
+                            ->columnSpanFull(),
                         TextEntry::make('confirmation_url')
                             ->label('Confirmation URL')
                             ->visible(fn (?Transaction $record): bool => filled($record?->confirmation_url))
@@ -181,8 +191,21 @@ class TransactionResource extends Resource
                                         }
 
                                         $discount = $passenger->discount?->name ?? 'No discount';
+                                        $details = "{$label} ({$discount})";
+                                        if ($passenger->birthdate) {
+                                            $details .= " | Bday: " . $passenger->birthdate->format('Y-m-d');
+                                        }
+                                        if ($passenger->id_number) {
+                                            $details .= " | ID: " . $passenger->id_number;
+                                        }
+                                        if ($passenger->id_image_front) {
+                                            $details .= " | [Front ID Attached]";
+                                        }
+                                        if ($passenger->id_image_back) {
+                                            $details .= " | [Back ID Attached]";
+                                        }
 
-                                        return "{$label} ({$discount})";
+                                        return $details;
                                     })
                                     ->all();
                             })

@@ -92,6 +92,7 @@ class HotelResource extends Resource
                 FileUpload::make('images')
                     ->label('Photos')
                     ->image()
+                    ->disk('public')
                     ->multiple()
                     ->reorderable()
                     ->panelLayout('grid')

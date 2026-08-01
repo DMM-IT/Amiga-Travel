@@ -24,6 +24,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Enums\FiltersLayout;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class FerryRouteResource extends Resource
 {
@@ -64,6 +65,15 @@ class FerryRouteResource extends Resource
     protected static ?string $navigationLabel = 'Routes and Schedule';
 
     protected static ?string $modelLabel = 'Route and Schedule';
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['vehicle', 'schedules' => function ($query) {
+                $query->select(['id', 'ferry_route_id', 'vehicle_name', 'departure_time', 'arrival_time', 'price', 'is_active'])
+                    ->orderBy('departure_time');
+            }]);
+    }
 
     public static function form(Form $form): Form
     {

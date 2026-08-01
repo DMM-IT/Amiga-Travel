@@ -222,13 +222,19 @@ class CreateBookingAction
 
             // --- Persist Passengers ---
             foreach ($data['passengers'] as $passengerData) {
+                $frontPath = $this->saveBase64Image($passengerData['id_image_front'] ?? null, 'id_images');
+                $backPath  = $this->saveBase64Image($passengerData['id_image_back'] ?? null, 'id_images');
+
                 Passenger::create([
-                    'booking_id'  => $booking->id,
-                    'type'        => $passengerData['type'],
-                    'name'        => $passengerData['name'],
-                    'discount_id' => $passengerData['discount_id'] ?? null,
-                    'school_name' => $passengerData['school_name'] ?? null,
-                    'id_number'   => $passengerData['id_number'] ?? null,
+                    'booking_id'     => $booking->id,
+                    'type'           => $passengerData['type'],
+                    'name'           => $passengerData['name'],
+                    'birthdate'      => $passengerData['birthdate'] ?? null,
+                    'discount_id'    => $passengerData['discount_id'] ?? null,
+                    'school_name'    => $passengerData['school_name'] ?? null,
+                    'id_number'      => $passengerData['id_number'] ?? null,
+                    'id_image_front' => $frontPath,
+                    'id_image_back'  => $backPath,
                 ]);
             }
 
@@ -346,5 +352,26 @@ class CreateBookingAction
         $hotelFee       = $accommodationsTotal > 0 ? (float) ($settings->fee_per_accommodation ?? 0) : 0;
 
         return $ferryTotal + $transportClassTotal + $accommodationsTotal + $vehicleTotal + $serviceFee + $hotelFee;
+    }
+
+    protected function saveBase64Image(?string $base64String, string $directory): ?string
+    {
+        if (empty($base64String)) {
+            return null;
+        }
+        if (str_starts_with($base64String, 'http')) {
+            return $base64String;
+        }
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64String, $matches)) {
+            $extension = $matches[1];
+            $imageData = substr($base64String, strpos($base64String, ',') + 1);
+            $decoded = base64_decode($imageData);
+            if ($decoded !== false) {
+                $filename = $directory . '/' . uniqid('id_', true) . '.' . $extension;
+                \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
+                return $filename;
+            }
+        }
+        return $base64String;
     }
 }

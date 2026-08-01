@@ -61,6 +61,8 @@ class AppNotificationResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\FileUpload::make('image_path')
                     ->image()
+                    ->disk('public')
+                    ->visibility('public')
                     ->directory('notifications')
                     ->label('Banner Image (Optional)')
                     ->columnSpanFull(),

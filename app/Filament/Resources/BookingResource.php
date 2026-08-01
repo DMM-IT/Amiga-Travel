@@ -201,6 +201,7 @@ class BookingResource extends Resource
                         'pending' => 'Pending',
                         'confirmed' => 'Confirmed',
                         'cancelled' => 'Cancelled',
+                        'operator_cancelled' => 'Cancelled by Operator',
                     ]),
                 SelectFilter::make('transaction_payment_status')
                     ->label('Payment status')

@@ -77,9 +77,12 @@ class ManagePaymentSettings extends Page implements HasForms
                         FileUpload::make('qr_code_path')
                             ->label('QR code image')
                             ->image()
+                            ->disk('public')
                             ->directory('payment-qr')
                             ->visibility('public')
-                            ->maxFiles(1),
+                            ->maxFiles(1)
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg', 'image/webp'])
+                            ->dehydrateStateUsing(fn ($state) => is_array($state) ? ($state[0] ?? null) : $state),
                     ]),
             ])
             ->statePath('data');

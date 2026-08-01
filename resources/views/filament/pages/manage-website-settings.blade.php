@@ -13,8 +13,8 @@
     $headerData   = $data['header_data'] ?? [];
     $footerData   = $data['footer_data'] ?? [];
 
-    $imageUrl = fn (?string $path): ?string =>
-        $path ? (str_starts_with($path, 'http') ? $path : asset('storage/' . ltrim($path, '/'))) : null;
+    $imageUrl = fn ($path = null): ?string =>
+        $path ? (str_starts_with((string) $path, 'http') ? (string) $path : storage_asset_path($path)) : null;
 
     $colorBorder = [
         'blue'    => '#3b82f6',
