@@ -160,10 +160,14 @@ class PromotionalTicketResource extends Resource
                 Forms\Components\FileUpload::make('landscape_image')
                     ->label('Landscape Image')
                     ->image()
+                    ->disk('public')
+                    ->visibility('public')
                     ->directory('promotional-tickets'),
                 Forms\Components\FileUpload::make('portrait_image')
                     ->label('Portrait Image')
                     ->image()
+                    ->disk('public')
+                    ->visibility('public')
                     ->directory('promotional-tickets'),
                 Forms\Components\TextInput::make('promo_price')
                     ->label('Promo Price (₱)')

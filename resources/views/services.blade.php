@@ -168,16 +168,18 @@
                         $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null;
                     }
                     $cardImage = $rawCardImage
-                        ? (str_starts_with($rawCardImage, 'http') || str_starts_with($rawCardImage, '/')
-                            ? asset(ltrim($rawCardImage, '/'))
-                            : asset($rawCardImage))
+                        ? (str_starts_with($rawCardImage, 'http://') || str_starts_with($rawCardImage, 'https://')
+                            ? $rawCardImage
+                            : (str_starts_with($rawCardImage, 'images/')
+                                ? asset($rawCardImage)
+                                : (storage_asset_path($rawCardImage) ?: $defaultServiceImage)))
                         : $defaultServiceImage;
                     $cardLink = data_get($card, 'link', url('/book/new'));
                     $buttonText = data_get($card, 'button_text', 'Learn more');
                 @endphp
                 <a href="{{ $cardLink }}" class="group overflow-hidden rounded-xl sm:rounded-[2rem] bg-white/85 backdrop-blur-md border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
                     <div class="h-20 sm:h-36 w-full bg-white/80 flex items-center justify-center p-2 sm:p-8 border-b border-slate-100">
-                        <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="max-h-full max-w-full object-contain transition duration-200 group-hover:scale-105" />
+                        <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="max-h-full max-w-full object-contain transition duration-200 group-hover:scale-105" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';" />
                     </div>
                     <div class="p-2.5 sm:p-6 flex flex-col flex-grow">
                         <span class="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold text-[#ee018d] uppercase tracking-wider mb-1 sm:mb-3 leading-tight truncate">
@@ -217,15 +219,23 @@
                     if (is_array($rawCardImage)) {
                         $rawCardImage = array_values(array_filter($rawCardImage))[0] ?? null;
                     }
-                    $cardImage = $rawCardImage
-                        ? (str_starts_with($rawCardImage, 'http') || str_starts_with($rawCardImage, '/')
-                            ? asset(ltrim($rawCardImage, '/'))
-                            : asset($rawCardImage))
-                        : $defaultServiceImage;
+
+                    if ($rawCardImage) {
+                        if (str_starts_with($rawCardImage, 'http://') || str_starts_with($rawCardImage, 'https://')) {
+                            $cardImage = $rawCardImage;
+                        } elseif (str_starts_with($rawCardImage, 'images/')) {
+                            $cardImage = asset($rawCardImage);
+                        } else {
+                            $cardImage = storage_asset_path($rawCardImage) ?: $defaultServiceImage;
+                        }
+                    } else {
+                        $cardImage = $defaultServiceImage;
+                    }
+
                     $modalData = json_encode(array_merge($card, ['image' => $cardImage]));
                 @endphp
                 <div class="group overflow-hidden rounded-xl sm:rounded-[2rem] bg-white/85 backdrop-blur-md border border-slate-200 shadow-sm hover:shadow-xl transition duration-200 flex flex-col">
-                    <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="w-full aspect-video object-cover transition duration-200 group-hover:scale-105" />
+                    <img src="{{ $cardImage }}" alt="{{ data_get($card, 'title') }}" class="w-full aspect-video object-cover transition duration-200 group-hover:scale-105" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';" />
                     <div class="p-2.5 sm:p-6 flex flex-col flex-grow">
                         <span class="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold text-[#216417] uppercase tracking-wider mb-1 sm:mb-3 leading-tight truncate">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">

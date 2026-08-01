@@ -22,8 +22,9 @@
             </div>
 
             <div class="flex justify-center">
-                @if($qrCodePath)
-                    <img src="{{ asset('storage/' . $qrCodePath) }}" alt="Payment QR Code" class="h-48 sm:h-64 w-48 sm:w-64 rounded-2xl border border-slate-200 object-contain" />
+                @php $qrCodeUrl = storage_asset_path($qrCodePath); @endphp
+                @if($qrCodeUrl)
+                    <img src="{{ $qrCodeUrl }}" alt="Payment QR Code" class="h-48 sm:h-64 w-48 sm:w-64 rounded-2xl border border-slate-200 object-contain" />
                 @else
                     <div class="h-48 sm:h-64 w-48 sm:w-64 rounded-2xl border border-dashed border-slate-300 flex items-center justify-center text-center text-sm text-slate-400 p-4">
                         QR code not uploaded yet. Please contact Amiga Gracia Travel Services to arrange payment.

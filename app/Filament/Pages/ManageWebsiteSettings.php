@@ -3,11 +3,9 @@
 namespace App\Filament\Pages;
 
 use App\Models\WebsiteSetting;
-use App\Models\User;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -17,800 +15,23 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class ManageWebsiteSettings extends Page implements HasForms
 {
-    public static function canAccess(): bool
-    {
-        $user = Auth::user();
-
-        return $user instanceof User && $user->hasAdminPermission('website_settings');
-    }
-
-    private function getPageContentSchema(): array
-    {
-        // Provide different form fields per page to allow page-specific content
-        switch ($this->currentPage) {
-            case 'about':
-                return [
-                    Section::make('About Page')->collapsible()
-                        ->description('Main content for the About page')
-                        ->schema([
-                            TextInput::make('content.badge')
-                                ->label('Page Badge')
-                                ->default('About Us')
-                                ->maxLength(100),
-                            TextInput::make('content.title')
-                                ->label('Page Title')
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description')
-                                ->rows(5)
-                                ->columnSpanFull(),
-                        ]),
-                    Section::make('History Section')->collapsible()
-                        ->description('Update the history section content')
-                        ->schema([
-                            TextInput::make('content.history_title')
-                                ->label('History Section Title')
-                                ->default('Backed by Experience, Driven by Excellence')
-                                ->maxLength(255),
-                            Textarea::make('content.history_content')
-                                ->label('History Content (HTML)')
-                                ->rows(8)
-                                ->columnSpanFull(),
-                        ]),
-                    Section::make('Did you know?')->collapsible()
-                        ->description('Update the did you know facts shown on the about page')
-                        ->schema([
-                            TextInput::make('content.quick_facts_title')
-                                ->label('Section Title')
-                                ->default('Did you know?')
-                                ->maxLength(255),
-                            Repeater::make('content.quick_facts')
-                                ->label('Did you know?')
-                                ->schema([
-                                    TextInput::make('label')
-                                        ->label('Fact Label')
-                                        ->required()
-                                        ->maxLength(100),
-                                    Textarea::make('value')
-                                        ->label('Fact Value')
-                                        ->required()
-                                        ->rows(2)
-                                        ->maxLength(255),
-                                ])
-                                ->columns(1)
-                                ->default(fn () => [
-                                    ['label' => 'Established', 'value' => 'July 2017 in Oriental Mindoro'],
-                                    ['label' => 'Key Partnerships', 'value' => '2GO, Starlite Ferries, and major airlines'],
-                                    ['label' => 'Specialty', 'value' => 'Ferry bookings, Educational tours, Apprenticeship programs'],
-                                ]),
-                        ]),
-                    Section::make('Amiga Details Cards')->collapsible()
-                        ->description('Editable cards for the About page details section')
-                        ->schema([
-                            TextInput::make('content.booking_section_title')
-                                ->label('Section Title')
-                                ->default('Amiga Details Cards')
-                                ->maxLength(255),
-                            Textarea::make('content.booking_section_description')
-                                ->label('Section Description')
-                                ->default('Learn more about our services.')
-                                ->rows(3)
-                                ->maxLength(255),
-                            Repeater::make('content.booking_cards')
-                                ->label('Amiga Details Cards')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->label('Card Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    Textarea::make('description')
-                                        ->label('Card Summary')
-                                        ->rows(2)
-                                        ->maxLength(255),
-                                    Textarea::make('detail')
-                                        ->label('Detail Article')
-                                        ->rows(4)
-                                        ->maxLength(400)
-                                        ->helperText('A short article-style description for the detailed card.'),
-                                    FileUpload::make('image')
-                                        ->label('Card Image')
-                                        ->image()
-                                        ->directory('website-settings/about-booking-cards'),
-                                    TextInput::make('button_text')
-                                        ->label('Button Text')
-                                        ->default('View Details')
-                                        ->maxLength(50),
-                                ])
-                                ->columns(1)
-                                ->default([
-                                    [
-                                        'title' => 'Book a 2GO Ferry',
-                                        'description' => 'Request ferry ticket assistance with 2GO across our major routes.',
-                                        'detail' => 'Learn how we arrange 2GO ferry trips with secure bookings and smooth customer support for luggage and cargo.',
-                                        'image' => null,
-                                        'button_text' => 'View Details',
-                                        'link' => '/about',
-                                    ],
-                                    [
-                                        'title' => 'Book Airline Tickets',
-                                        'description' => 'Request airline seat bookings for major carriers such as PAL, Cebu Pacific, and AirAsia.',
-                                        'detail' => 'Our team helps you compare airline schedules, seat availability, and fare options for domestic and international travel.',
-                                        'image' => null,
-                                        'button_text' => 'View Details',
-                                        'link' => '/about',
-                                    ],
-                                    [
-                                        'title' => 'Request Custom Travel',
-                                        'description' => 'Plan personalized tours, group travel, and apprenticeship journeys.',
-                                        'detail' => 'We craft custom travel packages that include tour itineraries, accommodations, and special arrangements for groups.',
-                                        'image' => null,
-                                        'button_text' => 'View Details',
-                                        'link' => '/about',
-                                    ],
-                                ]),
-                        ]),
-                    Section::make('Suggested Trips')->collapsible()
-                        ->description('Editable cards for the About page suggested trips section')
-                        ->schema([
-                            TextInput::make('content.suggested_trips_title')
-                                ->label('Section Title')
-                                ->default('Suggested Trips')
-                                ->maxLength(255),
-                            Textarea::make('content.suggested_trips_description')
-                                ->label('Section Description')
-                                ->default('Explore these suggested trips.')
-                                ->rows(3)
-                                ->maxLength(255),
-                            Repeater::make('content.suggested_trips')
-                                ->label('Suggested Trips Cards')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->label('Card Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    Textarea::make('description')
-                                        ->label('Card Summary')
-                                        ->rows(2)
-                                        ->maxLength(255),
-                                    Textarea::make('detail')
-                                        ->label('Detail Article')
-                                        ->rows(4)
-                                        ->maxLength(400)
-                                        ->helperText('A short article-style description for the detailed card.'),
-                                    FileUpload::make('image')
-                                        ->label('Card Image')
-                                        ->image()
-                                        ->directory('website-settings/about-suggested-trips'),
-                                    TextInput::make('button_text')
-                                        ->label('Button Text')
-                                        ->default('View Details')
-                                        ->maxLength(50),
-                                ])
-                                ->columns(1)
-                                ->default([]),
-                        ]),
-                ];
-
-            case 'services':
-                return [
-                    Section::make('Services Page')->collapsible()
-                        ->description('Manage the service header and service cards')
-                        ->schema([
-                            TextInput::make('content.badge')
-                                ->label('Page Badge')
-                                ->default('Services')
-                                ->maxLength(100),
-                            TextInput::make('content.title')
-                                ->label('Page Title')
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description')
-                                ->rows(4)
-                                ->maxLength(255),
-                            Section::make('Service CTA')->collapsible()
-                                ->schema([
-                                    TextInput::make('content.service_cta.badge')
-                                        ->label('CTA Badge')
-                                        ->maxLength(100),
-                                    TextInput::make('content.service_cta.title')
-                                        ->label('CTA Title')
-                                        ->maxLength(255),
-                                    Textarea::make('content.service_cta.description')
-                                        ->label('CTA Description')
-                                        ->rows(3)
-                                        ->maxLength(255),
-                                    TextInput::make('content.service_cta.button_text')
-                                        ->label('CTA Button Text')
-                                        ->maxLength(50),
-                                ]),
-                            Section::make('Travel & Booking Services')->collapsible()
-                                ->description('Manage the main travel services section')
-                                ->schema([
-                                    TextInput::make('content.travel_services_title')
-                                        ->label('Section Title')
-                                        ->default('Travel & Booking Services')
-                                        ->maxLength(255),
-                                    Textarea::make('content.travel_services_desc')
-                                        ->label('Section Description')
-                                        ->rows(2)
-                                        ->default('From daily commutes to dream vacations, we offer a comprehensive range of travel solutions designed for your convenience.')
-                                        ->maxLength(255),
-                                    Repeater::make('content.travel_service_cards')
-                                        ->label('Travel & Booking Services Cards')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->label('Card Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    Textarea::make('description')
-                                        ->label('Card Description')
-                                        ->rows(3)
-                                        ->maxLength(255),
-                                    TextInput::make('note')
-                                        ->label('Note Text')
-                                        ->maxLength(80),
-                                    TextInput::make('link')
-                                        ->label('Card Link')
-                                        ->maxLength(255),
-                                    TextInput::make('color')
-                                        ->label('Color Class')
-                                        ->helperText('Add a Tailwind text color class such as text-pink-600 or text-emerald-700'),
-                                ])
-                                ->default([
-                                    [
-                                        'title' => '2GO Travel Booking',
-                                        'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel. Ideal for family retreats, business logistics, and leisure trips.',
-                                        'note' => 'Available Online',
-                                        'link' => '/book/new',
-                                        'color' => 'text-pink-600',
-                                    ],
-                                    [
-                                        'title' => 'Starlite Ferries Inc.',
-                                        'description' => 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings and roll-on/roll-off (RoRo) cargo slots.',
-                                        'note' => 'Available Online',
-                                        'link' => '/book/new',
-                                        'color' => 'text-emerald-700',
-                                    ],
-                                    [
-                                        'title' => 'Airline Ticketing',
-                                        'description' => 'Domestic and international flights powered by leading carriers including AirAsia, Cebu Pacific, and Philippine Airlines (PAL). Hassle-free check-ins and seat bookings.',
-                                        'note' => 'PAL, CebuPac, AirAsia',
-                                        'link' => '/book/new',
-                                        'color' => 'text-blue-600',
-                                    ],
-                                    [
-                                        'title' => 'Tour Packages',
-                                        'description' => 'Curated itineraries for local and international travel destinations, complete with accommodations and guides.',
-                                        'note' => 'Local & International',
-                                        'link' => '/tour-package',
-                                        'color' => 'text-purple-600',
-                                    ],
-                                    [
-                                        'title' => 'Apprenticeships & Training',
-                                        'description' => 'Custom-tailored hospitality training programs, onboard apprenticeship training options, and educational field trips in cooperation with 2GO.',
-                                        'note' => 'For Academe & Students',
-                                        'link' => '/contact-us',
-                                        'color' => 'text-orange-600',
-                                    ],
-                                    [
-                                        'title' => 'Custom Travel Arrangements',
-                                        'description' => 'Tailored travel packages for corporate retreats, family reunions, and large groups. We handle flight connections, hotel accommodation blocks, and group transport.',
-                                        'note' => 'Tailored For Groups',
-                                        'link' => '/contact-us',
-                                        'color' => 'text-teal-700',
-                                    ],
-                                ])
-                                ->columns(1),
-                            ]),
-                            Section::make('Specialized Services')->collapsible()
-                                ->description('Manage the specialized services section')
-                                ->schema([
-                                    TextInput::make('content.specialized_services_title')
-                                        ->label('Section Title')
-                                        ->default('Specialized Services')
-                                        ->maxLength(255),
-                                    Textarea::make('content.specialized_services_desc')
-                                        ->label('Section Description')
-                                        ->rows(2)
-                                        ->default('Beyond standard ticketing, we offer specialized arrangements to cater to unique travel and educational requirements.')
-                                        ->maxLength(255),
-                                    Repeater::make('content.service_cards')
-                                        ->label('Specialized Service Cards')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->label('Card Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    Textarea::make('description')
-                                        ->label('Card Description')
-                                        ->rows(3)
-                                        ->maxLength(255),
-                                    TextInput::make('note')
-                                        ->label('Note Text')
-                                        ->maxLength(80),
-                                    TextInput::make('button_text')
-                                        ->label('Button Text')
-                                        ->maxLength(50),
-                                    TextInput::make('button_link')
-                                        ->label('Button Link')
-                                        ->url(),
-                                    TextInput::make('color')
-                                        ->label('Color Class')
-                                        ->helperText('Add a Tailwind text color class such as text-pink-600 or text-emerald-700'),
-                                ])
-                                ->columns(1),
-                            ]),
-                        ]),
-                ];
-
-            case 'tour_package':
-                return [
-                    Section::make('Tour Packages Page')->collapsible()
-                        ->description('Manage the header and package sections for tour packages')
-                        ->schema([
-                            TextInput::make('content.badge')
-                                ->label('Page Badge')
-                                ->default('Tour Packages')
-                                ->maxLength(100),
-                            TextInput::make('content.title')
-                                ->label('Page Title')
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description')
-                                ->rows(4)
-                                ->maxLength(255),
-                            TextInput::make('content.tab_domestic_label')
-                                ->label('Domestic Tab Label')
-                                ->default('Domestic')
-                                ->maxLength(50),
-                            TextInput::make('content.tab_international_label')
-                                ->label('International Tab Label')
-                                ->default('International')
-                                ->maxLength(50),
-                            Tabs::make('Tour Packages')
-                                ->tabs([
-                                    Tabs\Tab::make('Domestic')
-                                        ->schema([
-                                            Repeater::make('content.tour_packages.domestic')
-                                                ->label('Domestic Packages')
-                                                ->schema([
-                                                    FileUpload::make('image')
-                                                        ->label('Image')
-                                                        ->image()
-                                                        ->directory('website-settings/tour-packages'),
-                                                    TextInput::make('alt')
-                                                        ->label('Image Alt Text')
-                                                        ->maxLength(100),
-                                                    TextInput::make('label')
-                                                        ->label('Tag Label')
-                                                        ->maxLength(50),
-                                                    TextInput::make('title')
-                                                        ->label('Package Title')
-                                                        ->required()
-                                                        ->maxLength(120),
-                                                    TextInput::make('subtitle')
-                                                        ->label('Subtitle')
-                                                        ->maxLength(120),
-                                                    Textarea::make('description')
-                                                        ->label('Description')
-                                                        ->rows(3)
-                                                        ->maxLength(255),
-                                                    TextInput::make('price')
-                                                        ->label('Price')
-                                                        ->maxLength(60),
-                                                    TextInput::make('button_text')
-                                                        ->label('Button Text')
-                                                        ->maxLength(50),
-                                                    TextInput::make('button_link')
-                                                        ->label('Button Link')
-                                                        ->url(),
-                                                ])
-                                                ->columns(1),
-                                        ]),
-                                    Tabs\Tab::make('International')
-                                        ->schema([
-                                            Repeater::make('content.tour_packages.international')
-                                                ->label('International Packages')
-                                                ->schema([
-                                                    FileUpload::make('image')
-                                                        ->label('Image')
-                                                        ->image()
-                                                        ->directory('website-settings/tour-packages'),
-                                                    TextInput::make('alt')
-                                                        ->label('Image Alt Text')
-                                                        ->maxLength(100),
-                                                    TextInput::make('label')
-                                                        ->label('Tag Label')
-                                                        ->maxLength(50),
-                                                    TextInput::make('title')
-                                                        ->label('Package Title')
-                                                        ->required()
-                                                        ->maxLength(120),
-                                                    TextInput::make('subtitle')
-                                                        ->label('Subtitle')
-                                                        ->maxLength(120),
-                                                    Textarea::make('description')
-                                                        ->label('Description')
-                                                        ->rows(3)
-                                                        ->maxLength(255),
-                                                    TextInput::make('price')
-                                                        ->label('Price')
-                                                        ->maxLength(60),
-                                                    TextInput::make('button_text')
-                                                        ->label('Button Text')
-                                                        ->maxLength(50),
-                                                    TextInput::make('button_link')
-                                                        ->label('Button Link')
-                                                        ->url(),
-                                                ])
-                                                ->columns(1),
-                                        ]),
-                                ]),
-                            Section::make('Supported Destinations')->collapsible()
-                                ->description('Manage the supported destinations section')
-                                ->schema([
-                                    TextInput::make('content.destinations_title')
-                                        ->label('Section Title')
-                                        ->default('Top Supported Destinations')
-                                        ->maxLength(255),
-                                    Textarea::make('content.destinations_desc')
-                                        ->label('Section Description')
-                                        ->rows(2)
-                                        ->default('We cater to popular tourist spots and bustling cities across the Philippines and beyond.')
-                                        ->maxLength(255),
-                                    Repeater::make('content.supported_destinations')
-                                ->label('Supported Destination Groups')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->label('Group Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    Repeater::make('destinations')
-                                        ->label('Destinations')
-                                        ->schema([
-                                            TextInput::make('name')
-                                                ->label('Destination Name')
-                                                ->required()
-                                                ->maxLength(120),
-                                        ])
-                                        ->columns(1),
-                                ])
-                                ->columns(1),
-                            ]),
-                            Section::make('Call to Action (CTA)')->collapsible()
-                                ->description('Manage the bottom CTA section')
-                                ->schema([
-                                    TextInput::make('content.cta_title')
-                                        ->label('CTA Title')
-                                        ->default('Don\'t see your dream destination?')
-                                        ->maxLength(255),
-                                    Textarea::make('content.cta_desc')
-                                        ->label('CTA Description')
-                                        ->rows(2)
-                                        ->default('We can create a custom tour package tailored just for you. Get in touch with our travel agents to start planning.')
-                                        ->maxLength(255),
-                                    TextInput::make('content.cta_button')
-                                        ->label('CTA Button Text')
-                                        ->default('Contact Us')
-                                        ->maxLength(50),
-                                ]),
-                        ]),
-                ];
-
-            case 'download':
-                return [
-                    Section::make('Download Page')->collapsible()
-                        ->description('Manage the download page content and app install steps')
-                        ->schema([
-                            TextInput::make('content.badge')
-                                ->label('Page Badge')
-                                ->default('Download App')
-                                ->maxLength(100),
-                            TextInput::make('content.title')
-                                ->label('Page Title')
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description')
-                                ->rows(4)
-                                ->maxLength(255),
-                            TextInput::make('content.btn_ios')
-                                ->label('iOS Button Text')
-                                ->default('Download for iOS')
-                                ->maxLength(50),
-                            TextInput::make('content.btn_android')
-                                ->label('Android Button Text')
-                                ->default('Download for Android')
-                                ->maxLength(50),
-                            Repeater::make('content.download_steps')
-                                ->label('Download Steps')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->label('Step Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    Textarea::make('description')
-                                        ->label('Step Description')
-                                        ->rows(3)
-                                        ->maxLength(255),
-                                ])
-                                ->columns(1),
-                            TextInput::make('content.apk_benefits_label')
-                                ->label('Benefits Section Label')
-                                ->maxLength(80),
-                            TextInput::make('content.apk_benefits_title')
-                                ->label('Benefits Section Title')
-                                ->maxLength(255),
-                            Repeater::make('content.download_features')
-                                ->label('App Benefits (Features)')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->label('Feature Title')
-                                        ->required()
-                                        ->maxLength(120),
-                                    Textarea::make('description')
-                                        ->label('Feature Description')
-                                        ->rows(3)
-                                        ->maxLength(255),
-                                    TextInput::make('icon')
-                                        ->label('SVG Icon Path')
-                                        ->maxLength(1000),
-                                    TextInput::make('icon_color')
-                                        ->label('Icon Color (Hex)')
-                                        ->maxLength(20),
-                                    TextInput::make('bg_color')
-                                        ->label('Background Color (Hex)')
-                                        ->maxLength(20),
-                                ])
-                                ->columns(1),
-                            TextInput::make('content.how_it_works_label')
-                                ->label('How It Works Label')
-                                ->maxLength(80),
-                            TextInput::make('content.how_it_works_title')
-                                ->label('How It Works Title')
-                                ->maxLength(255),
-                            Textarea::make('content.how_it_works_description')
-                                ->label('How It Works Description')
-                                ->rows(3)
-                                ->maxLength(255),
-                        ]),
-                ];
-
-            case 'contact_us':
-                return [
-                    Section::make('Sidebar Content')->collapsible()
-                        ->description('Manage the sidebar contact details')
-                        ->schema([
-                            TextInput::make('content.badge')
-                                ->label('Page Badge')
-                                ->default('Contact Us')
-                                ->maxLength(100),
-                            TextInput::make('content.title')
-                                ->label('Page Title')
-                                ->default('Ready To Explore? Let\'s Connect and Start Planning Your Next Adventure')
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description')
-                                ->rows(4)
-                                ->maxLength(255),
-                            TextInput::make('content.phone_label')
-                                ->label('Phone Label')
-                                ->default('Phone Numbers')
-                                ->maxLength(100),
-                            Textarea::make('content.phones')
-                                ->label('Phone Numbers')
-                                ->rows(3)
-                                ->helperText('Enter one phone number per line.'),
-                            TextInput::make('content.email_label')
-                                ->label('Email Label')
-                                ->default('Email Addresses')
-                                ->maxLength(100),
-                            Textarea::make('content.emails')
-                                ->label('Email Addresses')
-                                ->rows(3)
-                                ->helperText('Enter one email per line.'),
-                            TextInput::make('content.location_label')
-                                ->label('Location Label')
-                                ->default('Office Address')
-                                ->maxLength(100),
-                            Textarea::make('content.location_address')
-                                ->label('Location Address')
-                                ->rows(3),
-                            TextInput::make('content.socials_label')
-                                ->label('Social Links Label')
-                                ->default('Connect With Us')
-                                ->maxLength(100),
-                            Repeater::make('content.social_links')
-                                ->label('Social Media Links')
-                                ->schema([
-                                    TextInput::make('platform')
-                                        ->label('Platform')
-                                        ->required()
-                                        ->maxLength(100),
-                                    TextInput::make('url')
-                                        ->label('URL')
-                                        ->url()
-                                        ->required(),
-                                ])
-                                ->columns(1),
-                        ]),
-                    Section::make('Contact Form Texts')->collapsible()
-                        ->description('Manage labels and texts on the contact form')
-                        ->schema([
-                            TextInput::make('content.form_title')
-                                ->label('Form Title')
-                                ->default('Send us a message')
-                                ->maxLength(255),
-                            TextInput::make('content.label_name')
-                                ->label('Name Label')
-                                ->default('Your Name')
-                                ->maxLength(100),
-                            TextInput::make('content.label_email')
-                                ->label('Email Label')
-                                ->default('Email Address')
-                                ->maxLength(100),
-                            TextInput::make('content.label_subject')
-                                ->label('Subject Label')
-                                ->default('Subject')
-                                ->maxLength(100),
-                            TextInput::make('content.label_message')
-                                ->label('Message Label')
-                                ->default('How can we help you?')
-                                ->maxLength(100),
-                            TextInput::make('content.btn_send')
-                                ->label('Send Button Text')
-                                ->default('Send Message')
-                                ->maxLength(50),
-                            TextInput::make('content.btn_sending')
-                                ->label('Sending Button Text')
-                                ->default('Sending...')
-                                ->maxLength(50),
-                            TextInput::make('content.success_title')
-                                ->label('Success Title')
-                                ->default('Message Sent!')
-                                ->maxLength(255),
-                            Textarea::make('content.success_desc')
-                                ->label('Success Description')
-                                ->rows(2)
-                                ->default('Thank you for reaching out. We will get back to you within 24 hours.')
-                                ->maxLength(255),
-                            TextInput::make('content.success_btn')
-                                ->label('Success Button Text')
-                                ->default('Send Another Message')
-                                ->maxLength(50),
-                        ]),
-                    Section::make('Map Section')->collapsible()
-                        ->description('Manage map details and embed')
-                        ->schema([
-                            TextInput::make('content.map_title')
-                                ->label('Map Title')
-                                ->default('Visit our Calapan Office')
-                                ->maxLength(255),
-                            Textarea::make('content.map_desc')
-                                ->label('Map Description')
-                                ->rows(3)
-                                ->default('We are conveniently located in the heart of Calapan City. Drop by our office for personalized travel assistance.')
-                                ->maxLength(255),
-                            TextInput::make('content.map_link')
-                                ->label('Map Link URL')
-                                ->url()
-                                ->maxLength(255),
-                            TextInput::make('content.map_btn')
-                                ->label('Map Button Text')
-                                ->default('Get Directions')
-                                ->maxLength(50),
-                            Textarea::make('content.map_embed')
-                                ->label('Map Embed (iframe)')
-                                ->rows(4)
-                                ->helperText('Paste iframe embed code for map.'),
-                        ]),
-                ];
-
-            case 'faqs':
-                return [
-                    Section::make('FAQs')->collapsible()
-                        ->description('Manage Frequently Asked Questions')
-                        ->schema([
-                            TextInput::make('content.badge')
-                                ->label('Page Badge')
-                                ->default('FAQs')
-                                ->maxLength(100),
-                            TextInput::make('content.title')
-                                ->label('Page Title')
-                                ->default('Frequently Asked Questions')
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description')
-                                ->rows(3)
-                                ->maxLength(255),
-                            TextInput::make('content.empty_title')
-                                ->label('Empty State Title')
-                                ->default('No FAQs yet')
-                                ->maxLength(255),
-                            Textarea::make('content.empty_desc')
-                                ->label('Empty State Description')
-                                ->rows(2)
-                                ->default('Check back later for answers to common questions.')
-                                ->maxLength(255),
-                            Repeater::make('content.faqs')
-                                ->label('Q&A Items')
-                                ->schema([
-                                    TextInput::make('question')
-                                        ->label('Question')
-                                        ->required()
-                                        ->maxLength(255),
-                                    Textarea::make('answer')
-                                        ->label('Answer')
-                                        ->required()
-                                        ->rows(4),
-                                ])
-                                ->columns(1)
-                                ->columnSpanFull(),
-                        ]),
-                    Section::make('Call to Action')->collapsible()
-                        ->description('Manage the bottom call to action')
-                        ->schema([
-                            TextInput::make('content.cta_title')
-                                ->label('CTA Title')
-                                ->default('Still have questions?')
-                                ->maxLength(255),
-                            Textarea::make('content.cta_desc')
-                                ->label('CTA Description')
-                                ->rows(2)
-                                ->default('If you couldn\'t find the answer to your question, our support team is always ready to help you.')
-                                ->maxLength(255),
-                            TextInput::make('content.cta_btn')
-                                ->label('CTA Button Text')
-                                ->default('Contact Support')
-                                ->maxLength(50),
-                        ]),
-                ];
-
-            default:
-                return [
-                    Section::make('Page Information')->collapsible()
-                        ->description('Main content for this page')
-                        ->schema([
-                            FileUpload::make('content.hero_image')
-                                ->label('Hero/Banner Image')
-                                ->image()
-                                ->directory('website-settings/pages'),
-                            Textarea::make('content.title')
-                                ->label('Page Title')
-                                ->rows(2)
-                                ->maxLength(255),
-                            Textarea::make('content.description')
-                                ->label('Page Description/Content')
-                                ->rows(5)
-                                ->columnSpanFull(),
-                        ]),
-                ];
-        }
-    }
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
-
     protected static ?string $navigationGroup = 'Settings';
     protected static ?int $navigationSort = 1;
     protected static ?string $navigationLabel = 'Website Settings';
-
     protected static ?string $title = 'Website Settings';
-
     protected static string $view = 'filament.pages.manage-website-settings';
 
     public ?string $currentPage = 'home';
-
     public ?array $settingsData = [];
-
     public bool $editMode = false;
-
     public string $activeSection = '';
-
     public int $iframeKey = 0;
 
     public function mount(): void
@@ -822,7 +43,7 @@ class ManageWebsiteSettings extends Page implements HasForms
     private function loadSettings(): void
     {
         $setting = WebsiteSetting::getOrCreateByPage($this->currentPage);
-        
+
         if ($this->currentPage === 'faqs' && empty($setting->content)) {
             $setting->content = [
                 'title' => 'Frequently Asked Questions',
@@ -876,6 +97,82 @@ class ManageWebsiteSettings extends Page implements HasForms
         ];
     }
 
+    public function getPageContentSchema(): array
+    {
+        if ($this->currentPage === 'services') {
+            return [
+                Section::make('Services Cards')->collapsible()
+                    ->description('Edit the service card content only')
+                    ->schema([
+                        Repeater::make('content.travel_service_cards')
+                            ->label('Travel & Booking Services Cards')
+                            ->schema([
+                                TextInput::make('title')
+                                    ->label('Card Title')
+                                    ->required()
+                                    ->maxLength(120),
+                                Textarea::make('description')
+                                    ->label('Card Description')
+                                    ->rows(3)
+                                    ->maxLength(255),
+                                TextInput::make('note')
+                                    ->label('Note Text')
+                                    ->maxLength(80),
+                                TextInput::make('link')
+                                    ->label('Card Link')
+                                    ->maxLength(255),
+                                TextInput::make('color')
+                                    ->label('Color Class')
+                                    ->helperText('Add a Tailwind text color class such as text-pink-600 or text-emerald-700'),
+                            ])
+                            ->columns(1),
+
+                        Repeater::make('content.service_cards')
+                            ->label('Specialized Service Cards')
+                            ->schema([
+                                TextInput::make('title')
+                                    ->label('Card Title')
+                                    ->required()
+                                    ->maxLength(120),
+                                Textarea::make('description')
+                                    ->label('Card Description')
+                                    ->rows(3)
+                                    ->maxLength(255),
+                                TextInput::make('note')
+                                    ->label('Note Text')
+                                    ->maxLength(80),
+                                TextInput::make('button_text')
+                                    ->label('Button Text')
+                                    ->maxLength(50),
+                                TextInput::make('button_link')
+                                    ->label('Button Link')
+                                    ->url(),
+                                TextInput::make('color')
+                                    ->label('Color Class')
+                                    ->helperText('Add a Tailwind text color class such as text-pink-600 or text-emerald-700'),
+                            ])
+                            ->columns(1),
+                    ]),
+            ];
+        }
+
+        return [
+            Section::make('Page Content')->collapsible()
+                ->schema([
+                    TextInput::make('content.badge')->label('Page Badge')->maxLength(100),
+                    TextInput::make('content.title')->label('Page Title')->maxLength(255),
+                    Textarea::make('content.description')->label('Page Description')->rows(4)->maxLength(500),
+                    Repeater::make('content.items')
+                        ->label('Items')
+                        ->schema([
+                            TextInput::make('title')->label('Item Title')->maxLength(120),
+                            Textarea::make('description')->label('Item Description')->rows(2)->maxLength(255),
+                        ])
+                        ->columns(1),
+                ]),
+        ];
+    }
+
     public function form(Form $form): Form
     {
         if ($this->currentPage === 'header') {
@@ -920,65 +217,22 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ->label('About Text')
                                 ->rows(3)
                                 ->columnSpanFull(),
-                            TextInput::make('footer_data.phone')
-                                ->label('Phone Number')
-                                ->tel(),
-                            TextInput::make('footer_data.email')
-                                ->label('Email Address')
-                                ->email(),
-                            TextInput::make('footer_data.address')
-                                ->label('Address')
-                                ->columnSpanFull(),
-                            TextInput::make('footer_data.website')
-                                ->label('Website')
-                                ->url(),
-                            TextInput::make('footer_data.app_version')
-                                ->label('App Version')
-                                ->placeholder('1.0.0')
-                                ->helperText('Optional application version shown in the site footer.'),
                             Repeater::make('footer_data.social_links')
                                 ->label('Social Media Links')
                                 ->schema([
-                                    TextInput::make('platform')
-                                        ->label('Platform (Facebook, Instagram, etc.)')
-                                        ->required(),
-                                    TextInput::make('url')
-                                        ->label('URL')
-                                        ->url()
-                                        ->required(),
+                                    TextInput::make('platform')->label('Platform (Facebook, Instagram, etc.)')->required(),
+                                    TextInput::make('url')->label('URL')->url()->required(),
                                 ])
                                 ->columnSpanFull(),
-                            Repeater::make('footer_data.transit_links')
-                                ->label('Transit Links')
-                                ->schema([
-                                    TextInput::make('label')
-                                        ->label('Display Text (e.g. 2GO Travel)')
-                                        ->required()
-                                        ->maxLength(100),
-                                    TextInput::make('url')
-                                        ->label('URL (e.g. /book/new)')
-                                        ->required()
-                                        ->maxLength(255),
-                                ])
-                                ->columnSpanFull()
-                                ->default([
-                                    ['label' => '2GO Travel', 'url' => '/book/new'],
-                                    ['label' => 'Starlite Ferry', 'url' => '/book/new'],
-                                    ['label' => 'Airline Ticketing', 'url' => '/book/new'],
-                                ]),
-                            Toggle::make('is_active')
-                                ->label('Active')
-                                ->default(true),
+                            Toggle::make('is_active')->label('Active')->default(true),
                         ]),
                 ])
                 ->statePath('settingsData');
         } else {
-            // Content pages: Home, About, Gallery, etc.
             return $form
                 ->schema([
                     Tabs::make('Page Settings')
                         ->tabs([
-                            // Promotion/Hero Tab (only for home)
                             Tabs\Tab::make('Promotion & Hero')
                                 ->schema([
                                     Section::make('Promotion Carousel')->collapsible()
@@ -989,13 +243,11 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->multiple()
                                                 ->image()
                                                 ->reorderable()
-                                                ->appendFiles()
                                                 ->directory('website-settings/promotions'),
                                         ]),
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
-                            // Booking Cards Tab (only for home)
                             Tabs\Tab::make('Booking Cards')
                                 ->schema([
                                     Section::make('Travel Booking Options')->collapsible()
@@ -1008,173 +260,37 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->collapsible()
                                                 ->collapsed(false)
                                                 ->schema([
-                                                    TextInput::make('title')
-                                                        ->label('Card Title')
-                                                        ->required()
-                                                        ->maxLength(100),
-                                                    Textarea::make('description')
-                                                        ->label('Card Description')
-                                                        ->rows(2)
-                                                        ->maxLength(255),
-                                                    FileUpload::make('image')
-                                                        ->label('Card Image')
-                                                        ->image()
-                                                        ->directory('website-settings/booking-cards'),
+                                                    TextInput::make('title')->label('Card Title')->required()->maxLength(100),
+                                                    Textarea::make('description')->label('Card Description')->rows(2)->maxLength(255),
+                                                    FileUpload::make('image')->label('Card Image')->image()->directory('website-settings/booking-cards'),
                                                 ])
                                                 ->columns(1),
                                         ]),
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
-                            // Page Content Tab (per-page schemas)
                             Tabs\Tab::make('Page Content')
                                 ->schema($this->getPageContentSchema())
                                 ->visible(fn () => $this->currentPage !== 'home'),
-
-                            // Welcome Section Tab (only for home)
-                            Tabs\Tab::make('Welcome Section')
-                                ->schema([
-                                    Section::make('Welcome Message')->collapsible()
-                                        ->description('Customize the welcome text shown on home page')
-                                        ->schema([
-                                            TextInput::make('content.welcome_title')
-                                                ->label('Welcome Title')
-                                                ->default('Welcome to Amiga Gracia Travel Services')
-                                                ->maxLength(255),
-                                            Textarea::make('content.welcome_subtitle')
-                                                ->label('Welcome Subtitle')
-                                                ->rows(2)
-                                                ->default('Your Journey Deserves More Than A Destination — It Deserves An Exceptional Experience')
-                                                ->maxLength(255),
-                                            TextInput::make('content.sliding_text')
-                                                ->label('Sliding Banner Text')
-                                                ->default('Your Journey Deserves More Than A Destination — It Deserves An Exceptional Experience')
-                                                ->maxLength(255),
-                                        ]),
-                                    Section::make('Hero Cards')->collapsible()
-                                        ->description('Edit the text for the two hero cards shown on the home page.')
-                                        ->schema([
-                                            TextInput::make('content.hero_card_title_1')
-                                                ->label('Primary Card Title')
-                                                ->default('Book a Trip')
-                                                ->maxLength(100),
-                                            Textarea::make('content.hero_card_description_1')
-                                                ->label('Primary Card Description')
-                                                ->rows(2)
-                                                ->default('Start a new booking — choose your route, schedule, passengers, and accommodations.')
-                                                ->maxLength(255),
-                                            TextInput::make('content.hero_card_button_1')
-                                                ->label('Primary Card Button Text')
-                                                ->default('Get started →')
-                                                ->maxLength(50),
-                                            TextInput::make('content.hero_card_title_2')
-                                                ->label('Secondary Card Title')
-                                                ->default('Check My Booking')
-                                                ->maxLength(100),
-                                            Textarea::make('content.hero_card_description_2')
-                                                ->label('Secondary Card Description')
-                                                ->rows(2)
-                                                ->default('Already booked? Enter your transaction number to view your booking details and status.')
-                                                ->maxLength(255),
-                                            TextInput::make('content.hero_card_button_2')
-                                                ->label('Secondary Card Button Text')
-                                                ->default('Check status →')
-                                                ->maxLength(50),
-                                        ]),
-                                    Section::make('Booking Cards Section')->collapsible()
-                                        ->description('Customize the booking cards section shown on home page')
-                                        ->schema([
-                                            TextInput::make('content.booking_section_title')
-                                                ->label('Section Title')
-                                                ->default('Request Travel Bookings')
-                                                ->maxLength(255),
-                                            Textarea::make('content.booking_section_description')
-                                                ->label('Section Description')
-                                                ->default('Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.')
-                                                ->rows(2)
-                                                ->maxLength(255),
-                                            Repeater::make('content.booking_cards')
-                                                ->label('Booking Cards')
-                                                ->addable(false)
-                                                ->deletable(false)
-                                                ->collapsible()
-                                                ->collapsed(false)
-                                                ->schema([
-                                                    TextInput::make('title')
-                                                        ->label('Card Title')
-                                                        ->required()
-                                                        ->maxLength(100),
-                                                    Textarea::make('description')
-                                                        ->label('Card Description')
-                                                        ->rows(2)
-                                                        ->maxLength(255),
-                                                    FileUpload::make('image')
-                                                        ->label('Card Image')
-                                                        ->image()
-                                                        ->directory('website-settings/booking-cards'),
-                                                    TextInput::make('booking_button_text')
-                                                        ->label('Button Text')
-                                                        ->default('Book Now')
-                                                        ->maxLength(50),
-                                                ])
-                                                ->columns(1),
-                                        ]),
-                                ])
-                                ->visible(fn () => $this->currentPage === 'home'),
 
                             Tabs\Tab::make('SEO & Sharing')
                                 ->schema([
                                     Section::make('Search Engine Metadata')->collapsible()
                                         ->description('Update the page metadata used for search engines and social sharing.')
                                         ->schema([
-                                            TextInput::make('content.meta_title')
-                                                ->label('Meta title')
-                                                ->maxLength(70),
-                                            Textarea::make('content.meta_description')
-                                                ->label('Meta description')
-                                                ->rows(3)
-                                                ->maxLength(170),
-                                            TextInput::make('content.meta_keywords')
-                                                ->label('Meta keywords')
-                                                ->helperText('Comma-separated keywords for SEO. Optional.'),
-                                            FileUpload::make('content.meta_image')
-                                                ->label('Meta image')
-                                                ->image()
-                                                ->directory('website-settings/meta'),
-                                        ]),
-                                    Section::make('Social Sharing')->collapsible()
-                                        ->description('Optional social media preview content.')
-                                        ->schema([
-                                            TextInput::make('content.og_title')
-                                                ->label('Open Graph title')
-                                                ->maxLength(100),
-                                            Textarea::make('content.og_description')
-                                                ->label('Open Graph description')
-                                                ->rows(3)
-                                                ->maxLength(170),
-                                            FileUpload::make('content.og_image')
-                                                ->label('Open Graph image')
-                                                ->image()
-                                                ->directory('website-settings/meta'),
+                                            TextInput::make('content.meta_title')->label('Meta title')->maxLength(70),
+                                            Textarea::make('content.meta_description')->label('Meta description')->rows(3)->maxLength(170),
+                                            FileUpload::make('content.meta_image')->label('Meta image')->image()->directory('website-settings/meta'),
                                         ]),
                                 ])
                                 ->visible(fn () => $this->currentPage !== 'home'),
 
-                            // Settings Tab
                             Tabs\Tab::make('Settings')
                                 ->schema([
                                     Section::make('Page Settings')->collapsible()
                                         ->schema([
-                                            Toggle::make('is_active')
-                                                ->label('Active')
-                                                ->default(true),
-                                            TextInput::make('content.page_subtitle')
-                                                ->label('Page subtitle')
-                                                ->maxLength(120),
-                                            TextInput::make('content.banner_cta')
-                                                ->label('Banner CTA text')
-                                                ->maxLength(50)
-                                                ->helperText('Optional button text for hero/banner calls to action.'),
+                                            Toggle::make('is_active')->label('Active')->default(true),
+                                            TextInput::make('content.page_subtitle')->label('Page subtitle')->maxLength(120),
                                         ]),
                                 ]),
                         ])
@@ -1188,23 +304,14 @@ class ManageWebsiteSettings extends Page implements HasForms
     {
         try {
             $data = $this->form->getState();
-            
             $setting = WebsiteSetting::getOrCreateByPage($this->currentPage);
             $setting->update($data);
 
-            Notification::make()
-                ->success()
-                ->title('Settings saved')
-                ->body("Website settings for {$setting->page} page have been updated successfully.")
-                ->send();
+            Notification::make()->success()->title('Settings saved')->body("Website settings for {$setting->page} page have been updated successfully.")->send();
 
             $this->redirect(route('filament.admin.pages.manage-website-settings', ['page' => $this->currentPage]));
         } catch (\Exception $e) {
-            Notification::make()
-                ->danger()
-                ->title('Error')
-                ->body($e->getMessage())
-                ->send();
+            Notification::make()->danger()->title('Error')->body($e->getMessage())->send();
         }
     }
 
@@ -1240,17 +347,9 @@ class ManageWebsiteSettings extends Page implements HasForms
             $setting->update($updateData);
             $this->iframeKey++;
             $this->dispatch('refresh-preview');
-            Notification::make()
-                ->success()
-                ->title('Saved!')
-                ->body('Changes have been published to the website.')
-                ->send();
+            Notification::make()->success()->title('Saved!')->body('Changes have been published to the website.')->send();
         } catch (\Exception $e) {
-            Notification::make()
-                ->danger()
-                ->title('Save failed')
-                ->body($e->getMessage())
-                ->send();
+            Notification::make()->danger()->title('Save failed')->body($e->getMessage())->send();
         }
     }
 
@@ -1328,12 +427,11 @@ class ManageWebsiteSettings extends Page implements HasForms
             '/download' => 'download',
             '/faqs' => 'faqs',
         ];
-        
+
         $cleanPath = rtrim($path, '/') ?: '/';
-        
+
         if (isset($map[$cleanPath])) {
             $key = $map[$cleanPath];
-            // Only redirect if the navigated page is different from the current settings page tab
             if ($this->currentPage !== $key && !in_array($this->currentPage, ['header', 'footer'])) {
                 $this->redirect(route('filament.admin.pages.manage-website-settings', ['page' => $key]));
             }
@@ -1366,7 +464,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'label' => 'Navigation (Locked)',
                     'icon'  => '🔒',
                     'color' => 'slate',
-                    'pos'   => 'top:0%;left:0%;width:100%;height:8%',
                     'description' => 'Navigation links are part of the template',
                     'locked' => true,
                 ],
@@ -1374,29 +471,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'label' => 'Promotion Images',
                     'icon'  => '🖼',
                     'color' => 'blue',
-                    'pos'   => 'top:9%;left:0%;width:33%;height:54%',
                     'description' => 'Carousel images on the left column',
-                ],
-                'sliding_text' => [
-                    'label' => 'Sliding Text',
-                    'icon'  => '📢',
-                    'color' => 'pink',
-                    'pos'   => 'top:9%;left:34%;width:66%;height:10%',
-                    'description' => 'Sliding promotional marquee',
-                ],
-                'welcome_section' => [
-                    'label' => 'Welcome Section',
-                    'icon'  => '👋',
-                    'color' => 'green',
-                    'pos'   => 'top:21%;left:34%;width:66%;height:20%',
-                    'description' => 'Welcome title and subtitle text',
-                ],
-                'hero_cards' => [
-                    'label' => 'Quick Action Cards',
-                    'icon'  => '🃏',
-                    'color' => 'purple',
-                    'pos'   => 'top:43%;left:34%;width:66%;height:31%',
-                    'description' => 'Book a Trip and Check My Booking cards',
                 ],
             ],
             'header' => [
@@ -1404,7 +479,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'label' => 'Header Configuration',
                     'icon'  => '🏷',
                     'color' => 'amber',
-                    'pos'   => 'top:0%;left:0%;width:100%;height:9%',
                     'description' => 'Logo, company name, phone, and email',
                 ],
             ],
@@ -1413,7 +487,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'label' => 'Footer Content',
                     'icon'  => '🔗',
                     'color' => 'slate',
-                    'pos'   => 'top:70%;left:0%;width:100%;height:30%',
                     'description' => 'About text, contact info, social links',
                 ],
             ],
@@ -1422,38 +495,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'label' => 'About Content',
                     'icon'  => '📝',
                     'color' => 'emerald',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:34%',
                     'description' => 'Page title and main description',
-                ],
-                'quick_facts' => [
-                    'label' => 'Quick Facts',
-                    'icon'  => '📋',
-                    'color' => 'blue',
-                    'pos'   => 'top:44%;left:0%;width:100%;height:26%',
-                    'description' => 'Fact cards shown on the About page',
-                ],
-                'booking_section' => [
-                    'label' => 'Booking Request Section',
-                    'icon'  => '✈️',
-                    'color' => 'purple',
-                    'pos'   => 'top:70%;left:0%;width:100%;height:26%',
-                    'description' => 'Booking request section title, description, and cards',
-                ],
-            ],
-            'gallery' => [
-                'gallery_header' => [
-                    'label' => 'Gallery Header',
-                    'icon'  => '🖼',
-                    'color' => 'pink',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:25%',
-                    'description' => 'Page title, badge, and description',
-                ],
-                'gallery_items' => [
-                    'label' => 'Gallery Items',
-                    'icon'  => '🖼',
-                    'color' => 'violet',
-                    'pos'   => 'top:34%;left:0%;width:100%;height:60%',
-                    'description' => 'Gallery images and captions',
                 ],
             ],
             'services' => [
@@ -1461,82 +503,13 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'label' => 'Services Header',
                     'icon'  => '⚙️',
                     'color' => 'emerald',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:30%',
                     'description' => 'Page title, description, and CTA',
                 ],
                 'service_cards' => [
                     'label' => 'Service Cards',
                     'icon'  => '🃏',
                     'color' => 'blue',
-                    'pos'   => 'top:39%;left:0%;width:100%;height:55%',
                     'description' => 'Individual service card content',
-                ],
-            ],
-            'tour_package' => [
-                'tour_header' => [
-                    'label' => 'Tour Header',
-                    'icon'  => '✈️',
-                    'color' => 'sky',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:25%',
-                    'description' => 'Page title and description',
-                ],
-                'tour_packages' => [
-                    'label' => 'Tour Packages',
-                    'icon'  => '🌏',
-                    'color' => 'indigo',
-                    'pos'   => 'top:34%;left:0%;width:100%;height:60%',
-                    'description' => 'Domestic and international packages',
-                ],
-            ],
-            'schedules' => [
-                'schedules_hero' => [
-                    'label' => 'Hero Section',
-                    'icon'  => '🗓',
-                    'color' => 'green',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:35%',
-                    'description' => 'Page title, subtitle, and description text',
-                ],
-                'schedules_filters' => [
-                    'label' => 'Filter & Routes',
-                    'icon'  => '🔍',
-                    'color' => 'blue',
-                    'pos'   => 'top:44%;left:0%;width:100%;height:50%',
-                    'description' => 'Section title and filter labels',
-                    'locked' => true,
-                ],
-            ],
-            'contact_us' => [
-                'contact_info' => [
-                    'label' => 'Contact Information',
-                    'icon'  => '📞',
-                    'color' => 'green',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:88%',
-                    'description' => 'Phone, email, address, and social links',
-                ],
-            ],
-            'faqs' => [
-                'faqs_content' => [
-                    'label' => 'FAQs Content',
-                    'icon'  => '❓',
-                    'color' => 'pink',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:85%',
-                    'description' => 'Manage Frequently Asked Questions',
-                ],
-            ],
-            'download' => [
-                'download_content' => [
-                    'label' => 'Download Header',
-                    'icon'  => '📱',
-                    'color' => 'orange',
-                    'pos'   => 'top:8%;left:0%;width:100%;height:40%',
-                    'description' => 'Page title, description, how it works',
-                ],
-                'download_steps' => [
-                    'label' => 'Download Steps',
-                    'icon'  => '📋',
-                    'color' => 'amber',
-                    'pos'   => 'top:49%;left:0%;width:100%;height:45%',
-                    'description' => 'Installation steps for the app',
                 ],
             ],
             default => [],

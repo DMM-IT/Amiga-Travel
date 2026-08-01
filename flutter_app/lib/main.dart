@@ -383,6 +383,11 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
         if (latestVersion != UserSession.installedAppVersion && mounted) {
+          final prefs = await SharedPreferences.getInstance();
+          final promptedKey = 'update_prompted_$latestVersion';
+          // If we've already prompted for this exact version recently, skip prompting again.
+          if (prefs.getString(promptedKey) != null) return;
+
           final context = navigatorKey.currentContext;
           if (context != null) {
             await UpdateChecker.showUpdateDialog(context, latestVersion);
@@ -410,6 +415,14 @@ class UpdateChecker {
 
     _dialogAlreadyVisible = true;
     _lastPromptedVersion = latestVersion;
+
+    final prefs = await SharedPreferences.getInstance();
+    final promptedKey = 'update_prompted_$latestVersion';
+    // Prevent re-prompting repeatedly for the same version in case installation doesn't immediately update the app.
+    if (prefs.getString(promptedKey) != null) {
+      _dialogAlreadyVisible = false;
+      return;
+    }
 
     await showDialog(
       context: context,
@@ -467,6 +480,11 @@ class UpdateChecker {
 
                         final result = await OpenFilex.open(file.path);
                         if (result.type != ResultType.done) throw Exception(result.message);
+                        // Mark that we've attempted an update for this version so we don't re-prompt immediately.
+                        try {
+                          await prefs.setString(promptedKey, DateTime.now().toIso8601String());
+                        } catch (_) {}
+
                         setState(() => isDownloading = false);
                       } catch (e) {
                         debugPrint('Download error: $e');

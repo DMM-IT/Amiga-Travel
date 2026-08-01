@@ -120,7 +120,7 @@
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center gap-2">
                         <a href="{{ url('/') }}" class="flex items-center gap-2">
-                            <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo.jpg') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-16 w-auto rounded bg-white p-1">
+                            <img src="{{ storage_asset_path(data_get($headerData, 'logo')) ?: asset('images/amiga-logo.jpg') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-16 w-auto rounded bg-white p-1">
                         </a>
                     </div>
                     <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
@@ -247,7 +247,7 @@
                     <!-- Column 1: Logo & Tagline -->
             <div class="space-y-4">
                 <div class="flex flex-col items-start gap-3">
-                    <img src="{{ data_get($headerData, 'logo') ? asset('storage/' . data_get($headerData, 'logo')) : asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-20 sm:h-24 lg:h-28 w-auto">
+                    <img src="{{ storage_asset_path(data_get($headerData, 'logo')) ?: asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-20 sm:h-24 lg:h-28 w-auto">
                     <p class="text-white/90 font-semibold text-sm sm:text-base">{{ $footerData['tagline'] ?? 'Kay Amiga Hassle Free Ka!' }}</p>
                 </div>
 
