@@ -62,7 +62,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.23+27';
+  static const String appVersion = '1.0.24+28';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -528,6 +528,12 @@ class UpdateChecker {
                           sink.add(chunk);
                         }).asFuture();
                         await sink.close();
+
+                        // Persist the current login/session state before leaving the app for APK install.
+                        await UserSession.save();
+                        if (BookingData.activeSession != null) {
+                          await BookingData.activeSession!.saveToPrefs(BookingData.activeSession!.savedStep);
+                        }
 
                         final result = await OpenFilex.open(file.path);
                         if (result.type != ResultType.done) throw Exception(result.message);
@@ -4214,13 +4220,14 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 }
 
 class _NotificationDot extends StatelessWidget {
-  const _NotificationDot();
+  final double size;
+  const _NotificationDot({this.size = 10});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 10,
-      height: 10,
+      width: size,
+      height: size,
       decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
     );
   }
@@ -4291,8 +4298,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     children: [
                       const Text('Profile Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
-                      const Spacer(),
-                      if (missingPhone) const _NotificationDot(),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -4321,7 +4326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     decoration: InputDecoration(
                       labelText: 'Mobile Phone Number',
                       prefixIcon: const Icon(Icons.phone_android_outlined, color: kGreen),
-                      suffixIcon: missingPhone ? const _NotificationDot() : null,
+                      suffixIcon: missingPhone ? const _NotificationDot(size: 6) : null,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
@@ -5081,10 +5086,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             child: Card(
               color: isSelected ? kPink : Colors.white,
               elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16), 
-                side: BorderSide(color: isSelected ? kPink : kSlate200, width: 2)
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: InkWell(
                 onTap: () {
                   setState(() {
@@ -5183,34 +5185,39 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                     child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                                   ),
                                 if (getOperatorLogoUrl(s['operator'] ?? '').isNotEmpty)
-                                  Container(
-                                    margin: const EdgeInsets.only(right: 6),
-                                    padding: const EdgeInsets.all(3),
-                                    height: 26,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: kSlate200),
-                                    ),
-                                    child: Image.network(
-                                      getOperatorLogoUrl(s['operator'] ?? ''),
-                                      height: 18,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                                    ),
-                                  ),
-                                Flexible(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
-                                    child: Text(
-                                      s['operator'] ?? 'Operator',
-                                      style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 11),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(height: 60, child: Image.network(
+                                          getOperatorLogoUrl(s['operator'] ?? ''),
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                                        )),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          s['operator'] ?? 'Operator',
+                                          style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
+                                if (getOperatorLogoUrl(s['operator'] ?? '').isEmpty)
+                                  Flexible(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                      child: Text(
+                                        s['operator'] ?? 'Operator',
+                                        style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 11),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
@@ -6421,9 +6428,6 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             decoration: InputDecoration(
                               labelText: 'Mobile Phone Number',
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              suffixIcon: _clientPhoneCtrl.text.trim().isEmpty
-                                  ? const _NotificationDot()
-                                  : null,
                             ),
                             validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                           ),
@@ -6692,11 +6696,20 @@ class _SummaryRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: Text(label, style: const TextStyle(color: kSlate500, fontSize: 13))),
+          Expanded(
+            flex: 1,
+            child: Text(label, style: const TextStyle(color: kSlate500, fontSize: 13)),
+          ),
           const SizedBox(width: 16),
-          Text(value, style: const TextStyle(color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.end),
+          Expanded(
+            flex: 2,
+            child: Text(
+              value,
+              style: const TextStyle(color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
@@ -8864,23 +8877,51 @@ class _VouchersScreenState extends State<VouchersScreen> {
   }
 }
 
-int _getVoucherPercentage(dynamic v) {
-  if (v == null) return 35;
+String _getVoucherLabel(dynamic v) {
+  if (v == null) return '30% OFF';
+
   if (v['discount_type'] == 'percentage' && v['discount_value'] != null) {
     final val = double.tryParse(v['discount_value'].toString());
-    if (val != null && val > 0) return val.toInt();
+    if (val != null && val > 0) {
+      return '${val.toInt()}% OFF';
+    }
   }
-  if (v['discount_value'] != null) {
+
+  if (v['discount_type'] != 'percentage' && v['discount_value'] != null) {
     final val = double.tryParse(v['discount_value'].toString());
-    if (val != null && val > 0 && val <= 100) return val.toInt();
+    if (val != null && val > 0) {
+      return '₱${val.toStringAsFixed(0)} OFF';
+    }
   }
+
+  final name = v['name']?.toString() ?? '';
+  final match = RegExp(r'(\d+)\s*%').firstMatch(name);
+  if (match != null) {
+    final p = int.tryParse(match.group(1) ?? '');
+    if (p != null && p > 0 && p <= 100) return '$p% OFF';
+  }
+
+  return '30% OFF';
+}
+
+int _getVoucherPercentage(dynamic v) {
+  if (v == null) return 30;
+
+  if (v['discount_type'] == 'percentage' && v['discount_value'] != null) {
+    final val = double.tryParse(v['discount_value'].toString());
+    if (val != null && val > 0) {
+      return val.toInt();
+    }
+  }
+
   final name = v['name']?.toString() ?? '';
   final match = RegExp(r'(\d+)\s*%').firstMatch(name);
   if (match != null) {
     final p = int.tryParse(match.group(1) ?? '');
     if (p != null && p > 0 && p <= 100) return p;
   }
-  return 35;
+
+  return 30;
 }
 
 String _formatVoucherDate(String? dateStr) {
@@ -8949,6 +8990,7 @@ class _DiscountCouponCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String discountLabel = _getVoucherLabel(voucher);
     final int percentage = _getVoucherPercentage(voucher);
     final String validDate = _formatVoucherDate(voucher?['end_at']?.toString());
     const Color voucherGreen = Color(0xFF137F28);
@@ -8987,17 +9029,19 @@ class _DiscountCouponCard extends StatelessWidget {
                         children: [
                           // Logo Header
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Image.asset(
-                                'assets/icon/app_icon.png',
-                                height: 28,
+                                'assets/icon/app_icon_foreground.png',
+                                height: 40,
+                                fit: BoxFit.contain,
                                 errorBuilder: (_, __, ___) => const Icon(
                                   Icons.location_on,
                                   color: Colors.white,
-                                  size: 28,
+                                  size: 34,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 10),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
@@ -9007,16 +9051,17 @@ class _DiscountCouponCard extends StatelessWidget {
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w900,
-                                      fontSize: 13,
+                                      fontSize: 14,
                                       letterSpacing: 0.5,
                                     ),
                                   ),
+                                  SizedBox(height: 2),
                                   Text(
                                     'TRAVEL SERVICES',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 8.5,
+                                      fontSize: 9,
                                       letterSpacing: 0.8,
                                     ),
                                   ),
@@ -9024,72 +9069,52 @@ class _DiscountCouponCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          // Main Title (TALL EXTRA-BOLD DISCOUNT COUPON)
+                          // Main Title
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              const SizedBox(height: 10),
                               const Text(
-                                'DISCOUNT\nCOUPON',
+                                'DISCOUNT',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 38,
+                                  fontSize: 34,
                                   fontWeight: FontWeight.w900,
-                                  height: 0.86,
-                                  letterSpacing: -0.5,
+                                  height: 0.92,
+                                  letterSpacing: -0.6,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              const Text(
+                                'COUPON',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.w900,
+                                  height: 0.92,
+                                  letterSpacing: -0.6,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
                               Text(
                                 validDate,
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
                           ),
-                          // Bottom row: barcode + email & 1st percentage OFF
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Row(
-                                    children: List.generate(24, (i) {
-                                      final widths = [1.5, 1.0, 2.5, 1.0, 1.5, 3.0, 1.0, 2.0];
-                                      return Container(
-                                        margin: const EdgeInsets.only(right: 2),
-                                        width: widths[i % widths.length],
-                                        height: 12,
-                                        color: Colors.white,
-                                      );
-                                    }),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  const Text(
-                                    'amigagracia.travelservices@gmail.com',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                '$percentage% OFF',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
+                          const Spacer(),
+                          Text(
+                            discountLabel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ],
                       ),
@@ -9100,114 +9125,63 @@ class _DiscountCouponCard extends StatelessWidget {
                     flex: 37,
                     child: Container(
                       color: voucherPink,
-                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Gift box bow loops on top
-                          SizedBox(
-                            height: 16,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.white, width: 2.5),
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(12),
-                                      topRight: Radius.circular(12),
-                                      bottomLeft: Radius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.white, width: 2.5),
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(12),
-                                      topRight: Radius.circular(12),
-                                      bottomRight: Radius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Box Lid
                           Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            height: 11,
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 2.5),
-                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.white.withOpacity(0.16),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Center(
-                              child: Container(
-                                width: 2.5,
-                                color: Colors.white,
-                              ),
+                            child: const Icon(
+                              Icons.card_giftcard,
+                              color: Colors.white,
+                              size: 32,
                             ),
                           ),
-                          // Box Body with 2nd % OFF and vertical center ribbon
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 2.5),
-                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Positioned.fill(
-                                  child: Center(
-                                    child: Container(
-                                      width: 2.5,
-                                      color: Colors.white.withOpacity(0.6),
-                                    ),
-                                  ),
-                                ),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '$percentage%',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.w900,
-                                        height: 0.88,
-                                      ),
-                                    ),
-                                    const Text(
-                                      'OFF',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w900,
-                                        height: 0.95,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                          const SizedBox(height: 18),
+                          Text(
+                            '$percentage%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 40,
+                              fontWeight: FontWeight.w900,
+                              height: 0.85,
                             ),
                           ),
-                          const SizedBox(height: 8),
                           const Text(
-                            'AMIGA GRACIA TRAVEL SERVICES\nONLINE COUPON',
+                            'OFF',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              height: 0.95,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'AMIGA GRACIA TRAVEL SERVICES',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 7.5,
+                              fontSize: 8,
                               fontWeight: FontWeight.w700,
-                              height: 1.25,
                               letterSpacing: 0.3,
+                              height: 1.25,
+                            ),
+                          ),
+                          const Text(
+                            'ONLINE COUPON',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                              height: 1.25,
                             ),
                           ),
                         ],
