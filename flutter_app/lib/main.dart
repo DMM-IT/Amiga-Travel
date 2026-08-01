@@ -80,7 +80,36 @@ class UserSession {
 
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      installedAppVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+      final version = packageInfo.version.trim();
+      final buildNumber = packageInfo.buildNumber.trim().isEmpty ? '0' : packageInfo.buildNumber.trim();
+      installedAppVersion = '${version}+${buildNumber}';
+    } catch (_) {
+      installedAppVersion = appVersion;
+    }
+  }
+
+  static bool isUpdateRequired(String latestVersion) {
+    final normalizedLatest = latestVersion.trim();
+    final normalizedInstalled = installedAppVersion.trim();
+    if (normalizedLatest == normalizedInstalled) {
+      return false;
+    }
+
+    final latest = _AppVersion.parse(normalizedLatest);
+    final current = _AppVersion.parse(normalizedInstalled);
+    if (latest == null || current == null) {
+      return normalizedLatest != normalizedInstalled;
+    }
+
+    return latest.compareTo(current) > 0;
+  }
+
+  static Future<void> refreshInstalledAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final version = packageInfo.version.trim();
+      final buildNumber = packageInfo.buildNumber.trim().isEmpty ? '0' : packageInfo.buildNumber.trim();
+      installedAppVersion = '${version}+${buildNumber}';
     } catch (_) {
       installedAppVersion = appVersion;
     }
@@ -138,6 +167,39 @@ class UserSession {
     if (spendThreshold <= 0 || pointsAwarded <= 0) return 0;
     final centavos = (price * 100).toInt();
     return (centavos ~/ spendThreshold) * pointsAwarded;
+  }
+}
+
+class _AppVersion implements Comparable<_AppVersion> {
+  final List<int> versionParts;
+  final int buildNumber;
+
+  _AppVersion(this.versionParts, this.buildNumber);
+
+  static _AppVersion? parse(String raw) {
+    final parts = raw.split('+');
+    if (parts.isEmpty) return null;
+
+    final versionNumbers = parts[0].split('.');
+    final parsedParts = <int>[];
+    for (final number in versionNumbers) {
+      final parsed = int.tryParse(number);
+      if (parsed == null) return null;
+      parsedParts.add(parsed);
+    }
+
+    final build = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    return _AppVersion(parsedParts, build);
+  }
+
+  @override
+  int compareTo(_AppVersion other) {
+    for (var i = 0; i < versionParts.length || i < other.versionParts.length; i++) {
+      final a = i < versionParts.length ? versionParts[i] : 0;
+      final b = i < other.versionParts.length ? other.versionParts[i] : 0;
+      if (a != b) return a.compareTo(b);
+    }
+    return buildNumber.compareTo(other.buildNumber);
   }
 }
 
@@ -378,16 +440,13 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
     if (_isChecking) return;
     _isChecking = true;
     try {
+      await UserSession.refreshInstalledAppVersion();
       final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version')).timeout(const Duration(seconds: 5));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
-        if (latestVersion != UserSession.installedAppVersion && mounted) {
-          final prefs = await SharedPreferences.getInstance();
-          final promptedKey = 'update_prompted_$latestVersion';
-          // If we've already prompted for this exact version recently, skip prompting again.
-          if (prefs.getString(promptedKey) != null) return;
-
+        final forceUpdate = data['force_update'] as bool? ?? true;
+        if (forceUpdate && UserSession.isUpdateRequired(latestVersion) && mounted) {
           final context = navigatorKey.currentContext;
           if (context != null) {
             await UpdateChecker.showUpdateDialog(context, latestVersion);
@@ -415,14 +474,6 @@ class UpdateChecker {
 
     _dialogAlreadyVisible = true;
     _lastPromptedVersion = latestVersion;
-
-    final prefs = await SharedPreferences.getInstance();
-    final promptedKey = 'update_prompted_$latestVersion';
-    // Prevent re-prompting repeatedly for the same version in case installation doesn't immediately update the app.
-    if (prefs.getString(promptedKey) != null) {
-      _dialogAlreadyVisible = false;
-      return;
-    }
 
     await showDialog(
       context: context,
@@ -480,12 +531,12 @@ class UpdateChecker {
 
                         final result = await OpenFilex.open(file.path);
                         if (result.type != ResultType.done) throw Exception(result.message);
-                        // Mark that we've attempted an update for this version so we don't re-prompt immediately.
-                        try {
-                          await prefs.setString(promptedKey, DateTime.now().toIso8601String());
-                        } catch (_) {}
 
-                        setState(() => isDownloading = false);
+                        if (context.mounted) {
+                          Navigator.of(context, rootNavigator: true).pop();
+                        }
+
+                        return;
                       } catch (e) {
                         debugPrint('Download error: $e');
                         setState(() {
@@ -567,7 +618,10 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
   }
 
   Future<void> _checkVersionAndProceed() async {
-    // 1. Check for app updates
+    // 1. Refresh the installed app version before checking for updates.
+    await UserSession.refreshInstalledAppVersion();
+
+    // 2. Check for app updates
     try {
       final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version'))
           .timeout(const Duration(seconds: 5));
@@ -575,11 +629,11 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
-        
-        // If versions don't match, show update prompt
-        if (latestVersion != UserSession.installedAppVersion) {
+        final forceUpdate = data['force_update'] as bool? ?? true;
+
+        if (forceUpdate && UserSession.isUpdateRequired(latestVersion)) {
           if (mounted) {
-            UpdateChecker.showUpdateDialog(context, latestVersion);
+            await UpdateChecker.showUpdateDialog(context, latestVersion);
           }
           return; // Stop initialization, wait for update
         }
