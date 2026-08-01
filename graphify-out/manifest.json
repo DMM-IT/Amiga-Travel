@@ -1480,8 +1480,8 @@
     "semantic_hash": ""
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1785552640.1028893,
-    "ast_hash": "fa545e169b1e5a8b3a49196b243cbc98",
+    "mtime": 1785555749.5276601,
+    "ast_hash": "ee15a32411a192e19369c39d19e36bb0",
     "semantic_hash": ""
   },
   "flutter_app/lib/notification_service.dart": {
@@ -1825,7 +1825,7 @@
     "semantic_hash": ""
   },
   "resources/views/download.blade.php": {
-    "mtime": 1785431686.535141,
+    "mtime": 1785554804.4808958,
     "ast_hash": "60e27899bbf2b76ac29931856f83c850",
     "semantic_hash": ""
   },
