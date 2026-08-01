@@ -988,6 +988,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->label('Carousel Images')
                                                 ->multiple()
                                                 ->image()
+                                                ->maxSize(12288)
                                                 ->reorderable()
                                                 ->appendFiles()
                                                 ->directory('website-settings/promotions'),
