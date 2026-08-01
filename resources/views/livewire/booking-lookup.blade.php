@@ -62,13 +62,13 @@
                                         </button>
                                     </div>
 
-                                    <h2 class="mt-4 text-xl font-bold text-slate-900">You have 5 minutes to cancel</h2>
+                                    <h2 class="mt-4 text-xl font-bold text-slate-900">Your booking has been submitted.</h2>
                                     <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-                                        Your booking is now submitted. If you need to cancel it, you have a <strong>5-minute window</strong> from the time you uploaded your payment proof. After this window expires, cancellations will be subject to a <strong>50% fee</strong>.
+                                        Cancellation is free within 5 minutes after providing proof of payment.
                                     </p>
 
                                     <div class="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                                        ⚠️ This window closes shortly. Act now if you wish to cancel.
+                                        Please complete payment to issue your tickets.
                                     </div>
 
                                     <div class="mt-6 flex flex-wrap gap-3 justify-end">
@@ -111,9 +111,13 @@
                                                 Cancellation fee: 50% of total price.
                                             </div>
                                         @else
-                                            <p>Rebooking requires a new travel date selection and proof of payment for the 30% rebooking fee. Same-day departures cannot be rebooked online.</p>
+                                            <ul class="space-y-2 list-disc pl-5">
+                                                <li>Would you like to proceed with rebooking?</li>
+                                                <li>Please select your preferred new travel date.</li>
+                                                <li>Rebooking charges apply and fare difference (if applicable.)</li>
+                                            </ul>
                                             <div class="rounded-2xl border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
-                                                Rebooking fee: 30% of total price.
+                                                To proceed with rebooking, please select your preferred new travel date and submit your proof of payment for the rebooking fee.
                                             </div>
                                         @endif
                                     </div>

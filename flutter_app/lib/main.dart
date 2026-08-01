@@ -3942,12 +3942,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Submit rebooking request'),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
+        title: const Text('Would you like to proceed with rebooking?'),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('• Please select your preferred new travel date.'),
+          const SizedBox(height: 8),
+          const Text('• Rebooking charges apply and fare difference (if applicable.)'),
+          const SizedBox(height: 12),
           Text('Rebooking fee: ₱${fee.toStringAsFixed(2)}'),
           if (_qrCodeUrl != null) ...[const SizedBox(height: 12), Image.network(_qrCodeUrl!, height: 120, width: 120, errorBuilder: (_, __, ___) => const SizedBox.shrink())],
           const SizedBox(height: 12),
-          const Text('Payment proof selected. Submit it for staff verification?'),
+          const Text('To proceed with rebooking, please select your preferred new travel date and submit your proof of payment for the rebooking fee.'),
         ]),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit'))],
       ),
@@ -5503,7 +5507,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                       context: context,
                                       builder: (c) => AlertDialog(
                                         title: const Text('Discount Applied'),
-                                        content: const Text('Please ensure you have a valid ID to present upon boarding to claim this discount.'),
+                                        content: const Text('Your discount has been applied.\n\nKindly present a valid ID upon boarding to verify and enjoy your discount'),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(c),
@@ -6650,7 +6654,7 @@ class BookingSuccessScreen extends StatelessWidget {
             const Text('Booking Submitted!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: kGreen)),
             const SizedBox(height: 8),
             const Text(
-              'Your booking has been submitted. Please complete payment to issue your tickets.',
+              'Your booking has been submitted.\n\nCancellation is free within 5 minutes after providing proof of payment.',
               textAlign: TextAlign.center,
               style: TextStyle(color: kSlate600, fontSize: 14),
             ),
@@ -8090,17 +8094,19 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                                   Text('Rules & Guidelines', style: TextStyle(fontSize: 18)),
                                 ],
                               ),
-                              content: Column(
+                              content: const Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('• Earn points every time you book a ferry or flight.'),
-                                  const SizedBox(height: 8),
-                                  Text('• Currently, you earn ${_activeRule?['points_awarded'] ?? 0} points for every ₱${((_activeRule?['spend_threshold_centavos'] ?? 0) / 100).toStringAsFixed(0)} spent.'),
-                                  const SizedBox(height: 8),
-                                  const Text('• Points are awarded automatically once your booking is paid and verified.'),
-                                  const SizedBox(height: 8),
-                                  const Text('• Use your points to claim exciting rewards and discounts on your future travels!'),
+                                  Text('Gracia coins Guidelines'),
+                                  SizedBox(height: 8),
+                                  Text('• Book your ferry or flight and earn points along the way.'),
+                                  SizedBox(height: 8),
+                                  Text('• For every ₱1,000 spent, you will earn 5 Gracia coins.'),
+                                  SizedBox(height: 8),
+                                  Text('• Points will be automatically credited once your booking has been paid and verified.'),
+                                  SizedBox(height: 8),
+                                  Text('• Redeem your Gracia coins to enjoy exciting rewards and discounts on your future travels.'),
                                 ],
                               ),
                               actions: [
