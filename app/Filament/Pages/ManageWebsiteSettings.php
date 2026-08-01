@@ -244,6 +244,9 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                 ->image()
                                                 ->maxSize(12288)
                                                 ->reorderable()
+                                                ->appendFiles()
+                                                ->disk('public')
+                                                ->visibility('public')
                                                 ->directory('website-settings/promotions'),
                                         ]),
                                 ])
