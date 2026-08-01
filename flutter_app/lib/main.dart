@@ -62,7 +62,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.22+26';
+  static const String appVersion = '1.0.23+27';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -385,7 +385,7 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
         if (latestVersion != UserSession.installedAppVersion && mounted) {
           final context = navigatorKey.currentContext;
           if (context != null) {
-            UpdateChecker.showUpdateDialog(context, latestVersion);
+            await UpdateChecker.showUpdateDialog(context, latestVersion);
           }
         }
       }
@@ -400,8 +400,18 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
 }
 
 class UpdateChecker {
-  static void showUpdateDialog(BuildContext context, String latestVersion) {
-    showDialog(
+  static String? _lastPromptedVersion;
+  static bool _dialogAlreadyVisible = false;
+
+  static Future<void> showUpdateDialog(BuildContext context, String latestVersion) async {
+    if (_dialogAlreadyVisible && _lastPromptedVersion == latestVersion) {
+      return;
+    }
+
+    _dialogAlreadyVisible = true;
+    _lastPromptedVersion = latestVersion;
+
+    await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
@@ -441,12 +451,12 @@ class UpdateChecker {
                         final request = http.Request('GET', Uri.parse(apkUrl));
                         final response = await http.Client().send(request);
                         if (response.statusCode != 200) throw Exception('Server returned ${response.statusCode}');
-                        
+
                         final contentLength = response.contentLength ?? 1;
                         final dir = await getExternalStorageDirectory();
                         final file = File('${dir!.path}/update_$latestVersion.apk');
                         final sink = file.openWrite();
-                        
+
                         int bytes = 0;
                         await response.stream.listen((List<int> chunk) {
                           bytes += chunk.length;
@@ -454,7 +464,7 @@ class UpdateChecker {
                           sink.add(chunk);
                         }).asFuture();
                         await sink.close();
-                        
+
                         final result = await OpenFilex.open(file.path);
                         if (result.type != ResultType.done) throw Exception(result.message);
                         setState(() => isDownloading = false);
@@ -474,6 +484,8 @@ class UpdateChecker {
         );
       },
     );
+
+    _dialogAlreadyVisible = false;
   }
 }
 
