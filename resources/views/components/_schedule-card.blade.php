@@ -68,8 +68,5 @@
         <p class="text-[10px] sm:text-xs font-medium {{ $isSelected ? 'text-white/90' : 'text-slate-600' }}">
             {{ $schedule['duration'] ?? '' }}
         </p>
-        <p class="text-xs sm:text-sm font-bold {{ $isSelected ? 'text-white' : 'text-slate-900' }}">
-            &#8369;{{ number_format($schedule['price'] ?? 0, 2) }}
-        </p>
     </div>
 </button>

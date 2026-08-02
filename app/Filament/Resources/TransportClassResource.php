@@ -11,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
 use Filament\Tables;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\ImageColumn;
@@ -27,6 +28,7 @@ class TransportClassResource extends Resource
     protected static ?string $navigationGroup = 'Airline';
     protected static ?int $navigationSort = 1;
     protected static ?string $navigationLabel = 'Airline Seats';
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function canAccess(): bool
     {
@@ -66,6 +68,36 @@ class TransportClassResource extends Resource
                     ->maxLength(255)
                     ->columnSpanFull(),
 
+                Select::make('mode')
+                    ->label('Mode')
+                    ->options([
+                        'airline' => 'Airline',
+                        'ferry' => 'Ferry',
+                    ])
+                    ->default('airline')
+                    ->reactive()
+                    ->required(),
+
+                TextInput::make('operator')
+                    ->label('Operator')
+                    ->placeholder('e.g. Philippine Airlines, Cebu Pacific, AirAsia')
+                    ->maxLength(255)
+                    ->visible(fn ($get) => $get('mode') === 'airline'),
+
+                Select::make('operator')
+                    ->label('Operator')
+                    ->options([
+                        '2GO' => '2GO',
+                        'Starlite' => 'Starlite',
+                    ])
+                    ->visible(fn ($get) => $get('mode') === 'ferry')
+                    ->required(fn ($get) => $get('mode') === 'ferry'),
+
+                TextInput::make('code')
+                    ->label('Class Code')
+                    ->placeholder('e.g. ECO, BIZ')
+                    ->maxLength(10),
+
                 Textarea::make('description')
                     ->placeholder('Class details, amenities, etc.')
                     ->rows(3)
@@ -82,17 +114,6 @@ class TransportClassResource extends Resource
                     ->label('Visible to clients when booking')
                     ->default(true),
 
-                FileUpload::make('images')
-                    ->label('Photos')
-                    ->image()
-                    ->disk('public')
-                    ->multiple()
-                    ->reorderable()
-                    ->panelLayout('grid')
-                    ->directory('transport-classes')
-                    ->visibility('public')
-                    ->maxFiles(8)
-                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -106,6 +127,9 @@ class TransportClassResource extends Resource
                     ->getStateUsing(fn (TransportClass $record) => $record->cover_image)
                     ->square(),
                 TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('operator')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('price')

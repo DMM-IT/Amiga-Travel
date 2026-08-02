@@ -69,43 +69,57 @@
 </head>
 <body>
     <h1>Booking Report</h1>
-    
-    @if($bookings->count() > 0)
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Transaction #</th>
-                    <th>Client Name</th>
-                    <th>Origin</th>
-                    <th>Destination</th>
-                    <th>Departure Date</th>
-                    <th>Status</th>
-                    <th>Total Price</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($bookings as $booking)
+
+    @php
+        $sections = [
+            ['title' => 'Confirmed Bookings', 'items' => $confirmedBookings],
+            ['title' => 'Rebooked Bookings', 'items' => $rebookedBookings],
+            ['title' => 'Cancelled Bookings', 'items' => $cancelledBookings],
+        ];
+    @endphp
+
+    @foreach($sections as $section)
+        <h2 style="margin-top: 30px; color: #34495e;">{{ $section['title'] }} ({{ $section['items']->count() }})</h2>
+
+        @if($section['items']->count() > 0)
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ $booking->id }}</td>
-                        <td>{{ $booking->transaction_number }}</td>
-                        <td>{{ $booking->client_name }}</td>
-                        <td>{{ $booking->origin }}</td>
-                        <td>{{ $booking->destination }}</td>
-                        <td>{{ $booking->departure_date?->format('M d, Y') }}</td>
-                        <td>
-                            <span class="status status-{{ strtolower($booking->status) }}">
-                                {{ ucfirst($booking->status) }}
-                            </span>
-                        </td>
-                        <td>₱{{ number_format($booking->total_price, 2) }}</td>
+                        <th>ID</th>
+                        <th>Transaction #</th>
+                        <th>Client Name</th>
+                        <th>Origin</th>
+                        <th>Destination</th>
+                        <th>Departure Date</th>
+                        <th>Return Date</th>
+                        <th>Status</th>
+                        <th>Total Price</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p style="text-align: center; color: #7f8c8d;">No bookings found.</p>
-    @endif
+                </thead>
+                <tbody>
+                    @foreach($section['items'] as $booking)
+                        <tr>
+                            <td>{{ $booking->id }}</td>
+                            <td>{{ $booking->transaction_number }}</td>
+                            <td>{{ $booking->client_name }}</td>
+                            <td>{{ $booking->origin }}</td>
+                            <td>{{ $booking->destination }}</td>
+                            <td>{{ $booking->departure_date?->format('M d, Y') }}</td>
+                            <td>{{ $booking->return_date?->format('M d, Y') ?? '-' }}</td>
+                            <td>
+                                <span class="status status-{{ strtolower(str_replace('_', '-', $booking->status)) }}">
+                                    {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
+                                </span>
+                            </td>
+                            <td>₱{{ number_format($booking->total_price, 2) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p style="text-align: center; color: #7f8c8d;">No {{ strtolower($section['title']) }} found.</p>
+        @endif
+    @endforeach
 
     <div class="footer">
         <p>Generated on {{ now()->format('F d, Y \a\t H:i:s A') }}</p>

@@ -368,6 +368,29 @@ class FerryRouteResource extends Resource
                 ->relationship('scheduleAccommodations')
                 ->label('Onboard Accommodations')
                 ->schema([
+                    Select::make('accommodation_id')
+                        ->label('Accommodation')
+                        ->options(fn (callable $get) => \App\Models\Accommodation::query()
+                            ->when($get('../../operator'), fn ($query, $operator) => $query->where('operator', $operator))
+                            ->where('is_active', true)
+                            ->orderBy('name')
+                            ->pluck('name', 'id')
+                            ->toArray())
+                        ->reactive()
+                        ->required()
+                        ->afterStateUpdated(function (?int $state, callable $set) {
+                            if ($state) {
+                                $accommodation = \App\Models\Accommodation::find($state);
+                                if ($accommodation) {
+                                    $set('name', $accommodation->name);
+                                    $set('description', $accommodation->description);
+                                    $set('price', $accommodation->price);
+                                    $set('has_bed', $accommodation->has_bed ?? false);
+                                }
+                            }
+                        })
+                        ->columnSpanFull(),
+
                     TextInput::make('name')
                         ->label('Accommodation name')
                         ->placeholder('e.g. Tourist Class, Bed Cabin')
@@ -414,7 +437,11 @@ class FerryRouteResource extends Resource
                 ->schema([
                     Select::make('transport_class_id')
                         ->label('Transport Class')
-                        ->options(fn () => \App\Models\TransportClass::where('is_active', true)->pluck('name', 'id'))
+                        ->options(fn (callable $get) => \App\Models\TransportClass::query()
+                            ->when($get('../../operator'), fn ($query, $operator) => $query->where('operator', $operator))
+                            ->where('is_active', true)
+                            ->orderBy('name')
+                            ->pluck('name', 'id'))
                         ->required()
                         ->reactive()
                         ->afterStateUpdated(function ($state, callable $set) {

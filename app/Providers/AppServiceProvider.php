@@ -38,12 +38,20 @@ class AppServiceProvider extends ServiceProvider
         // Cache header & footer settings — fetched on every single page load.
         // TTL: 1 hour. Cleared automatically when admin saves website settings.
         View::composer('layouts.app', function ($view) {
-            $headerData = Cache::remember('website_settings:header_data', now()->addHour(), fn () =>
-                WebsiteSetting::firstWhere('page', 'header')?->header_data ?? []
-            );
-            $footerData = Cache::remember('website_settings:footer_data', now()->addHour(), fn () =>
-                WebsiteSetting::firstWhere('page', 'footer')?->footer_data ?? []
-            );
+            $headerData = Cache::remember('website_settings:header_data', now()->addHour(), function () {
+                try {
+                    return WebsiteSetting::firstWhere('page', 'header')?->header_data ?? [];
+                } catch (\Throwable $e) {
+                    return [];
+                }
+            });
+            $footerData = Cache::remember('website_settings:footer_data', now()->addHour(), function () {
+                try {
+                    return WebsiteSetting::firstWhere('page', 'footer')?->footer_data ?? [];
+                } catch (\Throwable $e) {
+                    return [];
+                }
+            });
 
             $view->with('headerData', $headerData);
             $view->with('footerData', $footerData);

@@ -46,6 +46,21 @@ class BookingForm extends Component
         $this->dispatch('validation-error');
         parent::failedValidation($validator);
     }
+    
+    public function confirmOperatorSelection(): void
+    {
+        $this->showOperatorConfirmation = false;
+    }
+    
+    public function changeSelection(): void
+    {
+        // Clear the pre-selected values so the user can choose again
+        $this->mode = '';
+        $this->operator = null;
+        $this->isModePreselected = false;
+        $this->isOperatorPreselected = false;
+        $this->showOperatorConfirmation = false;
+    }
     public int $step = 1;
     public string $trip_type = 'one_way';
     public string $mode = '';
@@ -74,6 +89,9 @@ class BookingForm extends Component
     public bool $showPresentIdWarning = false;
     public bool $hasSeenPresentIdWarning = false;
     public bool $showDataPrivacyWarning = true;
+    public bool $showOperatorConfirmation = false;
+    public bool $isOperatorPreselected = false;
+    public bool $isModePreselected = false;
 
     // Each entry: ['type' => 'adult'|'child', 'name' => '', 'discount_id' => null]
     public array $passengers = [];
@@ -145,6 +163,8 @@ class BookingForm extends Component
     public bool $showPrivacyModal = false;
     public bool $hasAcceptedTerms = false;
     public bool $hasAcceptedPrivacy = false;
+    public bool $showTermsAgreementWarning = false;
+    public bool $showPrivacyAgreementWarning = false;
     public bool $isSubmittingBooking = false;
     public ?int $selected_hotel_id = null;
     public array $availableSchedules = [];
@@ -165,6 +185,10 @@ class BookingForm extends Component
         ];
         $packageQueryKeys = ['tour_id','tour_date_id','package_name','price','available_dates'];
         $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $packageQueryKeys));
+        
+        // Check if mode and operator are pre-selected from card click
+        $this->isModePreselected = ! empty(request()->query('mode'));
+        $this->isOperatorPreselected = ! empty(request()->query('operator'));
 
         // If we have package/tour query params, ignore session draft entirely; otherwise load draft first
         $hasSessionDraft = session()->has('booking_draft');
@@ -292,6 +316,11 @@ class BookingForm extends Component
         $durationDays = request()->query('duration_days');
         if ($durationDays !== null) {
             $this->duration_days = intval($durationDays);
+        }
+        
+        // Show clarification modal if mode and operator are pre-selected from a card click
+        if ($this->isModePreselected && $this->isOperatorPreselected) {
+            $this->showOperatorConfirmation = true;
         }
 
         // For tour packages: force round trip and lock it
@@ -1502,27 +1531,32 @@ public function selectedSchedule(): ?array
                 'client_name' => 'required|string|max:255',
                 'client_email' => 'required|email',
                 'client_phone' => 'required|string|max:25',
-                'hasAcceptedTerms' => 'required|accepted',
-                'hasAcceptedPrivacy' => 'required|accepted',
             ]);
 
             $this->validatePassengerExtras();
             $this->assertSelectedScheduleIsValid();
 
+            $this->showTermsAgreementWarning = false;
+            $this->showPrivacyAgreementWarning = false;
+
             if (! $this->hasAcceptedTerms) {
                 $this->showTermsModal = true;
+                $this->showPrivacyModal = false;
+                $this->showTermsAgreementWarning = true;
                 $this->dispatch('notify', [
                     'type' => 'warning',
-                    'message' => 'Please accept the Terms and Conditions to continue.',
+                    'message' => 'You need to read and agree to continue.',
                 ]);
                 return;
             }
 
             if (! $this->hasAcceptedPrivacy) {
+                $this->showTermsModal = false;
                 $this->showPrivacyModal = true;
+                $this->showPrivacyAgreementWarning = true;
                 $this->dispatch('notify', [
                     'type' => 'warning',
-                    'message' => 'Please accept the Data Privacy Policy to continue.',
+                    'message' => 'You need to read and agree to continue.',
                 ]);
                 return;
             }
@@ -1575,13 +1609,16 @@ public function selectedSchedule(): ?array
 
     public function confirmTermsAndContinue()
     {
-        try {
-            $this->validate([
-                'hasAcceptedTerms' => 'required|accepted',
+        $this->showTermsAgreementWarning = false;
+        $this->showPrivacyAgreementWarning = false;
+
+        if (! $this->hasAcceptedTerms) {
+            $this->showTermsAgreementWarning = true;
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => 'You need to read and agree to continue.',
             ]);
-        } catch (ValidationException $e) {
-            $this->dispatch('validation-error');
-            throw $e;
+            return;
         }
 
         $this->showTermsModal = false;
@@ -1824,13 +1861,16 @@ public function selectedSchedule(): ?array
 
     public function confirmPrivacyAndContinue()
     {
-        try {
-            $this->validate([
-                'hasAcceptedPrivacy' => 'required|accepted',
+        $this->showTermsAgreementWarning = false;
+        $this->showPrivacyAgreementWarning = false;
+
+        if (! $this->hasAcceptedPrivacy) {
+            $this->showPrivacyAgreementWarning = true;
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => 'You need to read and agree to continue.',
             ]);
-        } catch (ValidationException $e) {
-            $this->dispatch('validation-error');
-            throw $e;
+            return;
         }
 
         $this->showPrivacyModal = false;
@@ -1873,12 +1913,14 @@ public function selectedSchedule(): ?array
     {
         $this->showTermsModal = false;
         $this->hasAcceptedTerms = false;
+        $this->showTermsAgreementWarning = false;
     }
 
     public function cancelPrivacyModal()
     {
         $this->showPrivacyModal = false;
         $this->hasAcceptedPrivacy = false;
+        $this->showPrivacyAgreementWarning = false;
     }
 
     #[Computed]

@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\ManageWebsiteSettings;
+use App\Filament\Pages\ManageTransportAccommodation;
 use App\Filament\Pages\MyPage;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -74,6 +75,7 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
                 ManageWebsiteSettings::class,
+                ManageTransportAccommodation::class,
                 MyPage::class,
             ])
             ->userMenuItems([

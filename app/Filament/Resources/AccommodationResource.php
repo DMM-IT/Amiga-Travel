@@ -28,6 +28,7 @@ class AccommodationResource extends Resource
     protected static ?int $navigationSort = 1;
     protected static ?string $label = 'Hotel';
     protected static ?string $pluralLabel = 'Hotels';
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function canAccess(): bool
     {
@@ -73,10 +74,22 @@ class AccommodationResource extends Resource
                     ->placeholder('e.g. Boracay, Manila')
                     ->maxLength(255),
 
+                TextInput::make('operator')
+                    ->label('Ferry Operator')
+                    ->placeholder('e.g. 2GO, Starlite, CebuPacific')
+                    ->maxLength(255)
+                    ->helperText('Leave empty for hotel accommodations'),
+
                 Textarea::make('description')
-                    ->placeholder('Room details, amenities, capacity, etc.')
+                    ->placeholder('Room details, features, etc.')
                     ->rows(3)
                     ->columnSpanFull(),
+
+                Textarea::make('amenities')
+                    ->placeholder('e.g., WiFi, Air Conditioning, TV, Private Bathroom')
+                    ->rows(2)
+                    ->columnSpanFull()
+                    ->helperText('Comma-separated amenities'),
 
                 TextInput::make('price')
                     ->label('Price (₱)')
@@ -118,6 +131,12 @@ class AccommodationResource extends Resource
                 TextColumn::make('destination')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('operator')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('amenities')
+                    ->limit(30)
+                    ->tooltip(fn (Accommodation $record) => $record->amenities),
                 TextColumn::make('price')
                     ->money('PHP')
                     ->sortable(),

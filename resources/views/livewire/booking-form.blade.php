@@ -155,7 +155,7 @@
                             <div class="grid gap-4 grid-cols-2 lg:grid-cols-4 mt-4">
                                 <div class="relative block" data-error="mode">
                                     <span class="text-black font-extrabold text-sm">Mode</span>
-                                    <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
+                                    <button type="button" wire:click.prevent="toggleModeDropdown" @if($prefilled_from_package || $isModePreselected) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50">
                                         <div class="flex items-center gap-2">
                                             @if($mode === 'ferry')
                                                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
@@ -168,6 +168,9 @@
                                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                         </svg>
                                     </button>
+                                    @if($isModePreselected)
+                                        <span class="text-xs text-slate-500 font-medium mt-1">(Pre-selected from your booking link)</span>
+                                    @endif
                                     @error('mode')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
 
                                     @if ($showModeDropdown)
@@ -199,70 +202,50 @@
                                     @endif
                                 </div>
 
-                                <div class="relative block">
+                                <div class="relative block" data-error="operator">
                                     <span class="text-black font-extrabold text-sm">Operator</span>
-                                    <button type="button" wire:click.prevent="toggleOperatorDropdown" @if($prefilled_from_package || blank($mode)) disabled @endif class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
-                                        <div class="flex items-center gap-2">
-                                            @php
-                                                $selectedOpLogo = null;
-                                                if ($operator) {
-                                                    if (stripos($operator, '2GO') !== false) $selectedOpLogo = '2GO-Logo.png';
-                                                    elseif (stripos($operator, 'Starlite') !== false) $selectedOpLogo = 'Starlite_Logo.png';
-                                                    elseif (stripos($operator, 'Cebu') !== false) $selectedOpLogo = 'CebuPecific-Logo.png';
-                                                    elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $selectedOpLogo = 'Pal-Logo.jfif';
-                                                    elseif (stripos($operator, 'AirAsia') !== false) $selectedOpLogo = 'AirAsia-Logo.png';
-                                                }
-                                            @endphp
-                                            @if($selectedOpLogo)
-                                                <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
-                                                    <img src="{{ asset('images/' . $selectedOpLogo) }}" alt="{{ $operator }}" class="w-full h-full object-contain">
-                                                </div>
-                                            @endif
-                                            <span>{{ $operator ?: 'All operators' }}</span>
-                                        </div>
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                    @if ($showOperatorDropdown)
-                                        <div class="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
-                                            <div class="max-h-64 overflow-y-auto px-2 py-2 space-y-1">
-                                                <button type="button" wire:click.prevent="selectOperator(null)" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ blank($operator) ? 'bg-slate-50 font-semibold' : '' }}">
-                                                    <div class="flex items-center justify-between gap-3">
-                                                        <span>All operators</span>
-                                                        @if(blank($operator))
-                                                            <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
+                                    @php
+                                        $availableOperators = $operators;
+                                        $operatorButtonsDisabled = $prefilled_from_package || blank($mode) || $isOperatorPreselected;
+                                    @endphp
+                                    <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                                        @if(blank($mode))
+                                            <button type="button" disabled class="h-12 w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-left text-slate-500 shadow-sm">Select mode first</button>
+                                        @elseif(empty($availableOperators))
+                                            <div class="h-12 flex items-center rounded-xl border border-slate-300 bg-slate-50 px-4 text-slate-500">No operators available</div>
+                                        @else
+                                            <button type="button" wire:click.prevent="selectOperator(null)" @disabled($operatorButtonsDisabled) class="h-12 w-full rounded-xl border px-4 py-3 text-left transition {{ blank($operator) ? 'bg-[#db2777] border-[#db2777] text-white' : 'bg-white border-slate-300 text-slate-900 hover:border-[#db2777]' }}">
+                                                All operators
+                                            </button>
+
+                                            @foreach($availableOperators as $op)
+                                                @php
+                                                    $opLogo = null;
+                                                    if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
+                                                    elseif (stripos($op, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
+                                                    elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
+                                                    elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+                                                    elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+                                                @endphp
+                                                <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" @disabled($operatorButtonsDisabled) class="h-12 w-full rounded-xl border px-4 py-3 text-left transition {{ $operator === $op ? 'bg-[#db2777] border-[#db2777] text-white' : 'bg-white border-slate-300 text-slate-900 hover:border-[#db2777]' }}">
+                                                    <div class="flex items-center gap-2">
+                                                        @if($opLogo)
+                                                            <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
+                                                                <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $op }}" class="w-full h-full object-contain">
+                                                            </div>
                                                         @endif
+                                                        <span>{{ $op }}</span>
                                                     </div>
                                                 </button>
-                                                @foreach($this->operators as $op)
-                                                    <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $operator === $op ? 'bg-slate-50 font-semibold' : '' }}">
-                                                        <div class="flex items-center justify-between gap-3">
-                                                            <div class="flex items-center gap-2">
-                                                                @php
-                                                                    $opLogo = null;
-                                                                    if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
-                                                                    elseif (stripos($op, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
-                                                                    elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
-                                                                    elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
-                                                                    elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
-                                                                @endphp
-                                                                @if($opLogo)
-                                                                    <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
-                                                                        <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $op }}" class="w-full h-full object-contain">
-                                                                    </div>
-                                                                @endif
-                                                                <span>{{ $op }}</span>
-                                                            </div>
-                                                            @if($operator === $op)
-                                                                <span class="rounded-full bg-[#db2777] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
-                                                            @endif
-                                                        </div>
-                                                    </button>
-                                                @endforeach
-                                            </div>
-                                        </div>
+                                            @endforeach
+                                        @endif
+                                    </div>
+
+                                    @if($isOperatorPreselected)
+                                        <span class="text-xs text-slate-500 font-medium mt-1 block">(Pre-selected from your booking link)</span>
                                     @endif
+
+                                    @error('operator')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                 </div>
 
                             <div class="col-span-2 lg:col-span-2">
@@ -1650,13 +1633,75 @@
                 </div>
             </div>
         </div>
+
+    <!-- Operator Confirmation Modal -->
+    @if ($showOperatorConfirmation)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="bg-gradient-to-r from-pink-500 to-[#db2777] px-6 py-6">
+                    <h2 class="text-2xl font-bold text-white">Confirm Your Selection</h2>
+                    <p class="text-pink-100 text-sm mt-1">You've selected a specific booking option</p>
+                </div>
+                
+                <div class="px-6 py-6">
+                    <div class="space-y-4 mb-6">
+                        <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                            <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Travel Mode</div>
+                            <div class="flex items-center gap-2">
+                                @if($mode === 'ferry')
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
+                                @elseif($mode === 'airline')
+                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                                @endif
+                                <span class="font-semibold text-slate-900 capitalize">{{ $mode }}</span>
+                            </div>
+                        </div>
+
+                        <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                            <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Operator</div>
+                            <div class="flex items-center gap-3">
+                                @php
+                                    $opLogo = null;
+                                    if ($operator && stripos($operator, '2GO') !== false) $opLogo = '2GO-Logo.png';
+                                    elseif ($operator && stripos($operator, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
+                                    elseif ($operator && stripos($operator, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
+                                    elseif ($operator && (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false)) $opLogo = 'Pal-Logo.jfif';
+                                    elseif ($operator && stripos($operator, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+                                @endphp
+                                @if($opLogo)
+                                    <div class="w-8 h-8 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden border border-slate-200">
+                                        <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $operator }}" class="w-full h-full object-contain">
+                                    </div>
+                                @endif
+                                <span class="font-semibold text-slate-900">{{ $operator }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-slate-600 mb-6">
+                        These choices cannot be changed after confirming. If you'd like to book with a different operator or travel mode, you can go back and select again.
+                    </p>
+                </div>
+
+                <div class="flex gap-3 px-6 py-4 bg-slate-50 border-t border-slate-200">
+                    <button type="button" wire:click="changeSelection" class="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition">
+                        Change Selection
+                    </button>
+                    <button type="button" wire:click="confirmOperatorSelection" class="flex-1 px-4 py-2.5 rounded-lg bg-[#db2777] text-white font-semibold hover:bg-pink-700 transition">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Terms and Conditions Modal -->
     @if ($showTermsModal)
         @php
             $operatorLabel = !empty($operator) ? $operator : 'the selected operator';
         @endphp
-        <div x-data="{ accepted: @entangle('hasAcceptedTerms'), isSubmitting: @entangle('isSubmittingBooking'), scrolledToBottom: false }" x-init="initBookingModal($el); $nextTick(() => { const el = $refs.content; if (el) { this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; } })" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
+        <div x-data="{ accepted: @entangle('hasAcceptedTerms'), isSubmitting: @entangle('isSubmittingBooking'), scrolledToBottom: false }" x-init="initBookingModal($el); $nextTick(() => { const el = $refs.content; if (el) { this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; } })" class="fixed inset-x-0 top-20 bottom-0 z-[100] flex items-center justify-center px-4 pb-4 pt-6 bg-slate-900/60 backdrop-blur-sm">
+            <div class="w-full max-w-2xl max-h-[calc(100vh-5rem)] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
                     <h2 class="text-xl font-bold text-slate-900">{{ $operatorLabel }} Terms and Conditions</h2>
                 </div>
@@ -1769,6 +1814,9 @@
                     </label>
                     <p class="text-xs text-slate-500" x-show="!scrolledToBottom">Scroll to the end of the document to enable acceptance.</p>
                     <p class="text-xs text-emerald-600" x-show="scrolledToBottom">You have reached the end of the document. You may now accept.</p>
+                    @if ($showTermsAgreementWarning && ! $hasAcceptedTerms)
+                        <p class="text-sm font-medium text-rose-600">You need to read and agree to continue.</p>
+                    @endif
                     @error('hasAcceptedTerms')
                         <p class="text-sm text-rose-600">{{ $message }}</p>
                     @enderror
@@ -1795,8 +1843,8 @@
     @endif
 
     @if ($showPrivacyModal)
-        <div x-data="{ accepted: @entangle('hasAcceptedPrivacy'), isSubmitting: @entangle('isSubmittingBooking'), scrolledToBottom: false }" x-init="initBookingModal($el); $nextTick(() => { const el = $refs.content; if (el) { this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; } })" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
+        <div x-data="{ accepted: @entangle('hasAcceptedPrivacy'), isSubmitting: @entangle('isSubmittingBooking'), scrolledToBottom: false }" x-init="initBookingModal($el); $nextTick(() => { const el = $refs.content; if (el) { this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; } })" class="fixed inset-x-0 top-20 bottom-0 z-[100] flex items-center justify-center px-4 pb-4 pt-6 bg-slate-900/60 backdrop-blur-sm">
+            <div class="w-full max-w-2xl max-h-[calc(100vh-5rem)] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
                     <h2 class="text-xl font-bold text-slate-900">Amiga Gracia Travel Agency Data Privacy Policy</h2>
                 </div>
@@ -1837,6 +1885,9 @@
                     </label>
                     <p class="text-xs text-slate-500" x-show="!scrolledToBottom">Scroll to the end of the document to enable acceptance.</p>
                     <p class="text-xs text-emerald-600" x-show="scrolledToBottom">You have reached the end of the document. You may now accept.</p>
+                    @if ($showPrivacyAgreementWarning && ! $hasAcceptedPrivacy)
+                        <p class="text-sm font-medium text-rose-600">You need to read and agree to continue.</p>
+                    @endif
                     @error('hasAcceptedPrivacy')
                         <p class="text-sm text-rose-600">{{ $message }}</p>
                     @enderror

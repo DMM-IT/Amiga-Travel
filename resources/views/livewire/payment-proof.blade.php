@@ -27,7 +27,11 @@
             </a>
         </div>
     @else
-        <div>
+        <div class="space-y-4">
+            <label class="block text-sm font-medium text-slate-700">Transaction number</label>
+            <input type="text" wire:model.defer="transaction_number" class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Enter transaction number" />
+            @error('transaction_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+
             <label class="block text-sm font-medium text-slate-700">Upload proof of payment</label>
             <div class="mt-3">
                 <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-2xl cursor-pointer bg-slate-50 hover:bg-slate-100">

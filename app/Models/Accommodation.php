@@ -10,7 +10,9 @@ class Accommodation extends Model
     protected $fillable = [
         'name',
         'destination',
+        'operator',
         'description',
+        'amenities',
         'price',
         'images',
         'is_active',

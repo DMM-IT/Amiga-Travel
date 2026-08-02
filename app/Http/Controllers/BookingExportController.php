@@ -73,7 +73,24 @@ class BookingExportController extends Controller
     protected function generatePdfResponse(string $filename, bool $inline = false): Response
     {
         $bookings = Booking::all();
-        $html = view('exports.bookings-pdf', ['bookings' => $bookings])->render();
+
+        $confirmedBookings = $bookings->filter(function ($booking) {
+            return $booking->status === Booking::STATUS_CONFIRMED && ! $booking->is_rebooked;
+        });
+
+        $rebookedBookings = $bookings->filter(function ($booking) {
+            return $booking->is_rebooked || filled($booking->rebooking_status);
+        });
+
+        $cancelledBookings = $bookings->filter(function ($booking) {
+            return in_array($booking->status, [Booking::STATUS_CANCELLED, Booking::STATUS_OPERATOR_CANCELLED], true);
+        });
+
+        $html = view('exports.bookings-pdf', [
+            'confirmedBookings' => $confirmedBookings,
+            'rebookedBookings' => $rebookedBookings,
+            'cancelledBookings' => $cancelledBookings,
+        ])->render();
 
         $options = new Options();
         $options->set('isRemoteEnabled', true);
@@ -81,7 +98,7 @@ class BookingExportController extends Controller
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
         $output = $dompdf->output();

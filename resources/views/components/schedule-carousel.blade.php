@@ -158,6 +158,11 @@
                 <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select accommodation for this trip:</p>
                 <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
                     @foreach($selectedSchedule['accommodations'] as $accommodation)
+                        @php
+                            $schedulePrice = $selectedSchedule['price'] ?? 0;
+                            $accommodationPrice = $accommodation['price'] ?? 0;
+                            $totalPrice = $schedulePrice + $accommodationPrice;
+                        @endphp
                         <button type="button" wire:click.prevent="{{ $selectAccommodationMethod }}({{ $accommodation['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 {{ (int)$selectedAccommodationId === (int)$accommodation['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h4 class="font-bold text-slate-900 text-sm">{{ $accommodation['name'] }}</h4>
@@ -172,7 +177,7 @@
                                     @endif
                                 </div>
                             </div>
-                            <p class="mt-2 text-lg font-extrabold text-[#db2777]">&#8369;{{ number_format($accommodation['price'], 2) }}</p>
+                            <p class="mt-2 text-lg font-extrabold text-[#db2777]">&#8369;{{ number_format($totalPrice, 2) }}</p>
                         </button>
                     @endforeach
                 </div>
@@ -185,6 +190,11 @@
                 <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select travel class for this trip:</p>
                 <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
                     @foreach($selectedSchedule['transport_classes'] as $class)
+                        @php
+                            $schedulePrice = $selectedSchedule['price'] ?? 0;
+                            $classPrice = $class['price'] ?? 0;
+                            $totalPrice = $schedulePrice + $classPrice;
+                        @endphp
                         <button type="button" wire:click.prevent="{{ $selectClassMethod }}({{ $class['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 overflow-hidden {{ (int)$selectedClassId === (int)$class['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <h4 class="font-bold text-slate-900 text-sm">{{ $class['name'] }}</h4>
@@ -194,7 +204,7 @@
                                     </span>
                                 @endif
                             </div>
-                            <p class="mt-2 text-lg font-extrabold text-[#db2777]">&#8369;{{ number_format($class['price'], 2) }}</p>
+                            <p class="mt-2 text-lg font-extrabold text-[#db2777]">&#8369;{{ number_format($totalPrice, 2) }}</p>
                         </button>
                     @endforeach
                 </div>

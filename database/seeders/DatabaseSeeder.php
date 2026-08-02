@@ -47,9 +47,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             DiscountSeeder::class,
-            TourHotelsSeeder::class,
-            RouteScheduleSeeder::class,
-            TransportClassSeeder::class,
             VehicleBrandModelSeeder::class,
             VehicleRateSeeder::class,
             VehicleSeeder::class,

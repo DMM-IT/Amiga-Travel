@@ -11,10 +11,14 @@ use App\Http\Controllers\TourController;
 
 $renderWebsitePage = function (string $page, string $view) {
     class_exists(\App\Models\WebsiteSetting::class);
-    
-    $settingsData = \Illuminate\Support\Facades\Cache::remember('website_settings:page:' . $page, now()->addHour(), fn () =>
-        WebsiteSetting::firstWhere('page', $page)?->toArray()
-    );
+
+    $settingsData = \Illuminate\Support\Facades\Cache::remember('website_settings:page:' . $page, now()->addHour(), function () use ($page) {
+        try {
+            return WebsiteSetting::firstWhere('page', $page)?->toArray() ?? [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    });
 
     return view($view, [
         'pageSettings' => (object) ($settingsData ?? []),
@@ -101,9 +105,13 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
     $routes = $routes->filter(fn ($route) => $route->schedules->isNotEmpty());
 
     class_exists(\App\Models\WebsiteSetting::class);
-    $settingsData = \Illuminate\Support\Facades\Cache::remember('website_settings:page:schedules', now()->addHour(), fn () =>
-        WebsiteSetting::firstWhere('page', 'schedules')?->toArray()
-    );
+    $settingsData = \Illuminate\Support\Facades\Cache::remember('website_settings:page:schedules', now()->addHour(), function () {
+        try {
+            return WebsiteSetting::firstWhere('page', 'schedules')?->toArray() ?? [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    });
     $pageContent = $settingsData['content'] ?? [];
 
     $activeTab = $request->query('tab', 'ferry');
