@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingForm.php": {
-    "mtime": 1785738317.699919,
-    "ast_hash": "2e5b05c37984bde5383ffa319af75cd9",
+    "mtime": 1785765735.73433,
+    "ast_hash": "4e04bff01739ed14e722f776935b2de4",
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
@@ -1920,8 +1920,8 @@
     "semantic_hash": ""
   },
   "resources/views/filament/pages/manage-website-settings.blade.php": {
-    "mtime": 1785552640.3553848,
-    "ast_hash": "aef8a9e11b0dfb07f827d111761acde3",
+    "mtime": 1785742969.732956,
+    "ast_hash": "8e6e0d14f8a5500aaa04aba890e4deff",
     "semantic_hash": ""
   },
   "resources/views/filament/pages/my-page.blade.php": {
@@ -1980,13 +1980,13 @@
     "semantic_hash": ""
   },
   "resources/views/home.blade.php": {
-    "mtime": 1785742125.8322537,
-    "ast_hash": "b16511c3bd356b3ecdd3cf977a370a91",
+    "mtime": 1785766453.9264667,
+    "ast_hash": "10f37278e7e2f15799de54a8615b21cd",
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1785742104.7689285,
-    "ast_hash": "745cce4171f0f214715560726fcf176e",
+    "mtime": 1785746197.7472038,
+    "ast_hash": "d6962ecc8485116665e7f430a8889d28",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
@@ -3260,13 +3260,73 @@
     "semantic_hash": ""
   },
   "tests/Feature/HomePageTest.php": {
-    "mtime": 1785695198.847525,
-    "ast_hash": "b77f863e7d2fceae06214edddc0fc3d4",
+    "mtime": 1785742969.7279966,
+    "ast_hash": "1767120d48a81a2ee84e89e61f5f27c9",
     "semantic_hash": ""
   },
   "public/images/amiga_logo_white_outline.png": {
     "mtime": 1785739609.6180618,
     "ast_hash": "8d45a1089ca53e8ecc44e9c51bd7feab",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/16.png": {
+    "mtime": 1785766152.1560395,
+    "ast_hash": "22d90d411f9195ed3dcbb1215a64941b",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/17.png": {
+    "mtime": 1785766152.5494196,
+    "ast_hash": "ab01751754b9b23facb3772ee69de6ca",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/18.png": {
+    "mtime": 1785766161.6813438,
+    "ast_hash": "67068a29654c072f0764ebba03509cfa",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/19.png": {
+    "mtime": 1785766152.657373,
+    "ast_hash": "d199446ad430c31b3765095208fd5540",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/20.png": {
+    "mtime": 1785766158.6341393,
+    "ast_hash": "8cad9a378870899dd3f5a9a6efbe07d1",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/21.png": {
+    "mtime": 1785766152.5875723,
+    "ast_hash": "77353cd7028d3c16a1be12f3fc06cd80",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/22.png": {
+    "mtime": 1785766152.1179569,
+    "ast_hash": "a11cb2ab1f999e5029f465abf8579df0",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/23.png": {
+    "mtime": 1785766155.0414717,
+    "ast_hash": "f0737a8a85c5b45f1a63a4f97ddab050",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/24.png": {
+    "mtime": 1785766152.7274115,
+    "ast_hash": "cb20da4835d5a2be6b88cb2f196ce010",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/25.png": {
+    "mtime": 1785766152.2359402,
+    "ast_hash": "b1152630fd56c0d26695b96d04450d80",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/26.png": {
+    "mtime": 1785766152.430973,
+    "ast_hash": "484cd9162831e2d8511d6f0f0d121119",
+    "semantic_hash": ""
+  },
+  "public/images/prmotion_images/27.png": {
+    "mtime": 1785766152.195938,
+    "ast_hash": "633dd292eba300ce7d1bf70d46f80470",
     "semantic_hash": ""
   }
 }
