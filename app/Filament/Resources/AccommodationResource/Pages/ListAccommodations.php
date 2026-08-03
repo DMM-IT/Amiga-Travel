@@ -10,6 +10,11 @@ class ListAccommodations extends ListRecords
 {
     protected static string $resource = AccommodationResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Hotels';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

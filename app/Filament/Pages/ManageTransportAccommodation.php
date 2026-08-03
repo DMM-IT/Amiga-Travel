@@ -25,6 +25,7 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
     use InteractsWithForms;
     use InteractsWithTable;
 
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Transport & Accommodation';
     protected static ?string $navigationGroup = 'Ferry & Airline';
@@ -117,7 +118,7 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
             ])
             ->actions([
                 EditAction::make()
-                    ->url(fn (Accommodation $record) => route('filament.admin.resources.accommodations.edit', $record)),
+                    ->url(fn (Accommodation $record) => route('filament.admin.resources.hotels.edit', $record)),
                 DeleteAction::make(),
             ])
             ->bulkActions([])
@@ -149,16 +150,14 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
     {
         return [
             Action::make('addAirline')
-                ->label('New Transport Class')
+                ->label('New Class')
                 ->visible($this->mode === 'airline')
                 ->url(route('filament.admin.resources.transport-classes.create'))
                 ->button(),
             Action::make('addFerry')
-                ->label('New Accommodation')
+                ->label('New Class')
                 ->visible($this->mode === 'ferry')
-                ->url(fn (): string => route('filament.admin.resources.accommodations.create', array_filter([
-                    'operator' => $this->selectedOperator,
-                ])))
+                ->url(route('filament.admin.resources.ferry-routes.create'))
                 ->button(),
         ];
     }

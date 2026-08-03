@@ -212,38 +212,48 @@ class FerryRouteResource extends Resource
                             ->collapsible()
                             ->collapsed()
                             ->extraItemActions([
-                                Action::make('add_accommodation')
+                                Action::make('add_transport_class')
                                     ->icon('heroicon-m-plus-circle')
-                                    ->label(fn (callable $get) => $get('../../mode') === 'airline' ? 'Add transport class' : 'Add accommodation')
-                                    ->tooltip(fn (callable $get) => $get('../../mode') === 'airline' ? 'Add transport class' : 'Add accommodation')
+                                    ->label('Add transport class')
+                                    ->tooltip('Add transport class')
                                     ->action(function (array $arguments, Repeater $component, callable $get): void {
                                         $itemKey = $arguments['item'];
                                         $state = $component->getState();
-                                        $mode = $get('../../mode');
 
-                                        if ($mode === 'airline') {
-                                            $classes = $state[$itemKey]['scheduleTransportClasses'] ?? [];
-                                            $classes[\Illuminate\Support\Str::uuid()->toString()] = [
-                                                'additional_price' => 0,
-                                                'tickets_available' => 50,
-                                                'is_active' => true,
-                                                'has_bed' => false,
-                                            ];
-                                            $state[$itemKey]['scheduleTransportClasses'] = $classes;
-                                        } else {
-                                            $accs = $state[$itemKey]['scheduleAccommodations'] ?? [];
-                                            $accs[\Illuminate\Support\Str::uuid()->toString()] = [
-                                                'price' => $state[$itemKey]['price'] ?? 0,
-                                                'tickets_available' => 50,
-                                                'is_active' => true,
-                                                'has_bed' => false,
-                                            ];
-                                            $state[$itemKey]['scheduleAccommodations'] = $accs;
-                                        }
+                                        $classes = $state[$itemKey]['scheduleTransportClasses'] ?? [];
+                                        $classes[\Illuminate\Support\Str::uuid()->toString()] = [
+                                            'additional_price' => 0,
+                                            'tickets_available' => 50,
+                                            'is_active' => true,
+                                            'has_bed' => false,
+                                        ];
+                                        $state[$itemKey]['scheduleTransportClasses'] = $classes;
 
                                         $component->state($state);
                                         $component->collapsed(false, shouldMakeComponentCollapsible: false);
-                                    }),
+                                    })
+                                    ->visible(fn (callable $get): bool => in_array($get('../../mode'), ['airline', 'ferry'], true)),
+                                Action::make('add_accommodation')
+                                    ->icon('heroicon-m-plus-circle')
+                                    ->label('Add accommodation')
+                                    ->tooltip('Add accommodation')
+                                    ->action(function (array $arguments, Repeater $component, callable $get): void {
+                                        $itemKey = $arguments['item'];
+                                        $state = $component->getState();
+
+                                        $accs = $state[$itemKey]['scheduleAccommodations'] ?? [];
+                                        $accs[\Illuminate\Support\Str::uuid()->toString()] = [
+                                            'price' => $state[$itemKey]['price'] ?? 0,
+                                            'tickets_available' => 50,
+                                            'is_active' => true,
+                                            'has_bed' => false,
+                                        ];
+                                        $state[$itemKey]['scheduleAccommodations'] = $accs;
+
+                                        $component->state($state);
+                                        $component->collapsed(false, shouldMakeComponentCollapsible: false);
+                                    })
+                                    ->visible(fn (callable $get): bool => $get('../../mode') === 'ferry'),
                             ])
                             ->itemLabel(function (array $state): ?string {
                                 $parts = [];
@@ -268,7 +278,9 @@ class FerryRouteResource extends Resource
 
                                 if ($classCount > 0) {
                                     $parts[] = "{$classCount} " . ($classCount === 1 ? 'Class' : 'Classes');
-                                } else {
+                                }
+
+                                if ($accCount > 0) {
                                     $parts[] = "{$accCount} " . ($accCount === 1 ? 'Accommodation' : 'Accommodations');
                                 }
 
@@ -493,7 +505,7 @@ class FerryRouteResource extends Resource
                 ->collapsible()
                 ->columnSpanFull()
                 ->itemLabel(fn (array $state): ?string => $state['transport_class_name'] ?? null)
-                ->visible(fn (callable $get): bool => $get('../../mode') === 'airline'),
+                ->visible(fn (callable $get): bool => in_array($get('../../mode'), ['airline', 'ferry'], true)),
         ];
     }
 

@@ -11,6 +11,7 @@ class TransportClass extends Model
         'operator',
         'code',
         'name',
+        'mode',
         'description',
         'price',
         'is_on_sale',

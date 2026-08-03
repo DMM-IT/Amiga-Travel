@@ -21,6 +21,7 @@ use Filament\Tables\Table;
 class AccommodationResource extends Resource
 {
     protected static ?string $model = Accommodation::class;
+    protected static ?string $slug = 'hotel';
 
     protected static ?string $navigationIcon = 'heroicon-o-home-modern';
 

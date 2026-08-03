@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateAccommodation extends CreateRecord
 {
     protected static string $resource = AccommodationResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Create Hotel';
+    }
 }

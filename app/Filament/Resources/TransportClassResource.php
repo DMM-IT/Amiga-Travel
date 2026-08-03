@@ -9,9 +9,10 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
+use Filament\Resources\Resource;
 use Filament\Tables;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\ImageColumn;
@@ -25,10 +26,10 @@ class TransportClassResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
-    protected static ?string $navigationGroup = 'Airline';
-    protected static ?int $navigationSort = 1;
-    protected static ?string $navigationLabel = 'Airline Seats';
-    protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $navigationGroup = 'Travel';
+    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationLabel = 'Transport Classes';
+    protected static bool $shouldRegisterNavigation = true;
 
     public static function canAccess(): bool
     {
@@ -63,7 +64,7 @@ class TransportClassResource extends Resource
             ->schema([
                 TextInput::make('name')
                     ->label('Class name')
-                    ->placeholder('e.g. Economy, Business Class')
+                    ->placeholder('e.g. Economy, Business Class, Tourist')
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
@@ -78,20 +79,27 @@ class TransportClassResource extends Resource
                     ->reactive()
                     ->required(),
 
-                TextInput::make('operator')
-                    ->label('Operator')
-                    ->placeholder('e.g. Philippine Airlines, Cebu Pacific, AirAsia')
-                    ->maxLength(255)
-                    ->visible(fn ($get) => $get('mode') === 'airline'),
-
                 Select::make('operator')
                     ->label('Operator')
-                    ->options([
-                        '2GO' => '2GO',
-                        'Starlite' => 'Starlite',
-                    ])
-                    ->visible(fn ($get) => $get('mode') === 'ferry')
-                    ->required(fn ($get) => $get('mode') === 'ferry'),
+                    ->options(fn (callable $get) => match ($get('mode')) {
+                        'airline' => collect(config('airline_seating.operators', []))
+                            ->keys()
+                            ->mapWithKeys(fn ($operator) => [$operator => $operator])
+                            ->toArray(),
+                        'ferry' => \App\Models\Vehicle::query()
+                            ->where('type', 'ferry')
+                            ->where('is_active', true)
+                            ->distinct()
+                            ->orderBy('operator')
+                            ->pluck('operator', 'operator')
+                            ->toArray(),
+                        default => [],
+                    })
+                    ->placeholder('Select operator')
+                    ->searchable()
+                    ->required()
+                    ->reactive()
+                    ->columnSpanFull(),
 
                 TextInput::make('code')
                     ->label('Class Code')
@@ -129,6 +137,10 @@ class TransportClassResource extends Resource
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('mode')
+                    ->label('Mode')
+                    ->formatStateUsing(fn (?string $state): string => $state === 'ferry' ? 'Ferry' : 'Airline')
+                    ->sortable(),
                 TextColumn::make('operator')
                     ->searchable()
                     ->sortable(),
@@ -143,8 +155,32 @@ class TransportClassResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('operator')
+                    ->label('Operator')
+                    ->options(fn () => TransportClass::query()
+                        ->whereNotNull('operator')
+                        ->where('operator', '!=', '')
+                        ->distinct()
+                        ->orderBy('operator')
+                        ->pluck('operator', 'operator')
+                        ->toArray()
+                    )
+                    ->placeholder('All Operators')
+                    ->form([
+                        ToggleButtons::make('operator')
+                            ->options(fn () => TransportClass::query()
+                                ->whereNotNull('operator')
+                                ->where('operator', '!=', '')
+                                ->distinct()
+                                ->orderBy('operator')
+                                ->pluck('operator', 'operator')
+                                ->toArray()
+                            )
+                            ->inline()
+                            ->grouped(),
+                    ]),
             ])
+            ->filtersFormColumns(2)
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

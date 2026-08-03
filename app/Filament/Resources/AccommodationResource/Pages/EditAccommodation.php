@@ -10,6 +10,11 @@ class EditAccommodation extends EditRecord
 {
     protected static string $resource = AccommodationResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Edit Hotel';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

@@ -75,7 +75,6 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
                 ManageWebsiteSettings::class,
-                ManageTransportAccommodation::class,
                 MyPage::class,
             ])
             ->userMenuItems([
