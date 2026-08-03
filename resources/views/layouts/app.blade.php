@@ -123,10 +123,10 @@
                     <div class="flex items-center gap-6 lg:gap-10">
                         <div class="flex items-center gap-2 shrink-0">
                             <a href="{{ url('/') }}" class="flex items-center gap-2">
-                                <img src="{{ asset('images/amiga_logo_white_outline.png') }}" 
-                                     alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" 
-                                     :class="scrolled ? 'h-16 sm:h-20' : 'h-24 sm:h-28'"
-                                     class="w-auto object-contain transition-all duration-300 ease-in-out">
+                                  <img src="{{ asset('images/amiga_logo_white_outline.png') }}" 
+                                      alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" 
+                                      :class="scrolled ? 'h-16' : 'h-24 sm:h-28'"
+                                      class="w-auto object-contain transition-all duration-300 ease-in-out">
                             </a>
                         </div>
                         <nav :class="scrolled ? 'translate-y-0' : '-translate-y-4 sm:-translate-y-5'" 

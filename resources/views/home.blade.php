@@ -20,6 +20,15 @@
             </div>
         </div>
     </div>
+    {{-- Modal for promo image preview --}}
+    <div x-show="modalOpen" x-cloak x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" style="display:none;">
+        <div class="relative max-w-4xl w-full">
+            <button @click="modalOpen = false; modalImage = null" class="absolute right-2 top-2 z-20 inline-flex items-center justify-center w-10 h-10 rounded-full bg-white text-slate-700 shadow-md hover:bg-slate-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <img :src="modalImage" alt="Promotion" class="w-full max-h-[80vh] object-contain rounded-lg shadow-2xl bg-white">
+        </div>
+    </div>
 @endif
 
 {{-- NEW: Airpaz-Style Green Hero Banner --}}
@@ -1052,91 +1061,14 @@
         </div>
     </div>
 
-    {{-- Promo image section below hero --}}
-    <div class="relative z-0 pt-12 sm:pt-16 lg:pt-20 pb-20 overflow-visible">
-        @if($heroImages->count() > 0)
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900">{{ data_get($pageContent, 'promo_ticket_title', 'Promotional Ticket') }}</h2>
-                    <p class="mt-2 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">{{ data_get($pageContent, 'promo_ticket_subtitle', 'Check out exclusive deals and promotions below.') }}</p>
-                </div>
-                <div class="flex justify-center">
-                    <!-- Floating Promotional Ticket -->
-                    <div class="w-full lg:w-8/12 rounded-[2rem] overflow-hidden shadow-2xl relative bg-transparent flex items-center justify-center min-h-[320px] sm:min-h-[420px] -mt-24"
-                         x-data="{
-                            activeSlide: 0,
-                            slides: [
-                                @foreach($heroImages as $heroImage)
-                                        '{{ storage_asset_path($heroImage) }}',
-                                    @endforeach
-                            ],
-                            init() {
-                                if (this.slides.length > 1) {
-                                    setInterval(() => {
-                                        this.next();
-                                    }, 5000);
-                                }
-                            },
-                            next() {
-                                this.activeSlide = this.activeSlide === this.slides.length - 1 ? 0 : this.activeSlide + 1;
-                            },
-                            prev() {
-                                this.activeSlide = this.activeSlide === 0 ? this.slides.length - 1 : this.activeSlide - 1;
-                            }
-                         }">
-            
-            <template x-if="slides.length > 0">
-                <div class="w-full h-full relative group aspect-[4/3]">
-                    <!-- Images -->
-                    <template x-for="(slide, index) in slides" :key="index">
-                        <img :src="slide" 
-                             x-show="activeSlide === index"
-                             x-transition.opacity.duration.500ms
-                             alt="Promotion" 
-                             class="absolute inset-0 w-full h-full object-cover">
-                    </template>
+    {{-- Promo image section removed — integrated into promotions grid (landscape + portrait) --}}
 
-                    <!-- Prev/Next Buttons -->
-                    <div class="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity" x-show="slides.length > 1">
-                        <button @click="prev()" class="bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                        </button>
-                        <button @click="next()" class="bg-black/40 hover:bg-black/60 text-white p-2 rounded-full transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </button>
-                    </div>
-
-                    <!-- Slide Indicators -->
-                    <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2" x-show="slides.length > 1">
-                        <template x-for="(slide, index) in slides" :key="index">
-                            <button @click="activeSlide = index" 
-                                    :class="{'bg-white': activeSlide === index, 'bg-white/50': activeSlide !== index}" 
-                                    class="w-3 h-3 rounded-full shadow-sm transition-colors"></button>
-                        </template>
-                    </div>
-                </div>
-            </template>
-
-            <template x-if="slides.length === 0">
-                <div class="w-full h-full min-h-[320px] flex flex-col items-center justify-center p-6 text-center bg-slate-50 relative ws-sbtn-container">
-                    @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'deals_empty' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <h3 class="text-xl font-medium text-slate-500">{{ data_get($pageContent, 'deals_empty_title', 'Exciting Deals Coming Soon!') }}</h3>
-                    <p class="mt-2 text-sm text-slate-400">{{ data_get($pageContent, 'deals_empty_desc', 'Check back later for special promotions and announcements.') }}</p>
-                </div>
-            </template>
-        </div>
-    </div>
-    @endif
-
-    <div class="max-w-7xl mx-auto px-4 mt-0 -mt-8 sm:-mt-10">
-        <div class="text-center mb-4">
+    <div class="max-w-7xl mx-auto px-4 mt-6 sm:mt-8 relative z-20">
+        <div class="text-center mb-6 pt-2">
             <h2 class="text-xl font-black text-[#216417]">Manage your booking</h2>
-            <p class="text-sm text-black font-semibold mt-2">Quickly access your booking details, changes and refunds.</p>
+            <p class="text-sm text-black font-semibold mt-3">Quickly access your booking details, changes and refunds.</p>
         </div>
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div class="grid gap-4 sm:grid-cols-2">
             <a href="{{ url('/book/status') }}" class="group rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
                 <div class="flex items-center gap-3">
                     <div class="flex items-center justify-center h-12 w-12 rounded-2xl bg-red-50 text-red-600">
@@ -1176,51 +1108,46 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data="{
-            currentSlide: 0,
-            slides: [
-                {
-                    title: 'Sunrise Travel Promo',
-                    subtitle: 'Capture the best routes to island escapes.',
-                    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80'
-                },
-                {
-                    title: 'Island Adventures',
-                    subtitle: 'Perfect ferry and airline combos for explorers.',
-                    image: 'https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=900&q=80'
-                },
-                {
-                    title: 'Coastal Getaways',
-                    subtitle: 'Relaxing trips from city to sea with daily departures.',
-                    image: 'https://images.unsplash.com/photo-1519821172141-bc70f6fcd7fb?auto=format&fit=crop&w=900&q=80'
-                }
-            ]
-        }"
-        x-init="setInterval(() => { currentSlide = (currentSlide + 1) % slides.length }, 5000)">
+    @php
+        // If not already defined earlier, prepare promo slides
+        if (!isset($__promo_slides)) {
+            $__promo_files = glob(public_path('images/prmotion_images/*.{jpg,jpeg,png,gif}'), GLOB_BRACE) ?: [];
+            $__promo_slides = array_map(function($f){ $name = pathinfo($f, PATHINFO_FILENAME); return ['title' => ucwords(str_replace(['-','_'], ' ', $name)), 'subtitle' => '', 'image' => asset('images/prmotion_images/' . basename($f))]; }, $__promo_files);
+        }
+    @endphp
+    <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data='{ currentSlide: 0, slides: @json($__promo_slides), modalOpen: false, modalImage: null }' x-init="console.log('promotions slides', slides); if (slides && slides.length) { setInterval(() => { currentSlide = (currentSlide + 1) % slides.length }, 5000); }">
         <div class="mb-4 text-center">
             <h2 class="text-xl font-black text-[#216417]">{{ data_get($pageContent, 'promo_gallery_title', 'Featured Promotions') }}</h2>
             <p class="text-sm text-black font-semibold mt-2">{{ data_get($pageContent, 'promo_gallery_subtitle', 'Browse three highlighted offers from our latest deals.') }}</p>
         </div>
-        <div class="grid gap-6 lg:grid-cols-[2fr_1fr] items-start">
-            <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden p-6">
-                <div class="rounded-[1.5rem] overflow-hidden bg-slate-100 aspect-[16/9] relative">
+        <div class="grid gap-6 lg:grid-cols-[2fr_1fr] items-stretch">
+            <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden p-6 h-full flex flex-col">
+                <div class="rounded-[1.5rem] overflow-hidden bg-slate-100 relative flex-1 min-h-0">
                     <div class="absolute inset-0 flex items-center justify-center text-slate-400 text-xl font-semibold">Landscape video placeholder</div>
                     <div class="absolute inset-0 bg-black/10"></div>
                 </div>
             </div>
 
             <div>
-                <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden">
+                <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden relative group">
                     <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
                         <template x-for="(slide, index) in slides" :key="index">
-                            <div x-show="currentSlide === index" x-transition.opacity.duration.700 class="absolute inset-0">
-                                <img :src="slide.image" alt="" class="h-full w-full object-cover">
+                            <div x-show="currentSlide === index" x-transition.opacity.duration.700 class="absolute inset-0 flex items-center justify-center bg-slate-100">
+                                <img :src="slide.image || slide" alt="" @click="modalImage = (slide.image || slide); modalOpen = true; console.log('opening modal', (slide.image || slide))" class="max-h-full max-w-full object-contain object-center cursor-zoom-in" onerror="console.error('promo image failed to load', this.src); this.onerror=null; this.src='https://via.placeholder.com/400x600?text=Promo';">
                                 <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
                                     <div class="font-semibold" x-text="slide.title"></div>
                                     <div class="text-xs text-white/80 mt-1" x-text="slide.subtitle"></div>
                                 </div>
                             </div>
                         </template>
+
+                        {{-- Prev/Next buttons (schedule-style) --}}
+                        <button x-show="slides.length > 1" @click="currentSlide = (currentSlide === 0 ? slides.length - 1 : currentSlide - 1)" class="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0" :disabled="slides.length <= 1">
+                            <svg class="w-5 h-5 pr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button x-show="slides.length > 1" @click="currentSlide = (currentSlide === slides.length - 1 ? 0 : currentSlide + 1)" class="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0" :disabled="slides.length <= 1">
+                            <svg class="w-5 h-5 pl-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
