@@ -50,10 +50,14 @@ class BookingForm extends Component
     public function confirmOperatorSelection(): void
     {
         $this->showOperatorConfirmation = false;
+        $confirmKey = 'confirmed_operator_' . $this->mode . '_' . ($this->operator ?: 'all');
+        session()->put($confirmKey, true);
     }
     
     public function changeSelection(): void
     {
+        $confirmKey = 'confirmed_operator_' . $this->mode . '_' . ($this->operator ?: 'all');
+        session()->forget($confirmKey);
         // Clear the pre-selected values so the user can choose again
         $this->mode = '';
         $this->operator = null;
@@ -75,6 +79,7 @@ class BookingForm extends Component
     public array $availableReturnSchedules = [];
     public int $adults = 1;
     public int $children = 0;
+    public int $infants = 0;
     public ?int $selected_schedule_id = null;
     public bool $showPassengerInfoModal = false;
     public bool $showMinorAgeWarning = false;
@@ -180,8 +185,9 @@ class BookingForm extends Component
 
         // Check if we have tour/package query params first
         $allowed = [
-            'trip_type','mode','operator','origin','destination','departure_date','return_date','duration_days','adults','children',
-            'client_name','client_email','client_phone','hasAcceptedTerms','hasAcceptedPrivacy','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id'
+            'trip_type','mode','operator','origin','destination','departure_date','return_date','duration_days','adults','children','infants',
+            'client_name','client_email','client_phone','hasAcceptedTerms','hasAcceptedPrivacy','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id','has_vehicle',
+            'vehicle_booking_method','selected_vehicle_rate_id','selected_brand_id','selected_model_id','vehicle_plate_number','driver_name','driver_birthday'
         ];
         $packageQueryKeys = ['tour_id','tour_date_id','package_name','price','available_dates'];
         $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $packageQueryKeys));
@@ -266,15 +272,37 @@ class BookingForm extends Component
         }
 
         // Prefill other booking fields from query params
+        $hasQueryParamsPrefill = false;
         foreach (request()->query() as $key => $value) {
             if (in_array($key, $allowed, true) && property_exists($this, $key)) {
+                $hasQueryParamsPrefill = true;
                 // cast ints where appropriate
-                if (in_array($key, ['adults','children','duration_days'], true)) {
+                if (in_array($key, ['adults','children','infants','duration_days','selected_vehicle_rate_id','selected_brand_id','selected_model_id'], true)) {
                     $this->{$key} = intval($value);
+                } elseif ($key === 'has_vehicle') {
+                    $this->{$key} = filter_var($value, FILTER_VALIDATE_BOOLEAN);
                 } else {
                     $this->{$key} = $value;
                 }
             }
+        }
+        if ($this->has_vehicle) {
+            if ($this->vehicle_booking_method === 'category' && $this->selected_vehicle_rate_id) {
+                $this->updatedSelectedVehicleRateId($this->selected_vehicle_rate_id);
+            } elseif ($this->vehicle_booking_method === 'brand_model' && $this->selected_model_id) {
+                $this->updatedSelectedModelId($this->selected_model_id);
+            }
+        }
+        if ($hasQueryParamsPrefill) {
+            $this->saveDraft();
+        }
+
+        // Advance directly to schedule step when the search is fully prefilled from home and step=2 is requested.
+        $requestedStep = intval(request()->query('step', 1));
+        if ($requestedStep === 2 && ! $this->tour_id && $this->mode && $this->operator && $this->origin && $this->destination && $this->departure_date) {
+            $this->step = 2;
+            $this->availableSchedules = $this->getAvailableSchedules();
+            $this->availableReturnSchedules = $this->getAvailableReturnSchedules();
         }
 
         // Mark that the form has been prefilled from a package only when actual package/tour params are present
@@ -318,8 +346,9 @@ class BookingForm extends Component
             $this->duration_days = intval($durationDays);
         }
         
-        // Show clarification modal if mode and operator are pre-selected from a card click
-        if ($this->isModePreselected && $this->isOperatorPreselected) {
+        // Show clarification modal if mode and operator are pre-selected from a card click (only if not already confirmed)
+        $confirmKey = 'confirmed_operator_' . $this->mode . '_' . ($this->operator ?: 'all');
+        if ($this->isModePreselected && $this->isOperatorPreselected && ! session()->has($confirmKey)) {
             $this->showOperatorConfirmation = true;
         }
 
@@ -1266,7 +1295,7 @@ public function selectedSchedule(): ?array
 
         $rebuilt = [];
 
-        foreach (['adult' => $this->adults, 'child' => $this->children] as $type => $count) {
+        foreach (['adult' => $this->adults, 'child' => $this->children + $this->infants] as $type => $count) {
             $existing = $existingByType->get($type, collect())->values();
 
             for ($i = 0; $i < $count; $i++) {
@@ -2017,6 +2046,7 @@ public function selectedSchedule(): ?array
             'return_date' => $this->return_date,
             'adults' => $this->adults,
             'children' => $this->children,
+            'infants' => $this->infants,
             'selected_schedule_id' => $this->selected_schedule_id,
             'selected_return_schedule_id' => $this->selected_return_schedule_id,
             'passengers' => $this->passengers,
