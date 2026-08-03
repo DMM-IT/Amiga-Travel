@@ -1990,8 +1990,8 @@
     "semantic_hash": ""
   },
   "resources/views/about.blade.php": {
-    "mtime": 1785550871.9273376,
-    "ast_hash": "a9677d15f86e3b4b6b887aaf3966ecd4",
+    "mtime": 1785772122.4159167,
+    "ast_hash": "63e2391779034cc7d9ee39b5ef2f7ca2",
     "semantic_hash": ""
   },
   "resources/views/book-status.blade.php": {
@@ -2210,13 +2210,13 @@
     "semantic_hash": ""
   },
   "resources/views/home.blade.php": {
-    "mtime": 1785769393.1390781,
-    "ast_hash": "3c19951845d85fc65b75a1b8ea71c536",
+    "mtime": 1785772695.4269328,
+    "ast_hash": "ceb5a88a8f8261123c27fed29d55a4bc",
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1785768274.2698498,
-    "ast_hash": "041bfafc00b1a51d5d1d0935a62f870d",
+    "mtime": 1785772103.9630651,
+    "ast_hash": "16f1d13a7d4d98c1a11dd8d2eed25ed9",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
@@ -2280,8 +2280,8 @@
     "semantic_hash": ""
   },
   "resources/views/services.blade.php": {
-    "mtime": 1785552640.3376257,
-    "ast_hash": "f1e2fb7227aa6c5942c2968cf1ea7c8f",
+    "mtime": 1785772163.3953981,
+    "ast_hash": "3bdb006963caee533e9a73e47a648c6e",
     "semantic_hash": ""
   },
   "resources/views/tour-details.blade.php": {
@@ -3402,6 +3402,16 @@
   "public/images/prmotion_images/macau.png": {
     "mtime": 1785766152.290424,
     "ast_hash": "f392f486b3fac100f0575529b2e097d5",
+    "semantic_hash": ""
+  },
+  "resources/views/partials/why-travel-section.blade.php": {
+    "mtime": 1785772892.0099275,
+    "ast_hash": "230e7da8b9448fbf932d55c76cb6a1b3",
+    "semantic_hash": ""
+  },
+  "resources/views/partials/why-travel-icon.blade.php": {
+    "mtime": 1785771789.6730473,
+    "ast_hash": "bd4059f4f039182344aa40f58f80513c",
     "semantic_hash": ""
   }
 }

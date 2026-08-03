@@ -266,7 +266,8 @@
         </main>
 
         @if(! $isAuthPage)
-        <footer class="relative overflow-hidden bg-gradient-to-b from-[#008000] via-[#004a00] to-[#042402] text-white pt-16 pb-8 mt-12">
+        @include('partials.why-travel-section')
+        <footer class="relative overflow-hidden bg-gradient-to-b from-[#008000] via-[#004a00] to-[#042402] text-white pt-16 pb-8">
             <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-8 border-b border-white/10">
                     <!-- Column 1: Logo & Tagline -->
@@ -481,6 +482,43 @@
                     });
                 });
             }
+        </script>
+        {{-- Global Animate-on-Scroll CSS & JS for all pages --}}
+        <style>
+            .amiga-transition {
+                opacity: 0;
+                transform: translateY(24px);
+                transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+                will-change: opacity, transform;
+            }
+            .amiga-visible {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var animatedSections = document.querySelectorAll('.amiga-animate-on-scroll');
+                if (!('IntersectionObserver' in window) || animatedSections.length === 0) {
+                    animatedSections.forEach(function (el) {
+                        el.classList.add('amiga-visible');
+                    });
+                    return;
+                }
+                var observer = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('amiga-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.12,
+                });
+                animatedSections.forEach(function (el) {
+                    observer.observe(el);
+                });
+            });
         </script>
     </body>
 </html>

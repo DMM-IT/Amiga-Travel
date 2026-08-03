@@ -2210,13 +2210,13 @@
     "semantic_hash": ""
   },
   "resources/views/home.blade.php": {
-    "mtime": 1785766704.3677819,
-    "ast_hash": "10f37278e7e2f15799de54a8615b21cd",
+    "mtime": 1785771256.7769227,
+    "ast_hash": "96495bfb5d48366da486ef880e81bcee",
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {
-    "mtime": 1785766704.3677819,
-    "ast_hash": "d6962ecc8485116665e7f430a8889d28",
+    "mtime": 1785771561.0509398,
+    "ast_hash": "8d9c6aa86c34574ddd042d2ca03af8c5",
     "semantic_hash": ""
   },
   "resources/views/livewire/booking-form.blade.php": {
@@ -2275,7 +2275,7 @@
     "semantic_hash": ""
   },
   "resources/views/schedules.blade.php": {
-    "mtime": 1785766704.3677819,
+    "mtime": 1785768575.0126462,
     "ast_hash": "a781f703762af3c8624bb5a022328c96",
     "semantic_hash": ""
   },
@@ -3402,6 +3402,11 @@
   "public/images/prmotion_images/macau.png": {
     "mtime": 1785766152.290424,
     "ast_hash": "f392f486b3fac100f0575529b2e097d5",
+    "semantic_hash": ""
+  },
+  "resources/views/partials/why-travel-section.blade.php": {
+    "mtime": 1785771524.8485734,
+    "ast_hash": "36bc1f6963d9dbfbcf6ecf3be2d4c23c",
     "semantic_hash": ""
   }
 }

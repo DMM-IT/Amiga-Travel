@@ -262,6 +262,8 @@
              showDestinationSuggestions: false,
              showMinorAgeWarning: false,
              hasSeenMinorAgeWarning: false,
+             showDataPrivacyModal: false,
+             pendingSearchUrl: '',
              errors: {
                  operator: '',
                  origin: '',
@@ -306,9 +308,8 @@
                  return op ? op.name : 'Select Operator';
              },
              get modeLabel() {
-                 if (this.mode === 'ferry') return 'Ferry';
                  if (this.mode === 'airline') return 'Airline';
-                 return 'All Modes';
+                 return 'Ferry';
              },
              get availableOrigins() {
                  if (!this.operator) return [];
@@ -443,7 +444,8 @@
                      if (this.driver_birthday) params.append('driver_birthday', this.driver_birthday);
                  }
                  
-                 window.location.href = '{{ url('/book/new') }}?' + params.toString();
+                 this.pendingSearchUrl = '{{ url('/book/new') }}?' + params.toString();
+                 this.showDataPrivacyModal = true;
              }
          }"
          @click.away="
@@ -510,12 +512,6 @@
                          x-transition:leave="transition ease-in duration-75"
                          class="absolute left-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50"
                          style="display: none;">
-                        <button type="button" @click="mode = ''; if(operator && !filteredOperatorsList.some(o => o.value === operator)) operator = ''; showModeDropdown = false;"
-                                class="w-full text-left px-4 py-2.5 text-sm font-semibold flex items-center justify-between hover:bg-slate-50 transition"
-                                :class="mode === '' ? 'text-[#216417] bg-emerald-50/50' : 'text-slate-700'">
-                            <span>All Modes</span>
-                            <svg x-show="mode === ''" class="w-4 h-4 text-[#216417]" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                        </button>
                         <button type="button" @click="mode = 'ferry'; if(operator && !filteredOperatorsList.some(o => o.value === operator)) operator = ''; showModeDropdown = false;"
                                 class="w-full text-left px-4 py-2.5 text-sm font-semibold flex items-center justify-between hover:bg-slate-50 transition"
                                 :class="mode === 'ferry' ? 'text-[#216417] bg-emerald-50/50' : 'text-slate-700'">
@@ -1059,14 +1055,78 @@
                 </div>
             </div>
         </div>
+
+        <!-- Data Privacy Consent Modal (Republic Act No. 10173 - Data Privacy Act of 2012) -->
+        <div x-show="showDataPrivacyModal"
+             x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             @keydown.escape.window="showDataPrivacyModal = false"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+             style="display: none;">
+            <div @click.away="showDataPrivacyModal = false" class="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 sm:p-8 shadow-2xl text-left border border-slate-100">
+                <!-- Close X Button -->
+                <button type="button" @click="showDataPrivacyModal = false" class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <span class="sr-only">Close</span>
+                </button>
+
+                <!-- Header Badge & Title -->
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-[#216417] shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-[#216417]">Republic Act No. 10173</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Data Privacy Consent</h2>
+                    </div>
+                </div>
+
+                <!-- Modal Content Box -->
+                <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 sm:p-5 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-3 max-h-[50vh] overflow-y-auto">
+                    <p class="font-semibold text-slate-800">
+                        In compliance with the Data Privacy Act of 2012 (R.A. 10173), we value your privacy and are committed to safeguarding your personal information.
+                    </p>
+                    <p>
+                        By proceeding with your travel search and reservation, you acknowledge and consent that <strong>Amiga Gracia Travel Services</strong> will collect, process, and securely share your travel booking details (such as passenger names, contact numbers, and itinerary preferences) with our accredited sea transit and airline operators (including <strong>2GO Travel, Starlite Ferries, Cebu Pacific, and PAL</strong>).
+                    </p>
+                    <p>
+                        Your personal data is used strictly for ticketing, manifest issuance, and statutory compliance with maritime and aviation authorities.
+                    </p>
+                </div>
+
+                <!-- Footer / Action Buttons -->
+                <div class="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                    <button type="button"
+                            @click="showDataPrivacyModal = false"
+                            class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50 transition">
+                        Cancel
+                    </button>
+                    <button type="button"
+                            @click="if (pendingSearchUrl) { window.location.href = pendingSearchUrl; }"
+                            class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#008000] hover:bg-[#006600] text-white font-bold text-sm shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>I Agree & Proceed</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Promo image section removed — integrated into promotions grid (landscape + portrait) --}}
 
-    <div class="max-w-7xl mx-auto px-4 mt-6 sm:mt-8 relative z-20">
+    <div class="max-w-7xl mx-auto px-4 mt-12 sm:mt-16 relative z-20">
         <div class="text-center mb-6 pt-2">
-            <h2 class="text-xl font-black text-[#216417]">Manage your booking</h2>
-            <p class="text-sm text-black font-semibold mt-3">Quickly access your booking details, changes and refunds.</p>
+            <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">Manage your booking</h2>
+            <p class="text-base sm:text-lg text-black font-semibold mt-3">Quickly access your booking details, changes and refunds.</p>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
             <a href="{{ url('/book/status') }}" class="group rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
@@ -1115,10 +1175,10 @@
             $__promo_slides = array_map(function($f){ $name = pathinfo($f, PATHINFO_FILENAME); return ['title' => ucwords(str_replace(['-','_'], ' ', $name)), 'subtitle' => '', 'image' => asset('images/prmotion_images/' . basename($f))]; }, $__promo_files);
         }
     @endphp
-    <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data='{ currentSlide: 0, slides: @json($__promo_slides), modalOpen: false, modalImage: null }' x-init="console.log('promotions slides', slides); if (slides && slides.length) { setInterval(() => { currentSlide = (currentSlide + 1) % slides.length }, 5000); }">
-        <div class="mb-4 text-center">
-            <h2 class="text-xl font-black text-[#216417]">{{ data_get($pageContent, 'promo_gallery_title', 'Featured Promotions') }}</h2>
-            <p class="text-sm text-black font-semibold mt-2">{{ data_get($pageContent, 'promo_gallery_subtitle', 'Browse three highlighted offers from our latest deals.') }}</p>
+    <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data='{ currentSlide: 0, slides: @json($__promo_slides), modalOpen: false, modalImage: null, zoomLevel: 1 }' x-init="console.log('promotions slides', slides); if (slides && slides.length) { setInterval(() => { if (!modalOpen) { currentSlide = (currentSlide + 1) % slides.length } }, 5000); }">
+        <div class="mb-6 text-center">
+            <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">{{ data_get($pageContent, 'promo_gallery_title', 'Featured Promotions') }}</h2>
+            <p class="text-base sm:text-lg text-black font-semibold mt-2">{{ data_get($pageContent, 'promo_gallery_subtitle', 'Browse three highlighted offers from our latest deals.') }}</p>
         </div>
         <div class="grid gap-6 lg:grid-cols-[2fr_1fr] items-stretch">
             <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden p-6 h-full flex flex-col">
@@ -1129,26 +1189,152 @@
             </div>
 
             <div>
-                <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden relative group">
+                <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden flex flex-col h-full group">
+                    {{-- Image Area (Clean, no hover overlays) --}}
                     <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
                         <template x-for="(slide, index) in slides" :key="index">
-                            <div x-show="currentSlide === index" x-transition.opacity.duration.700 class="absolute inset-0 flex items-center justify-center bg-slate-100">
-                                <img :src="slide.image || slide" alt="" @click="modalImage = (slide.image || slide); modalOpen = true; console.log('opening modal', (slide.image || slide))" class="max-h-full max-w-full object-contain object-center cursor-zoom-in" onerror="console.error('promo image failed to load', this.src); this.onerror=null; this.src='https://via.placeholder.com/400x600?text=Promo';">
-                                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
-                                    <div class="font-semibold" x-text="slide.title"></div>
-                                    <div class="text-xs text-white/80 mt-1" x-text="slide.subtitle"></div>
-                                </div>
+                            <div x-show="currentSlide === index"
+                                 x-transition:enter="transition ease-out duration-500"
+                                 x-transition:enter-start="opacity-0 scale-98"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 class="absolute inset-0 flex items-center justify-center bg-slate-100">
+                                <img :src="slide.image || slide" alt="Promotional Image"
+                                     class="max-h-full max-w-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                                     onerror="console.error('promo image failed to load', this.src); this.onerror=null; this.src='https://via.placeholder.com/400x600?text=Promo';">
                             </div>
                         </template>
-
-                        {{-- Prev/Next buttons (schedule-style) --}}
-                        <button x-show="slides.length > 1" @click="currentSlide = (currentSlide === 0 ? slides.length - 1 : currentSlide - 1)" class="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0" :disabled="slides.length <= 1">
-                            <svg class="w-5 h-5 pr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                        </button>
-                        <button x-show="slides.length > 1" @click="currentSlide = (currentSlide === slides.length - 1 ? 0 : currentSlide + 1)" class="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center justify-center text-slate-600 hover:text-[#216417] hover:border-[#216417] transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0" :disabled="slides.length <= 1">
-                            <svg class="w-5 h-5 pl-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                        </button>
                     </div>
+
+                    {{-- Card Footer Navigation & Control Bar (Outside the Image) --}}
+                    <div class="p-4 bg-white border-t border-slate-100 flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-sm text-[#216417] truncate" x-text="slides[currentSlide] ? (slides[currentSlide].title || 'Promotion') : 'Promotion'"></div>
+                            <div class="text-xs text-slate-500 truncate" x-text="((currentSlide + 1) + ' of ' + slides.length + (slides[currentSlide] && slides[currentSlide].subtitle ? ' • ' + slides[currentSlide].subtitle : ''))"></div>
+                        </div>
+
+                        {{-- Prev / View (Eye) / Next Arrow Buttons Outside the Image --}}
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button type="button"
+                                    x-show="slides.length > 1"
+                                    @click.stop="currentSlide = (currentSlide === 0 ? slides.length - 1 : currentSlide - 1)"
+                                    class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#216417] hover:text-white text-slate-700 flex items-center justify-center shadow-sm border border-slate-200 transition-all cursor-pointer focus:outline-none"
+                                    :disabled="slides.length <= 1"
+                                    title="Previous Slide">
+                                <svg class="w-5 h-5 pr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+
+                            {{-- Eye Icon View Button in between < and > --}}
+                            <button type="button"
+                                    @click.stop="modalImage = (slides[currentSlide] ? (slides[currentSlide].image || slides[currentSlide]) : ''); modalOpen = true; zoomLevel = 1;"
+                                    class="w-10 h-10 rounded-full bg-[#216417] text-white hover:bg-[#1a5012] flex items-center justify-center shadow-md border border-slate-200 transition-all cursor-pointer focus:outline-none"
+                                    title="View & Zoom Image">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+
+                            <button type="button"
+                                    x-show="slides.length > 1"
+                                    @click.stop="currentSlide = (currentSlide === slides.length - 1 ? 0 : currentSlide + 1)"
+                                    class="w-10 h-10 rounded-full bg-slate-100 hover:bg-[#216417] hover:text-white text-slate-700 flex items-center justify-center shadow-sm border border-slate-200 transition-all cursor-pointer focus:outline-none"
+                                    :disabled="slides.length <= 1"
+                                    title="Next Slide">
+                                <svg class="w-5 h-5 pl-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Fullscreen Promotional Image Modal (Direct DOM element, guaranteed to show) --}}
+        <div x-show="modalOpen"
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @keydown.escape.window="modalOpen = false; zoomLevel = 1;"
+             class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/20 backdrop-blur-2xl p-4 sm:p-8"
+             @click.self="modalOpen = false; zoomLevel = 1;">
+
+            {{-- Top Right Controls (Zoom Out, Reset, Zoom In, Close) --}}
+            <div class="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-2 bg-black/50 backdrop-blur-md p-1.5 rounded-full border border-white/15 shadow-xl">
+                <button type="button"
+                        @click.stop="zoomLevel = Math.max(zoomLevel - 0.35, 0.5)"
+                        class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-all cursor-pointer"
+                        title="Zoom Out">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/>
+                    </svg>
+                </button>
+                <button type="button"
+                        @click.stop="zoomLevel = 1"
+                        class="px-2.5 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white text-xs font-bold flex items-center justify-center transition-all cursor-pointer"
+                        title="Reset Zoom">
+                    100%
+                </button>
+                <button type="button"
+                        @click.stop="zoomLevel = Math.min(zoomLevel + 0.35, 3)"
+                        class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-all cursor-pointer"
+                        title="Zoom In">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </button>
+                <div class="w-px h-6 bg-white/20 mx-0.5"></div>
+                <button type="button"
+                        @click="modalOpen = false; zoomLevel = 1;"
+                        class="w-9 h-9 rounded-full bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-all cursor-pointer"
+                        title="Close Modal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Previous Slide Button (in modal) --}}
+            <button type="button"
+                    x-show="slides.length > 1"
+                    @click.stop="currentSlide = (currentSlide === 0 ? slides.length - 1 : currentSlide - 1); modalImage = (slides[currentSlide] ? (slides[currentSlide].image || slides[currentSlide]) : ''); zoomLevel = 1;"
+                    class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all shadow-lg backdrop-blur-sm cursor-pointer"
+                    title="Previous Slide">
+                <svg class="w-6 h-6 pr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            {{-- Next Slide Button (in modal) --}}
+            <button type="button"
+                    x-show="slides.length > 1"
+                    @click.stop="currentSlide = (currentSlide === slides.length - 1 ? 0 : currentSlide + 1); modalImage = (slides[currentSlide] ? (slides[currentSlide].image || slides[currentSlide]) : ''); zoomLevel = 1;"
+                    class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all shadow-lg backdrop-blur-sm cursor-pointer"
+                    title="Next Slide">
+                <svg class="w-6 h-6 pl-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+
+            {{-- Modal Content & Zoomable Image --}}
+            <div class="relative max-w-6xl max-h-[85vh] w-full h-full flex flex-col items-center justify-center overflow-auto p-4">
+                <img :src="modalImage || (slides[currentSlide] ? (slides[currentSlide].image || slides[currentSlide]) : '')"
+                     alt="Promotional Full Image"
+                     :style="'transform: scale(' + zoomLevel + '); transition: transform 0.2s ease; transform-origin: center center;'"
+                     :class="zoomLevel === 1 ? 'cursor-zoom-in' : 'cursor-zoom-out'"
+                     class="max-h-[78vh] max-w-[85vw] object-contain rounded-xl shadow-2xl bg-transparent select-none"
+                     @click.stop="zoomLevel = (zoomLevel === 1 ? 1.75 : 1)">
+
+                {{-- Slide Title & Indicator in Modal --}}
+                <div class="mt-4 text-center text-white z-40 bg-black/40 px-4 py-1.5 rounded-full backdrop-blur-sm">
+                    <div class="font-bold text-sm sm:text-base drop-shadow" x-text="slides[currentSlide] ? (slides[currentSlide].title || 'Promotion') : 'Promotion'"></div>
+                    <div class="text-xs text-white/80 mt-0.5" x-text="((currentSlide + 1) + ' of ' + slides.length)"></div>
                 </div>
             </div>
         </div>
@@ -1157,11 +1343,11 @@
 {{-- Booking Request Cards --}}
 <div class="max-w-7xl mx-auto px-4 pb-12 mt-10 amiga-animate-on-scroll amiga-transition">
     <div class="text-center mb-10">
-        <h2 class="text-2xl font-black text-[#216417]">
+        <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">
             {{ data_get($pageContent, 'booking_section_title', 'Request Travel Bookings') }}
         </h2>
 
-        <p class="text-sm text-black font-semibold mt-2">
+        <p class="text-base sm:text-lg text-black font-semibold mt-2">
             {{ data_get($pageContent, 'booking_section_description', 'Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.') }}
         </p>
     </div>
@@ -1303,7 +1489,7 @@
 
     .amiga-visible {
         opacity: 1 !important;
-        transform: translateY(0) !important;
+        transform: none !important;
     }
 </style>
 @endsection

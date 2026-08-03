@@ -4,7 +4,7 @@
 <div class="bg-transparent min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-16 relative ws-sbtn-container">
+        <div class="text-center mb-16 relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 right-0"></button> @endif
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ data_get($pageContent, 'badge', 'Services') }}</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'title', 'Our Travel Services') }}</h1>
@@ -129,7 +129,7 @@
                 ],
             ];
         @endphp
-        <div class="bg-gradient-to-br from-[#216417] to-[#14400e] text-white rounded-[2rem] p-8 sm:p-12 shadow-xl mb-12 flex flex-col md:flex-row items-center justify-between gap-8 relative ws-sbtn-container">
+        <div class="bg-gradient-to-br from-[#216417] to-[#14400e] text-white rounded-[2rem] p-8 sm:p-12 shadow-xl mb-12 flex flex-col md:flex-row items-center justify-between gap-8 relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'service_cta' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
             <div class="max-w-xl text-center md:text-left">
                 <span class="text-xs font-bold uppercase tracking-widest text-emerald-300 bg-white/10 px-3 py-1 rounded-full">{{ data_get($serviceCta, 'badge') }}</span>
@@ -149,7 +149,7 @@
         </div>
 
         <!-- Travel & Booking Services Section -->
-        <div class="mb-16 relative ws-sbtn-container">
+        <div class="mb-16 relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'travel_service_cards' })" class="ws-sbtn absolute -top-4 -right-4"></button> @endif
             <div class="text-center mb-10">
                 <h2 class="text-2xl sm:text-3xl font-black text-slate-900">{{ data_get($pageContent, 'travel_services_title', 'Travel & Booking Services') }}</h2>
@@ -205,7 +205,7 @@
                 openModal(service) { this.selectedService = service; },
                 closeModal() { this.selectedService = null; }
             }"
-            class="relative ws-sbtn-container mt-16"
+            class="relative ws-sbtn-container mt-16 amiga-animate-on-scroll amiga-transition"
         >
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'service_cards' })" class="ws-sbtn absolute -top-4 -right-4 z-10"></button> @endif
             <div class="text-center mb-10">
