@@ -401,12 +401,12 @@
                 <div class="ws-field">
                     <label class="ws-label">Welcome Title</label>
                     <input type="text" class="ws-input" wire:model.blur="settingsData.content.welcome_title"
-                           placeholder="Welcome to Amiga Gracia Travel Services">
+                           placeholder="Welcome to Amiga Gracia">
                 </div>
                 <div class="ws-field">
                     <label class="ws-label">Welcome Subtitle</label>
                     <textarea class="ws-textarea" wire:model.blur="settingsData.content.welcome_subtitle" rows="4"
-                              placeholder="Ferry bookings, accommodations, and everything in between…"></textarea>
+                              placeholder="Your journey deserves more than a destination - it deserves an exceptional experience"></textarea>
                 </div>
 
             {{-- ======================================= --}}

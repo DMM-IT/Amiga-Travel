@@ -25,6 +25,63 @@ $renderWebsitePage = function (string $page, string $view) {
         'pageContent' => $settingsData['content'] ?? [],
         'heroImages' => collect($settingsData['hero_images'] ?? []),
         'bookingCards' => collect($settingsData['booking_cards'] ?? $settingsData['content']['booking_cards'] ?? []),
+        'activeRoutes' => (function () {
+            try {
+                return \App\Models\FerryRoute::query()
+                    ->active()
+                    ->whereHas('schedules', fn ($q) => $q->active())
+                    ->with(['vehicle', 'schedules' => fn ($q) => $q->active()])
+                    ->get()
+                    ->map(function ($route) {
+                        $operator = $route->operator ?: ($route->vehicle?->operator ?? '');
+                        if (in_array($operator, ['2GO', '2GO Travel'], true)) $operator = '2GO Travel';
+                        if (in_array($operator, ['Starlite', 'Starlite Ferries Inc.'], true)) $operator = 'Starlite Ferries Inc.';
+                        if (in_array($operator, ['Cebu Pacific'], true)) $operator = 'Cebu Pacific';
+                        if (in_array($operator, ['Philippine Airlines', 'Philippines Airlines(PAL)'], true)) $operator = 'Philippine Airlines';
+                        if (in_array($operator, ['AirAsia', 'Philippine AirAsia'], true)) $operator = 'AirAsia';
+
+                        return [
+                            'origin' => $route->origin,
+                            'destination' => $route->destination,
+                            'mode' => $route->mode,
+                            'operator' => $operator,
+                            'dates' => $route->schedules->pluck('departure_time')->map(fn ($dt) => \Carbon\Carbon::parse($dt)->format('Y-m-d'))->unique()->values()->all(),
+                        ];
+                    })
+                    ->groupBy(fn ($item) => implode('|', [$item['origin'], $item['destination'], $item['mode'], $item['operator']]))
+                    ->map(function ($group) {
+                        $first = $group->first();
+                        $first['dates'] = $group->pluck('dates')->flatten()->unique()->sort()->values()->all();
+                        return $first;
+                    })
+                    ->values()
+                    ->all();
+            } catch (\Throwable $e) {
+                return [];
+            }
+        })(),
+        'vehicleRates' => (function () {
+            try {
+                return \App\Models\VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get()->map(fn ($r) => [
+                    'id' => $r->id,
+                    'name' => $r->name,
+                    'price' => (float) $r->price,
+                ])->all();
+            } catch (\Throwable $e) { return []; }
+        })(),
+        'vehicleBrands' => (function () {
+            try {
+                return \App\Models\VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->with('models')->get()->map(fn ($b) => [
+                    'id' => $b->id,
+                    'name' => $b->name,
+                    'models' => $b->models->where('is_active', true)->sortBy('sort_order')->map(fn ($m) => [
+                        'id' => $m->id,
+                        'name' => $m->name,
+                        'price' => (float) $m->price,
+                    ])->values()->all(),
+                ])->all();
+            } catch (\Throwable $e) { return []; }
+        })(),
     ]);
 };
 
