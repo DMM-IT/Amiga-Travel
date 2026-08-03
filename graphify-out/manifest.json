@@ -2210,8 +2210,8 @@
     "semantic_hash": ""
   },
   "resources/views/home.blade.php": {
-    "mtime": 1785776668.2629926,
-    "ast_hash": "b2113eb58a8d5dc666a5116b0370c555",
+    "mtime": 1785777879.7125833,
+    "ast_hash": "449234dd94c1bb46dcea00d701e58051",
     "semantic_hash": ""
   },
   "resources/views/layouts/app.blade.php": {

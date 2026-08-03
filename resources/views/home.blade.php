@@ -1124,10 +1124,10 @@
 
     {{-- Promo image section removed — integrated into promotions grid (landscape + portrait) --}}
 
-    <div class="max-w-7xl mx-auto px-4 mt-12 sm:mt-16 relative z-20">
-        <div class="text-center mb-6 pt-2">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6 mb-12 sm:mb-16 relative z-20">
+        <div class="text-center mb-4 sm:mb-5">
             <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">Manage your booking</h2>
-            <p class="text-base sm:text-lg text-black font-semibold mt-3">Quickly access your booking details, changes and refunds.</p>
+            <p class="text-base sm:text-lg text-black font-semibold mt-1.5 sm:mt-2">Quickly access your booking details, changes and refunds.</p>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
             <a href="{{ url('/book/status') }}" class="group rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
@@ -1170,10 +1170,26 @@
     </div>
 
     @php
-        // If not already defined earlier, prepare promo slides
+        // Prepare promo slides without GLOB_BRACE for compatibility with Alpine Linux / musl libc (Railway hosting)
         if (!isset($__promo_slides)) {
-            $__promo_files = glob(public_path('images/prmotion_images/*.{jpg,jpeg,png,gif}'), GLOB_BRACE) ?: [];
-            $__promo_slides = array_map(function($f){ $name = pathinfo($f, PATHINFO_FILENAME); return ['title' => ucwords(str_replace(['-','_'], ' ', $name)), 'subtitle' => '', 'image' => asset('images/prmotion_images/' . basename($f))]; }, $__promo_files);
+            $__promo_dir = public_path('images/prmotion_images');
+            if (!is_dir($__promo_dir)) {
+                $__promo_dir = public_path('images/promotion_images');
+            }
+            $__promo_files = [];
+            if (is_dir($__promo_dir)) {
+                $__dir_name = basename($__promo_dir);
+                foreach (scandir($__promo_dir) as $__f) {
+                    if (in_array(strtolower(pathinfo($__f, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'jfif'], true)) {
+                        $__promo_files[] = [
+                            'title' => ucwords(str_replace(['-', '_'], ' ', pathinfo($__f, PATHINFO_FILENAME))),
+                            'subtitle' => '',
+                            'image' => asset('images/' . $__dir_name . '/' . $__f),
+                        ];
+                    }
+                }
+            }
+            $__promo_slides = $__promo_files;
         }
     @endphp
     <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data='{ currentSlide: 0, slides: @json($__promo_slides), modalOpen: false, modalImage: null, zoomLevel: 1 }' x-init="console.log('promotions slides', slides); if (slides && slides.length) { setInterval(() => { if (!modalOpen) { currentSlide = (currentSlide + 1) % slides.length } }, 5000); }">
