@@ -1,7 +1,7 @@
 # Graph Report - Amiga-Travel  (2026-08-03)
 
 ## Corpus Check
-- 557 files · ~4,306,609 words
+- 557 files · ~6,893,530 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3225a149`
+- Built from commit: `4719c57d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -30,13 +30,13 @@
 1. `BookingForm` - 109 edges
 2. `HomePageTest` - 3 edges
 3. `partials.global-skeleton` - 1 edges
-4. `setActiveSection(` - 1 edges
-5. `toggleEditMode` - 1 edges
-6. `closePanel` - 1 edges
-7. `saveSectionDirect` - 1 edges
-8. `removeHeroImage({{ (int)$idx }})` - 1 edges
-9. `removeSocialLink({{ $li }})` - 1 edges
-10. `addSocialLink` - 1 edges
+4. `partials.global-skeleton` - 1 edges
+5. `setActiveSection(` - 1 edges
+6. `toggleEditMode` - 1 edges
+7. `closePanel` - 1 edges
+8. `saveSectionDirect` - 1 edges
+9. `removeHeroImage({{ (int)$idx }})` - 1 edges
+10. `removeSocialLink({{ $li }})` - 1 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `BookingForm` --inherits--> `Component`  [EXTRACTED]
@@ -62,7 +62,7 @@ Cohesion: 0.40
 Nodes (4): changeSelection, confirmOperatorSelection, date-picker, setTripType(
 
 ## Knowledge Gaps
-- **20 isolated node(s):** `partials.global-skeleton`, `setActiveSection(`, `toggleEditMode`, `closePanel`, `saveSectionDirect` (+15 more)
+- **20 isolated node(s):** `partials.global-skeleton`, `partials.global-skeleton`, `setActiveSection(`, `toggleEditMode`, `closePanel` (+15 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -71,7 +71,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `BookingForm` connect `BookingForm` to `.saveDraft`, `.mount`, `.processBookingInternal`, `.updateAvailableScheduleDates`, `.updateBaggagePriceFromRates`, `.getActivePromoTicket`?**
   _High betweenness centrality (0.565) - this node is a cross-community bridge._
-- **What connects `partials.global-skeleton`, `setActiveSection(`, `toggleEditMode` to the rest of the system?**
+- **What connects `partials.global-skeleton`, `partials.global-skeleton`, `setActiveSection(` to the rest of the system?**
   _20 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `BookingForm` be split into smaller, more focused modules?**
   _Cohesion score 0.06190476190476191 - nodes in this community are weakly interconnected._
