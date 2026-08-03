@@ -233,11 +233,37 @@ class ManageWebsiteSettings extends Page implements HasForms
                 ->schema([
                     Tabs::make('Page Settings')
                         ->tabs([
-                            Tabs\Tab::make('Promotion & Hero')
+                            Tabs\Tab::make('Welcome Hero')
                                 ->schema([
-                                    Section::make('Promotion Carousel')->collapsible()
-                                        ->description('Upload images for the promotion carousel section')
+                                    Section::make('Welcome Banner Text')->collapsible()
+                                        ->description('Update the heading and subheading on the main green hero banner')
                                         ->schema([
+                                            TextInput::make('content.welcome_title')
+                                                ->label('Welcome Title')
+                                                ->placeholder('Welcome to Amiga Gracia')
+                                                ->maxLength(255),
+                                            Textarea::make('content.welcome_subtitle')
+                                                ->label('Welcome Subtitle')
+                                                ->rows(3)
+                                                ->placeholder('Your journey deserves more than a destination - it deserves an exceptional experience')
+                                                ->maxLength(500),
+                                        ]),
+                                ])
+                                ->visible(fn () => $this->currentPage === 'home'),
+
+                            Tabs\Tab::make('Promotion Carousel')
+                                ->schema([
+                                    Section::make('Promotion Carousel & Header')->collapsible()
+                                        ->description('Upload images for the promotion carousel and customize the Featured Promotions header')
+                                        ->schema([
+                                            TextInput::make('content.promo_gallery_title')
+                                                ->label('Featured Promotions Title')
+                                                ->default('Featured Promotions')
+                                                ->maxLength(255),
+                                            TextInput::make('content.promo_gallery_subtitle')
+                                                ->label('Featured Promotions Subtitle')
+                                                ->default('Browse three highlighted offers from our latest deals.')
+                                                ->maxLength(255),
                                             FileUpload::make('hero_images')
                                                 ->label('Carousel Images')
                                                 ->multiple()
@@ -252,11 +278,20 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
-                            Tabs\Tab::make('Booking Cards')
+                            Tabs\Tab::make('Request Bookings')
                                 ->schema([
                                     Section::make('Travel Booking Options')->collapsible()
-                                        ->description('Manage the 6 booking cards displayed on home page')
+                                        ->description('Customize the Request Travel Bookings header and the booking category cards')
                                         ->schema([
+                                            TextInput::make('content.booking_section_title')
+                                                ->label('Section Title')
+                                                ->default('Request Travel Bookings')
+                                                ->maxLength(255),
+                                            Textarea::make('content.booking_section_description')
+                                                ->label('Section Description')
+                                                ->rows(2)
+                                                ->default('Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.')
+                                                ->maxLength(500),
                                             Repeater::make('booking_cards')
                                                 ->label('Booking Cards')
                                                 ->addable(false)
@@ -269,6 +304,31 @@ class ManageWebsiteSettings extends Page implements HasForms
                                                     FileUpload::make('image')->label('Card Image')->image()->directory('website-settings/booking-cards'),
                                                 ])
                                                 ->columns(1),
+                                        ]),
+                                ])
+                                ->visible(fn () => $this->currentPage === 'home'),
+
+                            Tabs\Tab::make('Cancel Modal')
+                                ->schema([
+                                    Section::make('Cancel Booking Suggestion Modal')->collapsible()
+                                        ->description('Customize the text for the cancellation reminder popup')
+                                        ->schema([
+                                            TextInput::make('content.cancel_modal_title')
+                                                ->label('Modal Title')
+                                                ->default('Want to cancel your booking?')
+                                                ->maxLength(255),
+                                            Textarea::make('content.cancel_modal_desc')
+                                                ->label('Modal Description')
+                                                ->rows(3)
+                                                ->maxLength(500),
+                                            TextInput::make('content.cancel_modal_btn_cancel')
+                                                ->label('Cancel Button Text')
+                                                ->default('Maybe later')
+                                                ->maxLength(100),
+                                            TextInput::make('content.cancel_modal_btn_confirm')
+                                                ->label('Confirm Button Text')
+                                                ->default('Start cancellation')
+                                                ->maxLength(100),
                                         ]),
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
@@ -329,7 +389,37 @@ class ManageWebsiteSettings extends Page implements HasForms
 
     public function setActiveSection(string $section): void
     {
-        $this->activeSection = $section;
+        $map = [
+            'hero' => match ($this->currentPage) {
+                'home' => 'welcome_section',
+                'about' => 'about_content',
+                'services' => 'services_header',
+                'tour_package' => 'tour_header',
+                'schedules' => 'schedules_hero',
+                'contact_us' => 'contact_info',
+                'faqs' => 'faqs_content',
+                'download' => 'download_content',
+                default => $section,
+            },
+            'history' => 'about_content',
+            'tabs' => 'tour_header',
+            'cta' => match ($this->currentPage) {
+                'services' => 'services_header',
+                'tour_package' => 'tour_header',
+                'faqs' => 'faqs_content',
+                default => $section,
+            },
+            'supported_destinations' => 'tour_packages',
+            'service_cta' => 'services_header',
+            'sidebar' => 'contact_info',
+            'form_labels' => 'contact_info',
+            'map' => 'contact_info',
+            'faqs_list' => 'faqs_content',
+            'cancel_modal' => 'welcome_section',
+        ];
+
+        $this->activeSection = $map[$section] ?? $section;
+        $this->editMode = true;
     }
 
     public function closePanel(): void
@@ -470,12 +560,49 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'color' => 'slate',
                     'description' => 'Navigation links are part of the template',
                     'locked' => true,
+                    'pos' => 'top: 1rem; left: 50%; transform: translateX(-50%);',
+                ],
+                'welcome_section' => [
+                    'label' => 'Welcome Hero Banner',
+                    'icon' => '👋',
+                    'color' => 'emerald',
+                    'description' => 'Welcome title and subtitle text on the green banner',
+                    'pos' => 'top: 6rem; left: 20%;',
                 ],
                 'promotion_images' => [
-                    'label' => 'Promotion Images',
+                    'label' => 'Promotion Carousel',
                     'icon'  => '🖼',
                     'color' => 'blue',
                     'description' => 'Carousel images on the left column',
+                    'pos' => 'top: 24rem; left: 2rem;',
+                ],
+                'promo_gallery' => [
+                    'label' => 'Featured Promotions Header',
+                    'icon' => '🏷',
+                    'color' => 'amber',
+                    'description' => 'Title and subtitle for the Featured Promotions section',
+                    'pos' => 'top: 28rem; left: 35%;',
+                ],
+                'booking_section' => [
+                    'label' => 'Request Travel Bookings',
+                    'icon' => '📋',
+                    'color' => 'emerald',
+                    'description' => 'Title and subtitle for the booking category selector',
+                    'pos' => 'top: 40rem; left: 35%;',
+                ],
+                'booking_cards' => [
+                    'label' => 'Booking Category Cards',
+                    'icon' => '🃏',
+                    'color' => 'blue',
+                    'description' => '2GO, Starlite, Cebu Pacific, PAL, and other booking options',
+                    'pos' => 'top: 45rem; left: 20%;',
+                ],
+                'cancel_modal' => [
+                    'label' => 'Cancel Booking Modal',
+                    'icon' => '⚠️',
+                    'color' => 'purple',
+                    'description' => 'Popup modal text for cancellation requests',
+                    'pos' => 'top: 1rem; right: 2rem;',
                 ],
             ],
             'header' => [
@@ -484,6 +611,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'icon'  => '🏷',
                     'color' => 'amber',
                     'description' => 'Logo, company name, phone, and email',
+                    'pos' => 'top: 1rem; left: 2rem;',
                 ],
             ],
             'footer' => [
@@ -492,6 +620,7 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'icon'  => '🔗',
                     'color' => 'slate',
                     'description' => 'About text, contact info, social links',
+                    'pos' => 'bottom: 2rem; left: 2rem;',
                 ],
             ],
             'about' => [
@@ -500,6 +629,14 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'icon'  => '📝',
                     'color' => 'emerald',
                     'description' => 'Page title and main description',
+                    'pos' => 'top: 3rem; left: 2rem;',
+                ],
+                'quick_facts' => [
+                    'label' => 'Quick Facts',
+                    'icon' => '📊',
+                    'color' => 'amber',
+                    'description' => 'Highlight statistics and facts',
+                    'pos' => 'top: 12rem; left: 2rem;',
                 ],
             ],
             'services' => [
@@ -508,12 +645,73 @@ class ManageWebsiteSettings extends Page implements HasForms
                     'icon'  => '⚙️',
                     'color' => 'emerald',
                     'description' => 'Page title, description, and CTA',
+                    'pos' => 'top: 3rem; left: 2rem;',
                 ],
                 'service_cards' => [
                     'label' => 'Service Cards',
                     'icon'  => '🃏',
                     'color' => 'blue',
                     'description' => 'Individual service card content',
+                    'pos' => 'top: 12rem; left: 2rem;',
+                ],
+            ],
+            'tour_package' => [
+                'tour_header' => [
+                    'label' => 'Tour Page Header & Tabs',
+                    'icon' => '🏷',
+                    'color' => 'emerald',
+                    'description' => 'Page title, badge, domestic/international tabs, and CTA',
+                    'pos' => 'top: 3rem; left: 2rem;',
+                ],
+                'tour_packages' => [
+                    'label' => 'Tour Packages & Destinations',
+                    'icon' => '📦',
+                    'color' => 'blue',
+                    'description' => 'Domestic & International tour package counts',
+                    'pos' => 'top: 12rem; left: 2rem;',
+                ],
+            ],
+            'schedules' => [
+                'schedules_hero' => [
+                    'label' => 'Schedules Hero & Info',
+                    'icon' => '📅',
+                    'color' => 'emerald',
+                    'description' => 'Badge, title, and description for Schedules page',
+                    'pos' => 'top: 3rem; left: 2rem;',
+                ],
+            ],
+            'contact_us' => [
+                'contact_info' => [
+                    'label' => 'Contact Page Content',
+                    'icon' => '📞',
+                    'color' => 'amber',
+                    'description' => 'Title, phone, email, address, and social links',
+                    'pos' => 'top: 3rem; left: 2rem;',
+                ],
+            ],
+            'faqs' => [
+                'faqs_content' => [
+                    'label' => 'FAQs & Q&A Items',
+                    'icon' => '❓',
+                    'color' => 'purple',
+                    'description' => 'Page title, Q&A list, and CTA section',
+                    'pos' => 'top: 3rem; left: 2rem;',
+                ],
+            ],
+            'download' => [
+                'download_content' => [
+                    'label' => 'Download App Header & Buttons',
+                    'icon' => '📱',
+                    'color' => 'emerald',
+                    'description' => 'Page badge, title, and download buttons',
+                    'pos' => 'top: 3rem; left: 2rem;',
+                ],
+                'download_steps' => [
+                    'label' => 'Download Steps',
+                    'icon' => '🔢',
+                    'color' => 'blue',
+                    'description' => 'Step-by-step installation instructions',
+                    'pos' => 'top: 12rem; left: 2rem;',
                 ],
             ],
             default => [],

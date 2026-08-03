@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Pages/ManageWebsiteSettings.php": {
-    "mtime": 1785690055.9283898,
-    "ast_hash": "326b0e041f169f5c2cca088c5bb7a500",
+    "mtime": 1785776171.590444,
+    "ast_hash": "6d22d2abf4814cb1d5fc36fb7e11ed5b",
     "semantic_hash": ""
   },
   "app/Filament/Pages/MyPage.php": {
@@ -885,8 +885,8 @@
     "semantic_hash": ""
   },
   "app/Models/WebsiteSetting.php": {
-    "mtime": 1785243934.3009596,
-    "ast_hash": "0da7154b6b90fe56b75942c721deff6a",
+    "mtime": 1785775743.4354842,
+    "ast_hash": "c2eb09f709c42a9916344da1e51d646c",
     "semantic_hash": ""
   },
   "app/Providers/AppServiceProvider.php": {
@@ -2150,8 +2150,8 @@
     "semantic_hash": ""
   },
   "resources/views/filament/pages/manage-website-settings.blade.php": {
-    "mtime": 1785766704.366649,
-    "ast_hash": "8e6e0d14f8a5500aaa04aba890e4deff",
+    "mtime": 1785776110.8135364,
+    "ast_hash": "f828bf8e2ff3eb159773be7f115e667b",
     "semantic_hash": ""
   },
   "resources/views/filament/pages/my-page.blade.php": {
@@ -2315,8 +2315,8 @@
     "semantic_hash": ""
   },
   "routes/web.php": {
-    "mtime": 1785766704.3677819,
-    "ast_hash": "21114d1ac6331275f9316c5645aa030d",
+    "mtime": 1785775727.2110744,
+    "ast_hash": "5c313b1b95df6f9f66b3c3d8f518243e",
     "semantic_hash": ""
   },
   "scratch/add_should_queue.php": {
@@ -3405,8 +3405,8 @@
     "semantic_hash": ""
   },
   "resources/views/partials/why-travel-section.blade.php": {
-    "mtime": 1785772892.0099275,
-    "ast_hash": "230e7da8b9448fbf932d55c76cb6a1b3",
+    "mtime": 1785775299.021925,
+    "ast_hash": "1ded482e1038e35ae323aa8dddaebe6a",
     "semantic_hash": ""
   },
   "resources/views/partials/why-travel-icon.blade.php": {

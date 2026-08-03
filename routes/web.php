@@ -116,7 +116,7 @@ Route::get('/services', function () use ($renderWebsitePage) {
 })->name('services');
 
 Route::get('/tour-package', function () use ($renderWebsitePage) {
-    return $renderWebsitePage('tour-package', 'tour-package');
+    return $renderWebsitePage('tour_package', 'tour-package');
 })->name('tour-package');
 
 Route::get('/contact-us', function () use ($renderWebsitePage) {
@@ -169,6 +169,7 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
             return [];
         }
     });
+    $pageSettings = (object) ($settingsData ?? []);
     $pageContent = $settingsData['content'] ?? [];
 
     $activeTab = $request->query('tab', 'ferry');
@@ -176,7 +177,7 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
         $activeTab = 'ferry';
     }
 
-    return view('schedules', compact('routes', 'startDate', 'endDate', 'pageContent', 'activeTab'));
+    return view('schedules', compact('routes', 'startDate', 'endDate', 'pageSettings', 'pageContent', 'activeTab'));
 })->name('schedules');
 
 Route::get('/payment/{transaction}', function (Transaction $transaction) {

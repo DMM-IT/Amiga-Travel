@@ -52,7 +52,8 @@
     @endif
     <div class="pt-10 sm:pt-14 lg:pt-16 pb-28 sm:pb-32 lg:pb-36 px-4 sm:px-6 lg:px-8">
         {{-- Header Title & Subtitle --}}
-        <div class="max-w-6xl mx-auto text-left relative z-10">
+        <div class="max-w-6xl mx-auto text-left relative z-10 ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'welcome_section' })" class="ws-sbtn absolute top-0 right-0 z-20"></button> @endif
             <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
                 {{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia' }}
             </h1>
@@ -1176,7 +1177,8 @@
         }
     @endphp
     <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data='{ currentSlide: 0, slides: @json($__promo_slides), modalOpen: false, modalImage: null, zoomLevel: 1 }' x-init="console.log('promotions slides', slides); if (slides && slides.length) { setInterval(() => { if (!modalOpen) { currentSlide = (currentSlide + 1) % slides.length } }, 5000); }">
-        <div class="mb-6 text-center">
+        <div class="mb-6 text-center relative ws-sbtn-container">
+            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'promo_gallery' })" class="ws-sbtn absolute top-0 right-2 z-20"></button> @endif
             <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">{{ data_get($pageContent, 'promo_gallery_title', 'Featured Promotions') }}</h2>
             <p class="text-base sm:text-lg text-black font-semibold mt-2">{{ data_get($pageContent, 'promo_gallery_subtitle', 'Browse three highlighted offers from our latest deals.') }}</p>
         </div>
@@ -1189,7 +1191,8 @@
             </div>
 
             <div>
-                <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden flex flex-col h-full group">
+                <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden flex flex-col h-full group relative ws-sbtn-container">
+                    @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'promotion_images' })" class="ws-sbtn absolute top-2 right-2 z-20"></button> @endif
                     {{-- Image Area (Clean, no hover overlays) --}}
                     <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
                         <template x-for="(slide, index) in slides" :key="index">
@@ -1342,7 +1345,8 @@
 
 {{-- Booking Request Cards --}}
 <div class="max-w-7xl mx-auto px-4 pb-12 mt-10 amiga-animate-on-scroll amiga-transition">
-    <div class="text-center mb-10">
+    <div class="text-center mb-10 relative ws-sbtn-container">
+        @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'booking_section' })" class="ws-sbtn absolute top-0 right-2 z-20"></button> @endif
         <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">
             {{ data_get($pageContent, 'booking_section_title', 'Request Travel Bookings') }}
         </h2>
@@ -1352,7 +1356,8 @@
         </p>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8 relative ws-sbtn-container">
+        @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'booking_cards' })" class="ws-sbtn absolute -top-4 right-2 z-20"></button> @endif
         @php
             $bookingCards = data_get($pageContent, 'content.booking_cards', data_get($pageContent, 'booking_cards', []));
             $defaultBookingCards = [
