@@ -207,45 +207,74 @@
                                     @php
                                         $availableOperators = $this->operators;
                                         $operatorButtonsDisabled = $prefilled_from_package || blank($mode) || $isOperatorPreselected;
+                                        $selectedOpLogo = null;
+                                        if ($operator) {
+                                            if (stripos($operator, '2GO') !== false) $selectedOpLogo = '2GO-Logo.png';
+                                            elseif (stripos($operator, 'Starlite') !== false) $selectedOpLogo = 'Starlite_Logo.png';
+                                            elseif (stripos($operator, 'Cebu') !== false) $selectedOpLogo = 'CebuPecific-Logo.png';
+                                            elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $selectedOpLogo = 'Pal-Logo.jfif';
+                                            elseif (stripos($operator, 'AirAsia') !== false) $selectedOpLogo = 'AirAsia-Logo.png';
+                                        }
                                     @endphp
-                                    <div class="mt-2 grid gap-2 sm:grid-cols-2">
-                                        @if(blank($mode))
-                                            <button type="button" disabled class="h-12 w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-left text-slate-500 shadow-sm">Select mode first</button>
-                                        @elseif(empty($availableOperators))
-                                            <div class="h-12 flex items-center rounded-xl border border-slate-300 bg-slate-50 px-4 text-slate-500">No operators available</div>
-                                        @else
-                                            <button type="button" wire:click.prevent="selectOperator(null)" @disabled($operatorButtonsDisabled) class="h-12 w-full rounded-xl border px-4 py-3 text-left transition {{ blank($operator) ? 'bg-[#db2777] border-[#db2777] text-white' : 'bg-white border-slate-300 text-slate-900 hover:border-[#db2777]' }}">
-                                                All operators
-                                            </button>
-
-                                            @foreach($availableOperators as $op)
-                                                @php
-                                                    $opLogo = null;
-                                                    if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
-                                                    elseif (stripos($op, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
-                                                    elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
-                                                    elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
-                                                    elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
-                                                @endphp
-                                                <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" @disabled($operatorButtonsDisabled) class="h-12 w-full rounded-xl border px-4 py-3 text-left transition {{ $operator === $op ? 'bg-[#db2777] border-[#db2777] text-white' : 'bg-white border-slate-300 text-slate-900 hover:border-[#db2777]' }}">
-                                                    <div class="flex items-center gap-2">
-                                                        @if($opLogo)
-                                                            <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
-                                                                <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $op }}" class="w-full h-full object-contain">
-                                                            </div>
-                                                        @endif
-                                                        <span>{{ $op }}</span>
-                                                    </div>
-                                                </button>
-                                            @endforeach
-                                        @endif
-                                    </div>
+                                    <button type="button" wire:click.prevent="toggleOperatorDropdown" @disabled($operatorButtonsDisabled) class="mt-2 flex h-12 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-slate-900 shadow-sm transition hover:border-[#216417] focus:outline-none focus:ring-2 focus:ring-[#216417]/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500">
+                                        <div class="flex items-center gap-2 truncate">
+                                            @if($selectedOpLogo)
+                                                <div class="w-5 h-5 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
+                                                    <img src="{{ asset('images/' . $selectedOpLogo) }}" alt="{{ $operator }}" class="w-full h-full object-contain">
+                                                </div>
+                                            @endif
+                                            <span class="truncate">{{ $operator ?: (blank($mode) ? 'Select mode first' : (empty($availableOperators) ? 'No operators available' : 'All operators')) }}</span>
+                                        </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.045l3.71-3.815a.75.75 0 111.08 1.04l-4.25 4.375a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
 
                                     @if($isOperatorPreselected)
                                         <span class="text-xs text-slate-500 font-medium mt-1 block">(Pre-selected from your booking link)</span>
                                     @endif
 
                                     @error('operator')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+
+                                    @if ($showOperatorDropdown && !blank($mode) && !empty($availableOperators))
+                                        <div class="absolute left-0 right-0 top-full mt-1 z-30 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+                                            <div class="max-h-64 overflow-y-auto px-2 py-2 space-y-1">
+                                                <button type="button" wire:click.prevent="selectOperator(null)" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ blank($operator) ? 'bg-slate-50 font-semibold' : '' }}">
+                                                    <div class="flex items-center justify-between gap-3">
+                                                        <span>All operators</span>
+                                                        @if(blank($operator))
+                                                            <span class="rounded-full bg-[#216417] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
+                                                        @endif
+                                                    </div>
+                                                </button>
+                                                @foreach($availableOperators as $op)
+                                                    @php
+                                                        $opLogo = null;
+                                                        if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
+                                                        elseif (stripos($op, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
+                                                        elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
+                                                        elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+                                                        elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
+                                                    @endphp
+                                                    <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $operator === $op ? 'bg-slate-50 font-semibold' : '' }}">
+                                                        <div class="flex items-center justify-between gap-3">
+                                                            <div class="flex items-center gap-2">
+                                                                @if($opLogo)
+                                                                    <div class="w-6 h-6 shrink-0 bg-white rounded flex items-center justify-center overflow-hidden">
+                                                                        <img src="{{ asset('images/' . $opLogo) }}" alt="{{ $op }}" class="w-full h-full object-contain">
+                                                                    </div>
+                                                                @endif
+                                                                <span>{{ $op }}</span>
+                                                            </div>
+                                                            @if($operator === $op)
+                                                                <span class="rounded-full bg-[#216417] px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">Selected</span>
+                                                            @endif
+                                                        </div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
 
                             <div class="col-span-2 lg:col-span-2">

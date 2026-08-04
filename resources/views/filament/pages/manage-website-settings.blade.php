@@ -263,6 +263,13 @@
      x-on:refresh-preview.window="
          const fr = document.getElementById('ws-iframe'); 
          if(fr) { fr.src = fr.src; }
+     "
+     x-init="
+         window.addEventListener('message', (e) => {
+             if (e.data && e.data.type === 'open-editor' && e.data.section) {
+                 $wire.setActiveSection(e.data.section);
+             }
+         });
      ">
 
     {{-- ── Preview ── --}}
@@ -283,6 +290,13 @@
                             style.textContent = 'html, body { scrollbar-width: none !important; } html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; }';
                             doc.head.appendChild(style);
                         }
+                        try {
+                            iframe.contentWindow.addEventListener('open-editor', (evt) => {
+                                if (evt.detail && evt.detail.section) {
+                                    $wire.setActiveSection(evt.detail.section);
+                                }
+                            });
+                        } catch(innerErr) {}
                     } catch(e) {}
                 "
                 title="Website Preview — {{ $pages[$currentPage] ?? $currentPage }}">
@@ -297,20 +311,23 @@
                         $isActive  = $activeSection === $sectionId;
                         $borderColor = $colorBorder[$section['color'] ?? 'blue'] ?? '#3b82f6';
                         $bgActive    = $isActive ? 'background:rgba(33,100,23,.12);' : '';
+                        $posStyle    = $section['pos'] ?? 'top: 1rem; left: 1rem;';
+                        $label       = $section['label'] ?? $sectionId;
+                        $icon        = $section['icon'] ?? '⚙️';
                     @endphp
 
                     @if($isLocked)
                         <div class="ws-sbtn locked"
-                             style="{{ $section['pos'] }};border-color:rgba(255,255,255,.12);">
-                            <div class="ws-chip">🔒 {{ $section['label'] }}</div>
+                             style="{{ $posStyle }};border-color:rgba(255,255,255,.12);">
+                            <div class="ws-chip">🔒 {{ $label }}</div>
                         </div>
                     @else
                         <button class="ws-sbtn {{ $isActive ? 'active' : '' }}"
                                 wire:click="setActiveSection('{{ $sectionId }}')"
-                                style="{{ $section['pos'] }};border-color:{{ $borderColor }};{{ $bgActive }}"
+                                style="{{ $posStyle }};border-color:{{ $borderColor }};{{ $bgActive }}"
                                 title="{{ $section['description'] ?? '' }}">
                             <div class="ws-chip" style="{{ $isActive ? 'background:#fff;color:#1e293b;' : '' }}">
-                                {{ $section['icon'] }} {{ $section['label'] }}
+                                {{ $icon }} {{ $label }}
                             </div>
                         </button>
                     @endif
@@ -401,47 +418,70 @@
                 <div class="ws-field">
                     <label class="ws-label">Welcome Title</label>
                     <input type="text" class="ws-input" wire:model.blur="settingsData.content.welcome_title"
-                           placeholder="Welcome to Amiga Gracia Travel Services">
+                           placeholder="Welcome to Amiga Gracia">
                 </div>
                 <div class="ws-field">
                     <label class="ws-label">Welcome Subtitle</label>
                     <textarea class="ws-textarea" wire:model.blur="settingsData.content.welcome_subtitle" rows="4"
-                              placeholder="Ferry bookings, accommodations, and everything in between…"></textarea>
+                              placeholder="Your journey deserves more than a destination - it deserves an exceptional experience"></textarea>
                 </div>
 
             {{-- ======================================= --}}
-            {{-- HERO CARDS                               --}}
+            {{-- FEATURED PROMOTIONS HEADER               --}}
             {{-- ======================================= --}}
-            @elseif($activeSection === 'hero_cards')
-                <div class="ws-sh">Primary Card — Book a Trip</div>
+            @elseif($activeSection === 'promo_gallery')
                 <div class="ws-field">
-                    <label class="ws-label">Title</label>
-                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.hero_card_title_1" placeholder="Book a Trip">
+                    <label class="ws-label">Featured Promotions Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.promo_gallery_title" placeholder="Featured Promotions">
                 </div>
                 <div class="ws-field">
-                    <label class="ws-label">Description</label>
-                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.hero_card_description_1" rows="3"
-                              placeholder="Start a new booking…"></textarea>
-                </div>
-                <div class="ws-field">
-                    <label class="ws-label">Button Text</label>
-                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.hero_card_button_1" placeholder="Get started →">
+                    <label class="ws-label">Featured Promotions Subtitle</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.promo_gallery_subtitle" rows="3"
+                              placeholder="Browse three highlighted offers from our latest deals."></textarea>
                 </div>
 
-                <div class="ws-hr"></div>
-                <div class="ws-sh">Secondary Card — Check My Booking</div>
+            {{-- ======================================= --}}
+            {{-- REQUEST TRAVEL BOOKINGS HEADER           --}}
+            {{-- ======================================= --}}
+            @elseif($activeSection === 'booking_section')
                 <div class="ws-field">
-                    <label class="ws-label">Title</label>
-                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.hero_card_title_2" placeholder="Check My Booking">
+                    <label class="ws-label">Section Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.booking_section_title" placeholder="Request Travel Bookings">
                 </div>
                 <div class="ws-field">
-                    <label class="ws-label">Description</label>
-                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.hero_card_description_2" rows="3"
-                              placeholder="Already booked?…"></textarea>
+                    <label class="ws-label">Section Description</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.booking_section_description" rows="3"
+                              placeholder="Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request."></textarea>
+                </div>
+
+            {{-- ======================================= --}}
+            {{-- BOOKING CATEGORY CARDS                   --}}
+            {{-- ======================================= --}}
+            @elseif($activeSection === 'booking_cards')
+                <div class="ws-note">
+                    🃏 To manage or reorder the 6 booking category cards (2GO, Starlite, Cebu Pacific, PAL, AirAsia, Tour Packages), expand <strong>Advanced Settings</strong> below and switch to the "Request Bookings" tab.
+                </div>
+
+            {{-- ======================================= --}}
+            {{-- CANCEL BOOKING MODAL                     --}}
+            {{-- ======================================= --}}
+            @elseif($activeSection === 'cancel_modal')
+                <div class="ws-field">
+                    <label class="ws-label">Modal Title</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.cancel_modal_title" placeholder="Want to cancel your booking?">
                 </div>
                 <div class="ws-field">
-                    <label class="ws-label">Button Text</label>
-                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.hero_card_button_2" placeholder="Check status →">
+                    <label class="ws-label">Modal Description</label>
+                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.cancel_modal_desc" rows="3"
+                              placeholder="We received your proof of payment..."></textarea>
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Cancel Button Text</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.cancel_modal_btn_cancel" placeholder="Maybe later">
+                </div>
+                <div class="ws-field">
+                    <label class="ws-label">Confirm Button Text</label>
+                    <input type="text" class="ws-input" wire:model.blur="settingsData.content.cancel_modal_btn_confirm" placeholder="Start cancellation">
                 </div>
 
             {{-- ======================================= --}}
@@ -721,7 +761,7 @@
             {{-- ======================================= --}}
             {{-- FAQs CONTENT                             --}}
             {{-- ======================================= --}}
-            @elseif($activeSection === 'faqs_content')
+            @elseif(in_array($activeSection, ['faqs_content', 'faqs_list']))
                 <div class="ws-field">
                     <label class="ws-label">Page Badge</label>
                     <input type="text" class="ws-input" wire:model.blur="settingsData.content.badge" placeholder="FAQs">
@@ -835,17 +875,6 @@
                         </div>
                     </div>
                 @endforeach
-
-            {{-- ======================================= --}}
-            {{-- SLIDING TEXT (HOME)                      --}}
-            {{-- ======================================= --}}
-            @elseif($activeSection === 'sliding_text')
-                <div class="ws-field">
-                    <label class="ws-label">Sliding Text</label>
-                    <textarea class="ws-textarea" wire:model.blur="settingsData.content.sliding_text" rows="3"
-                              placeholder="Kay Amiga, Hassle Free Ka! Offering first-class sea transit, air booking, and custom tours."></textarea>
-                </div>
-                <div class="ws-note" style="margin-top:.5rem;">This text scrolls continuously in the pink banner below the booking section on the home page.</div>
 
             {{-- ======================================= --}}
             {{-- SCHEDULES HERO                           --}}

@@ -16,7 +16,7 @@
             }
         </style>
         <!-- Hero Section -->
-        <div class="text-center mb-16 relative ws-sbtn-container">
+        <div class="text-center mb-16 relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 right-0"></button> @endif
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ data_get($pageContent, 'badge', 'About Us') }}</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
@@ -28,7 +28,7 @@
         </div>
 
         <!-- History & Info Section -->
-        <div class="grid md:grid-cols-2 gap-12 items-center mb-16 relative ws-sbtn-container">
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-16 relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'history' })" class="ws-sbtn absolute -top-4 -right-4"></button> @endif
             <div class="space-y-6">
                 <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
@@ -94,7 +94,7 @@
         @endphp
 
         @if(!empty($aboutBookingCards))
-            <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl mb-16">
+            <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl mb-16 amiga-animate-on-scroll amiga-transition">
                 <div class="max-w-3xl mx-auto text-center mb-8">
                     <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'booking_section_title') ? ucfirst(data_get($pageContent, 'booking_section_title')) : 'Request Travel Bookings' }}</p>
                     <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'booking_section_title') ?? 'Request Travel Bookings' }}</h2>
@@ -363,7 +363,7 @@
         @endif
 
         <!-- Trusted Partners Section -->
-        <div class="bg-gradient-to-br from-[#216417] to-[#14400e] text-white rounded-[2rem] p-8 sm:p-12 shadow-xl mb-16">
+        <div class="bg-gradient-to-br from-[#216417] to-[#14400e] text-white rounded-[2rem] p-8 sm:p-12 shadow-xl mb-16 amiga-animate-on-scroll amiga-transition">
             <div class="max-w-3xl mx-auto text-center">
                 <h3 class="text-2xl font-bold mb-4">Our Trusted Travel Operators</h3>
                 <p class="text-emerald-100/90 mb-8 max-w-xl mx-auto">
@@ -390,7 +390,7 @@
         </div>
 
         <!-- Call to Action -->
-        <div class="text-center">
+        <div class="text-center amiga-animate-on-scroll amiga-transition">
             <h3 class="text-xl font-bold text-slate-900">Kay Amiga, Hassle Free Ka!</h3>
             <p class="text-sm text-black font-semibold mt-2">Ready to plan your next travel or educational tour? Let's connect.</p>
             <div class="mt-6 flex justify-center gap-4">

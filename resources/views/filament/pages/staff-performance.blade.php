@@ -85,10 +85,10 @@
                                         View Bookings
                                     </button>
                                     
-                                    <x-filament::modal id="staff-bookings-{{ $staff['id'] }}" width="4xl">
-                                        <x-slot name="heading">
-                                            Bookings verified by {{ $staff['name'] }} on {{ $filterDate ?: 'All Time' }}
-                                        </x-slot>
+                                    <x-filament::modal 
+                                        id="staff-bookings-{{ $staff['id'] }}" 
+                                        width="4xl"
+                                        :heading="'Bookings verified by ' . $staff['name'] . ' on ' . ($filterDate ?: 'All Time')">
                                         
                                         @php
                                             $bookings = $this->getStaffBookings($staff['id']);
@@ -130,8 +130,7 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                    </x-slot>
-                                </x-filament::modal>
+                                    </x-filament::modal>
                             </td>
                         </tr>
                     @empty

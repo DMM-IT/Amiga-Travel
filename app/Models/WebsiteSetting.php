@@ -42,18 +42,17 @@ class WebsiteSetting extends Model
     protected static function booted()
     {
         $flushCache = function ($setting) {
-            \Illuminate\Support\Facades\Cache::forget('website_settings:' . $setting->page);
-            \Illuminate\Support\Facades\Cache::forget('website_settings:page:' . $setting->page);
+            foreach (array_keys(self::PAGES) as $pageKey) {
+                \Illuminate\Support\Facades\Cache::forget('website_settings:' . $pageKey);
+                \Illuminate\Support\Facades\Cache::forget('website_settings:page:' . $pageKey);
+            }
             \Illuminate\Support\Facades\Cache::forget('website_settings:header');
             \Illuminate\Support\Facades\Cache::forget('website_settings:footer');
             \Illuminate\Support\Facades\Cache::forget('website_settings:header_data');
             \Illuminate\Support\Facades\Cache::forget('website_settings:footer_data');
-            if ($setting->page === 'services') {
-                \Illuminate\Support\Facades\Cache::forget('api:services');
-            }
-            if ($setting->page === 'home') {
-                \Illuminate\Support\Facades\Cache::forget('api:promotions');
-            }
+            \Illuminate\Support\Facades\Cache::forget('website_settings:page:home');
+            \Illuminate\Support\Facades\Cache::forget('api:services');
+            \Illuminate\Support\Facades\Cache::forget('api:promotions');
         };
 
         static::saved($flushCache);

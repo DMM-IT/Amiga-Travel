@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#216417">
+        <meta name="theme-color" content="#008000">
         <link rel="manifest" href="/manifest.json">
 
         <title>{{ config('app.name', 'Amiga Gracia Travel Service') }}</title>
@@ -112,49 +112,75 @@
         @endphp
 
         @if(! $isAuthPage)
-        <header class="bg-[#216417] text-white sticky top-0 z-50 shadow-md relative">
-            <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-                <div class="absolute inset-0 pointer-events-none" style="background-image: url('{{ asset('images/tribal-pattern.svg') }}'); background-repeat: repeat; opacity: 0.15;"></div>
-            </div>
+        @if(request()->is('/'))
+        <header x-data="{ scrolled: false }"
+                @scroll.window="scrolled = (window.pageYOffset > 50)"
+                :class="scrolled ? 'shadow-lg' : ''"
+                class="bg-[#008000] text-white sticky top-0 z-50 relative transition-all duration-300 ease-in-out">
+            <div class="relative z-10 max-w-full mx-auto px-3 sm:px-4 lg:px-5">
+                <div :class="scrolled ? 'h-20' : 'h-28 sm:h-32'" 
+                     class="flex items-center justify-between transition-all duration-300 ease-in-out">
+                    <div class="flex items-center gap-6 lg:gap-10">
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a href="{{ url('/') }}" class="flex items-center gap-2">
+                                  <img src="{{ asset('images/amiga_logo_white_outline.png') }}" 
+                                      alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" 
+                                      :class="scrolled ? 'h-16' : 'h-24 sm:h-28'"
+                                      class="w-auto object-contain transition-all duration-300 ease-in-out">
+                            </a>
+                        </div>
+                        <nav :class="scrolled ? 'translate-y-0' : '-translate-y-4 sm:-translate-y-5'" 
+                             class="hidden md:flex items-center space-x-6 lg:space-x-7 font-medium transition-transform duration-300 ease-in-out">
+        @else
+        <header class="bg-[#008000] text-white sticky top-0 z-50 shadow-md relative">
             <div class="relative z-10 max-w-full mx-auto px-3 sm:px-4 lg:px-5">
                 <div class="flex items-center justify-between h-20">
-                    <div class="flex items-center gap-2">
-                        <a href="{{ url('/') }}" class="flex items-center gap-2">
-                            <img src="{{ storage_asset_path(data_get($headerData, 'logo')) ?: asset('images/amiga-logo.jpg') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-16 w-auto rounded bg-white p-1">
-                        </a>
-                    </div>
-                    <nav class="hidden md:flex flex-1 justify-end space-x-6 font-medium">
-                        <a href="{{ url('/') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('/') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">Home</a>
-                        <a href="{{ url('/about') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('about') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">About</a>
-                        <a href="{{ url('/schedules') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('schedules') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">Schedules</a>
+                    <div class="flex items-center gap-6 lg:gap-10">
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a href="{{ url('/') }}" class="flex items-center gap-2">
+                                <img src="{{ asset('images/amiga_logo_white_outline.png') }}" 
+                                     alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" 
+                                     class="h-16 w-auto object-contain">
+                            </a>
+                        </div>
+                        <nav class="hidden md:flex items-center space-x-6 lg:space-x-7 font-medium">
+        @endif
+                        <a href="{{ url('/') }}" class="py-1 text-white transition-all duration-200 {{ request()->is('/') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">Home</a>
+                        <a href="{{ url('/about') }}" class="py-1 text-white transition-all duration-200 {{ request()->is('about') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">About</a>
+                        <a href="{{ url('/schedules') }}" class="py-1 text-white transition-all duration-200 {{ request()->is('schedules') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">Schedules</a>
                         <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('services') || request()->is('tour-package') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition flex items-center gap-1">
+                            <button class="py-1 text-white transition-all duration-200 flex items-center gap-1 {{ request()->is('services') || request()->is('tour-package') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">
                                 Discover
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
-                                    <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Services</a>
-                                    <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Tour Package</a>
+                                    <a href="{{ url('/services') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('services') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">Services</a>
+                                    <a href="{{ url('/tour-package') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('tour-package') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">Tour Package</a>
                                 </div>
                             </div>
                         </div>
                         <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                            <button class="border-2 rounded px-3 py-1.5 {{ request()->is('contact-us') || request()->is('faqs') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition flex items-center gap-1">
+                            <button class="py-1 text-white transition-all duration-200 flex items-center gap-1 {{ request()->is('contact-us') || request()->is('faqs') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">
                                 Get Help
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-[#216417] ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden" style="display: none;">
                                 <div class="py-1">
-                                    <a href="{{ url('/contact-us') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Contact Us</a>
-                                    <a href="{{ url('/faqs') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">FAQs</a>
+                                    <a href="{{ url('/contact-us') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('contact-us') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">Contact Us</a>
+                                    <a href="{{ url('/faqs') }}" class="block px-4 py-2.5 text-sm font-medium {{ request()->is('faqs') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">FAQs</a>
                                 </div>
                             </div>
                         </div>
-                        <a href="{{ url('/download') }}" class="border-2 rounded px-3 py-1.5 {{ request()->is('download') ? 'bg-white/15 text-white border-transparent' : 'text-white border-transparent hover:bg-white/15 hover:text-white' }} transition">Download App</a>
                     </nav>
+                </div>
 
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-6 lg:gap-8 ml-auto">
+                        <div :class="scrolled ? 'translate-y-0' : '{{ request()->is('/') ? '-translate-y-4 sm:-translate-y-5' : 'translate-y-0' }}'" 
+                             class="hidden md:flex items-center gap-6 lg:gap-7 font-medium transition-transform duration-300 ease-in-out">
+                            <a href="{{ url('/book/status') }}" class="py-1 text-white transition-all duration-200 {{ request()->is('book/status') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">My Booking</a>
+                            <a href="{{ url('/download') }}" class="py-1 text-white transition-all duration-200 {{ request()->is('download') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">Download App</a>
+                        </div>
                         <div class="hidden xl:flex items-center gap-6 text-sm text-white/90">
                             @if(!empty($headerData['phone']))
                                 <a href="tel:{{ $headerData['phone'] }}" class="hover:text-[#ee018d]">{{ $headerData['phone'] }}</a>
@@ -175,7 +201,7 @@
                 </div>
             </div>
 
-            <div id="mobile-menu" class="md:hidden hidden bg-[#1e4c21] border-t border-white/10 relative z-10">
+            <div id="mobile-menu" class="md:hidden hidden bg-[#006600] border-t border-white/10 relative z-10">
                 <div class="max-w-full mx-auto px-4 py-4 space-y-3">
                     <a href="{{ url('/') }}" class="block rounded-xl px-4 py-3 {{ request()->is('/') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Home</a>
                     <a href="{{ url('/about') }}" class="block rounded-xl px-4 py-3 {{ request()->is('about') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">About</a>
@@ -185,9 +211,9 @@
                             Discover
                             <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-                        <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1">
-                            <a href="{{ url('/services') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('services') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">Services</a>
-                            <a href="{{ url('/tour-package') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('tour-package') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">Tour Package</a>
+                        <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1 bg-white rounded-xl shadow-sm">
+                            <a href="{{ url('/services') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('services') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">Services</a>
+                            <a href="{{ url('/tour-package') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('tour-package') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">Tour Package</a>
                         </div>
                     </div>
                     <div x-data="{ open: false }">
@@ -195,11 +221,12 @@
                             Get Help
                             <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-                        <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1">
-                            <a href="{{ url('/contact-us') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('contact-us') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">Contact Us</a>
-                            <a href="{{ url('/faqs') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('faqs') ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/15 hover:text-white' }}">FAQs</a>
+                        <div x-show="open" style="display: none;" class="pl-4 pr-2 py-2 space-y-2 border-l border-white/20 ml-2 mt-1 bg-white rounded-xl shadow-sm">
+                            <a href="{{ url('/contact-us') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('contact-us') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">Contact Us</a>
+                            <a href="{{ url('/faqs') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('faqs') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">FAQs</a>
                         </div>
                     </div>
+                    <a href="{{ url('/book/status') }}" class="block rounded-xl px-4 py-3 {{ request()->is('book/status') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">My Booking</a>
                     <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Download App</a>
                     <div class="border-t border-white/10 pt-3">
                         @if(!empty($headerData['phone']))
@@ -215,22 +242,20 @@
         @endif
 
         <main class="flex-grow">
-            @unless($isAuthPage || request()->routeIs('book.new') || request()->is('book/new') || request()->is('schedules') || request()->is('schedules*') || request()->is('download') || request()->is('download*'))
+            @unless($isAuthPage || request()->is('/') || request()->routeIs('book.new') || request()->is('book/new') || request()->is('schedules') || request()->is('schedules*') || request()->is('download') || request()->is('download*'))
                 @if(session()->has('booking_draft'))
-                    <div class="max-w-7xl mx-auto px-4 pb-0 pt-4 sm:pt-6">
-                        <div class="rounded-[1.5rem] border border-pink-200 bg-pink-50 p-4 text-slate-900 shadow-sm">
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <p class="text-sm font-semibold text-pink-700">You have a pending booking in progress.</p>
-                                    <p class="mt-1 text-xs text-slate-600">Return to complete your booking or cancel the draft to start a new one.</p>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <a href="{{ url('/book/new') }}" class="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-pink-700">Return to booking</a>
-                                    <form method="POST" action="{{ route('booking.draft.cancel') }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="inline-flex items-center justify-center rounded-full border border-pink-600 px-4 py-2 text-xs font-semibold text-pink-700 transition hover:bg-pink-100">Cancel draft</button>
-                                    </form>
-                                </div>
+                    <div class="w-full bg-pink-50/95 border-b border-pink-200 px-4 sm:px-6 lg:px-8 py-3.5 text-slate-900 shadow-sm">
+                        <div class="max-w-7xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-pink-700">You have a pending booking in progress.</p>
+                                <p class="mt-0.5 text-xs text-slate-600">Return to complete your booking or cancel the draft to start a new one.</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 shrink-0">
+                                <a href="{{ url('/book/new') }}" class="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-pink-700">Return to booking</a>
+                                <form method="POST" action="{{ route('booking.draft.cancel') }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center justify-center rounded-full border border-pink-600 px-4 py-2 text-xs font-semibold text-pink-700 transition hover:bg-pink-100">Cancel draft</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -241,13 +266,14 @@
         </main>
 
         @if(! $isAuthPage)
-        <footer class="relative overflow-hidden bg-[#0e2709] text-white pt-16 pb-8 mt-12">
+        @include('partials.why-travel-section')
+        <footer class="relative overflow-hidden bg-gradient-to-b from-[#008000] via-[#004a00] to-[#042402] text-white pt-16 pb-8">
             <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-12 border-b border-white/10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-8 border-b border-white/10">
                     <!-- Column 1: Logo & Tagline -->
             <div class="space-y-4">
                 <div class="flex flex-col items-start gap-3">
-                    <img src="{{ storage_asset_path(data_get($headerData, 'logo')) ?: asset('images/amiga-logo-transparent.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-20 sm:h-24 lg:h-28 w-auto">
+                    <img src="{{ storage_asset_path(data_get($headerData, 'logo')) ?: asset('images/amiga_logo_white_outline.png') }}" alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" class="h-20 sm:h-24 lg:h-28 w-auto">
                     <p class="text-white/90 font-semibold text-sm sm:text-base">{{ $footerData['tagline'] ?? 'Kay Amiga Hassle Free Ka!' }}</p>
                 </div>
 
@@ -334,7 +360,7 @@
                 </div>
 
                 <!-- Bottom bar -->
-                <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400 relative z-10">
+                <div class="pt-12 pb-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400 relative z-10">
                     <div class="space-y-1 text-center md:text-left">
                         <p>&copy; 2017 – {{ date('Y') }} {{ $headerData['company_name'] ?? 'Amiga Gracia Travel Services' }}. All rights reserved.</p>
                         <p class="text-slate-500">Developed by Aries King N. Nieto and Drew M. Macaraig</p>
@@ -350,8 +376,8 @@
             </div>
 
             <!-- Watermark Background Text: AMIGA GRACIA -->
-            <div class="absolute bottom-[-3.5rem] left-1/2 -translate-x-1/2 w-full text-center select-none pointer-events-none opacity-[0.03] z-0">
-                <span class="text-[12vw] font-black uppercase tracking-widest whitespace-nowrap text-white">AMIGA GRACIA</span>
+            <div class="absolute bottom-[-2.5rem] left-1/2 -translate-x-1/2 w-full text-center select-none pointer-events-none opacity-[0.03] z-0">
+                <span class="text-[8vw] lg:text-[9vw] font-black uppercase tracking-widest whitespace-nowrap text-white">AMIGA GRACIA</span>
             </div>
         </footer>
         @endif
@@ -384,7 +410,7 @@
                             button.classList.contains('bg-[#ee018d]') ||
                             button.classList.contains('bg-emerald-600') ||
                             button.classList.contains('bg-[#db2777]') ||
-                            button.classList.contains('bg-[#216417]');
+                            button.classList.contains('bg-[#008000]');
 
                         if (isSubmitType || hasWireClick || hasWireSubmit || isPrimaryAction) {
                             setScrollTrigger();
@@ -456,6 +482,43 @@
                     });
                 });
             }
+        </script>
+        {{-- Global Animate-on-Scroll CSS & JS for all pages --}}
+        <style>
+            .amiga-transition {
+                opacity: 0;
+                transform: translateY(24px);
+                transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+                will-change: opacity, transform;
+            }
+            .amiga-visible {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var animatedSections = document.querySelectorAll('.amiga-animate-on-scroll');
+                if (!('IntersectionObserver' in window) || animatedSections.length === 0) {
+                    animatedSections.forEach(function (el) {
+                        el.classList.add('amiga-visible');
+                    });
+                    return;
+                }
+                var observer = new IntersectionObserver(function (entries, observer) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('amiga-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.12,
+                });
+                animatedSections.forEach(function (el) {
+                    observer.observe(el);
+                });
+            });
         </script>
     </body>
 </html>
