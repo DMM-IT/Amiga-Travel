@@ -44,7 +44,7 @@ class Passenger extends Model
         if (str_starts_with($this->id_image_front, 'http') || str_starts_with($this->id_image_front, 'data:image')) {
             return $this->id_image_front;
         }
-        return asset('storage/' . ltrim($this->id_image_front, '/'));
+        return storage_asset_path($this->id_image_front);
     }
 
     public function getIdImageBackUrlAttribute(): ?string
@@ -55,7 +55,7 @@ class Passenger extends Model
         if (str_starts_with($this->id_image_back, 'http') || str_starts_with($this->id_image_back, 'data:image')) {
             return $this->id_image_back;
         }
-        return asset('storage/' . ltrim($this->id_image_back, '/'));
+        return storage_asset_path($this->id_image_back);
     }
 
     public function booking(): BelongsTo

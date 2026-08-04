@@ -49,7 +49,7 @@ class ViewBooking extends ViewRecord
         try {
             return Storage::disk('public')->url($trimmed);
         } catch (Throwable $e) {
-            return asset('storage/' . $trimmed);
+            return storage_asset_path($trimmed);
         }
     }
 
@@ -374,7 +374,7 @@ class ViewBooking extends ViewRecord
                                     $html .= "<p><strong>Price Difference Paid:</strong> ₱" . number_format($data['price_diff'], 2) . "</p>";
                                 }
                                 if (!empty($data['proof_path'])) {
-                                    $url = asset('storage/' . $data['proof_path']);
+                                    $url = storage_asset_path($data['proof_path']);
                                     $html .= "<p><strong>Payment Proof:</strong> <a href=\"{$url}\" target=\"_blank\" class=\"text-primary-600 underline\">View Receipt</a></p>";
                                 }
                                 

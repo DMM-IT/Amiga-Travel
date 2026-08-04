@@ -354,7 +354,7 @@
                                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 w-full max-w-[220px]">
                                         <h5 class="text-sm font-bold text-slate-900 mb-3">Payment QR Code</h5>
                                         @if($qrCodePath)
-                                            <img src="{{ asset('storage/' . $qrCodePath) }}" alt="Payment QR Code" class="h-44 w-full object-contain rounded-2xl border border-slate-200 bg-white" />
+                                            <img src="{{ storage_asset_path($qrCodePath) }}" alt="Payment QR Code" class="h-44 w-full object-contain rounded-2xl border border-slate-200 bg-white" />
                                         @else
                                             <div class="flex h-44 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-4 text-center text-sm text-slate-500">
                                                 QR code not uploaded yet. Please wait for the admin to upload the payment QR code.

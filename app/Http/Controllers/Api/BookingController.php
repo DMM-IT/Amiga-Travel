@@ -127,7 +127,7 @@ class BookingController extends Controller
             $data = $booking->toArray();
             $transaction = $booking->transaction;
             if ($transaction?->confirmation_pdf) {
-                $data['confirmation_pdf_url'] = asset('storage/' . $transaction->confirmation_pdf);
+                $data['confirmation_pdf_url'] = storage_asset_path($transaction->confirmation_pdf);
             }
             $data['confirmation_url'] = $transaction?->confirmation_url;
             $data['ticket_url'] = URL::temporarySignedRoute(
@@ -175,7 +175,7 @@ class BookingController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Proof of payment uploaded successfully!',
-            'proof_url' => asset('storage/' . $path),
+            'proof_url' => storage_asset_path($path),
         ]);
     }
 
@@ -184,10 +184,7 @@ class BookingController extends Controller
         $data = Cache::remember('api:payment_settings', now()->addHours(6), function () {
             $settings = PaymentSetting::current();
 
-            $qrCodeUrl = null;
-            if ($settings->qr_code_path) {
-                $qrCodeUrl = asset('storage/' . $settings->qr_code_path);
-            }
+            $qrCodeUrl = storage_asset_path($settings->qr_code_path);
 
             return [
                 'qr_code_url'            => $qrCodeUrl,

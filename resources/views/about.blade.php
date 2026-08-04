@@ -115,7 +115,7 @@
                                 @foreach($aboutBookingCards as $card)
                                     @php
                                         $rawCardImage = data_get($card, 'image');
-                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                                        $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
                                         $cardTitle = data_get($card, 'title', 'Travel Booking');
                                         $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
                                         $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
@@ -148,7 +148,7 @@
                                 @foreach($aboutBookingCards as $card)
                                     @php
                                         $rawCardImage = data_get($card, 'image');
-                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                                        $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
                                         $cardTitle = data_get($card, 'title', 'Travel Booking');
                                         $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
                                         $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
@@ -183,7 +183,7 @@
                             @foreach($aboutBookingCards as $card)
                                 @php
                                     $rawCardImage = data_get($card, 'image');
-                                    $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+                                    $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
                                     $cardTitle = data_get($card, 'title', 'Travel Booking');
                                     $cardDescription = data_get($card, 'description', 'Kasiyahan po namin ang paglingkuran kayo.');
                                     $cardDetail = data_get($card, 'detail', 'Learn more about this travel booking option in detail.');
@@ -259,7 +259,7 @@
                                 @foreach($suggestedTrips as $card)
                                     @php
                                         $rawCardImage = data_get($card, 'image');
-                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                        $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
                                         $cardTitle = data_get($card, 'title', 'Trip');
                                         $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
                                         $cardDetail = data_get($card, 'detail', '');
@@ -287,7 +287,7 @@
                                 @foreach($suggestedTrips as $card)
                                     @php
                                         $rawCardImage = data_get($card, 'image');
-                                        $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                        $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
                                         $cardTitle = data_get($card, 'title', 'Trip');
                                         $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
                                         $cardDetail = data_get($card, 'detail', '');
@@ -317,7 +317,7 @@
                             @foreach($suggestedTrips as $card)
                                 @php
                                     $rawCardImage = data_get($card, 'image');
-                                    $cardImage = $rawCardImage ? asset('storage/' . ltrim($rawCardImage, '/')) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                    $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
                                     $cardTitle = data_get($card, 'title', 'Trip');
                                     $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
                                     $cardDetail = data_get($card, 'detail', '');

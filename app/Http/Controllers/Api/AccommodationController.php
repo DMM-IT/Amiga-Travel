@@ -30,7 +30,7 @@ class AccommodationController extends Controller
                         'price'       => floatval($a->price),
                         'destination' => $a->destination,
                         'cover_image' => count($images) > 0
-                            ? url('storage/' . $images[0])
+                            ? storage_asset_path($images[0])
                             : null,
                     ];
                 });

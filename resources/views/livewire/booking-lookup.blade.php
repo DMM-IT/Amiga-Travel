@@ -724,7 +724,7 @@
                                                         </div>
                                                         <button type="button" class="flex-shrink-0 rounded-xl border border-slate-200 bg-slate-50 p-2 text-left transition hover:border-blue-300 hover:bg-blue-50" @click="qrModalOpen = true" aria-label="View payment QR code">
                                                             @if($rebookingQrPath)
-                                                                <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="QR code" class="h-14 w-14 rounded-lg object-contain" />
+                                                                <img src="{{ storage_asset_path($rebookingQrPath) }}" alt="QR code" class="h-14 w-14 rounded-lg object-contain" />
                                                             @else
                                                                 <div class="flex h-14 w-14 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-slate-400">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -745,7 +745,7 @@
                                                             </div>
                                                             <div class="mt-4">
                                                                 @if($rebookingQrPath)
-                                                                    <img src="{{ asset('storage/' . $rebookingQrPath) }}" alt="Enlarged QR code" class="mx-auto max-h-96 w-full rounded-2xl object-contain" />
+                                                                    <img src="{{ storage_asset_path($rebookingQrPath) }}" alt="Enlarged QR code" class="mx-auto max-h-96 w-full rounded-2xl object-contain" />
                                                                 @else
                                                                     <div class="flex min-h-48 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
                                                                         <div>

@@ -65,7 +65,7 @@ class Tour extends Model
                     return $value;
                 }
                 // Otherwise, it's a stored file path
-                return asset('storage/' . $value);
+                return storage_asset_path($value);
             },
         );
     }

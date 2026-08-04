@@ -17,7 +17,8 @@ class TourHotelsSeeder extends Seeder
         }
 
         $raw = File::get($path);
-        $utf8 = mb_convert_encoding($raw, 'UTF-8', 'UTF-16');
+        $encoding = mb_detect_encoding($raw, ['UTF-8', 'UTF-16', 'ISO-8859-1', 'Windows-1252'], true) ?: 'UTF-8';
+        $utf8 = mb_convert_encoding($raw, 'UTF-8', $encoding);
         $lines = preg_split('/\r\n|\n|\r/', $utf8);
 
         $header = null;

@@ -205,7 +205,7 @@
                                 <div class="relative block" data-error="operator">
                                     <span class="text-black font-extrabold text-sm">Operator</span>
                                     @php
-                                        $availableOperators = $operators;
+                                        $availableOperators = $this->operators;
                                         $operatorButtonsDisabled = $prefilled_from_package || blank($mode) || $isOperatorPreselected;
                                     @endphp
                                     <div class="mt-2 grid gap-2 sm:grid-cols-2">
@@ -1194,7 +1194,7 @@
                                             >
                                                 <div class="relative h-48 w-full bg-slate-100">
                                                     @if($hotel->cover_image)
-                                                        <img src="{{ asset('storage/' . $hotel->cover_image) }}" alt="{{ $hotel->name }}" class="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
+                                                        <img src="{{ $hotel->cover_image }}" alt="{{ $hotel->name }}" class="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
                                                     @else
                                                         <div class="flex h-full w-full items-center justify-center text-slate-400 text-sm font-medium">No photo</div>
                                                     @endif

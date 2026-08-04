@@ -276,15 +276,35 @@ class RouteScheduleSeeder extends Seeder
                     ->orWhere('operator', 'like', '%' . $rData['operator'] . '%')
                     ->first();
 
+                // If no vehicle found, create a basic Vehicle record from first schedule info
+                if (! $vehicle) {
+                    $firstSched = $rData['schedules'][0] ?? null;
+                    $plateNo = $firstSched['plate_no'] ?? null;
+                    $vehicleName = $firstSched['vehicle_name'] ?? ($rData['operator'] ?? '');
+
+                    $vehicle = Vehicle::firstOrCreate(
+                        ['vehicle_id' => $plateNo, 'name' => $vehicleName],
+                        [
+                            'type' => ($rData['mode'] === 'airline' ? 'airline' : 'ferry'),
+                            'operator' => $rData['operator'] ?? null,
+                            'description' => $rData['operator'] ?? null,
+                            'capacity' => null,
+                            'is_active' => true,
+                        ]
+                    );
+                }
+
                 // 1. Create or update FerryRoute
+                // Match existing routes by origin/destination/operator only so we can
+                // correct the `mode` (airline/ferry) if it differs from the seed data.
                 $route = FerryRoute::updateOrCreate(
                     [
                         'origin' => $rData['origin'],
                         'destination' => $rData['destination'],
-                        'mode' => $rData['mode'],
                         'operator' => $rData['operator'],
                     ],
                     [
+                        'mode' => $rData['mode'],
                         'trip_type' => $rData['trip_type'],
                         'is_active' => true,
                         'vehicle_id' => $vehicle?->id,
@@ -294,15 +314,16 @@ class RouteScheduleSeeder extends Seeder
                 // 2. Prepare TransportClass records for this operator & accommodations
                 $transportClasses = [];
                 foreach ($rData['accommodations'] as $accData) {
+                    $code = str($accData['name'])->slug()->value();
                     $tc = TransportClass::updateOrCreate(
                         [
                             'operator' => $rData['operator'],
-                            'code' => str($accData['name'])->slug()->value(),
+                            'code' => $code,
                         ],
                         [
                             'name' => $accData['name'],
-                            'description' => $accData['description'],
-                            'price' => $accData['price'],
+                            'description' => $accData['description'] ?? null,
+                            'price' => $accData['price'] ?? 0,
                             'is_active' => true,
                             'sort_order' => $accData['sort_order'] ?? 1,
                         ]

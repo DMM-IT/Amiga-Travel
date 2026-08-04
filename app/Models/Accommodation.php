@@ -36,6 +36,6 @@ class Accommodation extends Model
      */
     public function getCoverImageAttribute(): ?string
     {
-        return $this->images[0] ?? null;
+        return storage_asset_path($this->images[0] ?? null);
     }
 }

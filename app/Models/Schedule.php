@@ -504,7 +504,7 @@ class Schedule extends Model
                         'has_bed' => (bool) ($class->pivot?->has_bed ?? false),
                         'is_on_sale' => (bool) $class->is_on_sale,
                         'sale_price' => $class->sale_price ? floatval($class->sale_price) : null,
-                        'cover_image' => $class->cover_image ? asset('storage/' . $class->cover_image) : null,
+                        'cover_image' => $class->cover_image,
                         'tickets_available' => (int) ($class->pivot?->tickets_available ?? 50),
                     ];
                 })

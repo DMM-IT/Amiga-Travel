@@ -20,6 +20,34 @@ $renderWebsitePage = function (string $page, string $view) {
         }
     });
 
+    $normalizePath = function (?string $path): ?string {
+        if (empty($path)) {
+            return null;
+        }
+
+        return storage_asset_path($path) ?: null;
+    };
+
+    $normalizeCards = function (array $cards) use ($normalizePath): array {
+        return array_map(function ($card) use ($normalizePath) {
+            if (! is_array($card)) {
+                return $card;
+            }
+
+            if (isset($card['image'])) {
+                $card['image'] = $normalizePath((string) $card['image']) ?: $card['image'];
+            }
+
+            return $card;
+        }, $cards);
+    };
+
+    $settingsData['hero_images'] = array_values(array_filter(array_map($normalizePath, $settingsData['hero_images'] ?? [])));
+    $settingsData['booking_cards'] = $normalizeCards($settingsData['booking_cards'] ?? []);
+    $settingsData['content']['booking_cards'] = $normalizeCards($settingsData['content']['booking_cards'] ?? []);
+    $settingsData['header_data']['logo'] = $normalizePath($settingsData['header_data']['logo'] ?? null) ?: ($settingsData['header_data']['logo'] ?? null);
+    $settingsData['footer_data']['logo'] = $normalizePath($settingsData['footer_data']['logo'] ?? null) ?: ($settingsData['footer_data']['logo'] ?? null);
+
     return view($view, [
         'pageSettings' => (object) ($settingsData ?? []),
         'pageContent' => $settingsData['content'] ?? [],

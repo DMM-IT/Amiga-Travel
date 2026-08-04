@@ -53,6 +53,11 @@ class DatabaseSeeder extends Seeder
             WebsiteSettingSeeder::class,
             GraciaEarningRuleSeeder::class,
             AirlineBaggageRuleSeeder::class,
+            // Routes, schedules and related transport classes
+            RouteScheduleSeeder::class,
+            TransportClassSeeder::class,
+            // Tour hotels (imports from travel_packages_summary_MERGED.csv.txt)
+            TourHotelsSeeder::class,
         ]);
     }
 }
