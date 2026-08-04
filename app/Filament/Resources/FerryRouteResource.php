@@ -233,27 +233,7 @@ class FerryRouteResource extends Resource
                                         $component->collapsed(false, shouldMakeComponentCollapsible: false);
                                     })
                                     ->visible(fn (callable $get): bool => in_array($get('../../mode'), ['airline', 'ferry'], true)),
-                                Action::make('add_accommodation')
-                                    ->icon('heroicon-m-plus-circle')
-                                    ->label('Add accommodation')
-                                    ->tooltip('Add accommodation')
-                                    ->action(function (array $arguments, Repeater $component, callable $get): void {
-                                        $itemKey = $arguments['item'];
-                                        $state = $component->getState();
-
-                                        $accs = $state[$itemKey]['scheduleAccommodations'] ?? [];
-                                        $accs[\Illuminate\Support\Str::uuid()->toString()] = [
-                                            'price' => $state[$itemKey]['price'] ?? 0,
-                                            'tickets_available' => 50,
-                                            'is_active' => true,
-                                            'has_bed' => false,
-                                        ];
-                                        $state[$itemKey]['scheduleAccommodations'] = $accs;
-
-                                        $component->state($state);
-                                        $component->collapsed(false, shouldMakeComponentCollapsible: false);
-                                    })
-                                    ->visible(fn (callable $get): bool => $get('../../mode') === 'ferry'),
+                                // Only use transport classes directly now; accommodations are handled through transport classes.
                             ])
                             ->itemLabel(function (array $state): ?string {
                                 $parts = [];
@@ -273,15 +253,10 @@ class FerryRouteResource extends Resource
                                     $parts[] = "₱{$price}";
                                 }
 
-                                $accCount = is_array($state['scheduleAccommodations'] ?? null) ? count($state['scheduleAccommodations']) : 0;
                                 $classCount = is_array($state['scheduleTransportClasses'] ?? null) ? count($state['scheduleTransportClasses']) : 0;
 
                                 if ($classCount > 0) {
                                     $parts[] = "{$classCount} " . ($classCount === 1 ? 'Class' : 'Classes');
-                                }
-
-                                if ($accCount > 0) {
-                                    $parts[] = "{$accCount} " . ($accCount === 1 ? 'Accommodation' : 'Accommodations');
                                 }
 
                                 return implode('  •  ', $parts);
@@ -376,73 +351,6 @@ class FerryRouteResource extends Resource
                 ->label('Visible to clients when booking')
                 ->default(true),
                 
-            Repeater::make('scheduleAccommodations')
-                ->relationship('scheduleAccommodations')
-                ->label('Onboard Accommodations')
-                ->schema([
-                    Select::make('accommodation_id')
-                        ->label('Accommodation')
-                        ->options(fn (callable $get) => \App\Models\Accommodation::query()
-                            ->when($get('../../operator'), fn ($query, $operator) => $query->where('operator', $operator))
-                            ->where('is_active', true)
-                            ->orderBy('name')
-                            ->pluck('name', 'id')
-                            ->toArray())
-                        ->reactive()
-                        ->required()
-                        ->afterStateUpdated(function (?int $state, callable $set) {
-                            if ($state) {
-                                $accommodation = \App\Models\Accommodation::find($state);
-                                if ($accommodation) {
-                                    $set('name', $accommodation->name);
-                                    $set('description', $accommodation->description);
-                                    $set('price', $accommodation->price);
-                                    $set('has_bed', $accommodation->has_bed ?? false);
-                                }
-                            }
-                        })
-                        ->columnSpanFull(),
-
-                    TextInput::make('name')
-                        ->label('Accommodation name')
-                        ->placeholder('e.g. Tourist Class, Bed Cabin')
-                        ->required()
-                        ->maxLength(255)
-                        ->columnSpanFull(),
-
-                    \Filament\Forms\Components\Textarea::make('description')
-                        ->placeholder('Details about this accommodation option')
-                        ->rows(2)
-                        ->columnSpanFull(),
-
-                    TextInput::make('price')
-                        ->label('Price per passenger (₱)')
-                        ->numeric()
-                        ->prefix('₱')
-                        ->minValue(0)
-                        ->required(),
-
-                    TextInput::make('tickets_available')
-                        ->label('Tickets Available')
-                        ->numeric()
-                        ->minValue(0)
-                        ->default(50)
-                        ->required(),
-
-                    Toggle::make('has_bed')
-                        ->label('Includes bed accommodation')
-                        ->helperText('Enable for cabin or bunk options with sleeping berths.'),
-
-                    Toggle::make('is_active')
-                        ->label('Visible to clients when booking')
-                        ->default(true),
-                ])
-                ->columns(2)
-                ->collapsible()
-                ->columnSpanFull()
-                ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
-                ->visible(fn (callable $get): bool => $get('../../mode') === 'ferry'),
-
             Repeater::make('scheduleTransportClasses')
                 ->relationship('scheduleTransportClasses')
                 ->label('Transport Classes')
@@ -450,7 +358,8 @@ class FerryRouteResource extends Resource
                     Select::make('transport_class_id')
                         ->label('Transport Class')
                         ->options(fn (callable $get) => \App\Models\TransportClass::query()
-                            ->when($get('../../operator'), fn ($query, $operator) => $query->where('operator', $operator))
+                            ->when($get('../../../../operator'), fn ($query, $operator) => $query->where('operator', $operator))
+                            ->when($get('../../../../mode'), fn ($query, $mode) => $query->where('mode', $mode))
                             ->where('is_active', true)
                             ->orderBy('name')
                             ->pluck('name', 'id'))
@@ -491,14 +400,13 @@ class FerryRouteResource extends Resource
                         ->required(),
 
                     Toggle::make('has_bed')
-                        ->label('Includes bed accommodation')
-                        ->helperText('Enable for cabin or bunk options with sleeping berths.'),
+                        ->label('Includes bed / berth')
+                        ->helperText('Enable for transport classes that include sleeping berths.'),
 
                     Toggle::make('is_active')
                         ->label('Visible to clients when booking')
                         ->default(true),
 
-                    // Hidden field to store name for Repeater item label
                     TextInput::make('transport_class_name')->hidden(),
                 ])
                 ->columns(2)

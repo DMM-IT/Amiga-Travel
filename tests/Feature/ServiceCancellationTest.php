@@ -44,7 +44,7 @@ class ServiceCancellationTest extends TestCase
             'origin' => 'Calapan',
             'destination' => 'Batangas',
             'mode' => 'ferry',
-            'operator' => 'Starlite Ferries Inc.',
+            'operator' => 'Starlite',
             'is_active' => true,
         ]);
 
@@ -82,7 +82,7 @@ class ServiceCancellationTest extends TestCase
 
         $cancellation = $manager->finalizeCancellation([
             'service_type' => 'ferry',
-            'carrier' => 'Starlite Ferries Inc.',
+            'carrier' => 'Starlite',
             'scope' => 'specific_schedule',
             'schedule_id' => $this->schedule->id,
             'affected_date' => '2026-08-01',
@@ -93,7 +93,7 @@ class ServiceCancellationTest extends TestCase
 
         $this->assertDatabaseHas('service_cancellations', [
             'id' => $cancellation->id,
-            'carrier' => 'Starlite Ferries Inc.',
+            'carrier' => 'Starlite',
             'reason_category' => 'weather',
         ]);
 
@@ -109,7 +109,7 @@ class ServiceCancellationTest extends TestCase
 
         $cancellation = $manager->finalizeCancellation([
             'service_type' => 'ferry',
-            'carrier' => 'Starlite Ferries Inc.',
+            'carrier' => 'Starlite',
             'scope' => 'specific_schedule',
             'schedule_id' => $this->schedule->id,
             'affected_date' => '2026-08-01',
@@ -132,7 +132,7 @@ class ServiceCancellationTest extends TestCase
 
         $cancellation = $manager->finalizeCancellation([
             'service_type' => 'ferry',
-            'carrier' => 'Starlite Ferries Inc.',
+            'carrier' => 'Starlite',
             'scope' => 'specific_schedule',
             'schedule_id' => $this->schedule->id,
             'affected_date' => '2026-08-01',
@@ -173,7 +173,7 @@ class ServiceCancellationTest extends TestCase
 
         $cancellation = $manager->finalizeCancellation([
             'service_type' => 'ferry',
-            'carrier' => 'Starlite Ferries Inc.',
+            'carrier' => 'Starlite',
             'scope' => 'specific_schedule',
             'schedule_id' => $this->schedule->id,
             'affected_date' => '2026-08-01',

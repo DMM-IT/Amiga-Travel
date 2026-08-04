@@ -10,7 +10,7 @@
     if (stripos($opName, '2GO') !== false) $opLogo = '2GO-Logo.png';
     elseif (stripos($opName, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
     elseif (stripos($opName, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
-    elseif (stripos($opName, 'Pal') !== false || stripos($opName, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+    elseif (stripos($opName, 'Pal') !== false || stripos($opName, 'Philippine') !== false) $opLogo = 'Pal-Logo.jfif';
     elseif (stripos($opName, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
 
     $safeSelectMethod = is_string($selectMethod) && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $selectMethod) ? $selectMethod : 'selectSchedule';

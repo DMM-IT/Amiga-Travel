@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TransportClassResource\Pages;
 use App\Models\TransportClass;
 use App\Models\User;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
@@ -15,7 +14,6 @@ use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Illuminate\Support\Facades\Auth;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
@@ -82,17 +80,15 @@ class TransportClassResource extends Resource
                 Select::make('operator')
                     ->label('Operator')
                     ->options(fn (callable $get) => match ($get('mode')) {
-                        'airline' => collect(config('airline_seating.operators', []))
-                            ->keys()
-                            ->mapWithKeys(fn ($operator) => [$operator => $operator])
-                            ->toArray(),
-                        'ferry' => \App\Models\Vehicle::query()
-                            ->where('type', 'ferry')
-                            ->where('is_active', true)
-                            ->distinct()
-                            ->orderBy('operator')
-                            ->pluck('operator', 'operator')
-                            ->toArray(),
+                        'airline' => [
+                            'AirAsia' => 'AirAsia',
+                            'Cebu Pacific' => 'Cebu Pacific',
+                            'Philippine Airlines' => 'Philippine Airlines',
+                        ],
+                        'ferry' => [
+                            '2GO' => '2GO',
+                            'Starlite' => 'Starlite',
+                        ],
                         default => [],
                     })
                     ->placeholder('Select operator')
@@ -111,13 +107,6 @@ class TransportClassResource extends Resource
                     ->rows(3)
                     ->columnSpanFull(),
 
-                TextInput::make('price')
-                    ->label('Price (₱)')
-                    ->numeric()
-                    ->prefix('₱')
-                    ->minValue(0)
-                    ->required(),
-
                 Toggle::make('is_active')
                     ->label('Visible to clients when booking')
                     ->default(true),
@@ -130,22 +119,15 @@ class TransportClassResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('images')
-                    ->label('Photo')
-                    ->getStateUsing(fn (TransportClass $record) => $record->cover_image)
-                    ->square(),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('mode')
                     ->label('Mode')
-                    ->formatStateUsing(fn (?string $state): string => $state === 'ferry' ? 'Ferry' : 'Airline')
+                    ->formatStateUsing(fn (?string $state, TransportClass $record): string => operator_is_ferry($record->operator) ? 'Ferry' : ($state === 'ferry' ? 'Ferry' : 'Airline'))
                     ->sortable(),
                 TextColumn::make('operator')
                     ->searchable()
-                    ->sortable(),
-                TextColumn::make('price')
-                    ->money('PHP')
                     ->sortable(),
                 ToggleColumn::make('is_active')
                     ->label('Active'),
@@ -157,25 +139,37 @@ class TransportClassResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('operator')
                     ->label('Operator')
-                    ->options(fn () => TransportClass::query()
-                        ->whereNotNull('operator')
-                        ->where('operator', '!=', '')
-                        ->distinct()
-                        ->orderBy('operator')
-                        ->pluck('operator', 'operator')
-                        ->toArray()
-                    )
+                    ->options([
+                        'AirAsia' => 'AirAsia',
+                        'Cebu Pacific' => 'Cebu Pacific',
+                        'Philippine Airlines' => 'Philippine Airlines',
+                        '2GO' => '2GO',
+                        'Starlite' => 'Starlite',
+                    ])
                     ->placeholder('All Operators')
+                    ->query(function ($query, array $data) {
+                        $operator = $data['operator'] ?? null;
+
+                        if (blank($operator)) {
+                            return;
+                        }
+
+                        $canonical = normalize_operator_name($operator);
+
+                        $query->where(function ($builder) use ($canonical) {
+                            $builder->where('operator', $canonical)
+                                ->orWhere('operator', 'like', "%{$canonical}%");
+                        });
+                    })
                     ->form([
                         ToggleButtons::make('operator')
-                            ->options(fn () => TransportClass::query()
-                                ->whereNotNull('operator')
-                                ->where('operator', '!=', '')
-                                ->distinct()
-                                ->orderBy('operator')
-                                ->pluck('operator', 'operator')
-                                ->toArray()
-                            )
+                            ->options([
+                                'AirAsia' => 'AirAsia',
+                                'Cebu Pacific' => 'Cebu Pacific',
+                                'Philippine Airlines' => 'Philippine Airlines',
+                                '2GO' => '2GO',
+                                'Starlite' => 'Starlite',
+                            ])
                             ->inline()
                             ->grouped(),
                     ]),

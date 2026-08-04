@@ -53,14 +53,13 @@ class BookingLookupCancellationTest extends TestCase
             'client_email' => 'customer@example.com',
             'client_name' => 'Jane Doe',
         ]);
+        $booking->created_at = now()->subMinutes(6);
+        $booking->save();
 
         Transaction::create([
             'booking_id' => $booking->id,
             'payment_status' => 'pending',
         ]);
-
-        session(['cancellation_window_expires_for_' . $booking->transaction_number => now()->subMinute()->timestamp]);
-        session(['cancellation_expired_for_' . $booking->transaction_number => true]);
 
         Livewire::test(BookingLookup::class)
             ->set('transaction_number', $booking->transaction_number)
@@ -91,11 +90,10 @@ class BookingLookupCancellationTest extends TestCase
             'payment_status' => 'pending',
         ]);
 
-        session(['cancellation_window_expires_for_' . $booking->transaction_number => now()->addMinutes(5)->timestamp]);
-
         Livewire::test(BookingLookup::class)
             ->set('transaction_number', $booking->transaction_number)
             ->call('search')
+            ->call('requestCancellation')
             ->assertSet('cancellationWindowActive', true)
             ->assertSet('cancellationRequested', true)
             ->set('refund_destination', 'GCash 09171234567')
@@ -104,11 +102,53 @@ class BookingLookupCancellationTest extends TestCase
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => 'cancelled',
+            'refund_amount' => 1200.0, // 100% refund
         ]);
 
         $this->assertDatabaseHas('transactions', [
             'booking_id' => $booking->id,
             'payment_status' => 'cancelled',
+        ]);
+
+        Mail::assertSent(BookingCancellation::class, function (BookingCancellation $mail) use ($booking): bool {
+            return $mail->hasTo($booking->client_email);
+        });
+    }
+
+    public function test_cancellation_request_after_5_minutes_yields_50_percent_refund(): void
+    {
+        Mail::fake();
+
+        $booking = Booking::create([
+            'transaction_number' => 'AGT-TEST-004',
+            'origin' => 'Cebu',
+            'destination' => 'Bohol',
+            'departure_date' => now()->toDateString(),
+            'status' => 'pending',
+            'total_price' => 1200,
+            'client_email' => 'customer@example.com',
+            'client_name' => 'Jane Doe',
+        ]);
+        $booking->created_at = now()->subMinutes(6);
+        $booking->save();
+
+        Transaction::create([
+            'booking_id' => $booking->id,
+            'payment_status' => 'pending',
+        ]);
+
+        Livewire::test(BookingLookup::class)
+            ->set('transaction_number', $booking->transaction_number)
+            ->call('search')
+            ->call('requestCancellation')
+            ->assertSet('cancellationExpired', true)
+            ->set('refund_destination', 'GCash 09171234567')
+            ->call('confirmCancellation');
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'cancelled',
+            'refund_amount' => 600.0, // 50% refund
         ]);
 
         Mail::assertSent(BookingCancellation::class, function (BookingCancellation $mail) use ($booking): bool {

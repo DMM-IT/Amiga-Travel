@@ -20,7 +20,7 @@ DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
 // Define transport classes per airline
 $airlineClasses = [
-    'Philippine Airlines' => [
+    'Philippine Airline' => [
         [
             'name' => 'Economy Class',
             'description' => 'Standard seating with personal entertainment screens or USB charging.',

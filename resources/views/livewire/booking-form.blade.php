@@ -212,7 +212,7 @@
                                             if (stripos($operator, '2GO') !== false) $selectedOpLogo = '2GO-Logo.png';
                                             elseif (stripos($operator, 'Starlite') !== false) $selectedOpLogo = 'Starlite_Logo.png';
                                             elseif (stripos($operator, 'Cebu') !== false) $selectedOpLogo = 'CebuPecific-Logo.png';
-                                            elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $selectedOpLogo = 'Pal-Logo.jfif';
+                                            elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine') !== false) $selectedOpLogo = 'Pal-Logo.jfif';
                                             elseif (stripos($operator, 'AirAsia') !== false) $selectedOpLogo = 'AirAsia-Logo.png';
                                         }
                                     @endphp
@@ -253,7 +253,7 @@
                                                         if (stripos($op, '2GO') !== false) $opLogo = '2GO-Logo.png';
                                                         elseif (stripos($op, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
                                                         elseif (stripos($op, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
-                                                        elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine Airlines') !== false) $opLogo = 'Pal-Logo.jfif';
+                                                        elseif (stripos($op, 'Pal') !== false || stripos($op, 'Philippine') !== false) $opLogo = 'Pal-Logo.jfif';
                                                         elseif (stripos($op, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
                                                     @endphp
                                                     <button type="button" wire:click.prevent="selectOperator('{{ $op }}')" class="w-full rounded-lg px-4 py-3 text-left text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 {{ $operator === $op ? 'bg-slate-50 font-semibold' : '' }}">
@@ -1395,7 +1395,7 @@
                                             if (stripos($operator, '2GO') !== false) $depOpLogo = '2GO-Logo.png';
                                             elseif (stripos($operator, 'Starlite') !== false) $depOpLogo = 'Starlite_Logo.png';
                                             elseif (stripos($operator, 'Cebu') !== false) $depOpLogo = 'CebuPecific-Logo.png';
-                                            elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $depOpLogo = 'Pal-Logo.jfif';
+                                            elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine') !== false) $depOpLogo = 'Pal-Logo.jfif';
                                             elseif (stripos($operator, 'AirAsia') !== false) $depOpLogo = 'AirAsia-Logo.png';
                                         }
                                     @endphp
@@ -1445,7 +1445,7 @@
                                                 if (stripos($operator, '2GO') !== false) $retOpLogo = '2GO-Logo.png';
                                                 elseif (stripos($operator, 'Starlite') !== false) $retOpLogo = 'Starlite_Logo.png';
                                                 elseif (stripos($operator, 'Cebu') !== false) $retOpLogo = 'CebuPecific-Logo.png';
-                                                elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false) $retOpLogo = 'Pal-Logo.jfif';
+                                                elseif (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine') !== false) $retOpLogo = 'Pal-Logo.jfif';
                                                 elseif (stripos($operator, 'AirAsia') !== false) $retOpLogo = 'AirAsia-Logo.png';
                                             }
                                         @endphp
@@ -1694,7 +1694,7 @@
                                     if ($operator && stripos($operator, '2GO') !== false) $opLogo = '2GO-Logo.png';
                                     elseif ($operator && stripos($operator, 'Starlite') !== false) $opLogo = 'Starlite_Logo.png';
                                     elseif ($operator && stripos($operator, 'Cebu') !== false) $opLogo = 'CebuPecific-Logo.png';
-                                    elseif ($operator && (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine Airlines') !== false)) $opLogo = 'Pal-Logo.jfif';
+                                    elseif ($operator && (stripos($operator, 'Pal') !== false || stripos($operator, 'Philippine') !== false)) $opLogo = 'Pal-Logo.jfif';
                                     elseif ($operator && stripos($operator, 'AirAsia') !== false) $opLogo = 'AirAsia-Logo.png';
                                 @endphp
                                 @if($opLogo)

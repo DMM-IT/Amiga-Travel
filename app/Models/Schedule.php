@@ -290,14 +290,16 @@ class Schedule extends Model
 
         $normalizedOperator = strtolower(trim($operator));
         $operatorAliases = [
-            'pal' => 'Philippine Airlines',
-            'philippine airlines' => 'Philippine Airlines',
-            'philippine airlines (pal)' => 'Philippine Airlines',   // <-- ADD
+            'pal' => 'Philippine Airline',
+            'philippine airline' => 'Philippine Airline',
+            'philippine airline (pal)' => 'Philippine Airline',
+            'philippine airlines' => 'Philippine Airline',
+            'philippine airlines (pal)' => 'Philippine Airline',   // <-- ADD
             'cebu pacific' => 'Cebu Pacific',
             'cebu pacific air' => 'Cebu Pacific',                   // <-- ADD
-            'philippine airasia' => 'Philippine AirAsia',
-            'philippines airasia' => 'Philippine AirAsia',          // <-- ADD
-            'airasia' => 'Philippine AirAsia',
+            'philippine airasia' => 'AirAsia',
+            'philippines airasia' => 'AirAsia',          // <-- ADD
+            'airasia' => 'AirAsia',
             'cebpac' => 'Cebu Pacific',
             'cebgo' => 'Cebu Pacific',
         ];
@@ -483,6 +485,7 @@ class Schedule extends Model
                 ->map(fn (ScheduleAccommodation $accommodation) => [
                     'id' => $accommodation->id,
                     'name' => $accommodation->name,
+                    'rate_code' => $accommodation->rate_code,
                     'description' => $accommodation->description,
                     'price' => floatval($accommodation->price),
                     'has_bed' => (bool) $accommodation->has_bed,

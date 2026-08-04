@@ -20,12 +20,12 @@ class RouteScheduleSeeder extends Seeder
     {
         DB::transaction(function () {
             $routesData = [
-                // 1. Calapan <-> Batangas (Starlite Ferries Inc.)
+                // 1. Calapan <-> Batangas (Starlite)
                 [
                     'origin' => 'Calapan',
                     'destination' => 'Batangas',
                     'mode' => 'ferry',
-                    'operator' => 'Starlite Ferries Inc.',
+                    'operator' => 'Starlite',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'Starlite Eagle', 'vehicle_name' => 'MV Starlite Eagle', 'plate_no' => 'STE-101', 'dep_time' => '08:00:00', 'duration' => 120, 'price' => 450.00],
@@ -43,7 +43,7 @@ class RouteScheduleSeeder extends Seeder
                     'origin' => 'Batangas',
                     'destination' => 'Calapan',
                     'mode' => 'ferry',
-                    'operator' => 'Starlite Ferries Inc.',
+                    'operator' => 'Starlite',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'Starlite Eagle', 'vehicle_name' => 'MV Starlite Eagle', 'plate_no' => 'STE-101', 'dep_time' => '08:00:00', 'duration' => 120, 'price' => 450.00],
@@ -58,12 +58,12 @@ class RouteScheduleSeeder extends Seeder
                     ],
                 ],
 
-                // 2. Batangas <-> Caticlan (2GO Travel)
+                // 2. Batangas <-> Caticlan (2GO)
                 [
                     'origin' => 'Batangas',
                     'destination' => 'Caticlan',
                     'mode' => 'ferry',
-                    'operator' => '2GO Travel',
+                    'operator' => '2GO',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'MV 2GO Maligaya', 'vehicle_name' => 'MV 2GO Maligaya', 'plate_no' => '2GO-201', 'dep_time' => '09:00:00', 'duration' => 540, 'price' => 1200.00],
@@ -80,7 +80,7 @@ class RouteScheduleSeeder extends Seeder
                     'origin' => 'Caticlan',
                     'destination' => 'Batangas',
                     'mode' => 'ferry',
-                    'operator' => '2GO Travel',
+                    'operator' => '2GO',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'MV 2GO Maligaya', 'vehicle_name' => 'MV 2GO Maligaya', 'plate_no' => '2GO-201', 'dep_time' => '09:00:00', 'duration' => 540, 'price' => 1200.00],
@@ -94,12 +94,12 @@ class RouteScheduleSeeder extends Seeder
                     ],
                 ],
 
-                // 3. Manila <-> Cebu (2GO Travel)
+                // 3. Manila <-> Cebu (2GO)
                 [
                     'origin' => 'Manila',
                     'destination' => 'Cebu',
                     'mode' => 'ferry',
-                    'operator' => '2GO Travel',
+                    'operator' => '2GO',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'MV St. Michael the Archangel', 'vehicle_name' => 'MV St. Michael the Archangel', 'plate_no' => 'SMA-301', 'dep_time' => '10:00:00', 'duration' => 1320, 'price' => 1800.00],
@@ -116,7 +116,7 @@ class RouteScheduleSeeder extends Seeder
                     'origin' => 'Cebu',
                     'destination' => 'Manila',
                     'mode' => 'ferry',
-                    'operator' => '2GO Travel',
+                    'operator' => '2GO',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'MV St. Michael the Archangel', 'vehicle_name' => 'MV St. Michael the Archangel', 'plate_no' => 'SMA-301', 'dep_time' => '10:00:00', 'duration' => 1320, 'price' => 1800.00],
@@ -130,12 +130,12 @@ class RouteScheduleSeeder extends Seeder
                     ],
                 ],
 
-                // 4. Roxas <-> Caticlan (Starlite Ferries Inc.)
+                // 4. Roxas <-> Caticlan (Starlite)
                 [
                     'origin' => 'Roxas',
                     'destination' => 'Caticlan',
                     'mode' => 'ferry',
-                    'operator' => 'Starlite Ferries Inc.',
+                    'operator' => 'Starlite',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'Starlite Archer', 'vehicle_name' => 'MV Starlite Archer', 'plate_no' => 'STA-401', 'dep_time' => '06:00:00', 'duration' => 240, 'price' => 800.00],
@@ -151,7 +151,7 @@ class RouteScheduleSeeder extends Seeder
                     'origin' => 'Caticlan',
                     'destination' => 'Roxas',
                     'mode' => 'ferry',
-                    'operator' => 'Starlite Ferries Inc.',
+                    'operator' => 'Starlite',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'Starlite Archer', 'vehicle_name' => 'MV Starlite Archer', 'plate_no' => 'STA-401', 'dep_time' => '06:00:00', 'duration' => 240, 'price' => 800.00],
@@ -203,7 +203,7 @@ class RouteScheduleSeeder extends Seeder
                     'origin' => 'Manila',
                     'destination' => 'Davao',
                     'mode' => 'airline',
-                    'operator' => 'Philippine Airlines',
+                    'operator' => 'Philippine Airline',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'PR 1813', 'vehicle_name' => 'Airbus A320', 'plate_no' => 'RP-P3201', 'dep_time' => '06:00:00', 'duration' => 110, 'price' => 3500.00],
@@ -219,7 +219,7 @@ class RouteScheduleSeeder extends Seeder
                     'origin' => 'Davao',
                     'destination' => 'Manila',
                     'mode' => 'airline',
-                    'operator' => 'Philippine Airlines',
+                    'operator' => 'Philippine Airline',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'PR 1814', 'vehicle_name' => 'Airbus A320', 'plate_no' => 'RP-P3201', 'dep_time' => '08:30:00', 'duration' => 110, 'price' => 3500.00],
@@ -232,12 +232,12 @@ class RouteScheduleSeeder extends Seeder
                     ],
                 ],
 
-                // 7. Manila <-> Boracay (Caticlan) (Philippine AirAsia)
+                // 7. Manila <-> Boracay (Caticlan) (AirAsia)
                 [
                     'origin' => 'Manila',
                     'destination' => 'Boracay (Caticlan)',
                     'mode' => 'airline',
-                    'operator' => 'Philippine AirAsia',
+                    'operator' => 'AirAsia',
                     'trip_type' => 'local',
                     'schedules' => [
                         ['service_name' => 'Z2 221', 'vehicle_name' => 'Airbus A320', 'plate_no' => 'RP-A3201', 'dep_time' => '09:15:00', 'duration' => 65, 'price' => 2200.00],

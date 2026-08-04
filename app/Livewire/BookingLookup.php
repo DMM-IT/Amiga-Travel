@@ -147,9 +147,7 @@ class BookingLookup extends Component
         $this->resetRebookingState();
         $this->showCancellationWarning = true;
         $this->feedback = 'Please confirm that you want to start cancellation. This will begin a 5-minute confirmation timer and lock in a 50% refund.';
-    }
-
-    public function requestCancellation(): void
+    }    public function requestCancellation(): void
     {
         if (! $this->booking) {
             $this->feedback = 'Booking not found.';
@@ -170,26 +168,27 @@ class BookingLookup extends Component
         $this->showCancellationWarning = false;
         $this->showCancellationReminder = false;
 
-        if ($this->cancellationExpired || $this->cancellationWindowActive) {
-            $this->feedback = 'The 5-minute cancellation window has already been used or expired.';
-            return;
-        }
-
         $this->cancellationRequested = true;
         $this->cancellationWindowActive = true;
-        $this->cancellationExpired = false;
-        $this->cancelCountdown = 300;
+
+        $expiresAt = $this->booking->created_at->addMinutes(5);
+        $remaining = $expiresAt->timestamp - now()->timestamp;
+
+        if ($remaining <= 0) {
+            $this->cancellationExpired = true;
+            $this->cancelCountdown = 0;
+            $this->feedback = 'Cancellation is eligible for a 50% refund.';
+        } else {
+            $this->cancellationExpired = false;
+            $this->cancelCountdown = $remaining;
+            $this->feedback = 'Enter where you would like the refund sent. Cancellation is eligible for a 100% refund within 5 minutes of booking.';
+        }
+
         $this->refund_destination = null;
         $this->refund_method = 'GCash';
         $this->refund_bank_name = '';
         $this->refund_account_number = '';
         $this->refund_account_name = '';
-
-        $key = $this->getCancellationSessionKey();
-        session([$key => now()->addSeconds($this->cancelCountdown)->timestamp]);
-        session()->forget($this->getCancellationExpiredKey());
-
-        $this->feedback = 'A 5-minute cancellation window has started. Confirm cancellation before it expires.';
     }
 
     public function dismissCancellationReminder(): void
@@ -199,70 +198,12 @@ class BookingLookup extends Component
 
     public function confirmCancellationRequest(): void
     {
-        $this->resetRebookingState();
-        $this->showCancellationWarning = false;
-
-        if ($this->cancellationExpired || $this->cancellationWindowActive) {
-            $this->feedback = 'The 5-minute cancellation window is already active or has expired.';
-            return;
-        }
-
-        $this->cancellationRequested = true;
-        $this->cancellationWindowActive = true;
-        $this->cancellationExpired = false;
-        $this->cancelCountdown = 300;
-        $this->refund_destination = null;
-        $this->refund_method = 'GCash';
-        $this->refund_bank_name = '';
-        $this->refund_account_number = '';
-        $this->refund_account_name = '';
-        $this->feedback = 'Enter where you would like the refund sent. Cancellation fee is 50% of total price, you will receive a 50% refund.';
-
-        $key = $this->getCancellationSessionKey();
-        session([$key => now()->addSeconds($this->cancelCountdown)->timestamp]);
-        session()->forget($this->getCancellationExpiredKey());
+        $this->requestCancellation();
     }
 
     public function cancelBooking(): void
     {
         $this->requestCancellation();
-    }
-
-
-    public function startCancellationWindow(): void
-    {
-        if (! $this->cancellationRequested) {
-            return;
-        }
-
-        $rules = [
-            'refund_method' => 'required|string|in:GCash,Online Wallet,Bank Account',
-            'refund_account_number' => 'required|string|max:50',
-            'refund_account_name' => 'required|string|max:100',
-        ];
-
-        if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
-            $rules['refund_bank_name'] = 'required|string|max:100';
-        }
-
-        $this->validate($rules);
-
-        // Compile the refund destination string
-        $destinationParts = [];
-        $destinationParts[] = "Method: " . $this->refund_method;
-        if (in_array($this->refund_method, ['Bank Account', 'Online Wallet'], true)) {
-            $destinationParts[] = "Institution: " . $this->refund_bank_name;
-        }
-        $destinationParts[] = "Account No: " . $this->refund_account_number;
-        $destinationParts[] = "Name: " . $this->refund_account_name;
-        $this->refund_destination = implode(' | ', $destinationParts);
-
-        $this->cancellationWindowActive = true;
-        $this->cancelCountdown = 300;
-        $this->feedback = 'Cancellation timer started. You have 5 minutes to confirm the cancellation.';
-        // persist expiry in session so navigation doesn't lose it
-        $key = 'cancellation_window_expires_for_' . $this->transaction_number;
-        session([$key => now()->addSeconds($this->cancelCountdown)->timestamp]);
     }
 
     public function confirmCancellation(): void
@@ -299,7 +240,6 @@ class BookingLookup extends Component
 
         if (! $this->booking) {
             $this->feedback = 'Booking not found.';
-
             return;
         }
 
@@ -310,18 +250,18 @@ class BookingLookup extends Component
 
         if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
-
             return;
         }
 
-        if (! $this->cancellationWindowActive || $this->cancelCountdown === 0) {
-            $this->feedback = 'Cancellation window is not active. Click Done to start the 5-minute confirmation window.';
-
-            return;
+        // Calculate refund percentage based on creation time:
+        $isWithinFiveMinutes = $this->booking->created_at->addMinutes(5)->isFuture();
+        if ($isWithinFiveMinutes) {
+            $cancellationFee = 0.0;
+            $refundAmount = $this->booking->total_price;
+        } else {
+            $cancellationFee = $this->booking->total_price * 0.5;
+            $refundAmount = $this->booking->total_price * 0.5;
         }
-
-        $cancellationFee = $this->booking->getCancellationFeeAmount();
-        $refundAmount = $this->booking->getRefundAmount();
 
         $this->booking->update([
             'status' => 'cancelled',
@@ -348,35 +288,19 @@ class BookingLookup extends Component
 
     public function tickCancelCountdown(): void
     {
-        if (! $this->cancellationWindowActive) {
+        if (! $this->booking) {
             return;
         }
 
-        $key = $this->getCancellationSessionKey();
-        $expires = session($key);
-
-        if (! $expires) {
-            $this->cancellationWindowActive = false;
-            $this->cancellationExpired = true;
-            $this->cancelCountdown = 0;
-            session([$this->getCancellationExpiredKey() => true]);
-            return;
-        }
-
-        $remaining = $expires - now()->timestamp;
+        $remaining = $this->booking->created_at->addMinutes(5)->timestamp - now()->timestamp;
 
         if ($remaining <= 0) {
             $this->cancelCountdown = 0;
-            $this->cancellationWindowActive = false;
             $this->cancellationExpired = true;
-            $this->cancellationRequested = false;
-            session()->forget($key);
-            session([$this->getCancellationExpiredKey() => true]);
-            $this->feedback = 'The 5-minute cancellation window has expired. You can no longer cancel this booking.';
-            return;
+        } else {
+            $this->cancelCountdown = $remaining;
+            $this->cancellationExpired = false;
         }
-
-        $this->cancelCountdown = $remaining;
     }
 
     public function cancelCancellationRequest(): void
@@ -654,39 +578,18 @@ class BookingLookup extends Component
 
     private function loadCancellationWindowFromSession(): void
     {
-        // Check persistent expired marker first — this survives page refreshes
-        if (session($this->getCancellationExpiredKey())) {
+        if (! $this->booking) {
+            return;
+        }
+
+        $remaining = $this->booking->created_at->addMinutes(5)->timestamp - now()->timestamp;
+        if ($remaining <= 0) {
             $this->cancellationExpired = true;
-            $this->cancellationWindowActive = false;
-            $this->cancellationRequested = false;
-            $this->showCancellationWarning = false;
-            $this->showCancellationReminder = false;
-            return;
+            $this->cancelCountdown = 0;
+        } else {
+            $this->cancellationExpired = false;
+            $this->cancelCountdown = $remaining;
         }
-
-        $key = $this->getCancellationSessionKey();
-        $expires = session($key);
-
-        if (! $expires) {
-            return;
-        }
-
-        if (now()->timestamp >= $expires) {
-            // Window has expired — mark it permanently
-            session()->forget($key);
-            session([$this->getCancellationExpiredKey() => true]);
-            $this->cancellationExpired = true;
-            $this->cancellationWindowActive = false;
-            $this->cancellationRequested = false;
-            $this->showCancellationWarning = false;
-            $this->showCancellationReminder = false;
-            $this->feedback = 'The cancellation window has expired. This booking can no longer be cancelled.';
-            return;
-        }
-
-        $this->cancellationRequested = true;
-        $this->cancellationWindowActive = true;
-        $this->cancelCountdown = max(0, $expires - now()->timestamp);
     }
 
     private function resetCancellationState(): void

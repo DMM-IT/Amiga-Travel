@@ -294,10 +294,10 @@
              activeRoutes: window.AMIGA_ACTIVE_ROUTES || [],
              popularPorts: ['Batangas', 'Calapan', 'Caticlan', 'Odiongan', 'Manila', 'Cebu', 'Puerto Princesa', 'Roxas'],
              operatorsList: [
-                 { name: '2GO Travel', value: '2GO Travel', logo: '{{ asset('images/2GO-Logo.png') }}', mode: 'ferry' },
-                 { name: 'Starlite Ferries Inc.', value: 'Starlite Ferries Inc.', logo: '{{ asset('images/Starlite_Logo.png') }}', mode: 'ferry' },
+                 { name: '2GO', value: '2GO', logo: '{{ asset('images/2GO-Logo.png') }}', mode: 'ferry' },
+                 { name: 'Starlite', value: 'Starlite', logo: '{{ asset('images/Starlite_Logo.png') }}', mode: 'ferry' },
                  { name: 'Cebu Pacific', value: 'Cebu Pacific', logo: '{{ asset('images/CebuPecific-Logo.png') }}', mode: 'airline' },
-                 { name: 'Philippine Airlines', value: 'Philippine Airlines', logo: '{{ asset('images/Pal-Logo.jfif') }}', mode: 'airline' },
+                 { name: 'Philippine Airline', value: 'Philippine Airline', logo: '{{ asset('images/Pal-Logo.jfif') }}', mode: 'airline' },
                  { name: 'AirAsia', value: 'AirAsia', logo: '{{ asset('images/AirAsia-Logo.png') }}', mode: 'airline' }
              ],
              get filteredOperatorsList() {
@@ -1378,34 +1378,32 @@
             $bookingCards = data_get($pageContent, 'content.booking_cards', data_get($pageContent, 'booking_cards', []));
             $defaultBookingCards = [
                 [
-                    'title' => '2GO Travel',
-                    'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel.',
-                    'image' => 'images/2GO-Logo.png',
-                    'booking_button_text' => 'Book Now',
-                    'link' => '/book/new?operator=' . urlencode('2GO Travel') . '&trip_type=one_way&mode=ferry',
-                ],
-                [
-                    'title' => 'Starlite Ferries Inc.',
-                    'description' => 'Affordable regional ferry departures between Batangas, Calapan, and Roxas.',
-                    'image' => 'images/Starlite_Logo.png',
-                    'booking_button_text' => 'Book Now',
-                    'link' => '/book/new?operator=' . urlencode('Starlite Ferries Inc.') . '&trip_type=one_way&mode=ferry',
-                ],
-                [
-                    'title' => 'Cebu Pacific',
-                    'description' => 'Search daily flights and budget fares across the Philippines and Asia.',
-                    'image' => 'images/CebuPecific-Logo.png',
-                    'booking_button_text' => 'Book Now',
-                    'link' => '/book/new?operator=' . urlencode('Cebu Pacific') . '&trip_type=one_way&mode=airline',
-                ],
-                [
-                    'title' => 'Philippine Airlines',
-                    'description' => 'Book Philippine Airlines flights with premium support and flexible fare options.',
-                    'image' => 'images/Pal-Logo.jfif',
-                    'booking_button_text' => 'Book Now',
-                    'link' => '/book/new?operator=' . urlencode('Philippine Airlines') . '&trip_type=one_way&mode=airline',
-                ],
-                [
+                        'title' => '2GO',
+                        'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO.',
+                        'image' => 'images/2GO-Logo.png',
+                        'booking_button_text' => 'Book Now',
+                        'link' => '/book/new?operator=' . urlencode('2GO') . '&trip_type=one_way&mode=ferry',
+                    ],
+                    [
+                        'title' => 'Starlite',
+                        'description' => 'Affordable regional ferry departures between Batangas, Calapan, and Roxas.',
+                        'image' => 'images/Starlite_Logo.png',
+                        'booking_button_text' => 'Book Now',
+                        'link' => '/book/new?operator=' . urlencode('Starlite') . '&trip_type=one_way&mode=ferry',
+                    ],
+                    [
+                        'title' => 'Cebu Pacific',
+                        'description' => 'Search daily flights and budget fares across the Philippines and Asia.',
+                        'image' => 'images/CebuPecific-Logo.png',
+                        'booking_button_text' => 'Book Now',
+                        'link' => '/book/new?operator=' . urlencode('Cebu Pacific') . '&trip_type=one_way&mode=airline',
+                    ],
+                    [
+                        'title' => 'Philippine Airline',
+                        'description' => 'Book Philippine Airline flights with premium support and flexible fare options.',
+                        'image' => 'images/Pal-Logo.jfif',
+                        'booking_button_text' => 'Book Now',
+                        'link' => '/book/new?operator=' . urlencode('Philippine Airline') . '&trip_type=one_way&mode=airline',
                     'title' => 'AirAsia',
                     'description' => 'Find low-cost airline tickets and convenient domestic connections.',
                     'image' => 'images/AirAsia-Logo.png',

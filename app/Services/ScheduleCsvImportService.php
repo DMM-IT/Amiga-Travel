@@ -246,6 +246,7 @@ class ScheduleCsvImportService
         $returnDateStr = $this->getValue($row, ['returndate', 'retdate']);
         $transportClassStr = $this->getValue($row, ['transportclass', 'class', 'accommodation']);
         $rateRaw = $this->getValue($row, ['rate', 'price', 'fare']);
+        $rateCodeStr = $this->getValue($row, ['ratecode', 'rate_code', 'code']);
 
         if (blank($origin) || blank($destination) || blank($depDateStr) || blank($depTimeStr)) {
             throw new \InvalidArgumentException('Missing required fields (Origin, Destination, Departure Date, or Departure Time).');
@@ -257,6 +258,7 @@ class ScheduleCsvImportService
         $vehicleTailNo = filled($vehicleTailNo) ? trim($vehicleTailNo) : ($mode === 'airline' ? "{$operator} Aircraft" : "{$operator} Vessel");
         $transportClassStr = filled($transportClassStr) ? trim($transportClassStr) : ($mode === 'airline' ? 'Economy' : 'Standard');
         $rate = floatval(preg_replace('/[^0-9.]/', '', $rateRaw ?? '0'));
+        $rateCode = filled($rateCodeStr) ? trim($rateCodeStr) : null;
 
         // 1. Resolve or Create Vehicle
         $vehicle = Vehicle::where('type', $mode)
@@ -370,7 +372,10 @@ class ScheduleCsvImportService
                 }
             }
         } else {
-            $accommodationExists = $schedule->scheduleAccommodations()->where('name', $transportClassStr)->exists();
+            $accommodationExists = $schedule->scheduleAccommodations()
+                ->where('name', $transportClassStr)
+                ->where('rate_code', $rateCode)
+                ->exists();
 
             if ($accommodationExists && ! $scheduleCreated) {
                 $status = 'skipped';
@@ -379,6 +384,7 @@ class ScheduleCsvImportService
                     ScheduleAccommodation::create([
                         'schedule_id' => $schedule->id,
                         'name' => $transportClassStr,
+                        'rate_code' => $rateCode,
                         'price' => $rate,
                         'tickets_available' => 50,
                         'is_active' => true,
@@ -390,7 +396,7 @@ class ScheduleCsvImportService
 
         // 6. Handle optional Return Date if present
         if (filled($returnDateStr)) {
-            $this->processReturnSchedule($route, $vehicleTailNo, $plateNo, $operator, $mode, trim($returnDateStr), $depTimeStrClean, $arrTimeStr, $transportClassStr, $rate);
+            $this->processReturnSchedule($route, $vehicleTailNo, $plateNo, $operator, $mode, trim($returnDateStr), $depTimeStrClean, $arrTimeStr, $transportClassStr, $rate, $rateCode);
         }
 
         return $status;
@@ -409,7 +415,8 @@ class ScheduleCsvImportService
         string $depTimeStr,
         ?string $arrTimeStr,
         string $transportClassStr,
-        float $rate
+        float $rate,
+        ?string $rateCode = null
     ): void {
         $returnRoute = FerryRoute::where('origin', $forwardRoute->destination)
             ->where('destination', $forwardRoute->origin)
@@ -468,10 +475,11 @@ class ScheduleCsvImportService
                 ]);
             }
         } else {
-            if (! $schedule->scheduleAccommodations()->where('name', $transportClassStr)->exists()) {
+            if (! $schedule->scheduleAccommodations()->where('name', $transportClassStr)->where('rate_code', $rateCode)->exists()) {
                 ScheduleAccommodation::create([
                     'schedule_id' => $schedule->id,
                     'name' => $transportClassStr,
+                    'rate_code' => $rateCode,
                     'price' => $rate,
                     'tickets_available' => 50,
                     'is_active' => true,
@@ -482,12 +490,12 @@ class ScheduleCsvImportService
     }
 
     /**
-     * Helper to normalize operator names (e.g. AirAsia -> Philippines AirAsia).
+     * Helper to normalize operator names to canonical values (e.g. AirAsia -> AirAsia).
      */
     protected function normalizeOperatorName(?string $operator, string $mode): string
     {
         if (blank($operator)) {
-            return $mode === 'airline' ? 'Philippine AirAsia' : 'Standard Ferry';
+            return $mode === 'airline' ? 'AirAsia' : '2GO';
         }
 
         $clean = trim($operator);
@@ -495,17 +503,17 @@ class ScheduleCsvImportService
 
         if ($mode === 'airline') {
             if (str_contains($lower, 'airasia')) {
-                return 'Philippine AirAsia';
+                return 'AirAsia';
             }
             if (str_contains($lower, 'cebu') || str_contains($lower, 'ceb')) {
-                return 'Cebu Pacific Air';
+                return 'Cebu Pacific';
             }
             if (str_contains($lower, 'philippine') || str_contains($lower, 'pal')) {
-                return 'Philippine Airlines (PAL)';
+                return 'Philippine Airline';
             }
         }
 
-        return $clean;
+        return normalize_operator_name($clean) ?? $clean;
     }
 
     /**

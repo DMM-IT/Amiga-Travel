@@ -106,9 +106,20 @@
 
                                     <div class="mt-4 space-y-4 text-sm text-slate-700">
                                         @if($showCancellationWarning)
-                                            <p>This booking is eligible for cancellation. Confirming will start a 5-minute confirmation timer and lock in a 50% refund. You will then need to complete refund details.</p>
+                                            <p>
+                                                This booking is eligible for cancellation. 
+                                                @if(! $cancellationExpired)
+                                                    Confirming will allow you to request a 100% refund.
+                                                @else
+                                                    Confirming will allow you to request a 50% refund.
+                                                @endif
+                                            </p>
                                             <div class="rounded-2xl border border-pink-100 bg-pink-50 p-3 text-sm text-pink-700">
-                                                Cancellation fee: 50% of total price.
+                                                @if(! $cancellationExpired)
+                                                    Cancellation fee: 0% (₱0.00).
+                                                @else
+                                                    Cancellation fee: 50% of total price.
+                                                @endif
                                             </div>
                                         @else
                                             <ul class="space-y-2 list-disc pl-5">
@@ -274,13 +285,9 @@
                                                         Cancel Booking
                                                     </button>
                                                 @else
-                                                    <div class="flex flex-col gap-1">
-                                                        <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-400 shadow-sm cursor-not-allowed">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                                            Cancel Booking
-                                                        </button>
-                                                        <p class="text-xs text-slate-500">Timer expired — cancellation unavailable.</p>
-                                                    </div>
+                                                    <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-rose-500 px-6 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
+                                                        Refund
+                                                    </button>
                                                 @endif
                                                 <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
                                                     Rebook
@@ -298,18 +305,39 @@
                                 </div>
 
                                 @if($cancellationRequested)
-                                    @if($cancellationExpired)
-                                        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                                            <p class="text-sm font-semibold text-amber-800">Cancellation window expired</p>
-                                            <p class="mt-2 text-sm text-amber-700">The 5-minute cancellation window has ended. You can no longer cancel this booking.</p>
+                                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4" @if(! $cancellationExpired) wire:poll.1s="tickCancelCountdown" @endif>
+                                        <div class="flex items-center justify-between gap-2 border-b border-amber-200/60 pb-3 mb-3">
+                                            <div>
+                                                <p class="text-sm font-bold text-amber-800">
+                                                    @if(! $cancellationExpired)
+                                                        100% Refund Window Active
+                                                    @else
+                                                        50% Refund Active
+                                                    @endif
+                                                </p>
+                                                <p class="mt-1 text-xs text-amber-700">
+                                                    @if(! $cancellationExpired)
+                                                        Confirm cancellation to receive a 100% refund. Cancellation is free within 5 minutes of booking.
+                                                    @else
+                                                        The 100% refund window has expired. You are eligible for a 50% refund.
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            @if(! $cancellationExpired)
+                                                <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700 shrink-0">
+                                                    {{ gmdate('i:s', max(0, $cancelCountdown)) }}
+                                                </span>
+                                            @endif
                                         </div>
-                                    @elseif(! $cancellationWindowActive)
-                                        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                                            <p class="text-sm font-semibold text-amber-800">Cancellation</p>
-                                            <p class="mt-2 text-sm text-amber-700">Select your refund method and fill in your details. Cancellation fee: 50% of total price (₱{{ number_format($booking->getCancellationFeeAmount(), 2) }}), Refund amount: 50% (₱{{ number_format($booking->getRefundAmount(), 2) }}).</p>
 
+                                        {{-- Show compiled destination as read-only summary --}}
+                                        @if(filled($refund_destination) && blank($refund_account_number))
+                                            <div class="mt-3 rounded-xl bg-white border border-amber-100 px-4 py-3">
+                                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Refund will be sent to</p>
+                                                <p class="text-sm text-slate-800">{{ $refund_destination }}</p>
+                                            </div>
+                                        @else
                                             <div class="mt-3 space-y-3">
-                                                {{-- Refund Method Dropdown --}}
                                                 <div>
                                                     <label class="mb-1 block text-sm font-medium text-slate-700">Refund Method</label>
                                                     <select wire:model="refund_method" class="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;">
@@ -353,91 +381,24 @@
                                                     @error('refund_account_name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
                                                 </div>
                                             </div>
+                                        @endif
 
-                                            <div class="mt-4 flex flex-wrap gap-3">
-                                                <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                                                    Cancel Request
-                                                </button>
-                                                <button wire:click.prevent="confirmRebookingRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
-                                                    Switch to Rebook
-                                                </button>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4" wire:poll.1s="tickCancelCountdown">
-                                            <div class="flex items-center justify-between gap-2">
-                                                <div>
-                                                    <p class="text-sm font-semibold text-amber-800">Cancellation active</p>
-                                                    <p class="mt-1 text-sm text-amber-700">Confirm within the next 5 minutes to cancel your booking. Refund is 50% of total price.</p>
-                                                </div>
-                                                <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700">
-                                                    {{ gmdate('i:s', max(0, $cancelCountdown)) }}
-                                                </span>
-                                            </div>
-
-                                            {{-- Show compiled destination as read-only summary --}}
-                                            @if(filled($refund_destination))
-                                            <div class="mt-3 rounded-xl bg-white border border-amber-100 px-4 py-3">
-                                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Refund will be sent to</p>
-                                                <p class="text-sm text-slate-800">{{ $refund_destination }}</p>
-                                            </div>
-                                            @else
-                                            <div class="mt-3 space-y-3">
-                                                <div>
-                                                    <label class="mb-1 block text-sm font-medium text-slate-700">Refund Method</label>
-                                                    <select wire:model="refund_method" class="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;">
-                                                        <option value="GCash">GCash</option>
-                                                        <option value="Online Wallet">Online Wallet</option>
-                                                        <option value="Bank Account">Bank Account</option>
-                                                    </select>
-                                                    @error('refund_method')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                                </div>
-                                                @if(in_array($refund_method, ['Bank Account', 'Online Wallet']))
-                                                <div>
-                                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $refund_method === 'Bank Account' ? 'Bank Name' : 'Wallet Provider' }}</label>
-                                                    <input type="text" wire:model.defer="refund_bank_name"
-                                                        placeholder="{{ $refund_method === 'Bank Account' ? 'e.g. BDO, BPI, Metrobank' : 'e.g. Maya, PayMaya, GrabPay' }}"
-                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
-                                                    @error('refund_bank_name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                                </div>
-                                                @endif
-                                                <div>
-                                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $refund_method === 'GCash' ? 'GCash Number' : 'Account Number' }}</label>
-                                                    <input type="text" wire:model.defer="refund_account_number"
-                                                        placeholder="{{ $refund_method === 'GCash' ? 'e.g. 0917xxxxxxx' : 'e.g. 1234-5678-9012' }}"
-                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
-                                                    @error('refund_account_number')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                                </div>
-                                                <div>
-                                                    <label class="mb-1 block text-sm font-medium text-slate-700">Account Name</label>
-                                                    <input type="text" wire:model.defer="refund_account_name"
-                                                        placeholder="Full name on the account"
-                                                        class="block w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2" style="--tw-ring-color:#ee018d;" />
-                                                    @error('refund_account_name')<p class="mt-1 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                                </div>
-                                            </div>
-                                            @endif
-
-                                            <div class="mt-4 flex flex-wrap gap-3">
-                                                @if($cancelCountdown > 0)
-                                                 <button wire:click.prevent="confirmCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
-                                                     Confirm Cancellation
-                                                 </button>
+                                        <div class="mt-4 flex flex-wrap gap-3">
+                                            <button wire:click.prevent="confirmCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
+                                                @if(! $cancellationExpired)
+                                                    Confirm Cancellation (100% Refund)
                                                 @else
-                                                 <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-400 shadow-sm cursor-not-allowed">
-                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                                     Timer Expired
-                                                 </button>
+                                                    Confirm Cancellation (50% Refund)
                                                 @endif
-                                                <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                                                    Cancel Request
-                                                </button>
-                                                <button wire:click.prevent="confirmRebookingRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
-                                                    Switch to Rebook
-                                                </button>
-                                            </div>
+                                            </button>
+                                            <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                                Cancel Request
+                                            </button>
+                                            <button wire:click.prevent="confirmRebookingRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                Switch to Rebook
+                                            </button>
                                         </div>
-                                    @endif
+                                    </div>
                                 @endif
 
                                 @if($rebookingRequested && ! $rebookingPaid)

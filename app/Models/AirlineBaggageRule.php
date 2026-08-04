@@ -72,7 +72,7 @@ class AirlineBaggageRule extends Model
         if ($tripType === 'international') {
             return [
                 'pal' => [
-                    'name' => 'Philippine Airlines (PAL)',
+                    'name' => 'Philippine Airline',
                     'code' => 'PAL',
                     'logo' => 'Pal-Logo.jfif',
                     'options' => [
@@ -84,7 +84,7 @@ class AirlineBaggageRule extends Model
                     ],
                 ],
                 'ceb_pac' => [
-                    'name' => 'Cebu Pacific Air',
+                    'name' => 'Cebu Pacific',
                     'code' => 'Cebu Pacific',
                     'logo' => 'CebuPecific-Logo.png',
                     'options' => [
@@ -113,7 +113,7 @@ class AirlineBaggageRule extends Model
         // Default to Local / Domestic
         return [
             'ceb_pac' => [
-                'name' => 'Cebu Pacific Air',
+                'name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'options' => [
@@ -124,7 +124,7 @@ class AirlineBaggageRule extends Model
                 ],
             ],
             'pal' => [
-                'name' => 'Philippine Airlines (PAL)',
+                'name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'options' => [

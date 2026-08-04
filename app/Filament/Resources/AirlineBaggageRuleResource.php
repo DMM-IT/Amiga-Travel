@@ -69,8 +69,8 @@ class AirlineBaggageRuleResource extends Resource
                 Select::make('operator')
                     ->label('Airline Operator')
                     ->options([
-                        'pal' => 'Philippine Airlines (PAL)',
-                        'ceb_pac' => 'Cebu Pacific Air',
+                        'pal' => 'Philippine Airline',
+                        'ceb_pac' => 'Cebu Pacific',
                         'airasia' => 'AirAsia',
                     ])
                     ->default(fn () => request()->query('operator'))
@@ -78,11 +78,11 @@ class AirlineBaggageRuleResource extends Resource
                     ->live()
                     ->afterStateUpdated(function ($state, Forms\Set $set) {
                         if ($state === 'pal') {
-                            $set('operator_name', 'Philippine Airlines (PAL)');
+                            $set('operator_name', 'Philippine Airline');
                             $set('code', 'PAL');
                             $set('logo', 'Pal-Logo.jfif');
                         } elseif ($state === 'ceb_pac') {
-                            $set('operator_name', 'Cebu Pacific Air');
+                            $set('operator_name', 'Cebu Pacific');
                             $set('code', 'Cebu Pacific');
                             $set('logo', 'CebuPecific-Logo.png');
                         } elseif ($state === 'airasia') {
@@ -106,8 +106,8 @@ class AirlineBaggageRuleResource extends Resource
                 TextInput::make('operator_name')
                     ->label('Operator Display Name')
                     ->default(fn () => match(request()->query('operator')) {
-                        'pal' => 'Philippine Airlines (PAL)',
-                        'ceb_pac' => 'Cebu Pacific Air',
+                        'pal' => 'Philippine Airline',
+                        'ceb_pac' => 'Cebu Pacific',
                         'airasia' => 'AirAsia',
                         default => null,
                     })
@@ -236,8 +236,8 @@ class AirlineBaggageRuleResource extends Resource
                 SelectFilter::make('operator')
                     ->label('Filter by Airline Operator')
                     ->options([
-                        'pal' => 'Philippine Airlines (PAL)',
-                        'ceb_pac' => 'Cebu Pacific Air',
+                        'pal' => 'Philippine Airline',
+                        'ceb_pac' => 'Cebu Pacific',
                         'airasia' => 'AirAsia',
                     ])
                     ->placeholder('All Operators'),

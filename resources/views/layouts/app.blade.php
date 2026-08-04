@@ -320,8 +320,8 @@
                             @forelse($footerData['transit_links'] ?? [] as $transit)
                                 <li><a href="{{ $transit['url'] }}" class="hover:text-emerald-300 transition">{{ $transit['label'] }}</a></li>
                             @empty
-                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">2GO Travel</a></li>
-                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Starlite Ferries Inc.</a></li>
+                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">2GO</a></li>
+                                <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Starlite</a></li>
                                 <li><a href="{{ url('/book/new') }}" class="hover:text-emerald-300 transition">Airline Ticketing</a></li>
                             @endforelse
                         </ul>

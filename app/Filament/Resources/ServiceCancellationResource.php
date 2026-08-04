@@ -108,7 +108,7 @@ class ServiceCancellationResource extends Resource
                                     $operators = FerryRoute::activeOperatorsFor($mode);
                                     
                                     if (empty($operators)) {
-                                        $operators = ['2GO Travel', 'Starlite Ferries Inc.', 'Cebu Pacific', 'Philippine Airlines'];
+                                        $operators = ['2GO', 'Starlite', 'Cebu Pacific', 'Philippine Airline', 'AirAsia'];
                                     }
 
                                     return array_combine($operators, $operators);

@@ -30,27 +30,29 @@
             </div>
         </div>
 
-        <!-- Ferry Operator Selector -->
-        @if ($mode === 'ferry')
+        <!-- Operator Selector -->
+        @if ($mode === 'ferry' || $mode === 'airline')
             <div class="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
-                @if(count($ferryOperators) > 0)
-                    <span class="block text-sm font-medium text-gray-900 mb-3">Select Ferry Operator</span>
-                    <div class="grid gap-3 sm:grid-cols-2">
-                        @foreach ($ferryOperators as $operator)
-                            <button
-                                type="button"
-                                wire:click="updateOperator('{{ $operator }}')"
-                                class="w-full rounded-lg px-4 py-3 text-center font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-blue-500 {{ $selectedOperator === $operator ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }}"
-                            >
-                                {{ $operator }}
-                            </button>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-5 text-center text-sm text-gray-500">
-                        No ferry operators are seeded yet.
-                    </div>
-                @endif
+                <span class="block text-sm font-medium text-gray-900 mb-3">Select Operator</span>
+                <div class="grid gap-3 sm:grid-cols-3">
+                    <button
+                        type="button"
+                        wire:click="updateOperator(null)"
+                        class="w-full rounded-lg px-4 py-3 text-center font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-blue-500 {{ $selectedOperator === null ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }}"
+                    >
+                        All operators
+                    </button>
+
+                    @foreach ($mode === 'ferry' ? $ferryOperators : $airlineOperators as $operator)
+                        <button
+                            type="button"
+                            wire:click="updateOperator('{{ $operator }}')"
+                            class="w-full rounded-lg px-4 py-3 text-center font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-blue-500 {{ $selectedOperator === $operator ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }}"
+                        >
+                            {{ $operator }}
+                        </button>
+                    @endforeach
+                </div>
             </div>
         @endif
 

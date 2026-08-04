@@ -33,46 +33,41 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
     protected static string $view = 'filament.pages.manage-transport-accommodation';
     
     public ?string $mode = null; // 'airline' or 'ferry'
-    public bool $hasSelectedTransportType = false;
     public ?string $selectedOperator = null;
     public array $ferryOperators = ['2GO', 'Starlite'];
+    public array $airlineOperators = ['AirAsia', 'Cebu Pacific', 'Philippine Airline'];
 
     public function mount(): void
     {
         $this->mode = null;
-        $this->hasSelectedTransportType = false;
         $this->selectedOperator = null;
     }
 
     public function table(Table $table): Table
     {
-        if (! $this->hasSelectedTransportType) {
-            return $table
-                ->query(TransportClass::query()->whereRaw('0 = 1'))
-                ->columns([
-                    TextColumn::make('name')->label('Name'),
-                ]);
-        }
-
         if ($this->mode === 'airline') {
             return $this->airlineTable($table);
         }
 
-        if ($this->mode === 'ferry' && $this->selectedOperator === null) {
-            return $table
-                ->query(Accommodation::query()->whereRaw('0 = 1'))
-                ->columns([
-                    TextColumn::make('name')->label('Name'),
-                ]);
+        if ($this->mode === 'ferry') {
+            return $this->ferryTable($table);
         }
 
-        return $this->ferryTable($table);
+        return $table
+            ->query(TransportClass::query()->whereRaw('0 = 1'))
+            ->columns([
+                TextColumn::make('name')->label('Name'),
+            ]);
     }
 
     private function airlineTable(Table $table): Table
     {
         return $table
-            ->query(TransportClass::query())
+            ->query(TransportClass::query()
+                ->when($this->selectedOperator !== null, fn ($query) => $query->where(function ($builder) {
+                    $builder->where('operator', $this->selectedOperator)
+                        ->orWhere('operator', 'like', "%{$this->selectedOperator}%");
+                })))
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
@@ -80,9 +75,6 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
                 TextColumn::make('description')
                     ->limit(50)
                     ->tooltip(fn ($record) => $record->description),
-                TextColumn::make('price')
-                    ->money('php')
-                    ->sortable(),
                 ToggleColumn::make('is_active')
                     ->label('Active'),
             ])
@@ -99,7 +91,10 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
     {
         return $table
             ->query(Accommodation::query()
-                ->when($this->selectedOperator !== null, fn ($query) => $query->where('operator', $this->selectedOperator), fn ($query) => $query->whereRaw('0 = 1')))
+                ->when($this->selectedOperator !== null, fn ($query) => $query->where(function ($builder) {
+                    $builder->where('operator', $this->selectedOperator)
+                        ->orWhere('operator', 'like', "%{$this->selectedOperator}%");
+                })))
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
@@ -110,9 +105,6 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
                 TextColumn::make('amenities')
                     ->limit(50)
                     ->tooltip(fn ($record) => $record->amenities),
-                TextColumn::make('price')
-                    ->money('php')
-                    ->sortable(),
                 ToggleColumn::make('is_active')
                     ->label('Active'),
             ])
@@ -128,22 +120,12 @@ class ManageTransportAccommodation extends Page implements HasForms, HasTable
     public function switchMode(string $newMode): void
     {
         $this->mode = $newMode;
-
-        if ($newMode === 'airline') {
-            $this->hasSelectedTransportType = true;
-            $this->selectedOperator = null;
-        }
-
-        if ($newMode === 'ferry') {
-            $this->hasSelectedTransportType = false;
-            $this->selectedOperator = null;
-        }
+        $this->selectedOperator = null;
     }
 
-    public function updateOperator(string $operator): void
+    public function updateOperator(?string $operator): void
     {
-        $this->selectedOperator = $operator;
-        $this->hasSelectedTransportType = true;
+        $this->selectedOperator = blank($operator) ? null : normalize_operator_name($operator);
     }
 
     protected function getHeaderActions(): array

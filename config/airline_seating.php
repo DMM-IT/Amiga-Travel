@@ -49,7 +49,7 @@ return [
                 ],
             ],
         ],
-        'Philippine AirAsia' => [
+        'AirAsia' => [
             'classes' => [
                 'premium-flatbed' => [
                     'name' => 'Premium Flatbed',
@@ -91,7 +91,7 @@ return [
                 ],
             ],
         ],
-        'Philippine Airlines' => [
+        'Philippine Airline' => [
             'classes' => [
                 'business' => [
                     'name' => 'Business Class',

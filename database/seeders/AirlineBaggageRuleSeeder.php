@@ -16,10 +16,10 @@ class AirlineBaggageRuleSeeder extends Seeder
             // ==========================================
             // LOCAL / DOMESTIC BAGGAGE RATES
             // ==========================================
-            // Cebu Pacific Air (Local)
+            // Cebu Pacific (Local)
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'local',
@@ -30,7 +30,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'local',
@@ -41,7 +41,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'local',
@@ -52,7 +52,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'local',
@@ -65,7 +65,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             // Philippine Airlines (Local)
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'local',
@@ -76,7 +76,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'local',
@@ -87,7 +87,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'local',
@@ -98,7 +98,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'local',
@@ -109,7 +109,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'local',
@@ -120,7 +120,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'local',
@@ -133,7 +133,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             // AirAsia (Local)
             [
                 'operator' => 'airasia',
-                'operator_name' => 'Philippine AirAsia',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'local',
@@ -144,7 +144,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'Philippine AirAsia',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'local',
@@ -155,7 +155,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'Philippine AirAsia',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'local',
@@ -166,7 +166,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'Philippine AirAsia',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'local',
@@ -177,7 +177,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'Philippine AirAsia',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'local',
@@ -188,7 +188,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'Philippine AirAsia',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'local',
@@ -199,7 +199,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'Philippine AirAsia',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'local',
@@ -215,7 +215,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             // Philippine Airlines (International)
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'international',
@@ -226,7 +226,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'international',
@@ -237,7 +237,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'international',
@@ -248,7 +248,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'international',
@@ -259,7 +259,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'pal',
-                'operator_name' => 'Philippines Airlines(PAL)',
+                'operator_name' => 'Philippine Airline',
                 'code' => 'PAL',
                 'logo' => 'Pal-Logo.jfif',
                 'trip_type' => 'international',
@@ -269,10 +269,10 @@ class AirlineBaggageRuleSeeder extends Seeder
                 'sort_order' => 50,
             ],
 
-            // Cebu Pacific Air (International)
+            // Cebu Pacific (International)
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'international',
@@ -283,7 +283,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'international',
@@ -294,7 +294,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'international',
@@ -305,7 +305,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'ceb_pac',
-                'operator_name' => 'Cebu Pacific Air',
+                'operator_name' => 'Cebu Pacific',
                 'code' => 'Cebu Pacific',
                 'logo' => 'CebuPecific-Logo.png',
                 'trip_type' => 'international',
@@ -318,7 +318,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             // AirAsia (International)
             [
                 'operator' => 'airasia',
-                'operator_name' => 'AirAsia International',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'international',
@@ -329,7 +329,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'AirAsia International',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'international',
@@ -340,7 +340,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'AirAsia International',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'international',
@@ -351,7 +351,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'AirAsia International',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'international',
@@ -362,7 +362,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'AirAsia International',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'international',
@@ -373,7 +373,7 @@ class AirlineBaggageRuleSeeder extends Seeder
             ],
             [
                 'operator' => 'airasia',
-                'operator_name' => 'AirAsia International',
+                'operator_name' => 'AirAsia',
                 'code' => 'AirAsia',
                 'logo' => 'AirAsia-Logo.png',
                 'trip_type' => 'international',

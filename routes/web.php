@@ -61,12 +61,7 @@ $renderWebsitePage = function (string $page, string $view) {
                     ->with(['vehicle', 'schedules' => fn ($q) => $q->active()])
                     ->get()
                     ->map(function ($route) {
-                        $operator = $route->operator ?: ($route->vehicle?->operator ?? '');
-                        if (in_array($operator, ['2GO', '2GO Travel'], true)) $operator = '2GO Travel';
-                        if (in_array($operator, ['Starlite', 'Starlite Ferries Inc.'], true)) $operator = 'Starlite Ferries Inc.';
-                        if (in_array($operator, ['Cebu Pacific'], true)) $operator = 'Cebu Pacific';
-                        if (in_array($operator, ['Philippine Airlines', 'Philippines Airlines(PAL)'], true)) $operator = 'Philippine Airlines';
-                        if (in_array($operator, ['AirAsia', 'Philippine AirAsia'], true)) $operator = 'AirAsia';
+                        $operator = normalize_operator_name($route->operator ?: ($route->vehicle?->operator ?? '')) ?: '';
 
                         return [
                             'origin' => $route->origin,

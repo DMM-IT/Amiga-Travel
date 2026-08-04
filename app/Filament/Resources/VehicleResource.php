@@ -91,9 +91,9 @@ class VehicleResource extends Resource
                     ->label('Operating Company')
                     ->options(fn (Get $get) => match ($get('type')) {
                         'airline' => [
-                            'Philippine Airlines' => 'Philippine Airlines (PAL)',
-                            'Cebu Pacific Air' => 'Cebu Pacific Air',
-                            'Philippines AirAsia' => 'Philippines AirAsia',
+                            'Philippine Airlines' => 'Philippine Airlines',
+                            'Cebu Pacific' => 'Cebu Pacific',
+                            'AirAsia' => 'AirAsia',
                         ],
                         'ferry' => [
                             '2GO' => '2GO',

@@ -286,6 +286,9 @@ class BookingForm extends Component
                 }
             }
         }
+        if ($this->operator) {
+            $this->operator = normalize_operator_name($this->operator);
+        }
         if ($this->has_vehicle) {
             if ($this->vehicle_booking_method === 'category' && $this->selected_vehicle_rate_id) {
                 $this->updatedSelectedVehicleRateId($this->selected_vehicle_rate_id);
@@ -1692,6 +1695,8 @@ public function selectedSchedule(): ?array
         if ($this->tour_id && $this->tour) {
             $schedule = null;
             $scheduleAccommodation = null;
+            $returnSchedule = null;
+            $returnScheduleAccommodation = null;
         } else {
             try {
                 $schedule = Schedule::query()
@@ -1707,13 +1712,21 @@ public function selectedSchedule(): ?array
             $scheduleAccommodation = $this->selected_schedule_accommodation_id
                 ? ScheduleAccommodation::find($this->selected_schedule_accommodation_id)
                 : null;
+
+            $returnSchedule = $this->selected_return_schedule_id
+                ? Schedule::find($this->selected_return_schedule_id)
+                : null;
+
+            $returnScheduleAccommodation = $this->selected_return_schedule_accommodation_id
+                ? ScheduleAccommodation::find($this->selected_return_schedule_accommodation_id)
+                : null;
         }
 
         $transaction = null;
         $booking = null;
 
         try {
-            DB::transaction(function () use (&$transaction, &$booking, $schedule, $scheduleAccommodation) {
+            DB::transaction(function () use (&$transaction, &$booking, $schedule, $scheduleAccommodation, $returnSchedule, $returnScheduleAccommodation) {
                 $usedPromoTicket = null;
                 $promoTicketCount = 0;
 
@@ -1776,6 +1789,16 @@ public function selectedSchedule(): ?array
                     'schedule_accommodation_id' => $scheduleAccommodation?->id,
                     'schedule_accommodation_name' => $scheduleAccommodation?->name,
                     'schedule_accommodation_price' => $scheduleAccommodation?->price,
+                    'schedule_accommodation_rate_code' => $scheduleAccommodation?->rate_code,
+                    'return_schedule_id' => $returnSchedule?->id,
+                    'return_schedule_service' => $returnSchedule?->service_name,
+                    'return_schedule_departure_time' => $returnSchedule?->formatted_departure,
+                    'return_schedule_arrival_time' => $returnSchedule?->formatted_arrival,
+                    'return_schedule_price' => $returnSchedule?->price,
+                    'return_schedule_accommodation_id' => $returnScheduleAccommodation?->id,
+                    'return_schedule_accommodation_name' => $returnScheduleAccommodation?->name,
+                    'return_schedule_accommodation_price' => $returnScheduleAccommodation?->price,
+                    'return_schedule_accommodation_rate_code' => $returnScheduleAccommodation?->rate_code,
                     'tour_id' => $this->tour_id,
                     'tour_date_id' => $this->tour_date_id,
                     'tour_inclusions' => $this->tour?->inclusions,

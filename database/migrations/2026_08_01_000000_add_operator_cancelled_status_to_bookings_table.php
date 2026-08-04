@@ -9,14 +9,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('bookings')) {
+        if (Schema::hasTable('bookings') && DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE `bookings` MODIFY `status` ENUM('pending', 'confirmed', 'cancelled', 'operator_cancelled') NOT NULL DEFAULT 'pending'");
         }
     }
 
     public function down(): void
     {
-        if (Schema::hasTable('bookings')) {
+        if (Schema::hasTable('bookings') && DB::getDriverName() === 'mysql') {
             DB::statement("UPDATE `bookings` SET `status` = 'cancelled' WHERE `status` = 'operator_cancelled'");
             DB::statement("ALTER TABLE `bookings` MODIFY `status` ENUM('pending', 'confirmed', 'cancelled') NOT NULL DEFAULT 'pending'");
         }

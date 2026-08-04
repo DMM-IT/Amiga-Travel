@@ -12,7 +12,7 @@ use App\Models\TransportClass;
 
 $schedule = new Schedule();
 $schedule->vehicle_name = null;
-$schedule->setRelation('ferryRoute', new FerryRoute(['operator' => 'Philippine Airlines']));
+$schedule->setRelation('ferryRoute', new FerryRoute(['operator' => 'Philippine Airline']));
 $schedule->setRelation('transportClasses', collect([
     new TransportClass(['code' => 'economy', 'name' => 'Economy Class']),
     new TransportClass(['code' => 'premium-economy', 'name' => 'Premium Economy / Comfort Class']),

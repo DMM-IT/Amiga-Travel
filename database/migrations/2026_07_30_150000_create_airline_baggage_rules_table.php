@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('airline_baggage_rules', function (Blueprint $table) {
             $table->id();
             $table->string('operator')->index(); // pal, ceb_pac, airasia, etc.
-            $table->string('operator_name');     // Philippine Airlines (PAL), Cebu Pacific Air, AirAsia
+            $table->string('operator_name');     // Philippine Airline, Cebu Pacific, AirAsia
             $table->string('code');              // PAL, Cebu Pacific, AirAsia
             $table->string('logo')->nullable();  // Pal-Logo.jfif, CebuPecific-Logo.png, AirAsia-Logo.png
             $table->string('trip_type')->default('local')->index(); // local or international

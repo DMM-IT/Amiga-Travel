@@ -50,8 +50,8 @@ Route::middleware('throttle:60,1')->group(function () {
         }
         if (empty($cards)) {
             $cards = [
-                ['title' => '2GO Travel Booking',    'description' => 'Book premier overnight ship accommodation with 2GO Travel.'],
-                ['title' => 'Starlite Ferries Inc.', 'description' => 'Affordable regional transits between Batangas and Calapan.'],
+                ['title' => '2GO Booking',           'description' => 'Book premier overnight ship accommodation with 2GO.'],
+                ['title' => 'Starlite',              'description' => 'Affordable regional transits between Batangas and Calapan.'],
                 ['title' => 'Airline Ticketing',     'description' => 'Domestic and international flights via AirAsia, Cebu Pacific, and PAL.'],
                 ['title' => 'Tour Packages',         'description' => 'Curated itineraries for local and international destinations.'],
             ];

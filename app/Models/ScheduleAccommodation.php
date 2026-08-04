@@ -10,6 +10,7 @@ class ScheduleAccommodation extends Model
     protected $fillable = [
         'schedule_id',
         'name',
+        'rate_code',
         'description',
         'price',
         'tickets_available',
