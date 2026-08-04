@@ -647,15 +647,5 @@
   "645": "BelongsToMany",
   "646": "HasMany",
   "647": "Carbon",
-  "648": "PromotionalTicket",
-  "649": "a22",
-  "650": "fr",
-  "651": "a_5",
-  "652": "ajT",
-  "653": "lj",
-  "654": "Request",
-  "655": "Response",
-  "656": "BelongsToMany",
-  "657": "HasMany",
-  "658": "HasOne"
+  "648": "PromotionalTicket"
 }
