@@ -178,7 +178,27 @@
                     <div class="flex items-center gap-6 lg:gap-8 ml-auto">
                         <div :class="scrolled ? 'translate-y-0' : '{{ request()->is('/') ? '-translate-y-4 sm:-translate-y-5' : 'translate-y-0' }}'" 
                              class="hidden md:flex items-center gap-6 lg:gap-7 font-medium transition-transform duration-300 ease-in-out">
-                            <a href="{{ url('/book/status') }}" class="py-1 text-white transition-all duration-200 {{ request()->is('book/status') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">My Booking</a>
+                            <div x-data="{ open: false }" @click.away="open = false" class="relative">
+                                <button @click="open = !open" class="py-1 text-white transition-all duration-200 {{ request()->is('book/status') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">
+                                    My Booking
+                                </button>
+                                <div x-show="open" style="display: none;" class="absolute right-0 mt-2 w-[340px] rounded-xl bg-white p-6 shadow-2xl ring-1 ring-slate-200 z-50 text-left" x-transition>
+                                    <h3 class="text-[15px] font-semibold text-slate-800 mb-4">Enter your Via Booking Reference number</h3>
+                                    <form action="{{ url('/book/status') }}" method="GET" class="space-y-4">
+                                        <div>
+                                            <label class="sr-only">Transaction number</label>
+                                            <input type="text" name="transaction_number" placeholder="e.g. AGT-20260805-1234" class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-[#ee018d] focus:outline-none focus:ring-1 focus:ring-[#ee018d] text-slate-900 placeholder-slate-400 shadow-sm">
+                                        </div>
+                                        <div>
+                                            <label class="sr-only">Email</label>
+                                            <input type="email" name="email" placeholder="Enter your email" class="block w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-[#ee018d] focus:outline-none focus:ring-1 focus:ring-[#ee018d] text-slate-900 placeholder-slate-400 shadow-sm">
+                                        </div>
+                                        <button type="submit" class="w-max ml-auto block rounded-lg bg-[#14b8a6] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0f9686] shadow-sm" style="background-color: #20b28e;">
+                                            Check Status
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                             <a href="{{ url('/download') }}" class="py-1 text-white transition-all duration-200 {{ request()->is('download') ? 'border-b-2 border-white font-semibold' : 'border-b-2 border-transparent hover:border-white/70' }}">Download App</a>
                         </div>
                         <div class="hidden xl:flex items-center gap-6 text-sm text-white/90">
@@ -226,7 +246,26 @@
                             <a href="{{ url('/faqs') }}" class="block rounded-lg px-4 py-2 text-sm font-medium {{ request()->is('faqs') ? 'bg-slate-100 text-slate-900' : 'text-slate-800 hover:bg-slate-50 hover:text-slate-900' }}">FAQs</a>
                         </div>
                     </div>
-                    <a href="{{ url('/book/status') }}" class="block rounded-xl px-4 py-3 {{ request()->is('book/status') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">My Booking</a>
+                    <div x-data="{ open: false }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center rounded-xl px-4 py-3 font-medium {{ request()->is('book/status') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">
+                            My Booking
+                            <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="open" style="display: none;" class="pl-4 pr-2 py-3 space-y-3 border-l border-white/20 ml-2 mt-1 bg-white rounded-xl shadow-sm text-left">
+                            <h3 class="text-sm font-semibold text-slate-800 px-2">Enter your Via Booking Reference number</h3>
+                            <form action="{{ url('/book/status') }}" method="GET" class="space-y-3 px-2">
+                                <div>
+                                    <input type="text" name="transaction_number" placeholder="e.g. AGT-20260805-1234" class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#ee018d] focus:outline-none focus:ring-1 focus:ring-[#ee018d] text-slate-900 placeholder-slate-400">
+                                </div>
+                                <div>
+                                    <input type="email" name="email" placeholder="Enter your email" class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#ee018d] focus:outline-none focus:ring-1 focus:ring-[#ee018d] text-slate-900 placeholder-slate-400">
+                                </div>
+                                <button type="submit" class="w-max ml-auto block rounded-lg text-white px-5 py-2 text-sm font-semibold transition shadow-sm" style="background-color: #20b28e;">
+                                    Check Status
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                     <a href="{{ url('/download') }}" class="block rounded-xl px-4 py-3 {{ request()->is('download') ? 'bg-white/15 text-white' : 'text-white hover:bg-white/15 hover:text-white' }}">Download App</a>
                     <div class="border-t border-white/10 pt-3">
                         @if(!empty($headerData['phone']))

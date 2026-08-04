@@ -17,7 +17,9 @@ class BookingLookup extends Component
 {
     use WithFileUploads;
     public string $transaction_number = '';
+    public string $email = '';
     public ?Booking $booking = null;
+    public $bookings = null; // Collection of bookings
     public bool $searched = false;
     public ?string $feedback = null;
     public bool $cancellationRequested = false;
@@ -73,9 +75,11 @@ class BookingLookup extends Component
     public function mount(): void
     {
         $transactionNumber = request()->query('transaction_number');
+        $email = request()->query('email');
 
-        if (filled($transactionNumber)) {
-            $this->transaction_number = trim($transactionNumber);
+        if (filled($transactionNumber) || filled($email)) {
+            $this->transaction_number = trim((string) $transactionNumber);
+            $this->email = trim((string) $email);
             $this->search();
             // If the link included start_cancellation=1, begin the cancellation flow and start the window.
             if (request()->query('start_cancellation')) {
@@ -96,7 +100,8 @@ class BookingLookup extends Component
     public function search(): void
     {
         $this->validate([
-            'transaction_number' => 'required|string',
+            'transaction_number' => 'required_without:email|nullable|string',
+            'email' => 'required_without:transaction_number|nullable|email',
         ]);
 
         $this->searched = true;
@@ -105,14 +110,41 @@ class BookingLookup extends Component
         $this->resetRebookingState();
 
         $transactionNumber = trim($this->transaction_number);
+        $email = trim($this->email);
 
-        $this->booking = Booking::with(['passengers.discount', 'accommodations', 'transaction'])
-            ->where('transaction_number', $transactionNumber)
-            ->first();
+        $query = Booking::with(['passengers.discount', 'accommodations', 'transaction']);
+        
+        if (filled($transactionNumber)) {
+            $query->where('transaction_number', $transactionNumber);
+        }
+        if (filled($email)) {
+            $query->where('client_email', $email);
+        }
 
-        if (! $this->booking && ctype_digit($transactionNumber)) {
-            $transaction = Transaction::with('booking.passengers.discount', 'booking.accommodations', 'booking.transaction')
-                ->find($transactionNumber);
+        $bookings = $query->latest()->get();
+
+        if ($bookings->count() === 1) {
+            $this->booking = $bookings->first();
+            $this->bookings = null;
+        } elseif ($bookings->count() > 1) {
+            $this->bookings = $bookings;
+            $this->booking = null;
+        } else {
+            $this->booking = null;
+            $this->bookings = null;
+        }
+
+        if (! $this->booking && ! $this->bookings && filled($transactionNumber) && ctype_digit($transactionNumber)) {
+            $tQuery = Transaction::with('booking.passengers.discount', 'booking.accommodations', 'booking.transaction')
+                ->where('id', $transactionNumber);
+                
+            if (filled($email)) {
+                $tQuery->whereHas('booking', function ($q) use ($email) {
+                    $q->where('client_email', $email);
+                });
+            }
+                
+            $transaction = $tQuery->first();
 
             if ($transaction && $transaction->booking) {
                 $this->booking = $transaction->booking;
@@ -164,7 +196,14 @@ class BookingLookup extends Component
         $this->resetRebookingState();
         $this->showCancellationWarning = true;
         $this->feedback = 'Please confirm that you want to start cancellation. This will begin a 5-minute confirmation timer and lock in a 50% refund.';
-    }    public function requestCancellation(): void
+    }    public function viewBooking(string $transactionNumber): void
+    {
+        $this->transaction_number = $transactionNumber;
+        $this->email = ''; // clear email so it strictly searches by transaction number
+        $this->search();
+    }
+
+    public function requestCancellation(): void
     {
         if (! $this->booking) {
             $this->feedback = 'Booking not found.';

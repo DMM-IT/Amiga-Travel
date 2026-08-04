@@ -2,31 +2,88 @@
     <div class="mx-auto max-w-3xl">
         <div class="rounded-[2rem] bg-white/85 backdrop-blur-md shadow-xl ring-1 ring-slate-200 overflow-hidden">
             <div class="px-6 py-8 sm:px-10" style="background: linear-gradient(135deg, #ee018d 0%, #b1015d 100%);">
-                <a href="{{ url('/book') }}" class="text-white/80 text-sm hover:text-white">← Back</a>
+                <a href="{{ url('/') }}" class="text-white/80 text-sm hover:text-white">← Back to Home</a>
                 <h1 class="mt-2 text-2xl sm:text-3xl font-semibold text-white">Check My Booking</h1>
-                <p class="mt-2 text-white/85">Enter your transaction number to view your booking details.</p>
             </div>
 
             <div class="p-6 sm:p-10 space-y-6">
-                <form wire:submit.prevent="search" class="flex flex-col sm:flex-row gap-3">
-                    <label class="block flex-1">
-                        <span class="sr-only">Transaction number</span>
-                        <input
-                            type="text"
-                            wire:model.defer="transaction_number"
-                            placeholder="e.g. AGT-20260701-1234"
-                            class="block w-full rounded-3xl border border-slate-300 px-4 py-3 shadow-sm focus:outline-none focus:ring-2"
-                            style="--tw-ring-color:#ee018d;"
-                        />
-                        @error('transaction_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                    </label>
-                    <button type="submit" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
-                        Search
-                    </button>
-                </form>
 
-                @if($searched)
-                    @if($booking)
+                @if(! $searched)
+                    <div class="text-center py-10">
+                        @if($errors->any())
+                            <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-bold text-slate-900 mb-2">Invalid Details</h2>
+                            <ul class="text-rose-600 text-sm mb-2 list-disc pl-5 max-w-sm mx-auto text-left">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <p class="text-slate-500 text-sm mt-1">Please check your details and try again from the My Booking menu.</p>
+                        @else
+                            <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-bold text-slate-900 mb-2">Check My Booking</h2>
+                            <p class="text-slate-600">Please use the "My Booking" menu in the top navigation bar to check your booking status.</p>
+                        @endif
+                    </div>
+                @else
+                    @if($bookings && $bookings->count() > 1)
+                        <div class="space-y-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-900">Multiple Bookings Found</h2>
+                                <p class="text-sm text-slate-600 mt-1">We found {{ $bookings->count() }} bookings matching your email. Select one to view details.</p>
+                            </div>
+                            
+                            <div class="grid gap-4">
+                                @foreach($bookings as $b)
+                                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-[#ee018d]">
+                                        <div class="flex items-start justify-between flex-wrap gap-4">
+                                            <div>
+                                                <p class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">Transaction Number</p>
+                                                <p class="text-lg font-bold text-slate-900">{{ $b->transaction_number }}</p>
+                                                
+                                                <div class="mt-3 space-y-1">
+                                                    @if($b->accommodations->first())
+                                                        @php
+                                                            $sched = $b->accommodations->first()->schedule;
+                                                        @endphp
+                                                        @if($sched)
+                                                            <p class="text-sm text-slate-700"><strong>Route:</strong> {{ $sched->ferryRoute->origin }} → {{ $sched->ferryRoute->destination }}</p>
+                                                            <p class="text-sm text-slate-700"><strong>Travel Date:</strong> {{ Carbon\Carbon::parse($sched->departure_time)->format('M d, Y') }}</p>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-col items-end gap-3">
+                                                @php
+                                                    $statusColors = [
+                                                        'pending' => ['bg' => '#fef3c7', 'text' => '#92400e'],
+                                                        'confirmed' => ['bg' => '#dcfce7', 'text' => '#166534'],
+                                                        'cancelled' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
+                                                        'operator_cancelled' => ['bg' => '#fee2e2', 'text' => '#991b1b'],
+                                                    ];
+                                                    $sStyle = $statusColors[$b->status] ?? $statusColors['pending'];
+                                                @endphp
+                                                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold" style="background: {{ $sStyle['bg'] }}; color: {{ $sStyle['text'] }};">
+                                                    {{ ucfirst(str_replace('_', ' ', $b->status)) }}
+                                                </span>
+                                                <button wire:click="viewBooking('{{ $b->transaction_number }}')" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @elseif($booking)
                         @php
                             $statusColors = [
                                 'pending' => ['bg' => '#fef3c7', 'text' => '#92400e'],
@@ -785,9 +842,15 @@
                             </div>
                         </div>
                     @else
-                        <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center">
-                            <p class="text-slate-700 font-medium">No booking found for "{{ $transaction_number }}".</p>
-                            <p class="mt-1 text-sm text-slate-500">Double-check your transaction number and try again.</p>
+                        <div class="text-center py-10">
+                            <div class="inline-flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-bold text-slate-900 mb-2">Booking Not Found</h2>
+                            <p class="text-slate-600">We couldn't find a booking matching the provided details.</p>
+                            <p class="text-slate-500 text-sm mt-1">Please check your details and try again from the My Booking menu.</p>
                         </div>
                     @endif
                 @endif
