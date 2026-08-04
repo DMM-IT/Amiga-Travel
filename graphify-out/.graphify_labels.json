@@ -646,5 +646,6 @@
   "644": "Request",
   "645": "BelongsToMany",
   "646": "HasMany",
-  "647": "Carbon"
+  "647": "Carbon",
+  "648": "PromotionalTicket"
 }
