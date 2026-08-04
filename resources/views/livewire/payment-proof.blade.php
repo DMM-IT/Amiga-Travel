@@ -28,9 +28,9 @@
         </div>
     @else
         <div class="space-y-4">
-            <label class="block text-sm font-medium text-slate-700">Transaction number</label>
-            <input type="text" wire:model.defer="transaction_number" class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Enter transaction number" />
-            @error('transaction_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
+            <label class="block text-sm font-medium text-slate-700">Reference / Transaction Number <span class="text-xs font-normal text-slate-500">(e.g., GCash, Maya, Bank Transfer Ref No.)</span></label>
+            <input type="text" wire:model.defer="reference_number" class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Enter payment reference number (e.g., GCash Ref No.)" />
+            @error('reference_number')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
 
             <label class="block text-sm font-medium text-slate-700">Upload proof of payment</label>
             <div class="mt-3">

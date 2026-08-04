@@ -119,6 +119,10 @@ class ViewBooking extends ViewRecord
                             ->prefix('₱'),
                         TextInput::make('transaction_payment_status')
                             ->label('Payment status'),
+                        TextInput::make('payment_reference')
+                            ->label('Payment Ref No. (GCash/Maya)')
+                            ->readOnly()
+                            ->dehydrated(false),
                         TextInput::make('verification_timer')
                             ->label('Lock timer')
                             ->readOnly()
@@ -399,6 +403,7 @@ class ViewBooking extends ViewRecord
         return [
             ...$data,
             'transaction_payment_status' => $this->record->transaction?->payment_status,
+            'payment_reference' => $this->record->transaction?->payment_reference ?? '—',
             'verification_timer' => $this->record->verificationTimerLabel(),
             'proof_uploaded' => filled($this->record->transaction?->proof_of_payment) ? 'Yes' : 'No',
             'confirmation_url' => $this->record->transaction?->confirmation_url,

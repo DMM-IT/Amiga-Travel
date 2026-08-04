@@ -10,6 +10,9 @@
         <p>Thanks for submitting your payment proof. Our admin team will verify your booking before sending your final confirmation and ticket.</p>
         <p>
             Booking transaction: <strong>{{ $transaction->booking->transaction_number }}</strong><br>
+            @if($transaction->payment_reference)
+                Payment reference: <strong>{{ $transaction->payment_reference }}</strong><br>
+            @endif
             Amount due: <strong>₱{{ number_format($transaction->booking->total_price, 2) }}</strong>
         </p>
         <p>We will notify you as soon as your booking has been confirmed.</p>

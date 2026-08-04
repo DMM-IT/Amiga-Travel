@@ -266,7 +266,9 @@
         </main>
 
         @if(! $isAuthPage)
-        @include('partials.why-travel-section')
+        @unless(request()->is('book*') || request()->is('booking*') || request()->is('payment*'))
+            @include('partials.why-travel-section')
+        @endunless
         <footer class="relative overflow-hidden bg-gradient-to-b from-[#008000] via-[#004a00] to-[#042402] text-white pt-16 pb-8">
             <div class="w-full px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-8 border-b border-white/10">

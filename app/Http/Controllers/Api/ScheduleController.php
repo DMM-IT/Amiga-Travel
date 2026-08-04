@@ -104,7 +104,7 @@ class ScheduleController extends Controller
             }
 
             $routes = $query->with(['schedules' => function($q) {
-                $q->where('is_active', true)
+                $q->active()
                   ->where('departure_time', '>=', now()->startOfDay());
             }])->get();
 
@@ -188,7 +188,7 @@ class ScheduleController extends Controller
         $routes = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(10), function () use ($startDate, $endDate) {
             return FerryRoute::with([
                 'schedules' => function ($query) use ($startDate, $endDate) {
-                    $query->where('is_active', true)
+                    $query->active()
                           ->whereBetween('departure_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
                           ->orderBy('departure_time');
                 },

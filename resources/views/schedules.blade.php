@@ -217,7 +217,7 @@
                                         <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $isFerry ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700' }}">
                                             {{ ucfirst($routeMode) }}
                                         </span>
-                                        <span class="text-sm text-slate-500">{{ $route->vehicle?->full_name ?? $route->operator ?? '' }}</span>
+                                        <span class="text-sm text-slate-500">{{ $route->vehicle?->operator ?? $route->operator ?? '' }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -226,10 +226,6 @@
                                 <div class="text-right">
                                     <p class="text-xs text-slate-500 font-medium">{{ $route->schedules->count() }} {{ Str::plural('departure', $route->schedules->count()) }}</p>
                                 </div>
-                                <a href="{{ url('/book/new') }}" class="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-[#216417] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1a5212] hover:shadow-md">
-                                    Book Now
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -297,11 +293,32 @@
                                                         @endif
                                                         <div>
                                                             <h3 class="font-bold text-slate-900 text-sm leading-tight">{{ $schedule->service_name }}</h3>
-                                                            @if($schedule->vehicle_name)
-                                                                <p class="text-xs text-slate-500 mt-0.5">{{ $schedule->vehicle_name }}</p>
+                                                            @if($opName)
+                                                                <p class="text-xs text-slate-500 mt-0.5">{{ $opName }}</p>
                                                             @endif
                                                         </div>
                                                     </div>
+                                                    {{-- Tickets Left Badge --}}
+                                                    @php
+                                                        $totalTickets = $schedule->scheduleAccommodations->sum('tickets_available');
+                                                    @endphp
+                                                    @if($totalTickets !== null)
+                                                        <div class="ml-auto shrink-0">
+                                                            @if($totalTickets <= 0)
+                                                                <span class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-600 border border-red-100">
+                                                                    Sold out
+                                                                </span>
+                                                            @elseif($totalTickets <= 10)
+                                                                <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700 border border-amber-100">
+                                                                    {{ $totalTickets }} tickets left
+                                                                </span>
+                                                            @else
+                                                                <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 border border-emerald-100">
+                                                                    {{ $totalTickets }} tickets left
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    @endif
                                                 </div>
 
                                                 {{-- Time Bar --}}
@@ -384,13 +401,7 @@
                                 </div>
                             </div>
 
-                            {{-- Mobile Book Button --}}
-                            <div class="mt-4 sm:hidden">
-                                <a href="{{ url('/book/new') }}" class="flex items-center justify-center gap-2 rounded-xl bg-[#216417] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1a5212]">
-                                    Book {{ $route->origin }} → {{ $route->destination }}
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                                </a>
-                            </div>
+
                         @else
                             <div class="text-center py-8 text-slate-400">
                                 <svg class="w-10 h-10 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

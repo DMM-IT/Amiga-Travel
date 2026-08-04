@@ -57,8 +57,8 @@ $renderWebsitePage = function (string $page, string $view) {
             try {
                 return \App\Models\FerryRoute::query()
                     ->active()
-                    ->whereHas('schedules', fn ($q) => $q->active())
-                    ->with(['vehicle', 'schedules' => fn ($q) => $q->active()])
+                    ->whereHas('schedules', fn ($q) => $q->active()->where('departure_time', '>=', \Carbon\Carbon::today()))
+                    ->with(['vehicle', 'schedules' => fn ($q) => $q->active()->where('departure_time', '>=', \Carbon\Carbon::today())])
                     ->get()
                     ->map(function ($route) {
                         $operator = normalize_operator_name($route->operator ?: ($route->vehicle?->operator ?? '')) ?: '';
@@ -173,7 +173,7 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
 
     $routes = App\Models\FerryRoute::with([
         'schedules' => function ($query) use ($startDate, $endDate) {
-            $query->where('is_active', true)
+            $query->active()
                   ->whereBetween('departure_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
                   ->orderBy('departure_time');
         },

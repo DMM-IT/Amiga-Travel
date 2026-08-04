@@ -117,9 +117,13 @@ class Schedule extends Model
             true
         )->where(function (Builder $q) {
             $q->whereHas('scheduleAccommodations', function (Builder $accQ) {
-                $accQ->where('is_active', true)->where('tickets_available', '>', 0);
+                $accQ->where(function (Builder $sub) {
+                    $sub->where('is_active', true)->orWhereNull('is_active');
+                })->where('tickets_available', '>', 0);
             })->orWhereHas('transportClasses', function (Builder $tcQ) {
-                $tcQ->where('schedule_transport_class.tickets_available', '>', 0);
+                $tcQ->where(function (Builder $sub) {
+                    $sub->where('schedule_transport_class.is_active', true)->orWhereNull('schedule_transport_class.is_active');
+                })->where('schedule_transport_class.tickets_available', '>', 0);
             });
         });
     }

@@ -994,6 +994,7 @@ public function selectedSchedule(): ?array
         }
 
         $departureDates = Schedule::active()
+            ->where('departure_time', '>=', now()->startOfDay())
             ->whereHas('ferryRoute', function ($query) {
                 $query->where('origin', $this->origin)
                       ->where('destination', $this->destination)
@@ -1019,6 +1020,7 @@ public function selectedSchedule(): ?array
         }
 
         $returnDates = Schedule::active()
+            ->where('departure_time', '>=', now()->startOfDay())
             ->whereHas('ferryRoute', function ($query) {
                 $query->where('origin', $this->destination)
                       ->where('destination', $this->origin)

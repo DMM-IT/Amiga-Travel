@@ -1262,7 +1262,7 @@
 
                             <label class="block lg:col-span-2" data-error="client_phone">
                                 <span class="text-slate-900 font-bold text-sm">Contact number</span>
-                                <input type="tel" wire:model.blur="client_phone" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="e.g. +63 912 345 6789" />
+                                <input type="tel" inputmode="tel" wire:model.blur="client_phone" oninput="this.value = this.value.replace(/[^0-9+\s()-]/g, '')" onkeypress="if(event.key.length === 1 && !/[0-9+\s()-]/.test(event.key)) event.preventDefault();" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="e.g. +63 912 345 6789" />
                                 @error('client_phone')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
                         </div>

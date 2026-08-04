@@ -84,6 +84,9 @@ class TransactionResource extends Resource
                                 'cancelled' => 'danger',
                                 default => 'gray',
                             }),
+                        TextEntry::make('payment_reference')
+                            ->label('Payment Ref No. (GCash / Maya / Bank)')
+                            ->default('N/A'),
                         TextEntry::make('created_at')
                             ->label('Submitted at')
                             ->dateTime(),
@@ -252,6 +255,10 @@ class TransactionResource extends Resource
                         default => 'gray',
                     })
                     ->sortable(),
+                TextColumn::make('payment_reference')
+                    ->label('Payment Ref No.')
+                    ->searchable()
+                    ->placeholder('N/A'),
                 TextColumn::make('booking.status')
                     ->label('Booking Status')
                     ->badge()

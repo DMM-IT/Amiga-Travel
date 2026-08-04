@@ -13,6 +13,7 @@ class Transaction extends Model
     protected $fillable = [
         'booking_id',
         'payment_status',
+        'payment_reference',
         'proof_of_payment',
         'confirmation_url',
         'confirmation_pdf',

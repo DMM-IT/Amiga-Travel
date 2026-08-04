@@ -98,6 +98,11 @@
                             <p class="truncate text-gray-500 dark:text-gray-400">
                                 {{ $proof->booking?->origin ?? '—' }} → {{ $proof->booking?->destination ?? '—' }}
                             </p>
+                            @if($proof->payment_reference)
+                                <p class="truncate font-semibold text-emerald-700 dark:text-emerald-400" title="Payment Ref: {{ $proof->payment_reference }}">
+                                    Ref: {{ $proof->payment_reference }}
+                                </p>
+                            @endif
                             <p class="font-medium text-gray-700 dark:text-gray-200">
                                 ₱{{ number_format((float) ($proof->booking?->total_price ?? 0), 2) }}
                             </p>

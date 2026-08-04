@@ -14,7 +14,7 @@ class PaymentProof extends Component
 
     public Transaction $transaction;
 
-    public string $transaction_number = '';
+    public string $reference_number = '';
     public $proof;
 
     public bool $showThankYou = false;
@@ -22,7 +22,7 @@ class PaymentProof extends Component
     public bool $isUploading = false;
 
     protected $rules = [
-        'transaction_number' => 'required|string',
+        'reference_number' => 'required|string',
         'proof' => 'required|image|max:2048',
     ];
 
@@ -44,13 +44,6 @@ class PaymentProof extends Component
         $this->isUploading = true;
         $this->uploadProgress = 0;
         $this->validate();
-
-        if ($this->transaction_number !== $this->transaction->booking->transaction_number) {
-            $this->isUploading = false;
-            $this->addError('transaction_number', 'The transaction number does not match the booking.');
-            $this->dispatch('validation-error');
-            return;
-        }
 
         // Compress the image before storing it!
         $filePath = $this->proof->path();
@@ -157,6 +150,7 @@ class PaymentProof extends Component
         $this->transaction->update([
             'proof_of_payment' => $path,
             'payment_status' => 'pending',
+            'payment_reference' => $this->reference_number,
         ]);
 
         try {
