@@ -13,6 +13,7 @@ class Transaction extends Model
     protected $fillable = [
         'booking_id',
         'payment_status',
+        'payment_deadline_at',
         'payment_reference',
         'proof_of_payment',
         'confirmation_url',
@@ -28,6 +29,7 @@ class Transaction extends Model
         'rebooking_fee' => 'decimal:2',
         'student_discount_proofs' => 'array',
         'verified_at' => 'datetime',
+        'payment_deadline_at' => 'datetime',
     ];
 
     public function booking(): BelongsTo

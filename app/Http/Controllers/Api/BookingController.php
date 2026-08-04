@@ -216,32 +216,40 @@ class BookingController extends Controller
             ], 400);
         }
 
+        $isWithinFiveMinutes = $booking->created_at->addMinutes(5)->isFuture();
+
         if ($request->input('action', 'confirm') === 'start') {
-            $expiresAt = now()->addMinutes(5);
-            $booking->update(['cancellation_window_expires_at' => $expiresAt]);
+            if (! $isWithinFiveMinutes && ! $booking->isRefundEligible()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You cannot request a refund as it is less than 3 hours before the departure time.',
+                ], 400);
+            }
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Cancellation window started.',
-                'expires_at' => $expiresAt->toISOString(),
-                'cancellation_fee' => (float) $booking->getCancellationFeeAmount(),
-                'refund_amount' => (float) $booking->getRefundAmount(),
+                'message' => 'Cancellation started.',
+                'cancellation_fee' => $isWithinFiveMinutes ? 0.0 : $booking->total_price * 0.5,
+                'refund_amount' => $isWithinFiveMinutes ? $booking->total_price : $booking->total_price * 0.5,
             ]);
         }
 
-        if (! $booking->cancellation_window_expires_at || now()->greaterThan($booking->cancellation_window_expires_at)) {
+        if (! $isWithinFiveMinutes && ! $booking->isRefundEligible()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'The five-minute cancellation window has expired. Start a new cancellation request.',
+                'message' => 'You cannot request a refund as it is less than 3 hours before the departure time.',
             ], 400);
         }
 
         $request->validate(['refund_destination' => 'required|string|max:255']);
 
+        $cancellationFee = $isWithinFiveMinutes ? 0.0 : $booking->total_price * 0.5;
+        $refundAmount = $isWithinFiveMinutes ? $booking->total_price : $booking->total_price * 0.5;
+
         $booking->update([
             'status' => Booking::STATUS_CANCELLED,
-            'cancellation_fee' => $booking->getCancellationFeeAmount(),
-            'refund_amount' => $booking->getRefundAmount(),
+            'cancellation_fee' => $cancellationFee,
+            'refund_amount' => $refundAmount,
             'refund_destination' => $request->input('refund_destination'),
             'cancellation_window_expires_at' => null,
         ]);
@@ -297,6 +305,13 @@ class BookingController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'This booking can no longer be rebooked.',
+            ], 400);
+        }
+
+        if ($booking->is_rebooked) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'This booking has already been rebooked once.',
             ], 400);
         }
 

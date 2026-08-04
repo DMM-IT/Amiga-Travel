@@ -268,6 +268,36 @@ class Booking extends Model
         return $this->departure_date->isFuture() || $this->departure_date->isToday();
     }
 
+    public function getDepartureDateTime(): ?Carbon
+    {
+        if (! $this->departure_date) {
+            return null;
+        }
+
+        if (! $this->schedule_departure_time) {
+            return $this->departure_date->copy()->startOfDay();
+        }
+
+        try {
+            $time = Carbon::parse($this->schedule_departure_time);
+            return $this->departure_date->copy()->setTime($time->hour, $time->minute, $time->second);
+        } catch (\Exception $e) {
+            return $this->departure_date->copy()->startOfDay();
+        }
+    }
+
+    public function isRefundEligible(): bool
+    {
+        $departureDateTime = $this->getDepartureDateTime();
+        
+        if (! $departureDateTime) {
+            return false;
+        }
+        
+        $deadline = $departureDateTime->copy()->subHours(3);
+        return now()->isBefore($deadline);
+    }
+
     public function getCancellationFeeAmount(): float
     {
         return $this->total_price * 0.5;

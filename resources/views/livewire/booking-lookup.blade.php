@@ -265,33 +265,55 @@
                                     </div>
                                 </div>
                             @endif
-
-                            <div class="rounded-2xl p-4 flex items-center justify-between" style="background:#eaf5e8;">
-                                <span class="font-semibold text-slate-900">Total Price</span>
-                                <span class="text-lg font-semibold" style="color:#216417;">₱{{ number_format($booking->total_price, 2) }}</span>
+                            {{-- Price Breakdown --}}
+                            <div class="rounded-2xl bg-white p-4 border border-slate-200 mt-4">
+                                <h3 class="font-semibold text-slate-900 mb-3">Price Breakdown</h3>
+                                <div class="space-y-2 text-sm text-slate-600">
+                                    @foreach($this->priceBreakdown as $item)
+                                        <div class="flex justify-between {{ $item['class'] }}">
+                                            <span>{{ $item['label'] }}</span>
+                                            <span>{{ $item['amount'] < 0 ? '-' : '' }}₱{{ number_format(abs($item['amount']), 2) }}</span>
+                                        </div>
+                                    @endforeach
+                                    <div class="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between font-semibold text-slate-900 text-base">
+                                        <span>Total Price</span>
+                                        <span style="color:#216417;">₱{{ number_format($booking->total_price + ($booking->transaction->rebooking_fee ?? 0), 2) }}</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="space-y-4">
                                 <div class="flex flex-wrap gap-3">
                                     @if($booking->transaction && in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true) && $booking->status === 'pending')
-                                        <a href="{{ route('payment.show', $booking->transaction) }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
+                                        <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
                                             Done
                                         </a>
 
                                         @if($booking->canCancelOrRebook())
-                                        @if(! $cancellationRequested && ! $rebookingRequested)
+                                            @if(! $cancellationRequested && ! $rebookingRequested)
                                                 @if(! $cancellationExpired)
                                                     <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-pink-500 px-6 py-3 text-sm font-semibold text-pink-700 transition hover:bg-pink-50">
                                                         Cancel Booking
                                                     </button>
                                                 @else
-                                                    <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-rose-500 px-6 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
-                                                        Refund
+                                                    <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-300 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-400">
+                                                        Cancel Booking
+                                                    </button>
+                                                    @if($booking->isRefundEligible())
+                                                        <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-rose-500 px-6 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
+                                                            Refund (50%)
+                                                        </button>
+                                                    @else
+                                                        <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-300 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-400">
+                                                            Refund (50%)
+                                                        </button>
+                                                    @endif
+                                                @endif
+                                                @if(!$booking->is_rebooked)
+                                                    <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                        Rebook
                                                     </button>
                                                 @endif
-                                                <button wire:click.prevent="requestRebooking" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
-                                                    Rebook
-                                                </button>
                                             @endif
                                         @else
                                             <div class="space-y-2">
@@ -394,9 +416,11 @@
                                             <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                                 Cancel Request
                                             </button>
-                                            <button wire:click.prevent="confirmRebookingRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
-                                                Switch to Rebook
-                                            </button>
+                                            @if(!$booking->is_rebooked)
+                                                <button wire:click.prevent="confirmRebookingRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-blue-500 px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                                                    Switch to Rebook
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 @endif

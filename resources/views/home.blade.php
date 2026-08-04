@@ -1424,12 +1424,14 @@
                         'image' => 'images/Pal-Logo.jfif',
                         'booking_button_text' => 'Book Now',
                         'link' => '/book/new?operator=' . urlencode('Philippine Airline') . '&trip_type=one_way&mode=airline',
-                    'title' => 'AirAsia',
-                    'description' => 'Find low-cost airline tickets and convenient domestic connections.',
-                    'image' => 'images/AirAsia-Logo.png',
-                    'booking_button_text' => 'Book Now',
-                    'link' => '/book/new?operator=' . urlencode('AirAsia') . '&trip_type=one_way&mode=airline',
-                ],
+                    ],
+                    [
+                        'title' => 'AirAsia',
+                        'description' => 'Find low-cost airline tickets and convenient domestic connections.',
+                        'image' => 'images/AirAsia-Logo.png',
+                        'booking_button_text' => 'Book Now',
+                        'link' => '/book/new?operator=' . urlencode('AirAsia') . '&trip_type=one_way&mode=airline',
+                    ],
             ];
 
             $totalCardsNeeded = 5;

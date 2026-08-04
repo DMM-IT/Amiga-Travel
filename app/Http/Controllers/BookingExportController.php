@@ -17,10 +17,10 @@ class BookingExportController extends Controller
 
     public function exportCsv()
     {
-        $bookings = Booking::all();
+        $bookings = Booking::with(['transaction', 'schedule.ferryRoute'])->get();
 
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type'        => 'text/csv',
             'Content-Disposition' => 'attachment; filename="bookings.csv"',
         ];
 
@@ -33,31 +33,63 @@ class BookingExportController extends Controller
                 'Transaction #',
                 'Client Name',
                 'Client Email',
+                'Contact Number',
                 'Origin',
                 'Destination',
                 'Departure Date',
                 'Return Date',
-                'Status',
-                'Total Price',
+                'Mode',
+                'Operator',
+                'Booking Status',
+                'Payment Status',
+                'Amount',
+                'Payment Reference #',
+                'Voucher Code',
+                'Voucher Discount (₱)',
+                'Gracia Points Used',
                 'Created At',
             ]);
 
+            $totalAmount          = 0;
+            $totalVoucherDiscount = 0;
+
             // CSV Rows
             foreach ($bookings as $booking) {
+                $totalAmount          += (float) $booking->total_price;
+                $totalVoucherDiscount += (float) ($booking->voucher_discount_amount ?? 0);
+                $ferryRoute = $booking->schedule?->ferryRoute;
+
                 fputcsv($file, [
                     $booking->id,
                     $booking->transaction_number,
                     $booking->client_name,
                     $booking->client_email,
+                    $booking->client_phone,
                     $booking->origin,
                     $booking->destination,
                     $booking->departure_date?->format('Y-m-d'),
-                    $booking->return_date?->format('Y-m-d'),
-                    $booking->status,
-                    $booking->total_price,
+                    $booking->return_date?->format('Y-m-d') ?? '',
+                    $ferryRoute?->mode ?? $booking->schedule_service ?? '',
+                    $ferryRoute?->operator ?? '',
+                    ucfirst($booking->status),
+                    $booking->transaction?->payment_status ?? '',
+                    number_format($booking->total_price, 2),
+                    $booking->transaction?->payment_reference ?? '',
+                    $booking->voucher_code ?? '',
+                    $booking->voucher_discount_amount > 0 ? number_format($booking->voucher_discount_amount, 2) : '',
+                    $booking->points_used > 0 ? $booking->points_used : '',
                     $booking->created_at->format('Y-m-d H:i:s'),
                 ]);
             }
+
+            // Totals row — placed below all records in the Amount column position
+            fputcsv($file, []);
+            fputcsv($file, [
+                '', '', '', '', '', '', '', '', '', '', '', '',
+                'TOTAL AMOUNT', number_format($totalAmount, 2),
+                '', 'TOTAL VOUCHER DISCOUNT', number_format($totalVoucherDiscount, 2),
+                '', '',
+            ]);
 
             fclose($file);
         };
@@ -72,7 +104,7 @@ class BookingExportController extends Controller
 
     protected function generatePdfResponse(string $filename, bool $inline = false): Response
     {
-        $bookings = Booking::all();
+        $bookings = Booking::with(['transaction', 'schedule.ferryRoute'])->get();
 
         $confirmedBookings = $bookings->filter(function ($booking) {
             return $booking->status === Booking::STATUS_CONFIRMED && ! $booking->is_rebooked;
@@ -88,7 +120,7 @@ class BookingExportController extends Controller
 
         $html = view('exports.bookings-pdf', [
             'confirmedBookings' => $confirmedBookings,
-            'rebookedBookings' => $rebookedBookings,
+            'rebookedBookings'  => $rebookedBookings,
             'cancelledBookings' => $cancelledBookings,
         ])->render();
 
@@ -104,7 +136,7 @@ class BookingExportController extends Controller
         $output = $dompdf->output();
 
         $headers = [
-            'Content-Type' => 'application/pdf',
+            'Content-Type'        => 'application/pdf',
             'Content-Disposition' => ($inline ? 'inline' : 'attachment') . '; filename="' . $filename . '"',
         ];
 

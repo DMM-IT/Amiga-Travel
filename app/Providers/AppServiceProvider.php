@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Console\Commands\PurgeExpiredSchedules;
+use App\Models\Booking;
 use App\Models\WebsiteSetting;
+use App\Observers\BookingObserver;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
@@ -34,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Register model observers
+        Booking::observe(BookingObserver::class);
 
         // Cache header & footer settings — fetched on every single page load.
         // TTL: 1 hour. Cleared automatically when admin saves website settings.

@@ -21,6 +21,12 @@ class PaymentProof extends Component
     public int $uploadProgress = 0;
     public bool $isUploading = false;
 
+    /** Unix timestamp of when the payment window expires (for JS countdown) */
+    public int $deadlineTimestamp = 0;
+
+    /** Whether the booking is already cancelled due to timeout */
+    public bool $isExpired = false;
+
     protected $rules = [
         'reference_number' => 'required|string',
         'proof' => 'required|image|max:2048',
@@ -29,6 +35,23 @@ class PaymentProof extends Component
     public function mount(): void
     {
         $this->showThankYou = filled($this->transaction->proof_of_payment);
+
+        // Check if already cancelled
+        $this->isExpired = $this->transaction->booking->status === 'cancelled'
+            && $this->transaction->payment_status === 'cancelled';
+
+        // Set the payment deadline if not yet set and booking not already done
+        if (! $this->showThankYou && ! $this->isExpired) {
+            if (! $this->transaction->payment_deadline_at) {
+                $deadline = now()->addHour();
+                $this->transaction->update(['payment_deadline_at' => $deadline]);
+                $this->transaction->refresh();
+            }
+        }
+
+        $this->deadlineTimestamp = $this->transaction->payment_deadline_at
+            ? $this->transaction->payment_deadline_at->timestamp
+            : 0;
     }
 
     public function updatedProof(): void
@@ -36,11 +59,30 @@ class PaymentProof extends Component
         $this->isUploading = false;
         $this->uploadProgress = 0;
     }
-    
+
     // Livewire will automatically update $uploadProgress when using file uploads!
 
     public function submitProof(): void
     {
+        // Guard: don't allow submission if booking is cancelled/expired
+        if ($this->isExpired) {
+            $this->addError('reference_number', 'Your booking has been cancelled due to non-payment within the required time.');
+            return;
+        }
+
+        // Re-check live deadline in case the scheduler ran between page load and submit
+        $this->transaction->refresh();
+        if (
+            $this->transaction->payment_deadline_at
+            && $this->transaction->payment_deadline_at->isPast()
+            && ! filled($this->transaction->proof_of_payment)
+            && $this->transaction->booking->status === 'cancelled'
+        ) {
+            $this->isExpired = true;
+            $this->addError('reference_number', 'Your booking has been cancelled due to non-payment within the required time.');
+            return;
+        }
+
         $this->isUploading = true;
         $this->uploadProgress = 0;
         $this->validate();
@@ -147,11 +189,20 @@ class PaymentProof extends Component
             }
         }
 
+        // Proof uploaded — update transaction with proof and set status to pending (under review).
+        // Also clear the deadline so the countdown stops.
         $this->transaction->update([
             'proof_of_payment' => $path,
             'payment_status' => 'pending',
             'payment_reference' => $this->reference_number,
+            'payment_deadline_at' => null, // Stop the timer
         ]);
+
+        // Also ensure the booking status is not cancelled (it might have been caught
+        // in the brief window between the deadline passing and this submit)
+        if ($this->transaction->booking->status === 'cancelled') {
+            $this->transaction->booking->update(['status' => 'pending']);
+        }
 
         try {
             \Illuminate\Support\Facades\Mail::to($this->transaction->booking->client_email)

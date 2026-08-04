@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('proofs:purge')->daily();
 Schedule::command('schedules:purge-expired')->hourly();
+Schedule::command('payments:cancel-expired')->everyMinute();
