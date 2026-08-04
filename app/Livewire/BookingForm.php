@@ -147,7 +147,10 @@ class BookingForm extends Component
     public string $vehicle_type = '';
     public string $vehicle_plate_number = '';
     public ?float $vehicle_price = null;
-    public string $driver_name = '';
+    public string $driver_first_name = '';
+    public string $driver_middle_name = '';
+    public string $driver_last_name = '';
+    public string $driver_name = '';  // computed full name, kept for backward compat
     public ?string $driver_birthday = null;
     public bool $showBaggageRules = false;
     public bool $hasExtraBaggage = false;
@@ -187,7 +190,7 @@ class BookingForm extends Component
         $allowed = [
             'trip_type','mode','operator','origin','destination','departure_date','return_date','duration_days','adults','children','infants',
             'client_name','client_email','client_phone','hasAcceptedTerms','hasAcceptedPrivacy','selected_hotel','selected_hotel_id','hotel','package_name','price','tour_id','tour_date_id','has_vehicle',
-            'vehicle_booking_method','selected_vehicle_rate_id','selected_brand_id','selected_model_id','vehicle_plate_number','driver_name','driver_birthday'
+            'vehicle_booking_method','selected_vehicle_rate_id','selected_brand_id','selected_model_id','vehicle_plate_number','driver_first_name','driver_middle_name','driver_last_name','driver_name','driver_birthday'
         ];
         $packageQueryKeys = ['tour_id','tour_date_id','package_name','price','available_dates'];
         $hasPackageQueryParams = ! empty(array_intersect(array_keys(request()->query()), $packageQueryKeys));
@@ -1002,7 +1005,10 @@ public function selectedSchedule(): ?array
                       ->where('is_active', true);
 
                 if (! empty($this->operator)) {
-                    $query->where('operator', $this->operator);
+                    $query->where(function ($q) {
+                        $q->where('operator', $this->operator)
+                          ->orWhere('operator', 'like', '%' . $this->operator . '%');
+                    });
                 }
             })
             ->selectRaw('DATE(departure_time) as date')
@@ -1015,8 +1021,30 @@ public function selectedSchedule(): ?array
 
         $this->available_schedule_dates = $departureDates;
 
-        if ($this->departure_date && ! in_array($this->departure_date, $this->available_schedule_dates, true)) {
+        // Only clear departure_date if it's not coming from a fresh URL pre-fill
+        $urlDate = request()->query('departure_date');
+        if ($this->departure_date && $this->departure_date !== $urlDate && ! in_array($this->departure_date, $this->available_schedule_dates, true)) {
             $this->departure_date = null;
+        }
+
+        // If departure_date came from the URL and is not yet in the available dates list
+        // (could happen if operator filter is too strict), verify it exists for this route
+        // without the operator filter and add it so the date picker can pre-select it.
+        if ($urlDate && ! in_array($urlDate, $this->available_schedule_dates, true)
+            && ! empty($this->origin) && ! empty($this->destination)) {
+            $exists = Schedule::active()
+                ->whereDate('departure_time', $urlDate)
+                ->whereHas('ferryRoute', function ($q) {
+                    $q->where('origin', $this->origin)
+                      ->where('destination', $this->destination)
+                      ->where('mode', $this->mode)
+                      ->where('is_active', true);
+                })
+                ->exists();
+            if ($exists) {
+                $this->available_schedule_dates = array_unique(array_merge($this->available_schedule_dates, [$urlDate]));
+                sort($this->available_schedule_dates);
+            }
         }
 
         $returnDates = Schedule::active()
@@ -1813,7 +1841,7 @@ public function selectedSchedule(): ?array
                     'vehicle_type' => $this->vehicle_type,
                     'vehicle_plate_number' => $this->vehicle_plate_number,
                     'vehicle_price' => $this->vehicle_price,
-                    'driver_name' => $this->driver_name,
+                    'driver_name' => trim(trim($this->driver_first_name) . ' ' . trim($this->driver_middle_name) . ' ' . trim($this->driver_last_name)),
                     'driver_birthday' => $this->driver_birthday,
                     'promotional_ticket_id' => $usedPromoTicket?->id,
                     'promo_ticket_count' => $promoTicketCount,
@@ -2217,7 +2245,9 @@ public function selectedSchedule(): ?array
             'client_phone' => 'required|string|max:25',
             'has_vehicle' => 'boolean',
             'vehicle_booking_method' => 'required|string|in:category,brand_model',
-            'driver_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_first_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_middle_name' => 'nullable|string|max:255',
+            'driver_last_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'driver_birthday' => 'required_if:has_vehicle,true|nullable|date',
             'selected_vehicle_rate_id' => $this->vehicle_booking_method === 'category' && $this->vehicleRateCatalog->isNotEmpty() ? 'required_if:has_vehicle,true|nullable|integer|exists:vehicle_rates,id' : 'nullable',
             'selected_brand_id' => $this->vehicle_booking_method === 'brand_model' ? 'required_if:has_vehicle,true|nullable|integer|exists:vehicle_brands,id' : 'nullable',

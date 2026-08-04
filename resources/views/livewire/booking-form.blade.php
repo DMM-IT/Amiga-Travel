@@ -363,7 +363,7 @@
                                             @elseif(empty($enabledDepartureDates))
                                                 <livewire:date-picker wire:key="departure-no-schedules" wire:model.live="departure_date" field="departure_date" label="" :disabled="true" placeholder="No schedules available" />
                                             @else
-                                                <livewire:date-picker wire:key="departure-restricted-{{ md5(json_encode($enabledDepartureDates)) }}" wire:model.live="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" label="" min="{{ date('Y-m-d') }}" />
+                                                <livewire:date-picker wire:key="departure-restricted-{{ md5(json_encode($enabledDepartureDates)) }}" wire:model.live="departure_date" field="departure_date" :enabled-dates="$enabledDepartureDates" :value="$departure_date" label="" min="{{ date('Y-m-d') }}" />
                                             @endif
                                         </div>
                                     @error('departure_date')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -522,13 +522,29 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                                                <label class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                            <div class="mt-6">
+                                                <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                     <span class="text-sm font-semibold text-slate-900">Driver name</span>
-                                                    <input type="text" wire:model.blur="driver_name" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., Juan Dela Cruz" />
-                                                    @error('driver_name')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
-                                                </label>
+                                                    <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                                                        <div>
+                                                            <label class="text-xs font-medium text-slate-600">First Name <span class="text-rose-500">*</span></label>
+                                                            <input type="text" wire:model.blur="driver_first_name" class="mt-1 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., Juan" />
+                                                            @error('driver_first_name')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-xs font-medium text-slate-600">Middle Name <span class="text-slate-400">(optional)</span></label>
+                                                            <input type="text" wire:model.blur="driver_middle_name" class="mt-1 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., Dela" />
+                                                        </div>
+                                                        <div>
+                                                            <label class="text-xs font-medium text-slate-600">Last Name <span class="text-rose-500">*</span></label>
+                                                            <input type="text" wire:model.blur="driver_last_name" class="mt-1 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" placeholder="e.g., Cruz" />
+                                                            @error('driver_last_name')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
+                                            <div class="mt-3 grid gap-4 sm:grid-cols-1">
                                                 <label class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                     <span class="text-sm font-semibold text-slate-900">Driver birthday</span>
                                                     <input type="date" wire:model.blur="driver_birthday" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20" />

@@ -234,7 +234,9 @@
              selected_brand_id: '',
              selected_model_id: '',
              vehicle_plate_number: '',
-             driver_name: '',
+             driver_first_name: '',
+             driver_middle_name: '',
+             driver_last_name: '',
              driver_birthday: '',
              get selectedCargoRate() {
                  if (this.vehicle_booking_method === 'category' && this.selected_vehicle_rate_id) {
@@ -441,7 +443,8 @@
                          if (this.selected_model_id) params.append('selected_model_id', this.selected_model_id);
                      }
                      if (this.vehicle_plate_number) params.append('vehicle_plate_number', this.vehicle_plate_number);
-                     if (this.driver_name) params.append('driver_name', this.driver_name);
+                     const driverFullName = [this.driver_first_name, this.driver_middle_name, this.driver_last_name].filter(Boolean).join(' ');
+                     if (driverFullName) params.append('driver_name', driverFullName);
                      if (this.driver_birthday) params.append('driver_birthday', this.driver_birthday);
                  }
                  
@@ -1016,21 +1019,38 @@
                         </div>
                     </div>
 
-                    <!-- Row 2: Driver Details (Slim 2 Columns) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                        <div>
-                            <span class="text-xs font-semibold text-slate-700 block mb-1.5">Driver name</span>
-                            <input type="text" 
-                                   x-model="driver_name" 
-                                   placeholder="e.g., Juan Dela Cruz" 
-                                   class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                    <!-- Row 2: Driver Details -->
+                    <div class="mt-3">
+                        <span class="text-xs font-semibold text-slate-700 block mb-1.5">Driver name</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div>
+                                <span class="text-[10px] font-medium text-slate-500 block mb-1">First Name <span class="text-rose-500">*</span></span>
+                                <input type="text"
+                                       x-model="driver_first_name"
+                                       placeholder="e.g., Juan"
+                                       class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-medium text-slate-500 block mb-1">Middle Name <span class="text-slate-400">(optional)</span></span>
+                                <input type="text"
+                                       x-model="driver_middle_name"
+                                       placeholder="e.g., Dela"
+                                       class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-medium text-slate-500 block mb-1">Last Name <span class="text-rose-500">*</span></span>
+                                <input type="text"
+                                       x-model="driver_last_name"
+                                       placeholder="e.g., Cruz"
+                                       class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                            </div>
                         </div>
-                        <div>
-                            <span class="text-xs font-semibold text-slate-700 block mb-1.5">Driver birthday</span>
-                            <input type="date" 
-                                   x-model="driver_birthday" 
-                                   class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
-                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-xs font-semibold text-slate-700 block mb-1.5">Driver birthday</span>
+                        <input type="date"
+                               x-model="driver_birthday"
+                               class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
                     </div>
                 </div>
             </div>
