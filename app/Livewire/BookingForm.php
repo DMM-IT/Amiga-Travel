@@ -1224,7 +1224,7 @@ public function selectedSchedule(): ?array
 
                 if (empty($this->availableSchedules)) {
                     throw ValidationException::withMessages([
-                        'departure_date' => 'No ferry schedules are available for this route on the selected date. Try another date or contact Amiga Gracia Travel Services.',
+                        'departure_date' => 'No ferry schedules are available for this route on the selected date. (DEBUG: origin=' . $this->origin . ', dest=' . $this->destination . ', date=' . $this->departure_date . ', mode=' . $this->mode . ', operator=' . $this->operator . ')',
                     ]);
                 }
                 
@@ -1284,17 +1284,13 @@ public function selectedSchedule(): ?array
 
     protected function getAvailableSchedules(): array
     {
-        $cacheKey = 'livewire:schedules:' . md5(serialize([$this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator]));
-
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(3), function () {
-            return Schedule::query()
-                ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
-                ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
-                ->get()
-                ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date, []))
-                ->values()
-                ->all();
-        });
+        return Schedule::query()
+            ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
+            ->forRouteAndDate($this->origin, $this->destination, $this->departure_date, $this->mode, $this->operator)
+            ->get()
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->departure_date, []))
+            ->values()
+            ->all();
     }
 
     protected function getAvailableReturnSchedules(): array
@@ -1303,18 +1299,14 @@ public function selectedSchedule(): ?array
             return [];
         }
 
-        $cacheKey = 'livewire:return_schedules:' . md5(serialize([$this->destination, $this->origin, $this->return_date, $this->mode, $this->operator]));
-
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(3), function () {
-            return Schedule::query()
-                ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
-                // Reverse origin and destination for return trip
-                ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode, $this->operator)
-                ->get()
-                ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date, []))
-                ->values()
-                ->all();
-        });
+        return Schedule::query()
+            ->with(['ferryRoute', 'transportClasses', 'scheduleAccommodations'])
+            // Reverse origin and destination for return trip
+            ->forRouteAndDate($this->destination, $this->origin, $this->return_date, $this->mode, $this->operator)
+            ->get()
+            ->map(fn (Schedule $schedule) => $schedule->toBookingArray($this->return_date, []))
+            ->values()
+            ->all();
     }
 
     /**
@@ -1799,6 +1791,35 @@ public function selectedSchedule(): ?array
 
                 $usedSchedulePrice = $this->getSelectedSchedulePrice();
 
+                // --- Decrement tickets_available (pessimistic lock to prevent overselling) ---
+                if ($scheduleAccommodation) {
+                    $lockedAccom = ScheduleAccommodation::where('id', $scheduleAccommodation->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $lockedAccom || $lockedAccom->tickets_available <= 0) {
+                        throw new \RuntimeException(
+                            'Sorry, this accommodation is now fully booked. Please choose another option.'
+                        );
+                    }
+
+                    $lockedAccom->decrement('tickets_available');
+                }
+
+                if ($returnScheduleAccommodation) {
+                    $lockedReturnAccom = ScheduleAccommodation::where('id', $returnScheduleAccommodation->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $lockedReturnAccom || $lockedReturnAccom->tickets_available <= 0) {
+                        throw new \RuntimeException(
+                            'Sorry, the return trip accommodation is now fully booked. Please choose another option.'
+                        );
+                    }
+
+                    $lockedReturnAccom->decrement('tickets_available');
+                }
+
                 $termsVersion = 'amiga-terms-2026-07-24';
                 $termsAcceptedAt = now();
                 $termsAcceptedIp = request()->ip();
@@ -1935,6 +1956,12 @@ public function selectedSchedule(): ?array
         }
 
         $booking->load('passengers.discount', 'scheduleAccommodation', 'transportClasses', 'transaction', 'schedule');
+
+        // Bust the schedule search cache so the public Schedules page shows updated ticket counts immediately
+        \App\Actions\Bookings\CreateBookingAction::bustScheduleCache(
+            $booking->schedule,
+            $booking->returnSchedule ?? null
+        );
 
         \App\Jobs\SendBookingConfirmationJob::dispatch($booking);
 

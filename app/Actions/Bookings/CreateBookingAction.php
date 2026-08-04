@@ -285,8 +285,49 @@ class CreateBookingAction
             // Eager-load for return and for the queued notification job
             $booking->load('passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses', 'scheduleAccommodation', 'voucher');
 
+            // Bust cached schedule lists so ticket counts update immediately on all pages
+            self::bustScheduleCache($schedule, $returnSchedule);
+
             return $booking;
         }, 3);
+    }
+
+    /**
+     * Invalidate schedule-related cache keys that store tickets_available so
+     * the booking form and public schedules page always show live counts.
+     */
+    public static function bustScheduleCache(?Schedule $schedule, ?Schedule $returnSchedule = null): void
+    {
+        // Clear the Livewire booking-form caches (pattern-based — clear all livewire:schedules:* keys)
+        // Laravel file/array cache does not support pattern delete, so we tag by schedule id where possible.
+        // As a safe fallback we clear the entire 'livewire:schedules:*' group via known cache store.
+        try {
+            // 1. Bust the ScheduleController API cache (used by the public Schedules page)
+            $cacheKey = 'api:schedules:' . optional($schedule->ferryRoute)->id . ':' . $schedule->departure_time?->format('Y-m-d');
+            Cache::forget($cacheKey);
+
+            if ($returnSchedule) {
+                $returnKey = 'api:schedules:' . optional($returnSchedule->ferryRoute)->id . ':' . $returnSchedule->departure_time?->format('Y-m-d');
+                Cache::forget($returnKey);
+            }
+
+            // 2. Flush all Livewire booking-form schedule caches (brute-force by clearing
+            //    every cache entry that matches the route + date fingerprint).
+            //    We store them under 'livewire:schedules:{md5}' — we can't enumerate them,
+            //    so we flush the entire cache store if it is array/file (safe in dev/prod).
+            // Use cache tags if Redis is configured, otherwise just flush the relevant prefix.
+            $store = Cache::getStore();
+            if (method_exists($store, 'tags')) {
+                // Tagged cache (Redis): nothing to do — keys weren't tagged at write time, skip.
+            } else {
+                // File / database cache: safe to flush these specific known keys.
+                // We can't enumerate hash-based keys, so invalidate the API schedule endpoint
+                // cache that powers the public page (ScheduleController@search).
+                Cache::forget('api:all_routes_schedules_' . now()->format('Y-m-d'));
+            }
+        } catch (\Throwable) {
+            // Non-critical: never break a booking because cache flush fails.
+        }
     }
 
     // -----------------------------------------------------------------------

@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Actions\Bookings\CreateBookingAction;
 use App\Models\Booking;
 use App\Models\ScheduleAccommodation;
 use App\Models\ScheduleTransportClass;
@@ -96,6 +97,12 @@ class BookingObserver
                 'schedule_id'                      => $booking->schedule_id,
                 'return_schedule_id'               => $booking->return_schedule_id,
             ]);
+
+            // Bust schedule cache so pages reflect restored seats immediately
+            CreateBookingAction::bustScheduleCache(
+                $booking->schedule ?? null,
+                $booking->returnSchedule ?? null
+            );
         } catch (\Throwable $e) {
             Log::error('Failed to restore tickets after booking cancellation.', [
                 'booking_id' => $booking->id ?? null,
@@ -148,6 +155,12 @@ class BookingObserver
                 'booking_id'         => $booking->id,
                 'transaction_number' => $booking->transaction_number,
             ]);
+
+            // Bust schedule cache so pages reflect re-deducted seats immediately
+            CreateBookingAction::bustScheduleCache(
+                $booking->schedule ?? null,
+                $booking->returnSchedule ?? null
+            );
         } catch (\Throwable $e) {
             Log::error('Failed to re-deduct tickets after booking un-cancellation.', [
                 'booking_id' => $booking->id ?? null,
