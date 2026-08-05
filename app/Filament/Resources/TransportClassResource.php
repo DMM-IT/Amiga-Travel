@@ -83,7 +83,7 @@ class TransportClassResource extends Resource
                         'airline' => [
                             'AirAsia' => 'AirAsia',
                             'Cebu Pacific' => 'Cebu Pacific',
-                            'Philippine Airlines' => 'Philippine Airlines',
+                            'Philippine Airline' => 'Philippine Airline',
                         ],
                         'ferry' => [
                             '2GO' => '2GO',
@@ -142,7 +142,7 @@ class TransportClassResource extends Resource
                     ->options([
                         'AirAsia' => 'AirAsia',
                         'Cebu Pacific' => 'Cebu Pacific',
-                        'Philippine Airlines' => 'Philippine Airlines',
+                        'Philippine Airline' => 'Philippine Airline',
                         '2GO' => '2GO',
                         'Starlite' => 'Starlite',
                     ])
@@ -166,7 +166,7 @@ class TransportClassResource extends Resource
                             ->options([
                                 'AirAsia' => 'AirAsia',
                                 'Cebu Pacific' => 'Cebu Pacific',
-                                'Philippine Airlines' => 'Philippine Airlines',
+                                'Philippine Airline' => 'Philippine Airline',
                                 '2GO' => '2GO',
                                 'Starlite' => 'Starlite',
                             ])

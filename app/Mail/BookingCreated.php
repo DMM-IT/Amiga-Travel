@@ -14,28 +14,15 @@ class BookingCreated extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public Booking $booking;
-    public ?string $receiptPath;
 
-    public function __construct(Booking $booking, ?string $receiptPath = null)
+    public function __construct(Booking $booking)
     {
         $this->booking = $booking;
-        $this->receiptPath = $receiptPath;
     }
 
     public function build()
     {
-        $mail = $this->subject('Amiga Gracia Travel Booking Received')
+        return $this->subject('Payment Reminder for Your Booking')
             ->view('emails.booking-created');
-
-        if ($this->receiptPath) {
-            if (file_exists($this->receiptPath)) {
-                $mail->attach($this->receiptPath, [
-                    'as' => 'receipt.pdf',
-                    'mime' => 'application/pdf',
-                ]);
-            }
-        }
-
-        return $mail;
     }
 }

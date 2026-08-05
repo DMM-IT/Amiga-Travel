@@ -1214,7 +1214,12 @@ public function selectedSchedule(): ?array
         $rules = $this->stepRules();
 
         if (! empty($rules)) {
-            $this->validate($rules);
+            try {
+                $this->validate($rules);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                $this->dispatch('validation-error');
+                throw $e;
+            }
         }
 
         if ($this->step === 1) {
@@ -1223,7 +1228,8 @@ public function selectedSchedule(): ?array
                 $this->availableReturnSchedules = $this->getAvailableReturnSchedules();
 
                 if (empty($this->availableSchedules)) {
-                    throw ValidationException::withMessages([
+                    $this->dispatch('validation-error');
+                    throw \Illuminate\Validation\ValidationException::withMessages([
                         'departure_date' => 'No ferry schedules are available for this route on the selected date. (DEBUG: origin=' . $this->origin . ', dest=' . $this->destination . ', date=' . $this->departure_date . ', mode=' . $this->mode . ', operator=' . $this->operator . ')',
                     ]);
                 }
@@ -1887,10 +1893,25 @@ public function selectedSchedule(): ?array
                 }
 
                 if ($this->selected_transport_class_id) {
-                    $transportClass = TransportClass::query()->find($this->selected_transport_class_id);
-                    if ($transportClass) {
-                        $booking->transportClasses()->attach($transportClass->id, [
-                            'price' => $transportClass->price,
+                    $scheduleTransportClass = \App\Models\ScheduleTransportClass::with('transportClass')->find($this->selected_transport_class_id);
+                    if ($scheduleTransportClass && $scheduleTransportClass->transportClass) {
+                        $price = $scheduleTransportClass->additional_price ?? $scheduleTransportClass->transportClass->price;
+                        $booking->transportClasses()->attach($scheduleTransportClass->transport_class_id, [
+                            'price' => $price,
+                            'is_promo' => $scheduleTransportClass->is_promo,
+                            'rate_code' => $scheduleTransportClass->rate_code,
+                        ]);
+                    }
+                }
+
+                if ($this->selected_return_transport_class_id) {
+                    $returnScheduleTransportClass = \App\Models\ScheduleTransportClass::with('transportClass')->find($this->selected_return_transport_class_id);
+                    if ($returnScheduleTransportClass && $returnScheduleTransportClass->transportClass) {
+                        $price = $returnScheduleTransportClass->additional_price ?? $returnScheduleTransportClass->transportClass->price;
+                        $booking->transportClasses()->attach($returnScheduleTransportClass->transport_class_id, [
+                            'price' => $price,
+                            'is_promo' => $returnScheduleTransportClass->is_promo,
+                            'rate_code' => $returnScheduleTransportClass->rate_code,
                         ]);
                     }
                 }
@@ -2420,13 +2441,17 @@ public function selectedSchedule(): ?array
             return $fare;
         });
 
-        $departureTransportClassTotal = $this->selected_transport_class_id
-            ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id)->price ?? 0)
-            : 0;
+        $departureTransportClassTotal = 0;
+        if ($this->selected_transport_class_id) {
+            $stc = \App\Models\ScheduleTransportClass::with('transportClass')->find($this->selected_transport_class_id);
+            $departureTransportClassTotal = floatval($stc->additional_price ?? $stc->transportClass->price ?? 0);
+        }
 
-        $returnTransportClassTotal = ($this->trip_type === 'round_trip' && $this->selected_return_transport_class_id)
-            ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_return_transport_class_id)->price ?? 0)
-            : 0;
+        $returnTransportClassTotal = 0;
+        if ($this->trip_type === 'round_trip' && $this->selected_return_transport_class_id) {
+            $rstc = \App\Models\ScheduleTransportClass::with('transportClass')->find($this->selected_return_transport_class_id);
+            $returnTransportClassTotal = floatval($rstc->additional_price ?? $rstc->transportClass->price ?? 0);
+        }
 
         $transportClassTotal = $departureTransportClassTotal + $returnTransportClassTotal;
 
@@ -2507,9 +2532,19 @@ public function selectedSchedule(): ?array
         $breakdown['accommodation'] = $totalDepartureAccommodation + $totalReturnAccommodation;
 
         // Transport class (per booking, not per person)
-        $breakdown['transport_class'] = $this->selected_transport_class_id
-            ? floatval($this->transportClassCatalog->firstWhere('id', $this->selected_transport_class_id)->price ?? 0)
-            : 0;
+        $departureTransportClassTotal = 0;
+        if ($this->selected_transport_class_id) {
+            $stc = \App\Models\ScheduleTransportClass::with('transportClass')->find($this->selected_transport_class_id);
+            $departureTransportClassTotal = floatval($stc->additional_price ?? $stc->transportClass->price ?? 0);
+        }
+
+        $returnTransportClassTotal = 0;
+        if ($this->trip_type === 'round_trip' && $this->selected_return_transport_class_id) {
+            $rstc = \App\Models\ScheduleTransportClass::with('transportClass')->find($this->selected_return_transport_class_id);
+            $returnTransportClassTotal = floatval($rstc->additional_price ?? $rstc->transportClass->price ?? 0);
+        }
+
+        $breakdown['transport_class'] = $departureTransportClassTotal + $returnTransportClassTotal;
 
         // Vehicle (per booking, not per person)
         $breakdown['vehicle'] = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;

@@ -599,7 +599,9 @@ class BookingLookup extends Component
 
         $this->isUploadingRebooking = true;
 
-        $path = $this->rebookingProof->store('rebooking_proofs', 'public');
+        $extension = $this->rebookingProof->extension();
+        $filename = 'rebook_proof_' . $this->booking->transaction_number . '_' . uniqid() . '.' . $extension;
+        $path = $this->rebookingProof->storeAs('rebooking_proofs', $filename, 'public');
 
         $rebookingFee = $this->booking->getRebookingFeeAmount();
 

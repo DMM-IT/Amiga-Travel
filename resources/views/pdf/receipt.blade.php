@@ -211,7 +211,7 @@
         <tr>
             <td>
                 <div class="brand-name">Amiga Gracia</div>
-                <div class="brand-sub">TRAVEL SERVICE & ITINERARY E-RECEIPT</div>
+                <div class="brand-sub">TRAVEL SERVICE & ITINERARY ACKNOWLEDGEMENT</div>
             </td>
             <td class="receipt-title-box">
                 @php
@@ -441,7 +441,7 @@
     <div class="notice-box">
         <div class="notice-title">IMPORTANT TRAVEL INSTRUCTIONS & REMINDERS</div>
         <ol style="margin: 4px 0 0 16px; padding: 0;">
-            <li>Please present a printed copy or digital screenshot of this E-Receipt at the terminal/check-in counter.</li>
+            <li>Please present a printed copy or digital screenshot of this Acknowledgement at the terminal/check-in counter.</li>
             <li>All passengers must present a valid government-issued ID (or Student/Senior ID for discounted tickets).</li>
             <li>Please arrive at the terminal at least <strong>1.5 hours</strong> before scheduled departure for check-in and security screening.</li>
             <li>Tickets are non-transferable. Unused or expired tickets are subject to carrier revalidation and refund policies.</li>
@@ -450,8 +450,9 @@
 
     <!-- Official Footer -->
     <div class="footer">
-        Amiga Gracia Travel Service &bull; Official Booking E-Receipt &bull; Ref #{{ $booking->transaction_number }}<br>
+        Amiga Gracia Travel Service &bull; Official Booking Acknowledgement &bull; Ref #{{ $booking->transaction_number }}<br>
         Thank you for choosing Amiga Gracia Travel Service. Have a safe and pleasant trip!
+        <div style="color: #ef4444; font-weight: bold; font-size: 10px; margin-top: 6px;">Note: This document is not valid for claiming input taxes</div>
     </div>
 
 </body>

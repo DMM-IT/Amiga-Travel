@@ -152,7 +152,7 @@ class Booking extends Model
     public function transportClasses(): BelongsToMany
     {
         return $this->belongsToMany(TransportClass::class, 'booking_transport_class')
-            ->withPivot('price')
+            ->withPivot('price', 'is_promo', 'rate_code')
             ->withTimestamps();
     }
 
@@ -288,6 +288,12 @@ class Booking extends Model
 
     public function isRefundEligible(): bool
     {
+        // Promotional tickets are strictly non-refundable
+        $hasPromoClass = $this->transportClasses()->wherePivot('is_promo', true)->exists();
+        if ($hasPromoClass) {
+            return false;
+        }
+
         $departureDateTime = $this->getDepartureDateTime();
         
         if (! $departureDateTime) {

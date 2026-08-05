@@ -1070,7 +1070,7 @@
                 </button>
 
                 <h2 class="text-xl font-bold text-slate-900">Minor age reminder</h2>
-                <p class="mt-3 text-slate-600">23 months and under will be issued upon arrival at the port.</p>
+                <p class="mt-3 text-slate-600">23 months and under will be issued upon arrival at the port/airport.</p>
                 <div class="mt-6 flex justify-end">
                     <button type="button" @click="showMinorAgeWarning = false" class="inline-flex rounded-full bg-[#db2777] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#be185d]">Close</button>
                 </div>

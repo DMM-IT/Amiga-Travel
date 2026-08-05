@@ -359,10 +359,12 @@ class FerryRouteResource extends Resource
                         ->label('Transport Class')
                         ->options(fn (callable $get) => \App\Models\TransportClass::query()
                             ->when($get('../../../../operator'), fn ($query, $operator) => $query->where('operator', $operator))
-                            ->when($get('../../../../mode'), fn ($query, $mode) => $query->where('mode', $mode))
+                            // Intentionally skipping mode filter because the DB has ferry classes seeded as 'airline'
                             ->where('is_active', true)
                             ->orderBy('name')
-                            ->pluck('name', 'id'))
+                            ->get()
+                            ->mapWithKeys(fn ($item) => [$item->id => $item->operator ? "{$item->operator} - {$item->name}" : $item->name])
+                            ->toArray())
                         ->required()
                         ->reactive()
                         ->afterStateUpdated(function ($state, callable $set) {
@@ -392,12 +394,21 @@ class FerryRouteResource extends Resource
                         ->default(0)
                         ->minValue(0),
 
+                    TextInput::make('rate_code')
+                        ->label('Promo Rate Code')
+                        ->placeholder('e.g. PROMO, EARLYBIRD')
+                        ->maxLength(255),
+
                     TextInput::make('tickets_available')
                         ->label('Tickets Available')
                         ->numeric()
                         ->minValue(0)
                         ->default(50)
                         ->required(),
+
+                    Toggle::make('is_promo')
+                        ->label('Promotional Ticket (Non-refundable)')
+                        ->helperText('Tickets in this class will not be eligible for refunds.'),
 
                     Toggle::make('has_bed')
                         ->label('Includes bed / berth')

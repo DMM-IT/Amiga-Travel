@@ -152,8 +152,8 @@
             $selectedSchedule = collect($schedules)->firstWhere('id', $selectedId);
         @endphp
 
-        {{-- Ferry: Show accommodations --}}
-        @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']))
+        {{-- Ferry: Show accommodations (legacy fallback) --}}
+        @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']) && empty($selectedSchedule['transport_classes']))
             <div class="mt-5 sm:mt-4 border-t border-slate-200 pt-5 sm:pt-4">
                 <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select accommodation for this trip:</p>
                 <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
@@ -184,8 +184,8 @@
             </div>
         @endif
 
-        {{-- Airline: Show transport classes --}}
-        @if($mode === 'airline' && $selectedSchedule && !empty($selectedSchedule['transport_classes']))
+        {{-- Show transport classes (for Airlines and modern Ferries) --}}
+        @if($selectedSchedule && !empty($selectedSchedule['transport_classes']))
             <div class="mt-5 sm:mt-4 border-t border-slate-200 pt-5 sm:pt-4">
                 <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select travel class for this trip:</p>
                 <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
@@ -194,15 +194,26 @@
                             $schedulePrice = $selectedSchedule['price'] ?? 0;
                             $classPrice = $class['price'] ?? 0;
                             $totalPrice = $schedulePrice + $classPrice;
+                            $uniqueId = $class['pivot_id'] ?? $class['id'];
                         @endphp
-                        <button type="button" wire:click.prevent="{{ $selectClassMethod }}({{ $class['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 overflow-hidden {{ (int)$selectedClassId === (int)$class['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
+                        <button type="button" wire:click.prevent="{{ $selectClassMethod }}({{ $uniqueId }})" class="rounded-xl border-2 p-4 text-left transition duration-200 overflow-hidden {{ (int)$selectedClassId === (int)$uniqueId ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <h4 class="font-bold text-slate-900 text-sm">{{ $class['name'] }}</h4>
-                                @if(isset($class['tickets_available']))
-                                    <span class="text-[10px] font-extrabold {{ (int)$selectedClassId === (int)$class['id'] ? 'bg-[#db2777] text-white' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }} px-2.5 py-0.5 rounded-full">
-                                        {{ $class['tickets_available'] }} {{ \Illuminate\Support\Str::plural('seat', $class['tickets_available']) }} left
-                                    </span>
-                                @endif
+                                <h4 class="font-bold text-slate-900 text-sm">
+                                    {{ $class['name'] }}
+                                    @if(!empty($class['rate_code']))
+                                        <span class="text-xs font-semibold text-slate-500 ml-1">({{ $class['rate_code'] }})</span>
+                                    @endif
+                                </h4>
+                                <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                    @if(isset($class['tickets_available']))
+                                        <span class="text-[10px] font-extrabold {{ (int)$selectedClassId === (int)$uniqueId ? 'bg-[#db2777] text-white' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }} px-2.5 py-0.5 rounded-full">
+                                            {{ $class['tickets_available'] }} {{ \Illuminate\Support\Str::plural('seat', $class['tickets_available']) }} left
+                                        </span>
+                                    @endif
+                                    @if(!empty($class['is_promo']))
+                                        <span class="text-[9px] font-bold uppercase tracking-wider bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200">Non-refundable</span>
+                                    @endif
+                                </div>
                             </div>
                             <p class="mt-2 text-lg font-extrabold text-[#db2777]">&#8369;{{ number_format($totalPrice, 2) }}</p>
                         </button>

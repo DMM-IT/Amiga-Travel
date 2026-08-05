@@ -593,7 +593,7 @@
                                         </button>
 
                                         <h2 class="text-xl font-bold text-slate-900">Minor age reminder</h2>
-                                        <p class="mt-3 text-slate-600">23 months and under will be issued upon arrival at the port.</p>
+                                        <p class="mt-3 text-slate-600">23 months and under will be issued upon arrival at the port/airport.</p>
                                         <div class="mt-6 flex justify-end">
                                             <button type="button" wire:click.prevent="closeMinorAgeWarning" class="inline-flex rounded-full bg-[#db2777] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#be185d]">Close</button>
                                         </div>
@@ -886,7 +886,7 @@
                                 @php
                                     $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
                                     $selectedClass = $selectedSchedule && $selected_transport_class_id 
-                                        ? collect($selectedSchedule['transport_classes'])->firstWhere('id', $selected_transport_class_id)
+                                        ? collect($selectedSchedule['transport_classes'])->firstWhere(fn($c) => (int)($c['pivot_id'] ?? $c['id']) === (int)$selected_transport_class_id)
                                         : null;
                                 @endphp
                                 <div class="lg:col-span-5 xl:col-span-4 self-start lg:sticky lg:top-6 space-y-6 min-w-0">
@@ -909,16 +909,13 @@
                                                         </div>
                                                         <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} - {{ $selectedSchedule['arrival'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedSchedule['duration'] }}</p>
-                                                        <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
                                                     </div>
 
                                                     <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                         <p class="text-slate-900 font-bold">Travel Class @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         @if($selectedClass)
                                                             <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedClass['name'] }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Class Fare: &#8369;{{ number_format($selectedClass['price'], 2) }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Flight fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
-                                                            <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedSchedule['price'] + $selectedClass['price'], 2) }}</p>
+                                                            <p class="mt-1 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedSchedule['price'] + $selectedClass['price'], 2) }}</p>
                                                             @if(!empty($selectedClass['description']))
                                                                 <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedClass['description'] }}</p>
                                                             @endif
@@ -936,18 +933,15 @@
                                                                 </div>
                                                                 <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} - {{ $selectedReturnSchedule['arrival'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedReturnSchedule['duration'] }}</p>
-                                                                <p class="mt-1 text-sm text-slate-600 font-bold">Base Fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
                                                             </div>
 
-                                                            @php $selectedReturnClass = collect($selectedReturnSchedule['transport_classes'] ?? [])->firstWhere('id', $selected_return_transport_class_id ?? null); @endphp
+                                                            @php $selectedReturnClass = collect($selectedReturnSchedule['transport_classes'] ?? [])->firstWhere(fn($c) => (int)($c['pivot_id'] ?? $c['id']) === (int)$selected_return_transport_class_id); @endphp
 
                                                             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                                                 <p class="text-slate-900 font-bold">Travel Class (Returning)</p>
                                                                 @if($selectedReturnClass)
                                                                     <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedReturnClass['name'] }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Class Fare: &#8369;{{ number_format($selectedReturnClass['price'], 2) }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Flight fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
-                                                                    <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedReturnSchedule['price'] + $selectedReturnClass['price'], 2) }}</p>
+                                                                    <p class="mt-1 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedReturnSchedule['price'] + $selectedReturnClass['price'], 2) }}</p>
                                                                     @if(!empty($selectedReturnClass['description']))
                                                                         <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedReturnClass['description'] }}</p>
                                                                     @endif
@@ -989,18 +983,15 @@
                                                         </div>
                                                         <p class="text-sm text-[#db2777] font-semibold">{{ $selectedSchedule['service'] }} &middot; {{ $selectedSchedule['departure'] }} - {{ $selectedSchedule['arrival'] }}</p>
                                                         <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedSchedule['duration'] }}</p>
-                                                        <p class="mt-1 text-sm text-slate-600 font-bold">Fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
                                                     </div>
 
-                                                    @php $selectedAccommodation = collect($selectedSchedule['accommodations'] ?? [])->firstWhere('id', $selected_schedule_accommodation_id); @endphp
+                                                    @php $selectedAccommodation = $selectedSchedule && $selected_transport_class_id ? collect($selectedSchedule['transport_classes'] ?? [])->firstWhere(fn($c) => (int)($c['pivot_id'] ?? $c['id']) === (int)$selected_transport_class_id) : null; @endphp
 
                                                     <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                                                        <p class="text-slate-900 font-bold">Accommodation @if($trip_type === 'round_trip') (Departure) @endif</p>
+                                                        <p class="text-slate-900 font-bold">Travel Class @if($trip_type === 'round_trip') (Departure) @endif</p>
                                                         @if($selectedAccommodation)
                                                             <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedAccommodation['name'] }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Accommodation: &#8369;{{ number_format($selectedAccommodation['price'], 2) }}</p>
-                                                            <p class="mt-1 text-sm text-slate-600">Ticket fare: &#8369;{{ number_format($selectedSchedule['price'], 2) }}</p>
-                                                            <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedSchedule['price'] + $selectedAccommodation['price'], 2) }}</p>
+                                                            <p class="mt-1 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedSchedule['price'] + $selectedAccommodation['price'], 2) }}</p>
                                                             @if(!empty($selectedAccommodation['description']))
                                                                 <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedAccommodation['description'] }}</p>
                                                             @endif
@@ -1018,18 +1009,15 @@
                                                                 </div>
                                                                 <p class="text-sm text-[#db2777] font-semibold">{{ $selectedReturnSchedule['service'] }} &middot; {{ $selectedReturnSchedule['departure'] }} - {{ $selectedReturnSchedule['arrival'] }}</p>
                                                                 <p class="mt-1 text-sm text-slate-600">Duration: {{ $selectedReturnSchedule['duration'] }}</p>
-                                                                <p class="mt-1 text-sm text-slate-600 font-bold">Fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
                                                             </div>
 
-                                                            @php $selectedReturnAccommodation = collect($selectedReturnSchedule['accommodations'] ?? [])->firstWhere('id', $selected_return_schedule_accommodation_id); @endphp
+                                                            @php $selectedReturnAccommodation = $selectedReturnSchedule && $selected_return_transport_class_id ? collect($selectedReturnSchedule['transport_classes'] ?? [])->firstWhere(fn($c) => (int)($c['pivot_id'] ?? $c['id']) === (int)$selected_return_transport_class_id) : null; @endphp
 
                                                             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                                                                <p class="text-slate-900 font-bold">Accommodation (Returning)</p>
+                                                                <p class="text-slate-900 font-bold">Travel Class (Returning)</p>
                                                                 @if($selectedReturnAccommodation)
                                                                     <p class="mt-2 text-sm text-slate-700 font-semibold">{{ $selectedReturnAccommodation['name'] }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Accommodation: &#8369;{{ number_format($selectedReturnAccommodation['price'], 2) }}</p>
-                                                                    <p class="mt-1 text-sm text-slate-600">Ticket fare: &#8369;{{ number_format($selectedReturnSchedule['price'], 2) }}</p>
-                                                                    <p class="mt-2 pt-2 border-t border-slate-100 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedReturnSchedule['price'] + $selectedReturnAccommodation['price'], 2) }}</p>
+                                                                    <p class="mt-1 text-sm text-slate-900 font-extrabold">Total per person: &#8369;{{ number_format($selectedReturnSchedule['price'] + $selectedReturnAccommodation['price'], 2) }}</p>
                                                                     @if(!empty($selectedReturnAccommodation['description']))
                                                                         <p class="mt-3 text-sm text-slate-500 italic">{{ $selectedReturnAccommodation['description'] }}</p>
                                                                     @endif
@@ -1277,8 +1265,8 @@
                             </label>
 
                             <label class="block lg:col-span-2" data-error="client_phone">
-                                <span class="text-slate-900 font-bold text-sm">Contact number</span>
-                                <input type="tel" inputmode="tel" wire:model.blur="client_phone" oninput="this.value = this.value.replace(/[^0-9+\s()-]/g, '')" onkeypress="if(event.key.length === 1 && !/[0-9+\s()-]/.test(event.key)) event.preventDefault();" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="e.g. +63 912 345 6789" />
+                                <span class="text-slate-900 font-bold text-sm">Contact number <span class="text-rose-600">*</span></span>
+                                <input required type="tel" inputmode="tel" wire:model.blur="client_phone" oninput="this.value = this.value.replace(/[^0-9+\s()-]/g, '')" onkeypress="if(event.key.length === 1 && !/[0-9+\s()-]/.test(event.key)) event.preventDefault();" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="e.g. +63 912 345 6789" />
                                 @error('client_phone')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                             </label>
                         </div>
@@ -1290,9 +1278,8 @@
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Route:</span> {{ $origin }} &rarr; {{ $destination }}</p>
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Dates:</span> {{ $departure_date }}{{ $return_date ? ' &rarr; ' . $return_date : '' }}</p>
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Passengers:</span> {{ $adults }} adults, {{ $children }} children</p>
-                                    @if ($selected_transport_class_id)
-                                        @php $selectedClass = $transportClassCatalog->firstWhere('id', $selected_transport_class_id); @endphp
-                                        <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Transport Class:</span> {{ $selectedClass->name }}</p>
+                                    @if ($selected_transport_class_id && isset($selectedClass))
+                                        <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Travel Class:</span> {{ $selectedClass['name'] }}</p>
                                     @endif
                                     @if ($has_vehicle)
                                         <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Vehicle:</span> {{ $vehicle_type }} ({{ $vehicle_plate_number }}) &mdash; &#8369;{{ number_format($vehicle_price ?? 0, 2) }}</p>
@@ -1302,8 +1289,8 @@
                                 <div class="space-y-3">
                                     @php
                                         $selectedSchedule = collect($availableSchedules)->firstWhere('id', $selected_schedule_id);
-                                        $selectedAccommodation = $selectedSchedule && $selected_schedule_accommodation_id
-                                            ? collect($selectedSchedule['accommodations'])->firstWhere('id', $selected_schedule_accommodation_id)
+                                        $selectedClass = $selectedSchedule && $selected_transport_class_id
+                                            ? collect($selectedSchedule['transport_classes'] ?? [])->firstWhere(fn($c) => (int)($c['pivot_id'] ?? $c['id']) === (int)$selected_transport_class_id)
                                             : null;
                                         $discountedCount = collect($passengers)->filter(fn ($p) => !empty($p['discount_id']))->count();
                                         $promoCount = ($mode === 'airline') ? $this->getSelectedPromoPassengerCount() : 0;
@@ -1312,7 +1299,7 @@
                                         <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Promotional fare:</span> <span class="text-[#db2777] font-semibold">{{ $promoCount }} passenger(s)</span></p>
                                     @endif
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Discounted travelers:</span> {{ $discountedCount }} of {{ count($passengers) }}</p>
-                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Accommodation selected:</span> {{ $selectedAccommodation ? $selectedAccommodation['name'] : 'None' }}</p>
+                                    <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Travel Class selected:</span> {{ $selectedClass ? $selectedClass['name'] : 'None' }}</p>
                                     <p class="text-slate-700 text-sm"><span class="font-bold text-slate-900">Estimated total:</span> <span class="font-extrabold text-[#db2777]">&#8369;{{ number_format($this->calculateTotalPrice(), 2) }}</span></p>
                                 </div>
 
@@ -1370,16 +1357,10 @@
                                         <p class="text-slate-900 font-bold">&#8369;{{ number_format($vehicle_price ?? 0, 2) }}</p>
                                     </div>
                                 @endif
-                                @if ($selected_transport_class_id)
+                                @if ($selected_transport_class_id && isset($selectedClass))
                                     <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm flex justify-between items-center">
-                                        <p class="text-slate-900 font-bold text-sm">Transport Class: <span class="text-[#db2777]">{{ $selectedClass->name }}</span></p>
-                                        <p class="text-slate-900 font-bold">&#8369;{{ number_format($selectedClass->price, 2) }}</p>
-                                    </div>
-                                @endif
-                                @if ($selectedAccommodation)
-                                    <div class="rounded-xl bg-white p-4 border border-slate-200 shadow-sm flex justify-between items-center">
-                                        <p class="text-slate-900 font-bold text-sm">Accommodation: <span class="text-[#db2777]">{{ $selectedAccommodation['name'] }}</span></p>
-                                        <p class="text-slate-900 font-bold">&#8369;{{ number_format($selectedAccommodation['price'], 2) }}</p>
+                                        <p class="text-slate-900 font-bold text-sm">Travel Class: <span class="text-[#db2777]">{{ $selectedClass['name'] }}</span></p>
+                                        <p class="text-slate-900 font-bold">&#8369;{{ number_format($selectedClass['price'], 2) }}</p>
                                     </div>
                                 @endif
                                 @if ($selected_hotel_id)

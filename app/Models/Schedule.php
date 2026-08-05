@@ -144,7 +144,10 @@ class Schedule extends Model
                 }
                 
                 if (! empty($operator)) {
-                    $routeQuery->where('operator', $operator);
+                    $routeQuery->where(function ($q) use ($operator) {
+                        $q->where('operator', $operator)
+                          ->orWhere('operator', 'like', '%' . $operator . '%');
+                    });
                 }
             })
             ->whereBetween('departure_time', [$dayStart, $dayEnd])
@@ -504,6 +507,9 @@ class Schedule extends Model
 
                     return [
                         'id' => $class->id,
+                        'pivot_id' => $class->pivot?->id,
+                        'is_promo' => (bool) ($class->pivot?->is_promo ?? false),
+                        'rate_code' => $class->pivot?->rate_code,
                         'code' => $classCode,
                         'name' => $class->name,
                         'description' => $class->pivot?->description ?? $class->description,

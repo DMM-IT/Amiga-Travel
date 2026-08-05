@@ -327,7 +327,9 @@ class BookingReschedule extends Component
             // Save proof if required
             $proofPath = null;
             if ($this->priceDiff > 0 && $this->paymentProof) {
-                $proofPath = $this->paymentProof->store('proofs', 'public');
+                $extension = $this->paymentProof->extension();
+                $filename = 'rebook_proof_' . $this->booking->transaction_number . '_' . uniqid() . '.' . $extension;
+                $proofPath = $this->paymentProof->storeAs('proofs', $filename, 'public');
             }
 
             // Ideally, we'd have a method in ServiceCancellationManager to handle this custom free-pick reschedule + payment diff.

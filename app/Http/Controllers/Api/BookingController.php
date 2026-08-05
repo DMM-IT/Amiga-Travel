@@ -165,7 +165,9 @@ class BookingController extends Controller
             ]);
         }
 
-        $path = $request->file('proof')->store('proofs', 'public');
+        $extension = $request->file('proof')->extension();
+        $filename = 'proof_' . $transaction->transaction_number . '_' . uniqid() . '.' . $extension;
+        $path = $request->file('proof')->storeAs('proofs', $filename, 'public');
 
         $transaction->update([
             'proof_of_payment' => $path,
@@ -326,9 +328,12 @@ class BookingController extends Controller
             'booking_id' => $booking->id,
             'payment_status' => 'unpaid',
         ]);
-        $proofPath = $request->hasFile('proof')
-            ? $request->file('proof')->store('rebooking_proofs', 'public')
-            : null;
+        $proofPath = null;
+        if ($request->hasFile('proof')) {
+            $extension = $request->file('proof')->extension();
+            $filename = 'rebook_proof_' . $transaction->transaction_number . '_' . uniqid() . '.' . $extension;
+            $proofPath = $request->file('proof')->storeAs('rebooking_proofs', $filename, 'public');
+        }
         $rebookingFee = $booking->getRebookingFeeAmount();
 
         $transaction->update([

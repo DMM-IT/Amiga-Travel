@@ -21,7 +21,7 @@ class TransportClassesRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Select::make('transport_class_id')
                     ->label('Transport Class')
-                    ->options(TransportClass::where('is_active', true)->pluck('name', 'id'))
+                    ->options(TransportClass::where('is_active', true)->orderBy('name')->get()->mapWithKeys(fn ($item) => [$item->id => $item->operator ? "{$item->operator} - {$item->name}" : $item->name])->toArray())
                     ->required(),
                 Forms\Components\TextInput::make('price')
                     ->label('Price (₱)')

@@ -54,22 +54,9 @@ class SendBookingConfirmationJob implements ShouldQueue
             'voucher',
         );
 
-        // --- Generate PDF receipt ---
-        $receiptDir  = storage_path('app/receipts');
-        $receiptPath = $receiptDir . '/receipt-' . $this->booking->transaction_number . '.pdf';
-
-        if (! is_dir($receiptDir)) {
-            mkdir($receiptDir, 0755, true);
-        }
-
-        Pdf::driver('dompdf')
-            ->format('a4')
-            ->view('pdf.receipt', ['booking' => $this->booking])
-            ->save($receiptPath);
-
         // --- Send email ---
         Mail::to($this->booking->client_email)
-            ->send(new BookingCreated($this->booking, $receiptPath));
+            ->send(new BookingCreated($this->booking));
     }
 
     public function failed(\Throwable $exception): void

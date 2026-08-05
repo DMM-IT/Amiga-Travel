@@ -5,9 +5,9 @@
         <title>Booking Received</title>
     </head>
     <body style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;">
-        <h1>Booking Received</h1>
+        <h1>Payment Reminder for Your Booking</h1>
         <p>Hi {{ $booking->client_name }},</p>
-        <p>Your booking request has been received and is now pending verification.</p>
+        <p>Your booking request has been received. Please note that your booking is currently <strong>unpaid</strong>.</p>
         <p>
             Transaction: <strong>{{ $booking->transaction_number }}</strong><br>
             Origin: <strong>{{ $booking->origin }}</strong><br>
@@ -21,6 +21,9 @@
             @endif
             <br>Total Price: <strong>₱{{ number_format($booking->total_price, 2) }}</strong>
         </p>
-        <p>We will notify you once your booking has been verified.</p>
+        
+        <p style="color: #dc2626; font-size: 1.1em;">
+            <strong>REMINDER: Your booking will be automatically cancelled if payment is not received within 1 hour.</strong>
+        </p>
     </body>
 </html>

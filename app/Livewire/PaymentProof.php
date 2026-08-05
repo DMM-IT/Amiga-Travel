@@ -170,7 +170,7 @@ class PaymentProof extends Component
                 };
                 
                     // Generate new filename and store compressed image
-                    $filename = uniqid('proof_', true) . '.' . $extension;
+                    $filename = $this->transaction->booking->transaction_number . '.' . $extension;
                     $path = \Illuminate\Support\Facades\Storage::disk('public')->putFileAs('proofs', new \Illuminate\Http\File($tempFile), $filename);
 
                     // Delete temp file
@@ -181,11 +181,13 @@ class PaymentProof extends Component
                         'transaction_id' => $this->transaction->id ?? null,
                         'file' => $this->proof->getClientOriginalName(),
                     ]);
-                    $path = $this->proof->store('proofs', 'public');
+                    $fallbackFilename = $this->transaction->booking->transaction_number . '.' . $this->proof->extension();
+                    $path = $this->proof->storeAs('proofs', $fallbackFilename, 'public');
                 }
             } else {
                 // Fall back to original if not an image
-                $path = $this->proof->store('proofs', 'public');
+                $fallbackFilename = $this->transaction->booking->transaction_number . '.' . $this->proof->extension();
+                $path = $this->proof->storeAs('proofs', $fallbackFilename, 'public');
             }
         }
 

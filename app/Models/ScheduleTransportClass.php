@@ -19,12 +19,15 @@ class ScheduleTransportClass extends Pivot
         'tickets_available',
         'has_bed',
         'is_active',
+        'is_promo',
+        'rate_code',
     ];
 
     protected $casts = [
         'additional_price' => 'decimal:2',
         'has_bed' => 'boolean',
         'is_active' => 'boolean',
+        'is_promo' => 'boolean',
     ];
 
     public function schedule(): BelongsTo

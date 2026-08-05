@@ -31,14 +31,32 @@ class BookingConfirmation extends Mailable implements ShouldQueue
         $mail = $this->subject('Amiga Gracia Travel Booking Confirmation')
             ->view('emails.booking-confirmation');
 
+        // Generate the official receipt PDF now that they have paid
+        $receiptDir  = storage_path('app/receipts');
+        $autoReceiptPath = $receiptDir . '/receipt-' . $this->booking->transaction_number . '.pdf';
+
+        if (! is_dir($receiptDir)) {
+            mkdir($receiptDir, 0755, true);
+        }
+
+        \Spatie\LaravelPdf\Facades\Pdf::driver('dompdf')
+            ->format('a4')
+            ->view('pdf.receipt', ['booking' => $this->booking])
+            ->save($autoReceiptPath);
+
+        $mail->attach($autoReceiptPath, [
+            'as' => 'Booking_Receipt.pdf',
+            'mime' => 'application/pdf',
+        ]);
+
         if ($this->receiptPath) {
             if ($this->receiptDisk && Storage::disk($this->receiptDisk)->exists($this->receiptPath)) {
-                $mail->attachFromStorageDisk($this->receiptDisk, $this->receiptPath, 'receipt.pdf', [
+                $mail->attachFromStorageDisk($this->receiptDisk, $this->receiptPath, 'Ticket_Confirmation.pdf', [
                     'mime' => 'application/pdf',
                 ]);
             } elseif (file_exists($this->receiptPath)) {
                 $mail->attach($this->receiptPath, [
-                    'as' => 'receipt.pdf',
+                    'as' => 'Ticket_Confirmation.pdf',
                     'mime' => 'application/pdf',
                 ]);
             }
