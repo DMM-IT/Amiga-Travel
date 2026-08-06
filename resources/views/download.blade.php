@@ -173,7 +173,7 @@
             <div class="absolute bottom-10 right-10 w-96 h-96 bg-[#ee018d]/10 rounded-full blur-3xl"></div>
             
             <!-- Faded Blurry Logo Watermark -->
-            <img src="{{ asset('images/amiga_logo_white_outline.png') }}" alt="" class="absolute top-1/2 left-1/2 lg:left-1/4 -translate-y-1/2 -translate-x-1/2 w-[800px] sm:w-[1000px] -rotate-12 object-contain" style="opacity: 0.08; filter: blur(4px);">
+            <img src="{{ asset('images/amiga_logo_white_outline.png') }}" alt="" class="absolute top-[15%] lg:top-[38%] left-1/2 lg:left-[28%] -translate-y-1/2 -translate-x-1/2 w-[350px] sm:w-[500px] lg:w-[750px] object-contain pointer-events-none" style="opacity: 0.08; filter: blur(3px);">
         </div>
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 sm:pt-12 sm:pb-28 relative z-10">
             @include('partials.global-skeleton')
