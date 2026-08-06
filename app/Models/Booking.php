@@ -420,6 +420,8 @@ class Booking extends Model
         if ($mode === 'airline' && $afterDepart) {
             return [
                 'base_ticket' => $this->getTicketBase(),
+                // NOTE: We force surcharge to 100% here so the UI breakdown accurately reflects 
+                // that the entire ticket base is forfeited (since it is non-refundable).
                 'surcharge_pct' => 100,
                 'surcharge_amount' => $this->getTicketBase(),
                 'non_refundable_fees' => (float) $this->total_price - $this->getTicketBase(),
@@ -431,6 +433,8 @@ class Booking extends Model
         if ($mode !== 'airline' && $afterDepart && ! $this->isStarlite()) {
             return [
                 'base_ticket' => $this->getTicketBase(),
+                // NOTE: We force surcharge to 100% here so the UI breakdown accurately reflects 
+                // that the entire ticket base is forfeited (since it is non-refundable).
                 'surcharge_pct' => 100,
                 'surcharge_amount' => $this->getTicketBase(),
                 'non_refundable_fees' => (float) $this->total_price - $this->getTicketBase(),

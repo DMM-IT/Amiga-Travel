@@ -674,12 +674,15 @@ class BookingLookup extends Component
         $this->rebooking_surcharge = $originalFare * ($surchargePct / 100);
 
         // 3. Rate Diff
-        if ($mode === 'airline') {
-            // New total already includes the 1.5 markup on the transport classes
-            $this->rebooking_rate_diff = max(0, $newTotal - $originalFare);
-        } else {
-            $this->rebooking_rate_diff = max(0, $newTotal - $originalFare);
+        if ($newTotal < $originalFare) {
+            $this->feedback = "You cannot rebook to a ticket that is cheaper than your original booking.";
+            $this->rebooking_rate_diff = 0;
+            $this->rebooking_price_diff = 0;
+            $this->rebooking_total_to_pay = 0;
+            return;
         }
+
+        $this->rebooking_rate_diff = max(0, $newTotal - $originalFare);
 
         $this->rebooking_price_diff = $this->rebooking_rate_diff; // So the UI knows if there is rate diff
         $this->rebooking_total_to_pay = $this->rebooking_surcharge + $this->rebooking_revalidation_fee + $this->rebooking_rate_diff;
