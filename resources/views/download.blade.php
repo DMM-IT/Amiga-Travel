@@ -167,18 +167,21 @@
                 </div>
             </div>
         @endif
-        <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <!-- Background Glows -->
             <div class="absolute top-10 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
             <div class="absolute bottom-10 right-10 w-96 h-96 bg-[#ee018d]/10 rounded-full blur-3xl"></div>
+            
+            <!-- Faded Blurry Logo Watermark -->
+            <img src="{{ asset('images/amiga_logo_white_outline.png') }}" alt="" class="absolute top-1/2 left-1/2 lg:left-1/4 -translate-y-1/2 -translate-x-1/2 w-[800px] sm:w-[1000px] -rotate-12 object-contain" style="opacity: 0.08; filter: blur(4px);">
         </div>
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 sm:pt-12 sm:pb-28 relative z-10">
             @include('partials.global-skeleton')
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <!-- Left: Text Content -->
-                <div class="flex-1 text-center lg:text-left relative ws-sbtn-container">
+                <div class="flex-1 text-center lg:text-left relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
                     @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 -right-4 z-10"></button> @endif
                     <div class="flex flex-col lg:flex-row items-center lg:items-start gap-6 mb-6">
-                        <img src="{{ asset('images/app-icon-original.png') }}" alt="Amiga Gracia" class="h-20 w-20 rounded-2xl shadow-xl border border-white/20 bg-white object-contain">
                         <div class="flex flex-col items-center lg:items-start">
                             <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 mb-3">
                                 <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-3.598 1.543A3.002 3.002 0 007 13a3 3 0 00-2 5.236V18a1 1 0 001 1h8a1 1 0 001-1v-.764A3.001 3.001 0 0013 13a3.002 3.002 0 00-.244-1.18l2.85-1.22a1 1 0 000-1.84l-5.212-2.68zM7 14a1 1 0 100 2 1 1 0 000-2zm6 0a1 1 0 100 2 1 1 0 000-2z"/></svg>
@@ -257,7 +260,7 @@
                 </div>
 
                 <!-- Right: Phone Mockup -->
-                <div class="flex-shrink-0 relative">
+                <div class="flex-shrink-0 relative amiga-animate-on-scroll amiga-transition" style="transition-delay: 100ms;">
                     <div class="w-64 sm:w-72 h-[500px] sm:h-[560px] rounded-[3rem] border-[6px] border-white/20 bg-white/5 backdrop-blur-md shadow-2xl overflow-hidden relative">
                         <!-- Phone Notch -->
                         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-black/40 rounded-b-2xl z-20"></div>
@@ -316,7 +319,7 @@
     @endphp
     @if(!empty($downloadFeatures))
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="bg-white/85 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-100 p-8 sm:p-12">
+        <div class="bg-white/85 backdrop-blur-md rounded-[2rem] shadow-sm border border-slate-100 p-8 sm:p-12 amiga-animate-on-scroll amiga-transition">
             <div class="text-center mb-10">
                 <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #ee018d; background: #fce7f3;">{{ data_get($pageContent, 'apk_benefits_label', 'Exclusive App Benefits') }}</span>
                 <h2 class="mt-4 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'apk_benefits_title', 'Why download the app?') }}</h2>
@@ -340,7 +343,7 @@
 
     <!-- How to Install Section -->
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="text-center mb-12">
+        <div class="text-center mb-12 amiga-animate-on-scroll amiga-transition">
             <span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full" style="color: #216417; background: #eaf5e8;">{{ data_get($pageContent, 'how_it_works_label', 'Installation Guide') }}</span>
             <h2 class="mt-4 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'how_it_works_title', 'Install in 3 Easy Steps') }}</h2>
             <p class="mt-3 text-slate-500 max-w-lg mx-auto">{{ data_get($pageContent, 'how_it_works_description', 'Follow these simple steps to install the APK on your Android device.') }}</p>
@@ -348,7 +351,7 @@
 
         <div class="grid sm:grid-cols-3 gap-8">
             @foreach($downloadSteps as $step)
-                <div class="relative bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition">
+                <div class="relative bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition amiga-animate-on-scroll amiga-transition" style="transition-delay: {{ $loop->index * 100 }}ms;">
                     <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: {{ data_get($step, 'icon_color') }};">{{ data_get($step, 'number') }}</div>
                     <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: {{ data_get($step, 'bg_color') }};">
                         <svg class="h-8 w-8" style="color: {{ data_get($step, 'icon_color') }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -363,7 +366,7 @@
     </div>
 
     <!-- Bottom CTA -->
-    <div class="text-center pb-16">
+    <div class="text-center pb-16 amiga-animate-on-scroll amiga-transition">
         <p class="text-sm text-slate-500">
             Need help?
             <a href="{{ url('/contact-us') }}" class="text-[#ee018d] font-semibold hover:underline">Contact our team</a>

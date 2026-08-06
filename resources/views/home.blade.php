@@ -32,7 +32,7 @@
 @endif
 
 {{-- NEW: Airpaz-Style Green Hero Banner --}}
-<div class="relative w-full bg-[#008000]">
+<div class="relative w-full bg-gradient-to-b from-[#008000] to-green-400">
     @if(session()->has('booking_draft'))
         <div class="w-full bg-pink-50/95 border-b border-pink-200 px-4 sm:px-6 lg:px-8 py-3.5 text-slate-900 shadow-sm relative z-20">
             <div class="max-w-7xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -50,16 +50,38 @@
             </div>
         </div>
     @endif
-    <div class="pt-10 sm:pt-14 lg:pt-16 pb-28 sm:pb-32 lg:pb-36 px-4 sm:px-6 lg:px-8">
-        {{-- Header Title & Subtitle --}}
-        <div class="max-w-6xl mx-auto text-left relative z-10 ws-sbtn-container">
-            @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'welcome_section' })" class="ws-sbtn absolute top-0 right-0 z-20"></button> @endif
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-                {{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia' }}
-            </h1>
-            <p class="mt-3 text-sm sm:text-base text-white/90 max-w-2xl font-medium">
-                {{ $pageContent['welcome_subtitle'] ?? 'Your journey deserves more than a destination - it deserves an exceptional experience' }}
-            </p>
+    <div class="pt-0 pb-28 sm:pb-32 lg:pb-36 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {{-- Header Title, Subtitle & Video --}}
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 relative z-10 ws-sbtn-container">
+            <div class="text-left w-full md:flex-1 relative"
+                 x-data="{ showTitle: false, showSubtitle: false }" 
+                 x-init="setTimeout(() => showTitle = true, 150); setTimeout(() => showSubtitle = true, 450)">
+                @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'welcome_section' })" class="ws-sbtn absolute top-0 right-0 z-20"></button> @endif
+                
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight inline-block transition-all duration-300 hover:scale-105 hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] cursor-default origin-left"
+                    x-show="showTitle"
+                    x-transition:enter="transition ease-out duration-[800ms] transform"
+                    x-transition:enter-start="opacity-0 translate-y-12 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    style="display: none;">
+                    {{ $pageContent['welcome_title'] ?? 'Welcome to Amiga Gracia' }}
+                </h1>
+                
+                <p class="mt-4 text-base sm:text-lg text-white/90 max-w-2xl font-medium transition-all duration-300 hover:text-white hover:translate-x-2 cursor-default"
+                   x-show="showSubtitle"
+                   x-transition:enter="transition ease-out duration-[800ms] transform"
+                   x-transition:enter-start="opacity-0 translate-y-8"
+                   x-transition:enter-end="opacity-100 translate-y-0"
+                   style="display: none;">
+                    {{ $pageContent['welcome_subtitle'] ?? 'Your journey deserves more than a destination - it deserves an exceptional experience' }}
+                </p>
+            </div>
+            
+            <div class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 flex-shrink-0 mx-auto md:mx-0 rounded-full overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.1)] border-4 border-white/20 relative">
+                <video class="w-full h-full object-cover" autoplay loop muted playsinline>
+                    <source src="{{ asset('video/animation1.mp4') }}" type="video/mp4">
+                </video>
+            </div>
         </div>
     </div>
 </div>
@@ -1142,50 +1164,17 @@
         </div>
     </div>
 
-    {{-- Promo image section removed — integrated into promotions grid (landscape + portrait) --}}
-
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6 mb-12 sm:mb-16 relative z-20">
-        <div class="text-center mb-4 sm:mb-5">
-            <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">Manage your booking</h2>
-            <p class="text-base sm:text-lg text-black font-semibold mt-1.5 sm:mt-2">Quickly access your booking details, changes and refunds.</p>
-        </div>
-        <div class="grid gap-4 sm:grid-cols-2">
-            <a href="{{ url('/book/status') }}" class="group rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-2xl bg-red-50 text-red-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M7 21h10a2 2 0 002-2V8a2 2 0 00-2-2H7a2 2 0 00-2 2v11a2 2 0 002 2z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M9 16h4" />
-                        </svg>
-                    </div>
-                    <div class="flex-1 text-left">
-                        <h3 class="text-base font-semibold text-slate-900">Change Schedule</h3>
-                        <p class="mt-1 text-xs text-slate-600">Reschedule your travel with ease.</p>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5 text-slate-400">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </div>
-            </a>
-
-            <a href="{{ url('/book/status') }}" class="group rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-2xl bg-pink-50 text-pink-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 1.343-3 3h6c0-1.657-1.343-3-3-3z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v5m0 0l3-3m-3 3l-3-3" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 1116 0 8 8 0 01-16 0z" />
-                        </svg>
-                    </div>
-                    <div class="flex-1 text-left">
-                        <h3 class="text-base font-semibold text-slate-900">Refund</h3>
-                        <p class="mt-1 text-xs text-slate-600">Request a refund for your booking.</p>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5 text-slate-400">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </div>
-            </a>
+    {{-- Spacer and Scroll Indicator to push promotions below the fold --}}
+    <div class="w-full flex flex-col items-center justify-start pt-8 pb-12 sm:pt-10 sm:pb-24"
+         x-data="{ scrolled: false }"
+         @scroll.window="scrolled = (window.pageYOffset > 20)">
+        <div class="hidden sm:flex flex-col items-center justify-center cursor-default animate-pulse drop-shadow-[0_0_12px_rgba(255,255,255,1)]"
+             :class="scrolled ? 'opacity-0 scale-95 translate-y-4 pointer-events-none' : 'opacity-100 scale-100 translate-y-0'"
+             style="transition: all 0.5s ease-out;">
+            <span class="text-sm font-black text-black mb-3 uppercase tracking-[0.2em]">Scroll to Explore</span>
+            <div class="w-7 h-12 border-2 border-black rounded-full flex justify-center p-1.5 shadow-sm bg-white/30 backdrop-blur-md">
+                <div class="w-1.5 h-3 bg-black rounded-full animate-[bounce_1.5s_infinite]"></div>
+            </div>
         </div>
     </div>
 
@@ -1212,17 +1201,68 @@
             $__promo_slides = $__promo_files;
         }
     @endphp
-    <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data='{ currentSlide: 0, slides: @json($__promo_slides), modalOpen: false, modalImage: null, zoomLevel: 1 }' x-init="console.log('promotions slides', slides); if (slides && slides.length) { setInterval(() => { if (!modalOpen) { currentSlide = (currentSlide + 1) % slides.length } }, 5000); }">
+    <div class="max-w-7xl mx-auto px-4 mt-10 amiga-animate-on-scroll amiga-transition" x-data='{ 
+        currentSlide: 0, slides: @json($__promo_slides), currentVideo: 0, 
+        videos: ["{{ asset('video/Concept_A_smooth_motion_graph.mp4') }}", "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"], 
+        modalOpen: false, modalImage: null, zoomLevel: 1,
+        showControls: true, controlTimeout: null,
+        changeVideo(index, container) {
+            container.querySelectorAll("video").forEach(v => v.pause());
+            this.currentVideo = index;
+            setTimeout(() => {
+                let activeVid = container.querySelectorAll("video")[index];
+                if (activeVid) { activeVid.currentTime = 0; activeVid.play(); }
+            }, 50);
+        },
+        resetControls() {
+            this.showControls = true;
+            clearTimeout(this.controlTimeout);
+            this.controlTimeout = setTimeout(() => { this.showControls = false; }, 3000);
+        }
+    }' x-init="console.log('promotions slides', slides); resetControls(); if (slides && slides.length) { setInterval(() => { if (!modalOpen) { currentSlide = (currentSlide + 1) % slides.length } }, 5000); }">
         <div class="mb-6 text-center relative ws-sbtn-container">
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'promo_gallery' })" class="ws-sbtn absolute top-0 right-2 z-20"></button> @endif
             <h2 class="text-3xl sm:text-4xl font-black text-[#216417] tracking-tight">{{ data_get($pageContent, 'promo_gallery_title', 'Featured Promotions') }}</h2>
             <p class="text-base sm:text-lg text-black font-semibold mt-2">{{ data_get($pageContent, 'promo_gallery_subtitle', 'Browse three highlighted offers from our latest deals.') }}</p>
         </div>
         <div class="grid gap-6 lg:grid-cols-[2fr_1fr] items-stretch">
-            <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden p-6 h-full flex flex-col">
-                <div class="rounded-[1.5rem] overflow-hidden bg-slate-100 relative flex-1 min-h-0">
-                    <div class="absolute inset-0 flex items-center justify-center text-slate-400 text-xl font-semibold">Landscape video placeholder</div>
-                    <div class="absolute inset-0 bg-black/10"></div>
+            <div class="rounded-[1.5rem] border border-slate-200 bg-white/95 shadow-lg overflow-hidden p-3 sm:p-6 h-full flex flex-col relative ws-sbtn-container">
+                @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'promo_video' })" class="ws-sbtn absolute top-2 right-2 z-20"></button> @endif
+                <div class="rounded-[1rem] sm:rounded-[1.5rem] overflow-hidden bg-black relative flex-1 min-h-0 w-full aspect-video group"
+                     @mouseenter="resetControls()" 
+                     @mousemove="resetControls()"
+                     @mouseleave="clearTimeout(controlTimeout); controlTimeout = setTimeout(() => { showControls = false; }, 3000)">
+                    <template x-for="(video, index) in videos" :key="index">
+                        <video x-show="currentVideo === index"
+                               x-transition:enter="transition ease-out duration-500"
+                               x-transition:enter-start="opacity-0"
+                               x-transition:enter-end="opacity-100"
+                               class="absolute inset-0 w-full h-full object-cover"
+                               autoplay muted loop playsinline controls
+                               :src="video">
+                        </video>
+                    </template>
+                    
+                    <!-- Previous/Next Arrows -->
+                    <div class="absolute inset-y-0 left-0 flex items-center px-2 sm:px-4 z-20" x-show="videos.length > 1 && showControls" x-transition.opacity>
+                        <button @click="changeVideo(currentVideo === 0 ? videos.length - 1 : currentVideo - 1, $el.closest('.group'))" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition backdrop-blur-sm border border-white/20">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                    </div>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 sm:px-4 z-20" x-show="videos.length > 1 && showControls" x-transition.opacity>
+                        <button @click="changeVideo(currentVideo === videos.length - 1 ? 0 : currentVideo + 1, $el.closest('.group'))" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition backdrop-blur-sm border border-white/20">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+
+                    <!-- Navigation Dots -->
+                    <div class="absolute top-4 left-0 right-0 flex justify-center gap-2 z-20" x-show="videos.length > 1 && showControls" x-transition.opacity>
+                        <template x-for="(video, index) in videos" :key="index">
+                            <button @click="changeVideo(index, $el.closest('.group'))"
+                                    class="w-2.5 h-2.5 rounded-full transition-all duration-300 shadow-sm"
+                                    :class="currentVideo === index ? 'bg-[#216417] scale-125 border border-white/50' : 'bg-white/50 hover:bg-white/80 border border-white/30'"></button>
+                        </template>
+                    </div>
                 </div>
             </div>
 
