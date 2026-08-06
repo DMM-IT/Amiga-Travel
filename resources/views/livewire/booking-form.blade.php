@@ -1594,6 +1594,25 @@
 
                     @endif
 
+                        @if ($step === 2)
+                            @error('selected_transport_class_id')
+                                <div class="mt-4 p-4 rounded-xl bg-rose-50 border border-rose-200">
+                                    <p class="text-sm font-bold text-rose-600 flex items-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        {{ $message }}
+                                    </p>
+                                </div>
+                            @enderror
+                            @error('selected_return_transport_class_id')
+                                <div class="mt-4 p-4 rounded-xl bg-rose-50 border border-rose-200">
+                                    <p class="text-sm font-bold text-rose-600 flex items-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        {{ $message }}
+                                    </p>
+                                </div>
+                            @enderror
+                        @endif
+
                         <div class="flex flex-col gap-3 sm:flex-row sm:justify-between mt-8 pt-6 border-t border-slate-200">
                             @if ($step > 1)
                                 <button type="button" wire:click.prevent="previousStep" class="inline-flex w-full sm:w-auto items-center justify-center rounded-xl border border-slate-300 bg-white px-8 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">

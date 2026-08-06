@@ -49,6 +49,9 @@ class ManagePaymentSettings extends Page implements HasForms
             'ferry_before_departure_surcharge_pct'  => $settings->ferry_before_departure_surcharge_pct,
             'ferry_after_departure_surcharge_pct'   => $settings->ferry_after_departure_surcharge_pct,
             'airline_before_departure_surcharge_pct' => $settings->airline_before_departure_surcharge_pct,
+            'rebook_ferry_before_departure_surcharge_pct' => $settings->rebook_ferry_before_departure_surcharge_pct,
+            'rebook_ferry_after_departure_surcharge_pct'  => $settings->rebook_ferry_after_departure_surcharge_pct,
+            'rebook_airline_before_departure_surcharge_pct' => $settings->rebook_airline_before_departure_surcharge_pct,
         ]);
     }
 
@@ -120,6 +123,36 @@ class ManagePaymentSettings extends Page implements HasForms
                     ])
                     ->columns(3),
 
+                Section::make('Rebooking Policy')
+                    ->description('Surcharge percentages applied to the ticket base price when a customer reschedules their booking.')
+                    ->schema([
+                        TextInput::make('rebook_ferry_before_departure_surcharge_pct')
+                            ->label('Ferry — Before Departure Rebook Surcharge (%)')
+                            ->helperText('Applies to 2GO and Starlite rebookings before departure. Default: 15%.')
+                            ->numeric()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->required(),
+                        TextInput::make('rebook_ferry_after_departure_surcharge_pct')
+                            ->label('Ferry — After Departure Rebook Surcharge (%)')
+                            ->helperText('Applies to Starlite-only rebookings after departure. Default: 35%.')
+                            ->numeric()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->required(),
+                        TextInput::make('rebook_airline_before_departure_surcharge_pct')
+                            ->label('Airline — Before Departure Rebook Surcharge (%)')
+                            ->helperText('Applies to airline rebookings before departure. Default: 15%.')
+                            ->numeric()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->required(),
+                    ])
+                    ->columns(3),
+
                 Section::make('Payment QR Code')
                     ->description('This single QR code (e.g. your GCash QR) is shown to every client on the payment page.')
                     ->schema([
@@ -150,6 +183,9 @@ class ManagePaymentSettings extends Page implements HasForms
             'ferry_before_departure_surcharge_pct'  => $state['ferry_before_departure_surcharge_pct'],
             'ferry_after_departure_surcharge_pct'   => $state['ferry_after_departure_surcharge_pct'],
             'airline_before_departure_surcharge_pct' => $state['airline_before_departure_surcharge_pct'],
+            'rebook_ferry_before_departure_surcharge_pct' => $state['rebook_ferry_before_departure_surcharge_pct'],
+            'rebook_ferry_after_departure_surcharge_pct'  => $state['rebook_ferry_after_departure_surcharge_pct'],
+            'rebook_airline_before_departure_surcharge_pct' => $state['rebook_airline_before_departure_surcharge_pct'],
         ]);
         PaymentSetting::bust(); // Clear cached payment settings
 

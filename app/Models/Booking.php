@@ -471,7 +471,8 @@ class Booking extends Model
 
     public function getRebookingFeeAmount(): float
     {
-        return $this->total_price * 0.3;
+        // Rebooking calculation is now handled dynamically in BookingReschedule and BookingLookup
+        return 0.0;
     }
 
     public function verifyRebooking(?string $ticketUrl = null, ?string $receiptPath = null, ?string $receiptDisk = null): void
@@ -584,6 +585,15 @@ class Booking extends Model
             $breakdown[] = [
                 'label' => $acc->name,
                 'amount' => (float) $acc->pivot->price,
+                'class' => ''
+            ];
+        }
+
+        foreach ($this->transportClasses as $tc) {
+            $label = str_ends_with(strtolower($tc->name), 'class') ? $tc->name : $tc->name . ' Class';
+            $breakdown[] = [
+                'label' => $label,
+                'amount' => (float) $tc->pivot->price,
                 'class' => ''
             ];
         }

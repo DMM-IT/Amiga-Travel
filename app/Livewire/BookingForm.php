@@ -2355,6 +2355,12 @@ public function selectedSchedule(): ?array
             ]);
         }
         
+        if (! $this->selected_transport_class_id) {
+            throw ValidationException::withMessages([
+                'selected_transport_class_id' => 'Please select a transport class for your schedule.',
+            ]);
+        }
+        
         if ($this->trip_type === 'round_trip' && !$this->tour_id) {
             if (! $this->selected_return_schedule_id) {
                 throw ValidationException::withMessages([
@@ -2370,6 +2376,12 @@ public function selectedSchedule(): ?array
             if (! $isReturnValid) {
                 throw ValidationException::withMessages([
                     'selected_return_schedule_id' => 'The selected return schedule is no longer available for this route and date.',
+                ]);
+            }
+
+            if (! $this->selected_return_transport_class_id) {
+                throw ValidationException::withMessages([
+                    'selected_return_transport_class_id' => 'Please select a transport class for your return schedule.',
                 ]);
             }
         }

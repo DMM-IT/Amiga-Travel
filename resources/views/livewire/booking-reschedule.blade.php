@@ -170,7 +170,7 @@
                                 @foreach($this->availableDepartureSchedules as $sch)
                                     @php $schIsPast = $sch->departure_time->isPast(); @endphp
                                     <div
-                                        @if(!$schIsPast) wire:click="selectDepartureSchedule({{ $sch->id }}, {{ $sch->price }})" @endif
+                                        @if(!$schIsPast) wire:click="selectDepartureSchedule({{ $sch->id }}, {{ $booking->getMode() === 'airline' ? 0 : $sch->price }})" @endif
                                         class="relative group rounded-2xl border p-5 transition
                                             {{ $schIsPast
                                                 ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed pointer-events-none'
@@ -247,7 +247,7 @@
                                 @foreach($this->availableReturnSchedules as $sch)
                                     @php $schIsPast = $sch->departure_time->isPast(); @endphp
                                     <div
-                                        @if(!$schIsPast) wire:click="selectReturnSchedule({{ $sch->id }}, {{ $sch->price }})" @endif
+                                        @if(!$schIsPast) wire:click="selectReturnSchedule({{ $sch->id }}, {{ $booking->getMode() === 'airline' ? 0 : $sch->price }})" @endif
                                         class="relative group rounded-2xl border p-5 transition
                                             {{ $schIsPast
                                                 ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed pointer-events-none'
@@ -324,7 +324,7 @@
                         @endif
 
                         <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-6">
-                            <h4 class="text-sm font-bold uppercase tracking-wider text-emerald-800 mb-4">Price Computation</h4>
+                            <h4 class="text-sm font-bold uppercase tracking-wider text-emerald-800 mb-4">Rebooking Fee Computation</h4>
                             <div class="space-y-3 text-sm text-emerald-900">
                                 <div class="flex justify-between">
                                     <span>Original Booking Total</span>
@@ -334,9 +334,21 @@
                                     <span>New Booking Total</span>
                                     <span>₱{{ number_format($newFare, 2) }}</span>
                                 </div>
-                                <div class="flex justify-between pt-2 border-t border-emerald-200 font-bold">
-                                    <span>Difference to Pay</span>
-                                    <span>₱{{ number_format($priceDiff, 2) }}</span>
+                                <div class="flex justify-between pt-2 border-t border-emerald-200 mt-2">
+                                    <span>Rate Difference</span>
+                                    <span>₱{{ number_format($rebookRateDiff, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Refund Surcharge</span>
+                                    <span>₱{{ number_format($rebookSurcharge, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Revalidation Fee</span>
+                                    <span>₱{{ number_format($rebookRevalidationFee, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between pt-2 border-t border-emerald-200 font-bold text-base">
+                                    <span>Total Rebooking Fee</span>
+                                    <span>₱{{ number_format($totalRebookFee, 2) }}</span>
                                 </div>
                             </div>
                         </div>

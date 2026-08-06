@@ -546,7 +546,7 @@
                                                             <div class="grid gap-3 sm:grid-cols-2">
                                                                 @foreach($depSchedules as $sch)
                                                                     <div 
-                                                                        wire:click="selectRebookingDepartureSchedule({{ $sch->id }}, {{ $sch->price }})"
+                                                                        wire:click="selectRebookingDepartureSchedule({{ $sch->id }}, {{ $booking->getMode() === 'airline' ? 0 : $sch->price }})"
                                                                         class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
                                                                     >
                                                                         <div>
@@ -559,7 +559,11 @@
                                                                         </div>
                                                                         <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
                                                                             <span class="text-xs text-slate-500">Base Fare</span>
-                                                                            <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
+                                                                            @if($booking->getMode() === 'airline')
+                                                                                <span class="text-sm font-bold text-blue-600">Included in Class</span>
+                                                                            @else
+                                                                                <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
+                                                                            @endif
                                                                         </div>
                                                                     </div>
                                                                 @endforeach
@@ -647,7 +651,7 @@
                                                             <div class="grid gap-3 sm:grid-cols-2">
                                                                 @foreach($retSchedules as $sch)
                                                                     <div 
-                                                                        wire:click="selectRebookingReturnSchedule({{ $sch->id }}, {{ $sch->price }})"
+                                                                        wire:click="selectRebookingReturnSchedule({{ $sch->id }}, {{ $booking->getMode() === 'airline' ? 0 : $sch->price }})"
                                                                         class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
                                                                     >
                                                                         <div>
@@ -660,7 +664,11 @@
                                                                         </div>
                                                                         <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
                                                                             <span class="text-xs text-slate-500">Base Fare</span>
-                                                                            <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
+                                                                            @if($booking->getMode() === 'airline')
+                                                                                <span class="text-sm font-bold text-blue-600">Included in Class</span>
+                                                                            @else
+                                                                                <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
+                                                                            @endif
                                                                         </div>
                                                                     </div>
                                                                 @endforeach
@@ -748,34 +756,31 @@
                                                     @endif
                                                 </div>
 
-                                                <!-- Before and After Fare Breakdown Box -->
                                                 <div class="rounded-2xl border border-blue-300 bg-white p-6 shadow-sm">
-                                                    <h4 class="text-xs font-bold uppercase tracking-wider text-blue-800 mb-4">Payment Computation (Before vs After)</h4>
+                                                    <h4 class="text-xs font-bold uppercase tracking-wider text-blue-800 mb-4">Rebooking Fee Computation</h4>
                                                     <div class="space-y-3 text-sm">
                                                         <div class="flex justify-between text-slate-600">
-                                                            <span>Original Booking Total (Before)</span>
-                                                            <span class="font-medium">₱{{ number_format($booking->total_price, 2) }}</span>
+                                                            <span>Original Booking Base Fare (Before)</span>
+                                                            <span class="font-medium">₱{{ number_format($booking->getTicketBase(), 2) }}</span>
                                                         </div>
                                                         <div class="flex justify-between text-slate-900 font-semibold">
-                                                            <span>New Schedule & Accommodation Total (After)</span>
+                                                            <span>New Schedule Total</span>
                                                             <span>₱{{ number_format($rebooking_new_total, 2) }}</span>
                                                         </div>
-                                                        <div class="flex justify-between text-slate-600">
-                                                            <span>Schedule Fare Difference</span>
-                                                            <span class="font-medium">
-                                                                @if($rebooking_price_diff > 0)
-                                                                    +₱{{ number_format($rebooking_price_diff, 2) }}
-                                                                @else
-                                                                    ₱0.00 (No Fare Difference)
-                                                                @endif
-                                                            </span>
+                                                        <div class="flex justify-between text-slate-600 pt-2 border-t border-slate-100">
+                                                            <span>Rate Difference</span>
+                                                            <span class="font-medium">₱{{ number_format($rebooking_rate_diff, 2) }}</span>
                                                         </div>
                                                         <div class="flex justify-between text-slate-600">
-                                                            <span>30% Rebooking Fee</span>
-                                                            <span class="font-medium">₱{{ number_format($booking->getRebookingFeeAmount(), 2) }}</span>
+                                                            <span>Refund Surcharge</span>
+                                                            <span class="font-medium">₱{{ number_format($rebooking_surcharge, 2) }}</span>
+                                                        </div>
+                                                        <div class="flex justify-between text-slate-600">
+                                                            <span>Revalidation Fee</span>
+                                                            <span class="font-medium">₱{{ number_format($rebooking_revalidation_fee, 2) }}</span>
                                                         </div>
                                                         <div class="border-t border-slate-200 pt-3 flex justify-between text-base font-bold text-blue-900">
-                                                            <span>Total Payment Required (Fee + Difference)</span>
+                                                            <span>Total Rebooking Fee</span>
                                                             <span>₱{{ number_format($rebooking_total_to_pay, 2) }}</span>
                                                         </div>
                                                     </div>

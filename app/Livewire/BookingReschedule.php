@@ -50,6 +50,10 @@ class BookingReschedule extends Component
 
     // Payment Diff
     public float $priceDiff = 0.0;
+    public float $rebookSurcharge = 0.0;
+    public float $rebookRevalidationFee = 0.0;
+    public float $rebookRateDiff = 0.0;
+    public float $totalRebookFee = 0.0;
     public $paymentProof;
     public bool $isUploading = false;
 
@@ -125,6 +129,21 @@ class BookingReschedule extends Component
 
     public function selectDepartureAccommodation(string $accId, float $price)
     {
+        if ($this->booking && $this->booking->getMode() === 'airline') {
+            $passengerCount = max(1, $this->booking->passengers()->count());
+            $originalBasePricePerPax = $this->originalFare / $passengerCount;
+            
+            // The $price coming in is already marked up by 1.5 for airlines.
+            // We need to divide by 1.5 to get the raw base price.
+            $unmarkedPrice = $price / 1.5;
+            $newBasePricePerPax = ($this->dep_schedule_price ?? 0) + $this->getSelectedAccommodationCost($accId, $unmarkedPrice, 1);
+            
+            if ($newBasePricePerPax > $originalBasePricePerPax) {
+                $this->feedback = "Airlines do not allow selecting a ticket with a higher base price than your original ticket.";
+                return;
+            }
+        }
+
         $this->dep_accommodation_id = $accId;
         $this->dep_accommodation_price = $price;
         
@@ -146,6 +165,21 @@ class BookingReschedule extends Component
 
     public function selectReturnAccommodation(string $accId, float $price)
     {
+        if ($this->booking && $this->booking->getMode() === 'airline') {
+            $passengerCount = max(1, $this->booking->passengers()->count());
+            $originalBasePricePerPax = $this->originalFare / $passengerCount;
+            
+            // The $price coming in is already marked up by 1.5 for airlines.
+            // We need to divide by 1.5 to get the raw base price.
+            $unmarkedPrice = $price / 1.5;
+            $newBasePricePerPax = ($this->ret_schedule_price ?? 0) + $this->getSelectedAccommodationCost($accId, $unmarkedPrice, 1);
+            
+            if ($newBasePricePerPax > $originalBasePricePerPax) {
+                $this->feedback = "Airlines do not allow selecting a ticket with a higher base price than your original ticket.";
+                return;
+            }
+        }
+
         $this->ret_accommodation_id = $accId;
         $this->ret_accommodation_price = $price;
         $this->setStep('confirm');
@@ -177,21 +211,32 @@ class BookingReschedule extends Component
         $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->dep_schedule_id);
         if (!$schedule) return collect();
 
+        $isAirline = $this->booking && $this->booking->getMode() === 'airline';
+        $schedulePrice = $isAirline ? ($schedule->price ?? 0) : 0;
+
         $items = collect();
         foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
+            $price = $acc->price;
+            if ($isAirline) {
+                $price = ($schedulePrice + $price) * 1.5;
+            }
             $items->push((object)[
                 'id' => 'acc_' . $acc->id,
                 'name' => $acc->name,
                 'description' => $acc->description,
-                'price' => $acc->price,
+                'price' => $price,
             ]);
         }
         foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
+            $price = $tc->pivot->additional_price;
+            if ($isAirline) {
+                $price = ($schedulePrice + $price) * 1.5;
+            }
             $items->push((object)[
                 'id' => 'tc_' . $tc->id,
                 'name' => $tc->name,
                 'description' => $tc->pivot->description ?? $tc->description,
-                'price' => $tc->pivot->additional_price,
+                'price' => $price,
             ]);
         }
         return $items;
@@ -203,21 +248,32 @@ class BookingReschedule extends Component
         $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->ret_schedule_id);
         if (!$schedule) return collect();
 
+        $isAirline = $this->booking && $this->booking->getMode() === 'airline';
+        $schedulePrice = $isAirline ? ($schedule->price ?? 0) : 0;
+
         $items = collect();
         foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
+            $price = $acc->price;
+            if ($isAirline) {
+                $price = ($schedulePrice + $price) * 1.5;
+            }
             $items->push((object)[
                 'id' => 'acc_' . $acc->id,
                 'name' => $acc->name,
                 'description' => $acc->description,
-                'price' => $acc->price,
+                'price' => $price,
             ]);
         }
         foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
+            $price = $tc->pivot->additional_price;
+            if ($isAirline) {
+                $price = ($schedulePrice + $price) * 1.5;
+            }
             $items->push((object)[
                 'id' => 'tc_' . $tc->id,
                 'name' => $tc->name,
                 'description' => $tc->pivot->description ?? $tc->description,
-                'price' => $tc->pivot->additional_price,
+                'price' => $price,
             ]);
         }
         return $items;
@@ -227,25 +283,37 @@ class BookingReschedule extends Component
     {
         if (!$this->booking) return;
 
-        $passengerCount = $this->booking->passengers()->count();
-        if ($passengerCount === 0) {
-            $passengerCount = 1;
-        }
+        $settings = \App\Models\PaymentSetting::current();
+        $mode = $this->booking->getMode();
+        $isAfterDeparture = $this->booking->isAfterDeparture();
+        $passengerCount = max(1, $this->booking->passengers()->count());
 
-        $originalFare = 0.0;
-        $originalFare += ($this->booking->schedule_price ?? 0) * $passengerCount;
-        $originalFare += ($this->booking->schedule_accommodation_price ?? 0) * $passengerCount;
-
-        if ($this->isRoundTrip()) {
-            $originalFare += ($this->booking->return_schedule_price ?? 0) * $passengerCount;
-            $originalFare += ($this->booking->return_schedule_accommodation_price ?? 0) * $passengerCount;
-        }
-        $originalFare += $this->getBookingTransportClassTotal();
-        $originalFare += $this->booking->has_vehicle ? $this->booking->vehicle_price : 0;
-
+        $originalFare = $this->originalFare;
         $newFare = $this->newFare;
 
-        $this->priceDiff = max(0, $newFare - $originalFare);
+        $this->rebookRevalidationFee = (floatval($settings->revalidation_fee) * $passengerCount);
+
+        $surchargePct = 0;
+        if ($mode === 'airline') {
+            $surchargePct = (float) $settings->rebook_airline_before_departure_surcharge_pct;
+        } else {
+            if ($isAfterDeparture) {
+                $surchargePct = (float) $settings->rebook_ferry_after_departure_surcharge_pct;
+            } else {
+                $surchargePct = (float) $settings->rebook_ferry_before_departure_surcharge_pct;
+            }
+        }
+        $this->rebookSurcharge = $originalFare * ($surchargePct / 100);
+
+        // 3. Rate Diff
+        if ($mode === 'airline') {
+            $this->rebookRateDiff = max(0, $newFare - $originalFare);
+        } else {
+            $this->rebookRateDiff = max(0, $newFare - $originalFare);
+        }
+
+        $this->totalRebookFee = $this->rebookSurcharge + $this->rebookRevalidationFee + $this->rebookRateDiff;
+        $this->priceDiff = $this->totalRebookFee;
     }
 
     public function getOriginalFareProperty(): float

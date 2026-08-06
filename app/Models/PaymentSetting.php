@@ -18,6 +18,9 @@ class PaymentSetting extends Model
         'ferry_before_departure_surcharge_pct',
         'ferry_after_departure_surcharge_pct',
         'airline_before_departure_surcharge_pct',
+        'rebook_ferry_before_departure_surcharge_pct',
+        'rebook_ferry_after_departure_surcharge_pct',
+        'rebook_airline_before_departure_surcharge_pct',
     ];
 
     protected $casts = [
@@ -29,6 +32,9 @@ class PaymentSetting extends Model
         'ferry_before_departure_surcharge_pct' => 'decimal:2',
         'ferry_after_departure_surcharge_pct' => 'decimal:2',
         'airline_before_departure_surcharge_pct' => 'decimal:2',
+        'rebook_ferry_before_departure_surcharge_pct' => 'decimal:2',
+        'rebook_ferry_after_departure_surcharge_pct' => 'decimal:2',
+        'rebook_airline_before_departure_surcharge_pct' => 'decimal:2',
     ];
 
     /**
@@ -49,6 +55,9 @@ class PaymentSetting extends Model
                 'ferry_before_departure_surcharge_pct'  => 25,
                 'ferry_after_departure_surcharge_pct'   => 40,
                 'airline_before_departure_surcharge_pct' => 40,
+                'rebook_ferry_before_departure_surcharge_pct' => 15,
+                'rebook_ferry_after_departure_surcharge_pct'  => 35,
+                'rebook_airline_before_departure_surcharge_pct' => 15,
             ]);
 
             return $model->getAttributes();
