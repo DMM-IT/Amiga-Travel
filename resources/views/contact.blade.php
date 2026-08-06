@@ -45,7 +45,7 @@
 }">
     <div class="max-w-6xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-16 relative ws-sbtn-container">
+        <div class="text-center mb-16 relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
             @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'hero' })" class="ws-sbtn absolute top-0 right-0"></button> @endif
             <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">{{ data_get($pageContent, 'badge', 'Contact Us') }}</span>
             <h1 class="mt-4 text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">{{ data_get($pageContent, 'title', 'Ready To Explore? Let\'s Connect and Start Planning Your Next Adventure') }}</h1>
@@ -56,16 +56,16 @@
 
         <div class="grid lg:grid-cols-3 gap-8 items-stretch">
             <!-- Contact Info Sidebar -->
-            <div class="lg:col-span-1 space-y-6 relative ws-sbtn-container">
+            <div class="lg:col-span-1 space-y-6 relative ws-sbtn-container amiga-animate-on-scroll amiga-transition">
                 @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'sidebar' })" class="ws-sbtn absolute -top-4 -right-4 z-10"></button> @endif
                 <!-- Phone -->
-                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-6 sm:p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                     </div>
-                    <div>
+                    <div class="min-w-0 flex-1">
                         <h3 class="font-bold text-slate-900">{{ data_get($pageContent, 'phone_label', 'Phone Numbers') }}</h3>
                         <div class="mt-2 text-sm text-slate-500 font-semibold space-y-1">
                             {!! nl2br(e(data_get($pageContent, 'phones', "Mobile: 0930-928-4278\nLandline: (043) 738-2989"))) !!}
@@ -74,13 +74,13 @@
                 </div>
 
                 <!-- Email -->
-                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-6 sm:p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-700 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                     </div>
-                    <div>
+                    <div class="min-w-0 flex-1">
                         <h3 class="font-bold text-slate-900">{{ data_get($pageContent, 'email_label', 'Email Addresses') }}</h3>
                         <div class="mt-2 text-sm text-slate-500 font-semibold space-y-1">
                             @foreach(explode("\n", data_get($pageContent, 'emails', "agtsreservation@amigagracia.com\namigagracia.travelservices@gmail.com")) as $email)
@@ -93,14 +93,14 @@
                 </div>
 
                 <!-- Location -->
-                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-6 sm:p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </div>
-                    <div>
+                    <div class="min-w-0 flex-1">
                         <h3 class="font-bold text-slate-900">{{ data_get($pageContent, 'location_label', 'Office Location') }}</h3>
                         <p class="mt-2 text-sm text-slate-500 leading-relaxed font-semibold">
                             {!! nl2br(e(data_get($pageContent, 'location_address', "Roxas Drive, Libis, Calapan City,\nOriental Mindoro, 5200"))) !!}
@@ -109,13 +109,13 @@
                 </div>
 
                 <!-- Socials -->
-                <div class="bg-white/85 backdrop-blur-md p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
+                <div class="bg-white/85 backdrop-blur-md p-6 sm:p-8 rounded-[2rem] shadow-md ring-1 ring-slate-100 flex items-start gap-4">
                     <div class="h-12 w-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
                         </svg>
                     </div>
-                    <div>
+                    <div class="min-w-0 flex-1">
                         <h3 class="font-bold text-slate-900">{{ data_get($pageContent, 'socials_label', 'Social Media') }}</h3>
                         <div class="mt-2 text-sm text-slate-500 font-semibold space-y-1">
                             @php
@@ -130,7 +130,7 @@
             </div>
 
             <!-- Contact Form -->
-            <div class="lg:col-span-2 bg-white/85 backdrop-blur-md rounded-[2rem] p-8 sm:p-10 shadow-md ring-1 ring-slate-100 flex flex-col justify-between relative ws-sbtn-container">
+            <div class="lg:col-span-2 bg-white/85 backdrop-blur-md rounded-[2rem] p-6 sm:p-10 shadow-md ring-1 ring-slate-100 flex flex-col justify-between relative ws-sbtn-container amiga-animate-on-scroll amiga-transition" style="transition-delay: 100ms;">
                 @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'form_labels' })" class="ws-sbtn absolute top-2 right-2"></button> @endif
                 <div class="relative">
                     <h2 class="text-2xl font-bold text-slate-900 mb-6">{{ data_get($pageContent, 'form_title', 'Send an Inquiry') }}</h2>

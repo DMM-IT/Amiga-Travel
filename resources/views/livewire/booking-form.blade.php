@@ -58,9 +58,6 @@
                                         @endif
                                     </div>
                                     <div class="mt-1.5 sm:mt-3 text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider leading-tight {{ $step === $index + 1 ? 'text-black' : ($step > $index + 1 ? 'text-[#216417]' : 'text-slate-400 sm:text-black') }} {{ $step === $index + 1 ? '' : 'hidden sm:block' }}">{{ $label }}</div>
-                                    @if($step === $index + 1)
-                                        <div class="mt-1.5 text-[9px] font-extrabold uppercase tracking-wider leading-tight text-black sm:hidden">{{ $label }}</div>
-                                    @endif
                                 </div>
                             @endforeach
                         </div>
