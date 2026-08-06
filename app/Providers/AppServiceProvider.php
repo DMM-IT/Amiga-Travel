@@ -71,5 +71,17 @@ class AppServiceProvider extends ServiceProvider
                 )
             );
         });
+
+        // Automatically bust cached settings whenever migrations are run
+        // This prevents the cache from holding onto stale database schemas (e.g. after a git pull)
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Database\Events\MigrationsEnded::class, function () {
+            try {
+                \App\Models\PaymentSetting::bust();
+                Cache::forget('website_settings:header_data');
+                Cache::forget('website_settings:footer_data');
+            } catch (\Throwable $e) {
+                // Ignore if tables don't exist yet
+            }
+        });
     }
 }

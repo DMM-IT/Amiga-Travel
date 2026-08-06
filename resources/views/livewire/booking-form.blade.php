@@ -605,7 +605,7 @@
                     @endif
 
                     @if ($step === 2 && !$tour_id && !$prefilled_from_package)
-                        <div class="space-y-4">
+                        <div class="space-y-4" wire:poll.60s>
                             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8" style="align-items: start;">
                                 {{-- Left Column: Schedules and transport classes/accommodations --}}
                                 <div class="lg:col-span-7 xl:col-span-8 space-y-6 min-w-0">
@@ -1614,8 +1614,15 @@
                                 </button>
                             @else
                                 <button type="submit" wire:loading.attr="disabled" wire:target="submit,confirmTermsAndContinue,confirmPrivacyAndContinue" class="inline-flex w-full sm:w-auto items-center justify-center rounded-xl bg-[#db2777] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg ring-4 ring-[#db2777]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    Complete Booking
+                                    <div wire:loading wire:target="submit,confirmTermsAndContinue,confirmPrivacyAndContinue" class="mr-2">
+                                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                    <svg wire:loading.remove wire:target="submit,confirmTermsAndContinue,confirmPrivacyAndContinue" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span wire:loading.remove wire:target="submit,confirmTermsAndContinue,confirmPrivacyAndContinue">Complete Booking</span>
+                                    <span wire:loading wire:target="submit,confirmTermsAndContinue,confirmPrivacyAndContinue">Processing...</span>
                                 </button>
                             @endif
                         </div>
@@ -1858,16 +1865,15 @@
                         <button type="button" wire:click.prevent="cancelTermsModal" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">
                             Cancel
                         </button>
-                        <button type="button" wire:click.prevent="confirmTermsAndContinue" :disabled="isSubmitting || !accepted || !scrolledToBottom" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            @if ($isSubmittingBooking)
-                                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <button type="button" wire:click.prevent="confirmTermsAndContinue" wire:loading.attr="disabled" wire:target="confirmTermsAndContinue" :disabled="!accepted || !scrolledToBottom" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            <div wire:loading wire:target="confirmTermsAndContinue" class="mr-2">
+                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Processing...
-                            @else
-                                Done & Continue
-                            @endif
+                            </div>
+                            <span wire:loading.remove wire:target="confirmTermsAndContinue">Done & Continue</span>
+                            <span wire:loading wire:target="confirmTermsAndContinue">Processing...</span>
                         </button>
                     </div>
                 </div>
@@ -1929,16 +1935,15 @@
                         <button type="button" wire:click.prevent="cancelPrivacyModal" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-400">
                             Cancel
                         </button>
-                        <button type="button" wire:click.prevent="confirmPrivacyAndContinue" :disabled="isSubmitting || !accepted || !scrolledToBottom" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            @if ($isSubmittingBooking)
-                                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <button type="button" wire:click.prevent="confirmPrivacyAndContinue" wire:loading.attr="disabled" wire:target="confirmPrivacyAndContinue" :disabled="!accepted || !scrolledToBottom" class="inline-flex items-center justify-center rounded-xl bg-[#db2777] px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#db2777]/90 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            <div wire:loading wire:target="confirmPrivacyAndContinue" class="mr-2">
+                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Processing...
-                            @else
-                                Done & Continue
-                            @endif
+                            </div>
+                            <span wire:loading.remove wire:target="confirmPrivacyAndContinue">Done & Continue</span>
+                            <span wire:loading wire:target="confirmPrivacyAndContinue">Processing...</span>
                         </button>
                     </div>
                 </div>

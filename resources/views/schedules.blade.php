@@ -272,8 +272,21 @@
                                 {{-- Slider --}}
                                 <div x-ref="slider" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 hide-scroll" style="scrollbar-width: none;">
                                     @foreach($route->schedules as $schedule)
-                                        <div class="snap-start shrink-0 w-full md:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.67rem)]">
-                                            <div class="h-full group relative rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm p-4 transition-all duration-200 hover:border-[#216417]/30 hover:shadow-md">
+                                        @php 
+                                            $departureIso = \Carbon\Carbon::parse($schedule->departure_time)->toIso8601String();
+                                            $schIsPast = \Carbon\Carbon::parse($schedule->departure_time)->isPast(); 
+                                        @endphp
+                                        <div class="snap-start shrink-0 w-full md:w-[calc(50%-0.5rem)] xl:w-[calc(33.333%-0.67rem)]"
+                                             x-data="{ isPast: {{ $schIsPast ? 'true' : 'false' }}, depTime: new Date('{{ $departureIso }}') }"
+                                             x-init="if (!isPast) { setInterval(() => { if (new Date() >= depTime) { isPast = true; } }, 1000) }">
+                                            <div class="h-full group relative rounded-xl border bg-white/80 backdrop-blur-sm p-4 transition-all duration-200"
+                                                 :class="isPast ? 'border-slate-200 opacity-60' : 'border-slate-200 hover:border-[#216417]/30 hover:shadow-md'">
+                                                {{-- Departed ribbon --}}
+                                                <div x-show="isPast" style="display: {{ $schIsPast ? 'block' : 'none' }};" class="absolute top-0 right-0 z-10">
+                                                    <div class="bg-slate-500 text-white text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-bl-xl rounded-tr-xl shadow-sm">
+                                                        Departed
+                                                    </div>
+                                                </div>
                                                 {{-- Service Name & Time --}}
                                                 <div class="flex items-start justify-between mb-3">
                                                     <div class="flex items-center gap-3">
@@ -379,10 +392,18 @@
 
                                                 {{-- Book Now Button --}}
                                                 <div class="mt-4 pt-4 border-t border-slate-100">
-                                                    <a href="{{ url('/book/new?trip_type=one_way&mode=' . urlencode($isFerry ? 'ferry' : 'airline') . '&operator=' . urlencode($opName) . '&origin=' . urlencode($route->origin) . '&destination=' . urlencode($route->destination) . '&departure_date=' . urlencode(\Carbon\Carbon::parse($schedule->departure_time)->format('Y-m-d'))) }}" class="w-full inline-flex justify-center items-center gap-1.5 rounded-lg bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1a5212]">
-                                                        Book Now
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                                                    </a>
+                                                    <template x-if="isPast">
+                                                        <div class="w-full inline-flex justify-center items-center gap-1.5 rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500 cursor-not-allowed">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                            Schedule Departed
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="!isPast">
+                                                        <a href="{{ url('/book/new?trip_type=one_way&mode=' . urlencode($isFerry ? 'ferry' : 'airline') . '&operator=' . urlencode($opName) . '&origin=' . urlencode($route->origin) . '&destination=' . urlencode($route->destination) . '&departure_date=' . urlencode(\Carbon\Carbon::parse($schedule->departure_time)->format('Y-m-d'))) }}" class="w-full inline-flex justify-center items-center gap-1.5 rounded-lg bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1a5212]">
+                                                            Book Now
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                                                        </a>
+                                                    </template>
                                                 </div>
                                             </div>
                                         </div>

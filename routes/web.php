@@ -173,9 +173,15 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
 
     $routes = App\Models\FerryRoute::with([
         'schedules' => function ($query) use ($startDate, $endDate) {
-            $query->active()
-                  ->whereBetween('departure_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-                  ->orderBy('departure_time');
+        $query->active()
+              ->where('departure_time', '>=',
+                  // When viewing today, exclude schedules whose departure has already passed (to the second)
+                  \Carbon\Carbon::parse($startDate)->isToday()
+                      ? \Carbon\Carbon::now()
+                      : \Carbon\Carbon::parse($startDate)->startOfDay()
+              )
+              ->where('departure_time', '<=', \Carbon\Carbon::parse($endDate)->endOfDay())
+              ->orderBy('departure_time');
         },
         'schedules.scheduleAccommodations',
         'schedules.transportClasses',

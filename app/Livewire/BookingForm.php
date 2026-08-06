@@ -1638,6 +1638,13 @@ public function selectedSchedule(): ?array
             ]);
         }
 
+        $lockKey = 'booking_submit_lock_' . session()->getId();
+        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 10);
+
+        if (! $lock->get()) {
+            return; // Silently ignore duplicate clicks while processing
+        }
+
         try {
             $this->isSubmittingBooking = true;
             $transaction = $this->processBookingInternal();
@@ -1664,6 +1671,8 @@ public function selectedSchedule(): ?array
             throw ValidationException::withMessages([
                 'step' => 'Booking failed to save. Please review and try again. Error: ' . $e->getMessage(),
             ]);
+        } finally {
+            $lock->release();
         }
     }
 
@@ -1688,6 +1697,13 @@ public function selectedSchedule(): ?array
             return;
         }
 
+        $lockKey = 'booking_submit_lock_' . session()->getId();
+        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 10);
+
+        if (! $lock->get()) {
+            return; // Silently ignore duplicate clicks while processing
+        }
+
         try {
             $this->isSubmittingBooking = true;
             $transaction = $this->processBookingInternal();
@@ -1710,6 +1726,8 @@ public function selectedSchedule(): ?array
             throw ValidationException::withMessages([
                 'step' => 'Booking failed to save: ' . $e->getMessage(),
             ]);
+        } finally {
+            $lock->release();
         }
     }
 
@@ -2010,6 +2028,13 @@ public function selectedSchedule(): ?array
             return;
         }
 
+        $lockKey = 'booking_submit_lock_' . session()->getId();
+        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 10);
+
+        if (! $lock->get()) {
+            return; // Silently ignore duplicate clicks while processing
+        }
+
         try {
             $this->isSubmittingBooking = true;
             $transaction = $this->processBookingInternal();
@@ -2036,6 +2061,8 @@ public function selectedSchedule(): ?array
             throw ValidationException::withMessages([
                 'step' => 'Booking failed to save: ' . $e->getMessage(),
             ]);
+        } finally {
+            $lock->release();
         }
     }
 

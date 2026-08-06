@@ -161,18 +161,32 @@
                         <input type="date" wire:model.live="dep_date" min="{{ $departureDateMin }}" class="w-full max-w-xs rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                     </div>
                     
-                    <div>
+                    <div wire:poll.60s>
                         <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Available Schedules for {{ \Carbon\Carbon::parse($dep_date)->format('M d, Y') }}</h4>
                         @if($this->availableDepartureSchedules->isEmpty())
                             <div class="rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">No schedules available on this date for this route.</div>
                         @else
                             <div class="grid gap-4 sm:grid-cols-2">
                                 @foreach($this->availableDepartureSchedules as $sch)
-                                    <div wire:click="selectDepartureSchedule({{ $sch->id }}, {{ $sch->price }})" class="group cursor-pointer rounded-2xl border border-slate-200 p-5 hover:border-emerald-500 hover:shadow-md transition">
+                                    @php $schIsPast = $sch->departure_time->isPast(); @endphp
+                                    <div
+                                        @if(!$schIsPast) wire:click="selectDepartureSchedule({{ $sch->id }}, {{ $sch->price }})" @endif
+                                        class="relative group rounded-2xl border p-5 transition
+                                            {{ $schIsPast
+                                                ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed pointer-events-none'
+                                                : 'border-slate-200 cursor-pointer hover:border-emerald-500 hover:shadow-md' }}"
+                                    >
+                                        @if($schIsPast)
+                                            <div class="absolute top-0 right-0">
+                                                <div class="bg-slate-500 text-white text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-bl-xl rounded-tr-2xl shadow-sm">
+                                                    Departed
+                                                </div>
+                                            </div>
+                                        @endif
                                         <div class="flex justify-between items-start">
                                             <div>
-                                                <h5 class="font-black text-slate-900">{{ $sch->formatted_departure }} &mdash; {{ $sch->formatted_arrival }}</h5>
-                                                <p class="text-xs font-bold text-emerald-700">{{ $sch->ferryRoute->operator }}</p>
+                                                <h5 class="font-black {{ $schIsPast ? 'text-slate-400 line-through' : 'text-slate-900' }}">{{ $sch->formatted_departure }} &mdash; {{ $sch->formatted_arrival }}</h5>
+                                                <p class="text-xs font-bold {{ $schIsPast ? 'text-slate-400' : 'text-emerald-700' }}">{{ $sch->ferryRoute->operator }}</p>
                                                 <p class="text-xs text-slate-500 mt-1">{{ $sch->ferryRoute->origin }} &rarr; {{ $sch->ferryRoute->destination }}</p>
                                             </div>
                                         </div>
@@ -224,18 +238,32 @@
                         <input type="date" wire:model.live="ret_date" min="{{ $returnDateMin }}" class="w-full max-w-xs rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                     </div>
                     
-                    <div>
+                    <div wire:poll.60s>
                         <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Available Return Schedules for {{ \Carbon\Carbon::parse($ret_date)->format('M d, Y') }}</h4>
                         @if($this->availableReturnSchedules->isEmpty())
                             <div class="rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">No schedules available on this date for this route.</div>
                         @else
                             <div class="grid gap-4 sm:grid-cols-2">
                                 @foreach($this->availableReturnSchedules as $sch)
-                                    <div wire:click="selectReturnSchedule({{ $sch->id }}, {{ $sch->price }})" class="group cursor-pointer rounded-2xl border border-slate-200 p-5 hover:border-emerald-500 hover:shadow-md transition">
+                                    @php $schIsPast = $sch->departure_time->isPast(); @endphp
+                                    <div
+                                        @if(!$schIsPast) wire:click="selectReturnSchedule({{ $sch->id }}, {{ $sch->price }})" @endif
+                                        class="relative group rounded-2xl border p-5 transition
+                                            {{ $schIsPast
+                                                ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed pointer-events-none'
+                                                : 'border-slate-200 cursor-pointer hover:border-emerald-500 hover:shadow-md' }}"
+                                    >
+                                        @if($schIsPast)
+                                            <div class="absolute top-0 right-0">
+                                                <div class="bg-slate-500 text-white text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-bl-xl rounded-tr-2xl shadow-sm">
+                                                    Departed
+                                                </div>
+                                            </div>
+                                        @endif
                                         <div class="flex justify-between items-start">
                                             <div>
-                                                <h5 class="font-black text-slate-900">{{ $sch->formatted_departure }} &mdash; {{ $sch->formatted_arrival }}</h5>
-                                                <p class="text-xs font-bold text-emerald-700">{{ $sch->ferryRoute->operator }}</p>
+                                                <h5 class="font-black {{ $schIsPast ? 'text-slate-400 line-through' : 'text-slate-900' }}">{{ $sch->formatted_departure }} &mdash; {{ $sch->formatted_arrival }}</h5>
+                                                <p class="text-xs font-bold {{ $schIsPast ? 'text-slate-400' : 'text-emerald-700' }}">{{ $sch->ferryRoute->operator }}</p>
                                                 <p class="text-xs text-slate-500 mt-1">{{ $sch->ferryRoute->origin }} &rarr; {{ $sch->ferryRoute->destination }}</p>
                                             </div>
                                         </div>

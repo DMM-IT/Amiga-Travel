@@ -156,16 +156,16 @@
         @if($mode === 'ferry' && $selectedSchedule && !empty($selectedSchedule['accommodations']) && empty($selectedSchedule['transport_classes']))
             <div class="mt-5 sm:mt-4 border-t border-slate-200 pt-5 sm:pt-4">
                 <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select accommodation for this trip:</p>
-                <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
+                <div class="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-3">
                     @foreach($selectedSchedule['accommodations'] as $accommodation)
                         @php
                             $schedulePrice = $selectedSchedule['price'] ?? 0;
                             $accommodationPrice = $accommodation['price'] ?? 0;
                             $totalPrice = $schedulePrice + $accommodationPrice;
                         @endphp
-                        <button type="button" wire:click.prevent="{{ $selectAccommodationMethod }}({{ $accommodation['id'] }})" class="rounded-xl border-2 p-4 text-left transition duration-200 {{ (int)$selectedAccommodationId === (int)$accommodation['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
+                        <button type="button" wire:click.prevent="{{ $selectAccommodationMethod }}({{ $accommodation['id'] }})" class="rounded-xl border-2 p-3 sm:p-4 text-left transition duration-200 {{ (int)$selectedAccommodationId === (int)$accommodation['id'] ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <h4 class="font-bold text-slate-900 text-sm">{{ $accommodation['name'] }}</h4>
+                                <h4 class="font-bold text-slate-900 text-xs sm:text-sm">{{ $accommodation['name'] }}</h4>
                                 <div class="flex items-center gap-1.5">
                                     @if(isset($accommodation['tickets_available']))
                                         <span class="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
@@ -188,7 +188,7 @@
         @if($selectedSchedule && !empty($selectedSchedule['transport_classes']))
             <div class="mt-5 sm:mt-4 border-t border-slate-200 pt-5 sm:pt-4">
                 <p class="text-slate-900 font-bold mb-4 sm:mb-3 text-sm">Select travel class for this trip:</p>
-                <div class="grid gap-5 sm:gap-4 sm:grid-cols-2">
+                <div class="grid gap-3 grid-cols-2 sm:gap-4 lg:grid-cols-3">
                     @foreach($selectedSchedule['transport_classes'] as $class)
                         @php
                             $schedulePrice = $selectedSchedule['price'] ?? 0;
@@ -196,9 +196,9 @@
                             $totalPrice = $schedulePrice + $classPrice;
                             $uniqueId = $class['pivot_id'] ?? $class['id'];
                         @endphp
-                        <button type="button" wire:click.prevent="{{ $selectClassMethod }}({{ $uniqueId }})" class="rounded-xl border-2 p-4 text-left transition duration-200 overflow-hidden {{ (int)$selectedClassId === (int)$uniqueId ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
+                        <button type="button" wire:click.prevent="{{ $selectClassMethod }}({{ $uniqueId }})" class="rounded-xl border-2 p-3 sm:p-4 text-left transition duration-200 overflow-hidden {{ (int)$selectedClassId === (int)$uniqueId ? 'border-[#db2777] bg-[#db2777]/5 shadow-sm' : 'border-slate-200 bg-white hover:border-[#db2777]/50 hover:shadow-sm' }}">
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <h4 class="font-bold text-slate-900 text-sm">
+                                <h4 class="font-bold text-slate-900 text-xs sm:text-sm">
                                     {{ $class['name'] }}
                                     @if(!empty($class['rate_code']))
                                         <span class="text-xs font-semibold text-slate-500 ml-1">({{ $class['rate_code'] }})</span>

@@ -130,8 +130,13 @@ class Schedule extends Model
 
     public function scopeForRouteAndDate(Builder $query, string $origin, string $destination, string $date, ?string $mode = null, ?string $operator = null): Builder
     {
-        $dayStart = Carbon::parse($date)->startOfDay();
+        $now    = Carbon::now();
         $dayEnd = Carbon::parse($date)->endOfDay();
+
+        // When the selected date is TODAY, use the current second as the lower
+        // bound so that any schedule whose departure has already passed — even
+        // by a single second — is excluded from results.
+        $lowerBound = Carbon::parse($date)->isToday() ? $now : Carbon::parse($date)->startOfDay();
 
         return $query->active()
             ->whereHas('ferryRoute', function (Builder $routeQuery) use ($origin, $destination, $mode, $operator) {
@@ -150,7 +155,8 @@ class Schedule extends Model
                     });
                 }
             })
-            ->whereBetween('departure_time', [$dayStart, $dayEnd])
+            ->where('departure_time', '>=', $lowerBound)
+            ->where('departure_time', '<=', $dayEnd)
             ->orderBy('departure_time');
     }
 
@@ -468,6 +474,8 @@ class Schedule extends Model
 
         $promoTicket = $this->activePromotionalTicket();
 
+        $departureCarbon = Carbon::parse($this->departure_time);
+
         return [
             'id' => $this->id,
             'departure' => $this->formatted_departure,
@@ -481,6 +489,10 @@ class Schedule extends Model
             'mode' => $mode,
             'trip_type' => $this->ferryRoute?->trip_type ?: 'local',
             'operator' => $this->ferryRoute?->operator,
+            // ISO 8601 timestamp for real-time client-side filtering (JS Date comparison)
+            'departure_time_iso' => $this->departure_time->toIso8601String(),
+            // True when the departure has already passed (race-condition guard for UI)
+            'is_past' => $departureCarbon->isPast(),
             // Promotional ticket — null when no active promo exists for this schedule
             'promotional_ticket' => $promoTicket ? [
                 'id'                 => $promoTicket->id,

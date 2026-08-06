@@ -158,6 +158,7 @@ class BookingReschedule extends Component
         if (!$this->booking || !$this->dep_date) return collect();
         return Schedule::forRouteAndDate($this->booking->origin, $this->booking->destination, $this->dep_date)
             ->with(['ferryRoute', 'vehicle'])
+            ->where('departure_time', '>', now())
             ->get();
     }
 
@@ -166,6 +167,7 @@ class BookingReschedule extends Component
         if (!$this->booking || !$this->ret_date) return collect();
         return Schedule::forRouteAndDate($this->booking->destination, $this->booking->origin, $this->ret_date)
             ->with(['ferryRoute', 'vehicle'])
+            ->where('departure_time', '>', now())
             ->get();
     }
 
