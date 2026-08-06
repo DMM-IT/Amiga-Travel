@@ -349,19 +349,62 @@
             <p class="mt-3 text-slate-500 max-w-lg mx-auto">{{ data_get($pageContent, 'how_it_works_description', 'Follow these simple steps to install the APK on your Android device.') }}</p>
         </div>
 
-        <div class="grid sm:grid-cols-3 gap-8">
-            @foreach($downloadSteps as $step)
-                <div class="relative bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition amiga-animate-on-scroll amiga-transition" style="transition-delay: {{ $loop->index * 100 }}ms;">
-                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: {{ data_get($step, 'icon_color') }};">{{ data_get($step, 'number') }}</div>
-                    <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: {{ data_get($step, 'bg_color') }};">
-                        <svg class="h-8 w-8" style="color: {{ data_get($step, 'icon_color') }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ data_get($step, 'icon') }}" />
-                        </svg>
-                    </div>
-                    <h3 class="font-bold text-slate-900 text-lg">{{ data_get($step, 'title') }}</h3>
-                    <p class="text-sm text-slate-500 mt-2 leading-relaxed">{{ data_get($step, 'description') }}</p>
+        <div x-data="{ currentStep: 0, stepsCount: {{ count($downloadSteps) }} }" class="relative mt-6">
+            <!-- Mobile Carousel View -->
+            <div class="sm:hidden relative overflow-hidden px-1">
+                <div class="flex transition-transform duration-500 ease-in-out" :style="'transform: translateX(-' + (currentStep * 100) + '%)'">
+                    @foreach($downloadSteps as $step)
+                        <div class="w-full shrink-0 px-3 pt-4 pb-4">
+                            <div class="relative bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center h-full">
+                                <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: {{ data_get($step, 'icon_color') }};">{{ data_get($step, 'number') }}</div>
+                                <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5" style="background: {{ data_get($step, 'bg_color') }};">
+                                    <svg class="h-8 w-8" style="color: {{ data_get($step, 'icon_color') }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ data_get($step, 'icon') }}" />
+                                    </svg>
+                                </div>
+                                <h3 class="font-bold text-slate-900 text-lg">{{ data_get($step, 'title') }}</h3>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">{{ data_get($step, 'description') }}</p>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            @endforeach
+                <!-- Prev/Next Controls -->
+                <div class="flex items-center justify-center gap-5 mt-2 mb-4">
+                    <button @click="if(currentStep > 0) currentStep--" 
+                            :disabled="currentStep === 0"
+                            class="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-md border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none">
+                        <svg class="w-5 h-5 pr-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <!-- Indicators -->
+                    <div class="flex gap-2">
+                        <template x-for="i in stepsCount" :key="i">
+                            <div class="h-2 rounded-full transition-all duration-300" 
+                                 :class="currentStep === (i-1) ? 'w-6 bg-[#216417]' : 'w-2 bg-slate-300'"></div>
+                        </template>
+                    </div>
+                    <button @click="if(currentStep < stepsCount - 1) currentStep++" 
+                            :disabled="currentStep === stepsCount - 1"
+                            class="w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-md border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none">
+                        <svg class="w-5 h-5 pl-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Desktop Grid View -->
+            <div class="hidden sm:grid sm:grid-cols-3 gap-8 pt-4">
+                @foreach($downloadSteps as $step)
+                    <div class="relative bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-md ring-1 ring-slate-100 text-center group hover:shadow-lg transition amiga-animate-on-scroll amiga-transition" style="transition-delay: {{ $loop->index * 100 }}ms;">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full font-black text-sm flex items-center justify-center text-white shadow-md" style="background: {{ data_get($step, 'icon_color') }};">{{ data_get($step, 'number') }}</div>
+                        <div class="h-16 w-16 mx-auto rounded-2xl flex items-center justify-center mb-5 group-hover:scale-105 transition" style="background: {{ data_get($step, 'bg_color') }};">
+                            <svg class="h-8 w-8" style="color: {{ data_get($step, 'icon_color') }};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ data_get($step, 'icon') }}" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-lg">{{ data_get($step, 'title') }}</h3>
+                        <p class="text-sm text-slate-500 mt-2 leading-relaxed">{{ data_get($step, 'description') }}</p>
+                    </div>
+                @endforeach
+            </div>
         </div>
     </div>
 
