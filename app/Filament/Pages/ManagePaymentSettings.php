@@ -41,9 +41,14 @@ class ManagePaymentSettings extends Page implements HasForms
         $settings = PaymentSetting::current();
 
         $this->form->fill([
-            'fee_per_person' => $settings->fee_per_person,
-            'fee_per_accommodation' => $settings->fee_per_accommodation,
-            'qr_code_path' => $settings->qr_code_path,
+            'web_admin_fee'                         => $settings->web_admin_fee,
+            'fee_per_accommodation'                 => $settings->fee_per_accommodation,
+            'transaction_fee'                       => $settings->transaction_fee,
+            'revalidation_fee'                      => $settings->revalidation_fee,
+            'qr_code_path'                          => $settings->qr_code_path,
+            'ferry_before_departure_surcharge_pct'  => $settings->ferry_before_departure_surcharge_pct,
+            'ferry_after_departure_surcharge_pct'   => $settings->ferry_after_departure_surcharge_pct,
+            'airline_before_departure_surcharge_pct' => $settings->airline_before_departure_surcharge_pct,
         ]);
     }
 
@@ -54,8 +59,8 @@ class ManagePaymentSettings extends Page implements HasForms
                 Section::make('Service Fee')
                     ->description('Added to every booking\'s total on the final review page, before payment. Not shown to clients while they\'re still browsing schedules and accommodations.')
                     ->schema([
-                        TextInput::make('fee_per_person')
-                            ->label('Fee per traveler (₱)')
+                        TextInput::make('web_admin_fee')
+                            ->label('Web Admin Fee (₱)')
                             ->helperText('Charged for every adult and child. Infants are not charged.')
                             ->numeric()
                             ->prefix('₱')
@@ -68,8 +73,52 @@ class ManagePaymentSettings extends Page implements HasForms
                             ->prefix('₱')
                             ->minValue(0)
                             ->required(),
+                        TextInput::make('transaction_fee')
+                            ->label('Transaction Fee (₱)')
+                            ->helperText('Charged per booking transaction.')
+                            ->numeric()
+                            ->prefix('₱')
+                            ->minValue(0)
+                            ->required(),
+                        TextInput::make('revalidation_fee')
+                            ->label('Revalidation Fee (₱)')
+                            ->helperText('Charged per passenger for rebooking.')
+                            ->numeric()
+                            ->prefix('₱')
+                            ->minValue(0)
+                            ->required(),
                     ])
                     ->columns(2),
+
+                Section::make('Refund Policy')
+                    ->description('Surcharge percentages applied to the ticket base price when a customer cancels. Web Admin Fee and Transaction Fee are always non-refundable.')
+                    ->schema([
+                        TextInput::make('ferry_before_departure_surcharge_pct')
+                            ->label('Ferry — Before Departure Surcharge (%)')
+                            ->helperText('Applies to 2GO and Starlite cancellations before departure. Default: 25%.')
+                            ->numeric()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->required(),
+                        TextInput::make('ferry_after_departure_surcharge_pct')
+                            ->label('Ferry — After Departure Surcharge (%) — Starlite Only')
+                            ->helperText('Applies to Starlite-only cancellations after departure (within 10 min grace). 2GO has no after-departure refund. Default: 40%.')
+                            ->numeric()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->required(),
+                        TextInput::make('airline_before_departure_surcharge_pct')
+                            ->label('Airline — Before Departure Surcharge (%)')
+                            ->helperText('Applies to airline cancellations before departure. No refund is given after departure for airlines. Default: 40%.')
+                            ->numeric()
+                            ->suffix('%')
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->required(),
+                    ])
+                    ->columns(3),
 
                 Section::make('Payment QR Code')
                     ->description('This single QR code (e.g. your GCash QR) is shown to every client on the payment page.')
@@ -93,9 +142,14 @@ class ManagePaymentSettings extends Page implements HasForms
         $state = $this->form->getState();
 
         PaymentSetting::current()->update([
-            'fee_per_person' => $state['fee_per_person'],
-            'fee_per_accommodation' => $state['fee_per_accommodation'],
-            'qr_code_path' => $state['qr_code_path'],
+            'web_admin_fee'                         => $state['web_admin_fee'],
+            'fee_per_accommodation'                 => $state['fee_per_accommodation'],
+            'transaction_fee'                       => $state['transaction_fee'],
+            'revalidation_fee'                      => $state['revalidation_fee'],
+            'qr_code_path'                          => $state['qr_code_path'],
+            'ferry_before_departure_surcharge_pct'  => $state['ferry_before_departure_surcharge_pct'],
+            'ferry_after_departure_surcharge_pct'   => $state['ferry_after_departure_surcharge_pct'],
+            'airline_before_departure_surcharge_pct' => $state['airline_before_departure_surcharge_pct'],
         ]);
         PaymentSetting::bust(); // Clear cached payment settings
 

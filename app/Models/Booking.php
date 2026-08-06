@@ -263,8 +263,22 @@ class Booking extends Model
         return $this->transaction->verificationTimerTooltip();
     }
 
+    /**
+     * Cancellation/rebook allowed:
+     *  - Ferry: up to departure time (Starlite also allows AFTER departure + 10 min grace)
+     *  - Airline: only before departure (no after-departure refund)
+     */
     public function canCancelOrRebook(): bool
     {
+        // Ferry Starlite: allow up to departure+10 min (after-departure bracket)
+        if ($this->isStarlite()) {
+            $departureDateTime = $this->getDepartureDateTime();
+            if ($departureDateTime) {
+                return now()->isBefore($departureDateTime->copy()->addMinutes(10));
+            }
+        }
+
+        // All others: today or future departure date only (before departure)
         return $this->departure_date->isFuture() || $this->departure_date->isToday();
     }
 
@@ -295,23 +309,164 @@ class Booking extends Model
         }
 
         $departureDateTime = $this->getDepartureDateTime();
-        
         if (! $departureDateTime) {
             return false;
         }
-        
+
+        // After-departure bracket (Starlite ferry only, up to departure+10 min)
+        if ($this->isAfterDeparture()) {
+            return $this->isStarlite();
+        }
+
+        // Before-departure bracket: must be at least 3 hours before departure
         $deadline = $departureDateTime->copy()->subHours(3);
         return now()->isBefore($deadline);
     }
 
-    public function getCancellationFeeAmount(): float
+    /**
+     * Determine transport mode ('ferry' or 'airline') from the linked FerryRoute.
+     */
+    public function getMode(): string
     {
-        return $this->total_price * 0.5;
+        if ($this->schedule_id) {
+            $mode = \App\Models\FerryRoute::query()
+                ->join('schedules', 'ferry_routes.id', '=', 'schedules.ferry_route_id')
+                ->where('schedules.id', $this->schedule_id)
+                ->value('ferry_routes.mode');
+
+            if ($mode) {
+                return strtolower($mode);
+            }
+        }
+
+        return 'ferry'; // safe default
     }
 
-    public function getRefundAmount(): float
+    /**
+     * True if the booking's departure service is Starlite.
+     */
+    public function isStarlite(): bool
     {
-        return $this->total_price * 0.5;
+        return str_contains(strtolower((string) $this->schedule_service), 'starlite');
+    }
+
+    /**
+     * True when actual departure time + 10-minute grace period has passed.
+     */
+    public function isAfterDeparture(): bool
+    {
+        $dt = $this->getDepartureDateTime();
+        if (! $dt) {
+            return false;
+        }
+        return now()->isAfter($dt->copy()->addMinutes(10));
+    }
+
+    /**
+     * The refundable ticket base = total paid minus the non-refundable platform fees.
+     * web_admin_fee (per passenger) + transaction_fee are always non-refundable.
+     */
+    public function getTicketBase(): float
+    {
+        $settings       = \App\Models\PaymentSetting::current();
+        $passengerCount = max(1, $this->passengers()->count());
+        $nonRefundable  = (floatval($settings->web_admin_fee) * $passengerCount)
+                        + floatval($settings->transaction_fee);
+
+        return max(0, floatval($this->total_price) - $nonRefundable);
+    }
+
+    /**
+     * Calculate the refund amount based on mode, timing, and configurable surcharge.
+     *
+     * Formula:
+     *   ticketBase   = total_price - (web_admin_fee × pax) - transaction_fee
+     *   surcharge    = ticketBase × surcharge_pct%
+     *   refund       = ticketBase - surcharge
+     *
+     * Non-refundable cases return 0.
+     */
+    public function getRefundSurchargePercentage(): float
+    {
+        $settings = \App\Models\PaymentSetting::current();
+        $mode = $this->getMode();
+        $afterDepart = $this->isAfterDeparture();
+        
+        if ($mode === 'airline') {
+            return (float) $settings->airline_before_departure_surcharge_pct;
+        } elseif ($afterDepart) {
+            return (float) $settings->ferry_after_departure_surcharge_pct;
+        } else {
+            return (float) $settings->ferry_before_departure_surcharge_pct;
+        }
+    }
+
+    public function getRefundBreakdown(bool $isWithinGracePeriod = false): array
+    {
+        if ($isWithinGracePeriod) {
+            return [
+                'base_ticket' => (float) $this->total_price,
+                'surcharge_pct' => 0,
+                'surcharge_amount' => 0,
+                'non_refundable_fees' => 0,
+                'refundable_amount' => (float) $this->total_price,
+                'deduction_amount' => 0,
+            ];
+        }
+
+        $mode = $this->getMode();
+        $afterDepart = $this->isAfterDeparture();
+        
+        if ($mode === 'airline' && $afterDepart) {
+            return [
+                'base_ticket' => $this->getTicketBase(),
+                'surcharge_pct' => 100,
+                'surcharge_amount' => $this->getTicketBase(),
+                'non_refundable_fees' => (float) $this->total_price - $this->getTicketBase(),
+                'refundable_amount' => 0,
+                'deduction_amount' => (float) $this->total_price,
+            ];
+        }
+
+        if ($mode !== 'airline' && $afterDepart && ! $this->isStarlite()) {
+            return [
+                'base_ticket' => $this->getTicketBase(),
+                'surcharge_pct' => 100,
+                'surcharge_amount' => $this->getTicketBase(),
+                'non_refundable_fees' => (float) $this->total_price - $this->getTicketBase(),
+                'refundable_amount' => 0,
+                'deduction_amount' => (float) $this->total_price,
+            ];
+        }
+
+        $ticketBase = $this->getTicketBase();
+        $surchargePct = $this->getRefundSurchargePercentage();
+        $surcharge  = $ticketBase * ($surchargePct / 100);
+        
+        $nonRefundableFees = max(0, (float) $this->total_price - $ticketBase);
+        $refundable = max(0, round($ticketBase - $surcharge, 2));
+
+        return [
+            'base_ticket' => $ticketBase,
+            'surcharge_pct' => $surchargePct,
+            'surcharge_amount' => $surcharge,
+            'non_refundable_fees' => $nonRefundableFees,
+            'refundable_amount' => $refundable,
+            'deduction_amount' => (float) $this->total_price - $refundable,
+        ];
+    }
+
+    public function getRefundAmount(bool $isWithinGracePeriod = false): float
+    {
+        return $this->getRefundBreakdown($isWithinGracePeriod)['refundable_amount'];
+    }
+
+    /**
+     * Total amount deducted (surcharge + non-refundable fees).
+     */
+    public function getCancellationFeeAmount(bool $isWithinGracePeriod = false): float
+    {
+        return $this->getRefundBreakdown($isWithinGracePeriod)['deduction_amount'];
     }
 
     public function getRebookingFeeAmount(): float
@@ -357,5 +512,137 @@ class Booking extends Model
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    public function getPriceBreakdown(): array
+    {
+        $breakdown = [];
+        $passengers = $this->passengers;
+        
+        $depTicketTotal = 0;
+        $depAccTotal = 0;
+        $retTicketTotal = 0;
+        $retAccTotal = 0;
+        
+        foreach ($passengers as $p) {
+            if ($p->is_promo) {
+                $depTicketTotal += (float) $p->promo_price;
+            } else {
+                $pDepTicket = (float) ($this->schedule_price ?? 0);
+                $pDepAcc = (float) ($this->schedule_accommodation_price ?? 0);
+                $pRetTicket = (float) ($this->return_schedule_price ?? 0);
+                $pRetAcc = (float) ($this->return_schedule_accommodation_price ?? 0);
+                
+                if ($p->discount) {
+                    $multiplier = 1 - ((float) $p->discount->percentage / 100);
+                    $pDepTicket *= $multiplier;
+                    $pDepAcc *= $multiplier;
+                    $pRetTicket *= $multiplier;
+                    $pRetAcc *= $multiplier;
+                }
+                
+                $depTicketTotal += $pDepTicket;
+                $depAccTotal += $pDepAcc;
+                $retTicketTotal += $pRetTicket;
+                $retAccTotal += $pRetAcc;
+            }
+        }
+        
+        if ($depTicketTotal > 0) {
+            $breakdown[] = [
+                'label' => 'Departure Tickets (' . $passengers->count() . 'x)',
+                'amount' => $depTicketTotal,
+                'class' => ''
+            ];
+        }
+        
+        if ($depAccTotal > 0) {
+            $breakdown[] = [
+                'label' => 'Departure Accommodation (' . $passengers->count() . 'x)',
+                'amount' => $depAccTotal,
+                'class' => ''
+            ];
+        }
+        
+        if ($retTicketTotal > 0) {
+            $breakdown[] = [
+                'label' => 'Return Tickets (' . $passengers->count() . 'x)',
+                'amount' => $retTicketTotal,
+                'class' => ''
+            ];
+        }
+        
+        if ($retAccTotal > 0) {
+            $breakdown[] = [
+                'label' => 'Return Accommodation (' . $passengers->count() . 'x)',
+                'amount' => $retAccTotal,
+                'class' => ''
+            ];
+        }
+
+        foreach ($this->accommodations as $acc) {
+            $breakdown[] = [
+                'label' => $acc->name,
+                'amount' => (float) $acc->pivot->price,
+                'class' => ''
+            ];
+        }
+
+        if ($this->has_vehicle && $this->vehicle_price > 0) {
+            $breakdown[] = [
+                'label' => 'Vehicle Freight (' . $this->vehicle_type . ')',
+                'amount' => (float) $this->vehicle_price,
+                'class' => ''
+            ];
+        }
+        
+        if ($this->has_extra_baggage && $this->extra_baggage_price > 0) {
+            $breakdown[] = [
+                'label' => 'Extra Baggage (' . $this->extra_baggage_weight . 'kg)',
+                'amount' => (float) $this->extra_baggage_price,
+                'class' => ''
+            ];
+        }
+
+        if ($this->voucher_discount_amount > 0) {
+            $breakdown[] = [
+                'label' => 'Voucher Discount (' . $this->voucher_code . ')',
+                'amount' => - (float) $this->voucher_discount_amount,
+                'class' => 'text-green-600'
+            ];
+        }
+
+        $sumSoFar = array_sum(array_column($breakdown, 'amount'));
+        $fees = (float) $this->total_price - $sumSoFar;
+        
+        if ($fees > 0.01) {
+            $settings = \App\Models\PaymentSetting::current();
+            $transactionFee = (float) $settings->transaction_fee;
+            $hotelFee = $this->accommodations->count() > 0 ? (float) $settings->fee_per_accommodation : 0;
+            
+            if ($fees >= $transactionFee) {
+                $breakdown[] = ['label' => 'Transaction Fee', 'amount' => $transactionFee, 'class' => 'text-slate-500'];
+                $fees -= $transactionFee;
+            }
+            
+            if ($fees >= $hotelFee && $hotelFee > 0) {
+                $breakdown[] = ['label' => 'Hotel Service Fee', 'amount' => $hotelFee, 'class' => 'text-slate-500'];
+                $fees -= $hotelFee;
+            }
+
+            if ($fees > 0.01) {
+                $breakdown[] = ['label' => 'Web Admin Fee', 'amount' => $fees, 'class' => 'text-slate-500'];
+            }
+        }
+        
+        if ($this->transaction && (float) $this->transaction->rebooking_fee > 0) {
+            $breakdown[] = [
+                'label' => 'Rebooking Fee',
+                'amount' => (float) $this->transaction->rebooking_fee,
+                'class' => 'text-amber-600'
+            ];
+        }
+
+        return $breakdown;
     }
 }

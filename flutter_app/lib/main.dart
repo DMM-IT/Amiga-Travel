@@ -5983,7 +5983,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         if (data['status'] == 'success') {
           setState(() {
             _qrCodeUrl = data['qr_code_url'];
-            _feePerPerson = (data['fee_per_person'] as num?)?.toDouble() ?? 0.0;
+            _webAdminFee = (data['web_admin_fee'] as num?)?.toDouble() ?? 0.0;
             _feePerAccommodation = (data['fee_per_accommodation'] as num?)?.toDouble() ?? 0.0;
           });
         }

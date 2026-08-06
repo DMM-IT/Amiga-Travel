@@ -135,6 +135,7 @@ class BookingController extends Controller
                 now()->addDays(7),
                 ['booking' => $booking->id]
             );
+            $data['price_breakdown'] = $booking->getPriceBreakdown();
 
             return $data;
         });
@@ -190,8 +191,10 @@ class BookingController extends Controller
 
             return [
                 'qr_code_url'            => $qrCodeUrl,
-                'fee_per_person'         => floatval($settings->fee_per_person),
+                'web_admin_fee'          => floatval($settings->web_admin_fee),
                 'fee_per_accommodation'  => floatval($settings->fee_per_accommodation),
+                'transaction_fee'        => floatval($settings->transaction_fee),
+                'revalidation_fee'       => floatval($settings->revalidation_fee),
             ];
         });
 
@@ -229,10 +232,10 @@ class BookingController extends Controller
             }
 
             return response()->json([
-                'status' => 'success',
-                'message' => 'Cancellation started.',
-                'cancellation_fee' => $isWithinFiveMinutes ? 0.0 : $booking->total_price * 0.5,
-                'refund_amount' => $isWithinFiveMinutes ? $booking->total_price : $booking->total_price * 0.5,
+                'status'           => 'success',
+                'message'          => 'Cancellation started.',
+                'cancellation_fee' => $booking->getCancellationFeeAmount($isWithinFiveMinutes),
+                'refund_amount'    => $booking->getRefundAmount($isWithinFiveMinutes),
             ]);
         }
 
@@ -245,8 +248,8 @@ class BookingController extends Controller
 
         $request->validate(['refund_destination' => 'required|string|max:255']);
 
-        $cancellationFee = $isWithinFiveMinutes ? 0.0 : $booking->total_price * 0.5;
-        $refundAmount = $isWithinFiveMinutes ? $booking->total_price : $booking->total_price * 0.5;
+        $cancellationFee = $booking->getCancellationFeeAmount($isWithinFiveMinutes);
+        $refundAmount    = $booking->getRefundAmount($isWithinFiveMinutes);
 
         $booking->update([
             'status' => Booking::STATUS_CANCELLED,

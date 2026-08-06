@@ -239,7 +239,9 @@ class BookingLookup extends Component
                 $this->cancellationWindowActive = false;
                 return;
             }
-            $this->feedback = 'Cancellation is eligible for a 50% refund.';
+            $refund = $this->booking->getRefundAmount(false);
+            $fee    = $this->booking->getCancellationFeeAmount(false);
+            $this->feedback = 'Enter where you would like the refund sent. Estimated refund: ₱' . number_format($refund, 2) . ' (cancellation deductions: ₱' . number_format($fee, 2) . ').';
         } else {
             $this->cancellationExpired = false;
             $this->cancelCountdown = $remaining;
@@ -315,18 +317,14 @@ class BookingLookup extends Component
             return;
         }
 
-        // Calculate refund percentage based on creation time:
+        // Calculate refund using the new surcharge-based formula
         $isWithinFiveMinutes = $this->booking->created_at->addMinutes(5)->isFuture();
-        if ($isWithinFiveMinutes) {
-            $cancellationFee = 0.0;
-            $refundAmount = $this->booking->total_price;
-        } else {
-            if (! $this->booking->isRefundEligible()) {
-                $this->feedback = 'You cannot request a refund as it is less than 3 hours before the departure time.';
-                return;
-            }
-            $cancellationFee = $this->booking->total_price * 0.5;
-            $refundAmount = $this->booking->total_price * 0.5;
+        $cancellationFee = $this->booking->getCancellationFeeAmount($isWithinFiveMinutes);
+        $refundAmount    = $this->booking->getRefundAmount($isWithinFiveMinutes);
+
+        if (! $isWithinFiveMinutes && ! $this->booking->isRefundEligible()) {
+            $this->feedback = 'You cannot request a refund as it is less than 3 hours before the departure time.';
+            return;
         }
 
         $this->booking->update([
@@ -714,122 +712,7 @@ class BookingLookup extends Component
     {
         if (! $this->booking) return [];
 
-        $breakdown = [];
-        $passengers = $this->booking->passengers;
-        
-        $depTicketTotal = 0;
-        $depAccTotal = 0;
-        $retTicketTotal = 0;
-        $retAccTotal = 0;
-        
-        foreach ($passengers as $p) {
-            if ($p->is_promo) {
-                $depTicketTotal += (float) $p->promo_price;
-            } else {
-                $pDepTicket = (float) ($this->booking->schedule_price ?? 0);
-                $pDepAcc = (float) ($this->booking->schedule_accommodation_price ?? 0);
-                $pRetTicket = (float) ($this->booking->return_schedule_price ?? 0);
-                $pRetAcc = (float) ($this->booking->return_schedule_accommodation_price ?? 0);
-                
-                if ($p->discount) {
-                    $multiplier = 1 - ((float) $p->discount->percentage / 100);
-                    $pDepTicket *= $multiplier;
-                    $pDepAcc *= $multiplier;
-                    $pRetTicket *= $multiplier;
-                    $pRetAcc *= $multiplier;
-                }
-                
-                $depTicketTotal += $pDepTicket;
-                $depAccTotal += $pDepAcc;
-                $retTicketTotal += $pRetTicket;
-                $retAccTotal += $pRetAcc;
-            }
-        }
-        
-        if ($depTicketTotal > 0) {
-            $breakdown[] = [
-                'label' => 'Departure Tickets (' . $passengers->count() . 'x)',
-                'amount' => $depTicketTotal,
-                'class' => ''
-            ];
-        }
-        
-        if ($depAccTotal > 0) {
-            $breakdown[] = [
-                'label' => 'Departure Accommodation (' . $passengers->count() . 'x)',
-                'amount' => $depAccTotal,
-                'class' => ''
-            ];
-        }
-        
-        if ($retTicketTotal > 0) {
-            $breakdown[] = [
-                'label' => 'Return Tickets (' . $passengers->count() . 'x)',
-                'amount' => $retTicketTotal,
-                'class' => ''
-            ];
-        }
-        
-        if ($retAccTotal > 0) {
-            $breakdown[] = [
-                'label' => 'Return Accommodation (' . $passengers->count() . 'x)',
-                'amount' => $retAccTotal,
-                'class' => ''
-            ];
-        }
-
-        foreach ($this->booking->accommodations as $acc) {
-            $breakdown[] = [
-                'label' => $acc->name,
-                'amount' => (float) $acc->pivot->price,
-                'class' => ''
-            ];
-        }
-
-        if ($this->booking->has_vehicle && $this->booking->vehicle_price > 0) {
-            $breakdown[] = [
-                'label' => 'Vehicle Freight (' . $this->booking->vehicle_type . ')',
-                'amount' => (float) $this->booking->vehicle_price,
-                'class' => ''
-            ];
-        }
-        
-        if ($this->booking->has_extra_baggage && $this->booking->extra_baggage_price > 0) {
-            $breakdown[] = [
-                'label' => 'Extra Baggage (' . $this->booking->extra_baggage_weight . 'kg)',
-                'amount' => (float) $this->booking->extra_baggage_price,
-                'class' => ''
-            ];
-        }
-
-        if ($this->booking->voucher_discount_amount > 0) {
-            $breakdown[] = [
-                'label' => 'Voucher Discount (' . $this->booking->voucher_code . ')',
-                'amount' => - (float) $this->booking->voucher_discount_amount,
-                'class' => 'text-green-600'
-            ];
-        }
-
-        $sumSoFar = array_sum(array_column($breakdown, 'amount'));
-        $fees = (float) $this->booking->total_price - $sumSoFar;
-        
-        if ($fees > 0.01) {
-            $breakdown[] = [
-                'label' => 'Web Admin Fee',
-                'amount' => $fees,
-                'class' => 'text-slate-500'
-            ];
-        }
-        
-        if ($this->booking->transaction && (float) $this->booking->transaction->rebooking_fee > 0) {
-            $breakdown[] = [
-                'label' => 'Rebooking Fee',
-                'amount' => (float) $this->booking->transaction->rebooking_fee,
-                'class' => 'text-amber-600'
-            ];
-        }
-
-        return $breakdown;
+        return $this->booking->getPriceBreakdown();
     }
 
     public function render()

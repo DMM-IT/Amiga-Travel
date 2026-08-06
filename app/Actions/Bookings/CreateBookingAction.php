@@ -391,10 +391,11 @@ class CreateBookingAction
         $vehicleTotal = $hasVehicle ? (float) ($vehiclePrice ?? 0) : 0;
 
         $settings       = PaymentSetting::current();
-        $serviceFee     = count($passengers) * (float) ($settings->fee_per_person ?? 0);
+        $serviceFee     = count($passengers) * (float) ($settings->web_admin_fee ?? 0);
         $hotelFee       = $accommodationsTotal > 0 ? (float) ($settings->fee_per_accommodation ?? 0) : 0;
+        $transactionFee = (float) ($settings->transaction_fee ?? 0);
 
-        return $ferryTotal + $transportClassTotal + $accommodationsTotal + $vehicleTotal + $serviceFee + $hotelFee;
+        return $ferryTotal + $transportClassTotal + $accommodationsTotal + $vehicleTotal + $serviceFee + $hotelFee + $transactionFee;
     }
 
     protected function saveBase64Image(?string $base64String, string $directory): ?string

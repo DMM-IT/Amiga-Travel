@@ -2367,11 +2367,12 @@ public function selectedSchedule(): ?array
                 : 0;
 
             $settings = PaymentSetting::current();
-            $serviceFee = (count($this->passengers) * floatval($settings->fee_per_person));
+            $serviceFee = (count($this->passengers) * floatval($settings->web_admin_fee));
             // Accommodation fee: only charged if accommodation is actually selected AND has a price
             $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
+            $transactionFee = floatval($settings->transaction_fee);
 
-            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee;
+            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $transactionFee;
         }
         
         // If booking an Eloquent tour with tour pricing (future use when price_from is added)
@@ -2392,11 +2393,12 @@ public function selectedSchedule(): ?array
                 : 0;
 
             $settings = PaymentSetting::current();
-            $serviceFee = (count($this->passengers) * floatval($settings->fee_per_person));
+            $serviceFee = (count($this->passengers) * floatval($settings->web_admin_fee));
             // Accommodation fee: only charged if accommodation is actually selected AND has a price
             $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
+            $transactionFee = floatval($settings->transaction_fee);
 
-            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee;
+            return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $transactionFee;
         }
 
         $baseSchedulePrice = $this->getSelectedSchedulePrice();
@@ -2465,12 +2467,14 @@ public function selectedSchedule(): ?array
 
         // Service fee: charged per traveler
         $payingTravelers = count($this->passengers);
-        $serviceFee = ($payingTravelers * floatval($settings->fee_per_person));
+        $serviceFee = ($payingTravelers * floatval($settings->web_admin_fee));
         
         // Accommodation fee: only charged if hotel is actually selected AND has a price
         $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
+        
+        $transactionFee = floatval($settings->transaction_fee);
 
-        return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $this->getExtraBaggageTotalPrice();
+        return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $transactionFee + $this->getExtraBaggageTotalPrice();
     }
 
     /**
@@ -2488,6 +2492,7 @@ public function selectedSchedule(): ?array
             'extra_baggage' => 0,
             'fee_per_traveler' => 0,
             'fee_per_accommodation' => 0,
+            'transaction_fee' => 0,
             'total' => 0,
         ];
 
@@ -2558,10 +2563,12 @@ public function selectedSchedule(): ?array
         $breakdown['extra_baggage'] = $this->getExtraBaggageTotalPrice();
 
         // Fees
-        $breakdown['fee_per_traveler'] = $passengerCount * floatval($settings->fee_per_person);
+        $breakdown['fee_per_traveler'] = $passengerCount * floatval($settings->web_admin_fee);
         
         // Accommodation fee: only charged if hotel is actually selected AND has a price
         $breakdown['fee_per_accommodation'] = $breakdown['hotel'] > 0 ? floatval($settings->fee_per_accommodation) : 0;
+
+        $breakdown['transaction_fee'] = floatval($settings->transaction_fee);
 
         // Calculate total (sum of all items)
         $breakdown['total'] = 
@@ -2573,7 +2580,8 @@ public function selectedSchedule(): ?array
             $breakdown['hotel'] +
             $breakdown['extra_baggage'] +
             $breakdown['fee_per_traveler'] +
-            $breakdown['fee_per_accommodation'];
+            $breakdown['fee_per_accommodation'] +
+            $breakdown['transaction_fee'];
 
         return $breakdown;
     }

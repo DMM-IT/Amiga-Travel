@@ -1558,6 +1558,13 @@
                                     </div>
                                 @endif
 
+                                @if (isset($breakdown['transaction_fee']) && $breakdown['transaction_fee'] > 0)
+                                    <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
+                                        <span class="text-slate-700 font-medium">Transaction Fee</span>
+                                        <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['transaction_fee'], 2) }}</span>
+                                    </div>
+                                @endif
+
                                 {{-- Grand Total --}}
                                 <div class="mt-4 pt-4 border-t-2 border-slate-300 rounded-lg bg-gradient-to-r from-[#db2777]/5 to-[#216417]/5 p-4 border border-slate-300">
                                     <div class="flex justify-between items-center">

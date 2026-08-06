@@ -9,31 +9,46 @@ use Illuminate\Support\Facades\Storage;
 class PaymentSetting extends Model
 {
     protected $fillable = [
-        'fee_per_person',
+        'web_admin_fee',
         'fee_per_accommodation',
+        'transaction_fee',
+        'revalidation_fee',
         'qr_code_path',
         'proof_retention_days',
+        'ferry_before_departure_surcharge_pct',
+        'ferry_after_departure_surcharge_pct',
+        'airline_before_departure_surcharge_pct',
     ];
 
     protected $casts = [
-        'fee_per_person' => 'decimal:2',
+        'web_admin_fee' => 'decimal:2',
         'fee_per_accommodation' => 'decimal:2',
+        'transaction_fee' => 'decimal:2',
+        'revalidation_fee' => 'decimal:2',
         'proof_retention_days' => 'integer',
+        'ferry_before_departure_surcharge_pct' => 'decimal:2',
+        'ferry_after_departure_surcharge_pct' => 'decimal:2',
+        'airline_before_departure_surcharge_pct' => 'decimal:2',
     ];
 
     /**
      * There is always exactly one settings row. Fetch it (or create with
      * defaults), caching the result in Redis for 6 hours.
      *
-     * Cache is invalidated any time the row is updated via bust().
+     * Cache is invalidated any time the row is updated via bust().\
      */
     public static function current(): self
     {
         $attributes = Cache::remember('payment_settings:current', now()->addHours(6), function () {
             $model = static::query()->firstOrCreate(['id' => 1], [
-                'fee_per_person'        => 2000,
-                'fee_per_accommodation' => 5000,
-                'proof_retention_days'  => 30,
+                'web_admin_fee'                      => 175,
+                'fee_per_accommodation'              => 5000,
+                'transaction_fee'                    => 345,
+                'revalidation_fee'                   => 250,
+                'proof_retention_days'               => 30,
+                'ferry_before_departure_surcharge_pct'  => 25,
+                'ferry_after_departure_surcharge_pct'   => 40,
+                'airline_before_departure_surcharge_pct' => 40,
             ]);
 
             return $model->getAttributes();
@@ -55,3 +70,4 @@ class PaymentSetting extends Model
         Cache::forget('payment_settings:current');
     }
 }
+

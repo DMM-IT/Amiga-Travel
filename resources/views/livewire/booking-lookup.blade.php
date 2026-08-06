@@ -358,11 +358,11 @@
                                                     </button>
                                                     @if($booking->isRefundEligible())
                                                         <button wire:click.prevent="requestCancellation" type="button" class="inline-flex items-center justify-center rounded-3xl border border-rose-500 px-6 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-50">
-                                                            Refund (50%)
+                                                            Request Refund
                                                         </button>
                                                     @else
                                                         <button type="button" disabled class="inline-flex items-center justify-center rounded-3xl border border-slate-300 bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-400">
-                                                            Refund (50%)
+                                                            Request Refund
                                                         </button>
                                                     @endif
                                                 @endif
@@ -385,28 +385,54 @@
 
                                 @if($cancellationRequested)
                                     <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4" @if(! $cancellationExpired) wire:poll.1s="tickCancelCountdown" @endif>
-                                        <div class="flex items-center justify-between gap-2 border-b border-amber-200/60 pb-3 mb-3">
-                                            <div>
-                                                <p class="text-sm font-bold text-amber-800">
-                                                    @if(! $cancellationExpired)
-                                                        100% Refund Window Active
-                                                    @else
-                                                        50% Refund Active
-                                                    @endif
-                                                </p>
-                                                <p class="mt-1 text-xs text-amber-700">
-                                                    @if(! $cancellationExpired)
-                                                        Confirm cancellation to receive a 100% refund. Cancellation is free within 5 minutes of booking.
-                                                    @else
-                                                        The 100% refund window has expired. You are eligible for a 50% refund.
-                                                    @endif
-                                                </p>
+                                        <div class="flex flex-col gap-2 border-b border-amber-200/60 pb-3 mb-3">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div>
+                                                    <p class="text-sm font-bold text-amber-800">
+                                                        @if(! $cancellationExpired)
+                                                            100% Refund Window Active
+                                                        @else
+                                                            Refund Available
+                                                        @endif
+                                                    </p>
+                                                    <p class="mt-1 text-xs text-amber-700">
+                                                        @if(! $cancellationExpired)
+                                                            Confirm cancellation to receive a 100% refund. Cancellation is free within 5 minutes of booking.
+                                                        @else
+                                                            The 100% refund window has expired. See the breakdown of your refund below.
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                                @if(! $cancellationExpired)
+                                                    <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700 shrink-0">
+                                                        {{ gmdate('i:s', max(0, $cancelCountdown)) }}
+                                                    </span>
+                                                @endif
                                             </div>
-                                            @if(! $cancellationExpired)
-                                                <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700 shrink-0">
-                                                    {{ gmdate('i:s', max(0, $cancelCountdown)) }}
-                                                </span>
-                                            @endif
+                                            
+                                            @php
+                                                $refundBreakdown = $booking->getRefundBreakdown(! $cancellationExpired);
+                                            @endphp
+                                            <div class="mt-2 p-3 bg-white/60 rounded-xl space-y-1 text-sm text-amber-900 border border-amber-100/50">
+                                                <div class="flex justify-between">
+                                                    <span>Base Ticket Price:</span>
+                                                    <span>₱{{ number_format($refundBreakdown['base_ticket'], 2) }}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span>Surcharge ({{ $refundBreakdown['surcharge_pct'] }}%):</span>
+                                                    <span>-₱{{ number_format($refundBreakdown['surcharge_amount'], 2) }}</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span>Non-Refundable Fees:</span>
+                                                    <span>-₱{{ number_format($refundBreakdown['non_refundable_fees'], 2) }}</span>
+                                                </div>
+                                                <div class="flex justify-between pt-1 mt-1 border-t border-amber-200/50 font-bold text-base">
+                                                    <span>Total Refundable:</span>
+                                                    <span class="text-green-700">₱{{ number_format($refundBreakdown['refundable_amount'], 2) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         </div>
 
                                         {{-- Show compiled destination as read-only summary --}}
@@ -467,7 +493,7 @@
                                                 @if(! $cancellationExpired)
                                                     Confirm Cancellation (100% Refund)
                                                 @else
-                                                    Confirm Cancellation (50% Refund)
+                                                    Confirm Cancellation
                                                 @endif
                                             </button>
                                             <button wire:click.prevent="cancelCancellationRequest" type="button" class="inline-flex items-center justify-center rounded-3xl border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
