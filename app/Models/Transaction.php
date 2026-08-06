@@ -32,6 +32,17 @@ class Transaction extends Model
         'payment_deadline_at' => 'datetime',
     ];
 
+    protected static function booted()
+    {
+        static::updated(function ($transaction) {
+            if ($transaction->isDirty('payment_status') && $transaction->payment_status === 'paid') {
+                if ($transaction->booking && $transaction->booking->user_id) {
+                    \App\Http\Controllers\Api\ReferralController::onBookingCompleted($transaction->booking->user_id);
+                }
+            }
+        });
+    }
+
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

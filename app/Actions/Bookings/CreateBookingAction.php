@@ -209,6 +209,8 @@ class CreateBookingAction
                 'vehicle_type'                       => $data['vehicle_type'] ?? null,
                 'vehicle_plate_number'               => $data['vehicle_plate_number'] ?? null,
                 'vehicle_price'                      => $data['vehicle_price'] ?? null,
+                'driver_name'                        => (isset($data['driver_first_name']) && isset($data['driver_last_name'])) ? trim(trim($data['driver_first_name']) . ' ' . trim($data['driver_middle_name'] ?? '') . ' ' . trim($data['driver_last_name'])) : null,
+                'driver_birthday'                    => $data['driver_birthday'] ?? null,
                 'voucher_id'                         => $voucher?->id,
                 'voucher_code'                       => $voucher?->code,
                 'voucher_discount_amount'            => $discountAmount,

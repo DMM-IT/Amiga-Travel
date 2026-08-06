@@ -231,6 +231,8 @@ class AuthController extends Controller
             'user' => [
                 'name'  => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone ?? '',
+                'referral_code' => $user->referral_code,
             ],
             // Legacy token — kept for backward compat
             'token'         => $user->api_token,
@@ -272,6 +274,8 @@ class AuthController extends Controller
             'user' => [
                 'name'  => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone ?? '',
+                'referral_code' => $user->referral_code,
             ],
             'token'         => $legacyToken,
             'sanctum_token' => $sanctumToken,
@@ -380,6 +384,8 @@ class AuthController extends Controller
             'user'    => [
                 'name'  => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone ?? '',
+                'referral_code' => $user->referral_code,
             ],
             'token'        => $legacyToken,
             'sanctum_token'=> $sanctumToken,

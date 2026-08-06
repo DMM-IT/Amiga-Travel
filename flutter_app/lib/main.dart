@@ -56,13 +56,15 @@ class UserSession {
   static String phone = '';
   static String token = '';
   static String lookupToken = '';
+  static String? referralCode;
   static int graciaPoints = 0;
+  static int unreadNotificationsCount = 0;
   static int pointsAwarded = 0;
   static int spendThreshold = 0;
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.24+28';
+  static const String appVersion = '1.0.25+29';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -74,6 +76,7 @@ class UserSession {
     phone = prefs.getString('phone') ?? '';
     token = prefs.getString('token') ?? '';
     lookupToken = prefs.getString('lookupToken') ?? '';
+    referralCode = prefs.getString('referralCode');
     graciaPoints = prefs.getInt('graciaPoints') ?? 0;
     pointsAwarded = prefs.getInt('pointsAwarded') ?? 0;
     spendThreshold = prefs.getInt('spendThreshold') ?? 0;
@@ -122,6 +125,7 @@ class UserSession {
     await prefs.setString('username', username);
     await prefs.setString('email', email);
     await prefs.setString('phone', phone);
+    if (referralCode != null) await prefs.setString('referralCode', referralCode!);
     await prefs.setString('token', token);
     await prefs.setString('lookupToken', lookupToken);
     await prefs.setInt('graciaPoints', graciaPoints);
@@ -129,15 +133,15 @@ class UserSession {
     await prefs.setInt('spendThreshold', spendThreshold);
   }
 
-  static Future<void> clear() async {
+    static Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('isLoggedIn');
     await prefs.remove('isEmailVerified');
     await prefs.remove('username');
     await prefs.remove('email');
-    await prefs.remove('phone');
     await prefs.remove('token');
     await prefs.remove('lookupToken');
+    await prefs.remove('referralCode');
     await prefs.remove('graciaPoints');
     await prefs.remove('pointsAwarded');
     await prefs.remove('spendThreshold');
@@ -145,9 +149,9 @@ class UserSession {
     isEmailVerified = false;
     username = 'Traveler';
     email = 'user@amigagracia.com';
-    phone = '';
     token = '';
     lookupToken = '';
+    referralCode = null;
     graciaPoints = 0;
     pointsAwarded = 0;
     spendThreshold = 0;
@@ -241,6 +245,10 @@ class BookingData {
   String vehicleType = '';
   String vehiclePlateNumber = '';
   double vehiclePrice = 0.0;
+  String vehicleDriverFirstName = '';
+  String vehicleDriverMiddleName = '';
+  String vehicleDriverLastName = '';
+  String vehicleDriverBirthday = '';
 
   // Step 3 — Passengers with discounts
   // Each passenger: {'type': 'adult'|'child', 'name': '', 'discount_id': int?}
@@ -298,6 +306,10 @@ class BookingData {
       'vehicleType': vehicleType,
       'vehiclePlateNumber': vehiclePlateNumber,
       'vehiclePrice': vehiclePrice,
+      'vehicleDriverFirstName': vehicleDriverFirstName,
+      'vehicleDriverMiddleName': vehicleDriverMiddleName,
+      'vehicleDriverLastName': vehicleDriverLastName,
+      'vehicleDriverBirthday': vehicleDriverBirthday,
       'passengers': passengers,
       'selectedAccommodationIds': selectedAccommodationIds,
       'availableAccommodations': availableAccommodations,
@@ -345,6 +357,10 @@ class BookingData {
     b.vehicleType = json['vehicleType'] ?? '';
     b.vehiclePlateNumber = json['vehiclePlateNumber'] ?? '';
     b.vehiclePrice = (json['vehiclePrice'] ?? 0.0).toDouble();
+    b.vehicleDriverFirstName = json['vehicleDriverFirstName'] ?? '';
+    b.vehicleDriverMiddleName = json['vehicleDriverMiddleName'] ?? '';
+    b.vehicleDriverLastName = json['vehicleDriverLastName'] ?? '';
+    b.vehicleDriverBirthday = json['vehicleDriverBirthday'] ?? '';
     
     if (json['passengers'] != null) {
       b.passengers = List<Map<String, dynamic>>.from(json['passengers'].map((x) => Map<String, dynamic>.from(x)));
@@ -399,6 +415,20 @@ List<dynamic> parseJsonList(dynamic raw) {
   if (raw is List) return raw;
   if (raw is Map) return raw.values.toList();
   return [];
+}
+
+List<dynamic> parseAndFilterSchedules(dynamic raw) {
+  final list = parseJsonList(raw);
+  final now = DateTime.now();
+  return list.where((s) {
+    if (s['departure_time'] == null) return true;
+    try {
+      final dt = DateTime.parse(s['departure_time'].toString()).toLocal();
+      return dt.isAfter(now);
+    } catch (_) {
+      return true;
+    }
+  }).toList();
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -830,10 +860,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchGlobalPoints();
+    _fetchGlobalData();
   }
 
-  Future<void> _fetchGlobalPoints() async {
+  Future<void> _fetchGlobalData() async {
     if (UserSession.isLoggedIn && UserSession.token.isNotEmpty) {
       try {
         final res = await http.get(
@@ -854,8 +884,22 @@ class _MainScreenState extends State<MainScreen> {
           });
           UserSession.save();
         }
+
+        final notifRes = await http.get(
+          Uri.parse('${UserSession.getBaseUrl()}/api/notifications'),
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ${UserSession.token}',
+          },
+        );
+        final notifData = jsonDecode(notifRes.body);
+        if (notifRes.statusCode == 200 && notifData['status'] == 'success') {
+          setState(() {
+            UserSession.unreadNotificationsCount = notifData['unread_count'] ?? 0;
+          });
+        }
       } catch (e) {
-        debugPrint('Failed to fetch points: $e');
+        debugPrint('Failed to fetch global data: $e');
       }
     }
   }
@@ -928,7 +972,36 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
         actions: [
-          if (UserSession.isLoggedIn)
+          if (UserSession.isLoggedIn) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())).then((_) => setState((){}));
+                },
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(Icons.notifications_outlined, color: Colors.white, size: 24),
+                    if (UserSession.unreadNotificationsCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 10,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                          constraints: const BoxConstraints(minWidth: 12, minHeight: 12),
+                          child: Text(
+                            '${UserSession.unreadNotificationsCount}',
+                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: GestureDetector(
@@ -944,6 +1017,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
             ),
+          ]
         ],
       ),
       body: IndexedStack(
@@ -1766,6 +1840,10 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
 
   List<Map<String, dynamic>> _vehicleRates = [];
   final _plateCtrl = TextEditingController();
+  final _driverFirstNameCtrl = TextEditingController();
+  final _driverMiddleNameCtrl = TextEditingController();
+  final _driverLastNameCtrl = TextEditingController();
+  final _driverBirthdayCtrl = TextEditingController();
   bool _isVehicleBookingEnabled = false;
 
   @override
@@ -1818,6 +1896,10 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
   void dispose() {
     _tripTabController.dispose();
     _plateCtrl.dispose();
+    _driverFirstNameCtrl.dispose();
+    _driverMiddleNameCtrl.dispose();
+    _driverLastNameCtrl.dispose();
+    _driverBirthdayCtrl.dispose();
     super.dispose();
   }
 
@@ -2047,10 +2129,14 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       ..adults = _adults
       ..children = _children;
 
-    final bool is2GoOperator = _mode == 'ferry' && (_operator?.toLowerCase().contains('2go') ?? false);
-    if (_mode == 'ferry' && _isVehicleBookingEnabled && !is2GoOperator) {
+    final bool isStarlite = _mode == 'ferry' && (_operator?.toLowerCase().contains('starlite') ?? false);
+    if (_mode == 'ferry' && _isVehicleBookingEnabled && isStarlite) {
        booking.hasVehicle = true;
        booking.vehiclePlateNumber = _plateCtrl.text;
+       booking.vehicleDriverFirstName = _driverFirstNameCtrl.text;
+       booking.vehicleDriverMiddleName = _driverMiddleNameCtrl.text;
+       booking.vehicleDriverLastName = _driverLastNameCtrl.text;
+       booking.vehicleDriverBirthday = _driverBirthdayCtrl.text;
        final selected = _vehicleRates.where((r) => r['selected'] == true).toList();
        if (selected.isNotEmpty) {
            booking.selectedVehicleRateId = selected.first['id'];
@@ -2211,7 +2297,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                     const Icon(Icons.people, color: kGreen, size: 20),
                                     const SizedBox(width: 8),
                                     Text(
-                                      '$_adults Adult${_adults > 1 ? 's' : ''}${_children > 0 ? '  $_children Child${_children > 1 ? 'ren' : ''}' : ''}',
+                                      '$_adults Adult${_adults > 1 ? 's' : ''}${_children > 0 ? '  $_children Minor${_children > 1 ? 's' : ''}' : ''}',
                                       style: const TextStyle(fontSize: 14, color: kSlate800),
                                     ),
                                   ]),
@@ -2244,22 +2330,22 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                   ),
                                   const Divider(height: 20),
                                   _PassengerCounter(
-                                    label: 'Child',
+                                    label: 'Minor',
                                     subtitle: '2 - 11 years',
                                     count: _children,
                                     onIncrement: _totalPassengers < 8 ? () {
                                       showDialog(
                                         context: context,
                                         builder: (c) => AlertDialog(
-                                          title: const Text('Minor / Infant Notice'),
-                                          content: const Text('Please note: If the passenger is an infant (under 2 years old), additional requirements and fees may apply depending on the operator.'),
+                                          title: const Text('Minor age reminder', style: TextStyle(fontWeight: FontWeight.bold)),
+                                          content: const Text('23 months and under will be issued upon arrival at the port/airport.', style: TextStyle(color: kSlate700)),
                                           actions: [
                                             TextButton(
                                               onPressed: () {
                                                 Navigator.pop(c);
                                                 setState(() => _children++);
                                               },
-                                              child: const Text('Acknowledge'),
+                                              child: const Text('Close', style: TextStyle(color: kPink)),
                                             ),
                                           ],
                                         ),
@@ -2268,43 +2354,24 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                     onDecrement: _children > 0 ? () => setState(() => _children--) : null,
                                   ),
                                   const Divider(height: 20),
-                                  const Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('Infant', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
-                                            Text('Below 2 years old', style: TextStyle(color: kSlate500, fontSize: 12)),
-                                            Text('₱500 fare / infant to be paid at the terminal', style: TextStyle(color: kSlate500, fontSize: 11)),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
                                   GestureDetector(
                                     onTap: () {
                                       showDialog(
                                         context: context,
                                         builder: (ctx) => AlertDialog(
-                                          title: const Row(
-                                            children: [
-                                              Icon(Icons.info_outline, color: kPink),
-                                              SizedBox(width: 8),
-                                              Text('Infant Passenger Info', style: TextStyle(fontSize: 16)),
-                                            ],
-                                          ),
+                                          title: const Text('Passenger limits and guidance', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                           content: const Text(
-                                            'Infants (below 2 years old) do not need to be added to the passenger list in the app.\n\n'
-                                            'Instead, a flat fare of ₱500 per infant must be paid directly at the terminal counter before boarding.',
-                                            style: TextStyle(fontSize: 14, color: kSlate600, height: 1.5),
+                                            'You can book up to 8 travelers total. This includes both adults and minors combined. Any discounts are applied per traveler on the next step.\n\n'
+                                            '1. Adults are counted separately from minors, but both count toward the same 8-person total.\n\n'
+                                            '2. Minors aged 2 to 11 are still part of the booking capacity limit.\n\n'
+                                            '3. Use the buttons to update counts. The form prevents totals above 8.',
+                                            style: TextStyle(fontSize: 13, color: kSlate600, height: 1.5),
                                           ),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                           actions: [
                                             TextButton(
                                               onPressed: () => Navigator.pop(ctx),
-                                              child: const Text('Got it', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                              child: const Text('Close', style: TextStyle(color: kPink, fontWeight: FontWeight.bold)),
                                             ),
                                           ],
                                         ),
@@ -2324,8 +2391,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           ],
                           const SizedBox(height: 24),
 
-                          // Vehicle / Car Booking (Ferry only, hidden for 2GO)
-                          if (_mode == 'ferry' && !(_operator?.toLowerCase().contains('2go') ?? false)) ...[
+                          // Vehicle / Car Booking (Ferry only, Starlite only)
+                          if (_mode == 'ferry' && (_operator?.toLowerCase().contains('starlite') ?? false)) ...[
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -2354,6 +2421,10 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                             _isVehicleBookingEnabled = val;
                                             if (!val) {
                                               _plateCtrl.clear();
+                                              _driverFirstNameCtrl.clear();
+                                              _driverMiddleNameCtrl.clear();
+                                              _driverLastNameCtrl.clear();
+                                              _driverBirthdayCtrl.clear();
                                               for (var r in _vehicleRates) { r['selected'] = false; }
                                             } else {
                                               if (_vehicleRates.isNotEmpty) _vehicleRates.first['selected'] = true;
@@ -2420,6 +2491,58 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                     TextField(
                                       controller: _plateCtrl,
                                       decoration: InputDecoration(hintText: 'e.g., ABC 1234', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    const Text('Driver First Name', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: _driverFirstNameCtrl,
+                                      decoration: InputDecoration(hintText: 'e.g., John', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    const Text('Driver Middle Name (Optional)', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: _driverMiddleNameCtrl,
+                                      decoration: InputDecoration(hintText: 'e.g., A', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    const Text('Driver Last Name', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: _driverLastNameCtrl,
+                                      decoration: InputDecoration(hintText: 'e.g., Doe', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    const Text('Driver Birthdate', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      controller: _driverBirthdayCtrl,
+                                      readOnly: true,
+                                      onTap: () async {
+                                        final date = await showDatePicker(
+                                          context: context,
+                                          initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                                          firstDate: DateTime(1900),
+                                          lastDate: DateTime.now(),
+                                          builder: (context, child) {
+                                            return Theme(
+                                              data: Theme.of(context).copyWith(
+                                                colorScheme: const ColorScheme.light(primary: kPink, onPrimary: Colors.white, surface: Colors.white, onSurface: Colors.black),
+                                              ),
+                                              child: child!,
+                                            );
+                                          }
+                                        );
+                                        if (date != null) {
+                                          _driverBirthdayCtrl.text = "\${date.year}-\${date.month.toString().padLeft(2, '0')}-\${date.day.toString().padLeft(2, '0')}";
+                                        }
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText: 'YYYY-MM-DD', 
+                                        suffixIcon: const Icon(Icons.calendar_today, color: kSlate400),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                                      ),
                                     ),
                                   ],
                                 ],
@@ -2782,6 +2905,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
+  final _referralCtrl = TextEditingController();
   bool _isLoading = false;
   bool _obscure = true;
   bool _isSignUp = false;
@@ -2817,6 +2941,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _nameCtrl.dispose();
+    _referralCtrl.dispose();
     _otpCtrl.dispose();
     _guestEmailCtrl.dispose();
     _verificationCodeCtrl.dispose();
@@ -2947,12 +3072,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return destination;
   }
 
-  Future<void> _cancelBooking(int id) async {
+  Future<void> _cancelBooking(int id, Map<String, dynamic> booking) async {
+    final baseUrl = UserSession.getBaseUrl();
+
+    // Step 1: Confirm intent
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cancel Booking'),
-        content: const Text('Are you sure you want to cancel this booking?'),
+        content: const Text('Are you sure you want to cancel this booking? This action cannot be undone.'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No', style: TextStyle(color: kSlate600))),
@@ -2960,16 +3088,70 @@ class _ActivityScreenState extends State<ActivityScreen> {
         ],
       ),
     );
-    if (confirm != true) return;
-    final refundDestination = await _askRefundDestination();
-    if (refundDestination == null || refundDestination.isEmpty) return;
+    if (confirm != true || !mounted) return;
 
+    // Step 2: Fetch real fee/refund from backend
+    double? cancellationFee;
+    double? refundAmount;
     try {
-      final baseUrl = UserSession.getBaseUrl();
+      final startRes = await http.post(
+        Uri.parse('$baseUrl/api/bookings/$id/cancel'),
+        headers: {'Accept': 'application/json'},
+        body: {'email': UserSession.email, 'action': 'start'},
+      );
+      final startData = jsonDecode(startRes.body);
+      if (startRes.statusCode == 200 && startData['status'] == 'success') {
+        cancellationFee = (startData['cancellation_fee'] as num?)?.toDouble();
+        refundAmount = (startData['refund_amount'] as num?)?.toDouble();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(startData['message'] ?? 'Unable to start cancellation.'), backgroundColor: Colors.red));
+        return;
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red));
+      return;
+    }
+
+    // Step 3: Collect refund destination
+    final refundDestination = await _askRefundDestination();
+    if (refundDestination == null || refundDestination.isEmpty || !mounted) return;
+
+    // Step 4: Confirm with real fee breakdown
+    final totalPrice = (booking['total_price'] as num?)?.toDouble() ?? 0.0;
+    final proceedConfirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Cancellation'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Summary:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Original Total'), Text('₱${totalPrice.toStringAsFixed(2)}')]),
+            if (cancellationFee != null) Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Cancellation Fee', style: TextStyle(color: Colors.red)), Text('-₱${cancellationFee.toStringAsFixed(2)}', style: const TextStyle(color: Colors.red))]),
+            const Divider(height: 16),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Estimated Refund', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)), Text('₱${(refundAmount ?? 0.0).toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green))]),
+            const SizedBox(height: 12),
+            const Text('Refund destination: ', style: TextStyle(fontSize: 12)),
+            Text(refundDestination, style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), style: FilledButton.styleFrom(backgroundColor: Colors.red), child: const Text('Confirm')),
+        ],
+      ),
+    );
+    if (proceedConfirm != true || !mounted) return;
+
+    // Step 5: Submit cancellation
+    try {
       final res = await http.post(
         Uri.parse('$baseUrl/api/bookings/$id/cancel'),
         headers: {'Accept': 'application/json'},
-        body: {'email': UserSession.email, 'refund_destination': refundDestination},
+        body: {'email': UserSession.email, 'action': 'confirm', 'refund_destination': refundDestination},
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
@@ -3145,12 +3327,30 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.isLoggedIn = true;
           UserSession.username = data['user']['name'];
           UserSession.email = data['user']['email'];
+          UserSession.phone = data['user']['phone'] ?? '';
+          UserSession.referralCode = data['user']['referral_code'];
           UserSession.token = data['token'];
           UserSession.lookupToken = data['lookup_token'] ?? '';
           UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
           _pendingRegisterEmail = null;
         });
         await UserSession.save();
+        
+        // Attempt to apply referral code if provided
+        final refCode = _referralCtrl.text.trim();
+        if (refCode.isNotEmpty) {
+          try {
+            await http.post(
+              Uri.parse('${UserSession.getBaseUrl()}/api/referral/apply'),
+              headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ${UserSession.token}',
+              },
+              body: {'code': refCode},
+            );
+          } catch (_) {}
+        }
+
         // Subscribe to user-specific FCM topic for targeted notifications (e.g. booking cancellation)
         await NotificationService.subscribeToUserTopic(UserSession.email);
         widget.onLoginSuccess();
@@ -3199,6 +3399,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
           UserSession.isLoggedIn = true;
           UserSession.username = data['user']['name'];
           UserSession.email = data['user']['email'];
+          UserSession.phone = data['user']['phone'] ?? '';
+          UserSession.referralCode = data['user']['referral_code'];
           UserSession.token = data['token'];
           UserSession.lookupToken = data['lookup_token'] ?? '';
           UserSession.isEmailVerified = UserSession.lookupToken.isNotEmpty;
@@ -3535,7 +3737,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
           children: [
             const SizedBox(height: 16),
             // Amiga Gracia logo (transparent bg) instead of ship icon
-            Image.asset('assets/icon/app_icon.png', height: 88, width: 88, fit: BoxFit.contain),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: kGreen, borderRadius: BorderRadius.circular(20)),
+              child: Image.asset('assets/icon/amiga_logo_white_outline.png', height: 64, width: 64, fit: BoxFit.contain),
+            ),
             const SizedBox(height: 20),
             Text(
               _isSignUp ? 'Create Account' : 'Welcome Back!',
@@ -3559,6 +3765,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 decoration: InputDecoration(
                   labelText: 'Username',
                   prefixIcon: const Icon(Icons.person_outline, color: kGreen),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _referralCtrl,
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  labelText: 'Referral Code (Optional)',
+                  prefixIcon: const Icon(Icons.card_giftcard, color: kGreen),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
@@ -3857,23 +4074,32 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   final _refundInstitutionCtrl = TextEditingController();
   final _refundAccountCtrl = TextEditingController();
   final _refundNameCtrl = TextEditingController();
-  DateTime? _cancellationExpiresAt;
   Timer? _cancellationTimer;
   String _refundMethod = 'GCash';
   bool _cancellationStarted = false;
   bool _busy = false;
   String? _qrCodeUrl;
+  double? _cancellationFee;
+  double? _refundAmount;
 
   String get _baseUrl => UserSession.getBaseUrl();
   String get _paymentStatus => (_booking['transaction']?['payment_status'] ?? 'unpaid').toString();
   bool get _canManage => _booking['status'] == 'pending' && _paymentStatus != 'paid' && _paymentStatus != 'cancelled';
   bool get _isRoundTrip => _booking['return_date'] != null;
 
+  DateTime? get _freeCancellationExpiresAt {
+    if (_booking['created_at'] == null) return null;
+    return DateTime.tryParse(_booking['created_at'].toString())?.add(const Duration(minutes: 5));
+  }
+
   @override
   void initState() {
     super.initState();
     _booking = Map<String, dynamic>.from(widget.booking);
     _fetchPaymentSettings();
+    _cancellationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -3911,11 +4137,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         _showMessage(data['message'] ?? 'Unable to start cancellation.', error: true);
         return;
       }
-      _cancellationExpiresAt = DateTime.parse(data['expires_at']).toLocal();
+      _cancellationFee = (data['cancellation_fee'] as num?)?.toDouble();
+      _refundAmount = (data['refund_amount'] as num?)?.toDouble();
       _cancellationStarted = true;
-      _cancellationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) setState(() {});
-      });
       setState(() {});
     } catch (e) {
       _showMessage('Connection error: $e', error: true);
@@ -3937,18 +4161,35 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       _showMessage('Complete the refund details first.', error: true);
       return;
     }
-    if (_cancellationExpiresAt == null || DateTime.now().isAfter(_cancellationExpiresAt!)) {
-      _showMessage('The cancellation window has expired.', error: true);
-      return;
-    }
+    final totalPrice = (_booking['total_price'] as num?)?.toDouble() ?? 0.0;
+    final displayFee = _cancellationFee ?? (totalPrice * 0.5);
+    final displayRefund = _refundAmount ?? (totalPrice * 0.5);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirm cancellation'),
-        content: Text('A 50% fee will be deducted. Your estimated refund is ₱${((( _booking['total_price'] as num?)?.toDouble() ?? 0) * 0.5).toStringAsFixed(2)}.'),
+        title: const Text('Confirm Cancellation'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Summary of your cancellation:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            _feeRow('Original Total', totalPrice, color: Colors.black87),
+            _feeRow('Cancellation Fee', -displayFee, color: Colors.red),
+            const Divider(height: 20),
+            _feeRow('Estimated Refund', displayRefund, color: Colors.green.shade700, bold: true),
+            const SizedBox(height: 12),
+            const Text('Refund will be processed in 3–5 business days.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          ],
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Confirm')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Confirm Cancellation'),
+          ),
         ],
       ),
     );
@@ -3965,7 +4206,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         _booking['status'] = 'cancelled';
         _booking['cancellation_fee'] = data['cancellation_fee'];
         _booking['refund_amount'] = data['refund_amount'];
-        _cancellationTimer?.cancel();
         setState(() => _cancellationStarted = false);
         _showMessage('Booking cancelled. Refund: ₱${data['refund_amount']}');
       } else {
@@ -4059,6 +4299,127 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     }
   }
 
+  Widget _feeRow(String label, double amount, {Color color = Colors.black87, bool bold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, color: color, fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
+          Text(
+            '${amount < 0 ? '-' : ''}₱${amount.abs().toStringAsFixed(2)}',
+            style: TextStyle(fontSize: 13, color: color, fontWeight: bold ? FontWeight.bold : FontWeight.normal),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _priceBreakdownCard() {
+    final breakdown = _booking['price_breakdown'];
+    if (breakdown == null || (breakdown as List).isEmpty) {
+      final total = (_booking['total_price'] as num?)?.toDouble() ?? 0.0;
+      return Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Payment', style: TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+              const SizedBox(height: 8),
+              Text('Status: ${_paymentStatus.toUpperCase()}', style: const TextStyle(color: kSlate600)),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('₱${total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final total = (_booking['total_price'] as num?)?.toDouble() ?? 0.0;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Price Breakdown', style: TextStyle(fontWeight: FontWeight.bold, color: kSlate800, fontSize: 15)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: _paymentStatus == 'paid' ? Colors.green.shade50 : Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: _paymentStatus == 'paid' ? Colors.green.shade300 : Colors.orange.shade300),
+                  ),
+                  child: Text(
+                    _paymentStatus.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: _paymentStatus == 'paid' ? Colors.green.shade700 : Colors.orange.shade700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 20),
+            ...(breakdown as List).map((item) {
+              final amount = (item['amount'] as num?)?.toDouble() ?? 0.0;
+              final label = item['label']?.toString() ?? '';
+              final isDiscount = amount < 0;
+              final isSubtle = (item['class'] ?? '').toString().contains('slate');
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDiscount ? Colors.green.shade700 : (isSubtle ? Colors.grey.shade600 : kSlate700),
+                          fontStyle: isSubtle ? FontStyle.italic : FontStyle.normal,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${isDiscount ? '-' : ''}₱${amount.abs().toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isDiscount ? FontWeight.bold : FontWeight.normal,
+                        color: isDiscount ? Colors.green.shade700 : (isSubtle ? Colors.grey.shade600 : kSlate700),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+            const Divider(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text('₱${total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kGreen)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _openSupport() async {
     final subjectCtrl = TextEditingController(text: 'Booking ${_booking['transaction_number']} support');
     final messageCtrl = TextEditingController();
@@ -4094,7 +4455,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final status = (_booking['status'] ?? 'pending').toString();
-    final expiry = _cancellationExpiresAt;
+    final expiry = _freeCancellationExpiresAt;
+    final isWithin5Mins = expiry != null && DateTime.now().isBefore(expiry);
     final secondsLeft = expiry == null ? 0 : expiry.difference(DateTime.now()).inSeconds.clamp(0, 300);
     final transaction = Map<String, dynamic>.from(_booking['transaction'] ?? {});
     return Scaffold(
@@ -4159,7 +4521,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           if (_booking['return_date'] != null) 'Return: ${_booking['return_date'].toString().split('T')[0]}',
           _booking['schedule_summary'] ?? _booking['schedule_service'] ?? 'Schedule not recorded',
         ]),
-        _detailSection('Payment', ['Status: ${_paymentStatus.toUpperCase()}', 'Total: ₱${_booking['total_price'] ?? '0.00'}']),
+        _priceBreakdownCard(),
         if (_booking['passengers'] != null && (_booking['passengers'] as List).isNotEmpty)
           _detailSection(
             'Passengers & Discount IDs',
@@ -4183,26 +4545,61 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         if (_booking['rebooking_status'] == 'pending')
           _detailSection('Rebooking', ['Request pending verification', 'New dates will appear after approval.']),
         if (transaction['confirmation_url'] != null)
-          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(transaction['confirmation_url'])), icon: const Icon(Icons.confirmation_num), label: const Text('Open confirmation')),
+          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(transaction['confirmation_url'])), icon: const Icon(Icons.confirmation_num), label: const Text('Payment Acknowledgement')),
         if (_booking['confirmation_url'] != null)
-          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_url'])), icon: const Icon(Icons.link), label: const Text('Open e-ticket link')),
+          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_url'])), icon: const Icon(Icons.link), label: const Text('Payment Acknowledgement')),
         if (_booking['confirmation_pdf_url'] != null)
-          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_pdf_url'])), icon: const Icon(Icons.picture_as_pdf), label: const Text('Open e-ticket PDF')),
+          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_pdf_url'])), icon: const Icon(Icons.picture_as_pdf), label: const Text('Payment Acknowledgement (PDF)')),
         if (_booking['ticket_url'] != null)
-          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['ticket_url'])), icon: const Icon(Icons.download), label: const Text('Download ticket')),
+          FilledButton.icon(
+            onPressed: () => launchUrl(Uri.parse(_booking['ticket_url'])),
+            icon: const Icon(Icons.download),
+            label: const Text('Download Ticket'),
+            style: FilledButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white),
+          ),
         const SizedBox(height: 12),
         if (_canManage && !_cancellationStarted) ...[
           OutlinedButton.icon(onPressed: _busy ? null : _rebook, icon: const Icon(Icons.calendar_month), label: const Text('Request rebooking')),
-          OutlinedButton.icon(onPressed: _busy ? null : _startCancellation, icon: const Icon(Icons.cancel_outlined), label: const Text('Start cancellation'), style: OutlinedButton.styleFrom(foregroundColor: Colors.red)),
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _startCancellation,
+            icon: Icon(isWithin5Mins ? Icons.cancel_outlined : Icons.monetization_on_outlined),
+            label: Text(isWithin5Mins ? 'Cancel Booking (Free) - ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}' : 'Request Refund'),
+            style: OutlinedButton.styleFrom(foregroundColor: isWithin5Mins ? Colors.red : Colors.orange),
+          ),
         ],
         if (_cancellationStarted) ...[
-          _detailSection('Cancellation', ['Complete the refund details and confirm within ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}.', 'Cancellation fee: 50% of total price']),
+          Card(
+            color: Colors.red.shade50,
+            margin: const EdgeInsets.only(bottom: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.red.shade200)),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isWithin5Mins) ...[
+                    Row(
+                      children: [
+                        Icon(Icons.timer_outlined, color: Colors.red.shade700, size: 18),
+                        const SizedBox(width: 8),
+                        Text('Free cancellation expires in ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red.shade700)),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  if (_cancellationFee != null) _feeRow('Cancellation Fee', _cancellationFee!, color: Colors.red.shade700),
+                  if (_refundAmount != null) _feeRow('Estimated Refund', _refundAmount!, color: Colors.green.shade700, bold: true),
+                ],
+              ),
+            ),
+          ),
           DropdownButtonFormField<String>(value: _refundMethod, decoration: const InputDecoration(labelText: 'Refund method'), items: const [DropdownMenuItem(value: 'GCash', child: Text('GCash')), DropdownMenuItem(value: 'Online Wallet', child: Text('Online Wallet')), DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account'))], onChanged: (value) => setState(() => _refundMethod = value ?? 'GCash')),
           if (_refundMethod != 'GCash') TextField(controller: _refundInstitutionCtrl, decoration: const InputDecoration(labelText: 'Bank or wallet provider')),
           TextField(controller: _refundAccountCtrl, decoration: InputDecoration(labelText: _refundMethod == 'GCash' ? 'GCash number' : 'Account number')),
           TextField(controller: _refundNameCtrl, decoration: const InputDecoration(labelText: 'Account name')),
           const SizedBox(height: 12),
-          FilledButton.icon(onPressed: _busy || secondsLeft == 0 ? null : _confirmCancellation, icon: const Icon(Icons.check), label: Text(secondsLeft == 0 ? 'Window expired' : 'Confirm cancellation')),
+          FilledButton.icon(onPressed: _busy ? null : _confirmCancellation, icon: const Icon(Icons.check), label: Text(isWithin5Mins ? 'Confirm cancellation' : 'Confirm refund')),
         ],
         const SizedBox(height: 12),
         OutlinedButton.icon(onPressed: _openSupport, icon: const Icon(Icons.support_agent), label: const Text('Contact support')),
@@ -4324,9 +4721,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     controller: _phoneCtrl,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      labelText: 'Mobile Phone Number',
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Mobile Phone Number'),
+                          if (missingPhone) ...[
+                            const SizedBox(width: 6),
+                            const _NotificationDot(size: 8),
+                          ],
+                        ],
+                      ),
                       prefixIcon: const Icon(Icons.phone_android_outlined, color: kGreen),
-                      suffixIcon: missingPhone ? const _NotificationDot(size: 6) : null,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
@@ -4334,6 +4739,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+          if (UserSession.referralCode != null && UserSession.referralCode!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Card(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.card_giftcard, color: kPink, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('My Referral Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: kSlate100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: kSlate200),
+                            ),
+                            child: Text(
+                              UserSession.referralCode!,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2.0),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Share this code with friends! When they book their first trip, you will both receive a reward voucher.',
+                      style: TextStyle(fontSize: 12, color: kSlate500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           SizedBox(
             height: 48,
@@ -4567,7 +5018,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        _schedules = parseJsonList(data['schedules']);
+        _schedules = parseAndFilterSchedules(data['schedules']);
       } else {
         setState(() => _error = data['message'] ?? 'Failed to load schedules.');
         return;
@@ -4587,7 +5038,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
         );
         final returnData = jsonDecode(returnRes.body);
         if (returnRes.statusCode == 200 && returnData['status'] == 'success') {
-          _returnSchedules = parseJsonList(returnData['schedules']);
+          _returnSchedules = parseAndFilterSchedules(returnData['schedules']);
         } else {
           setState(() => _error = returnData['message'] ?? 'Failed to load returning schedules.');
           return;
@@ -4803,7 +5254,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Text('+₱${acc['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 15)),
+                              Text('₱${acc['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 15)),
                             ],
                           ),
                         ),
@@ -5134,44 +5585,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Show promo price if schedule has an active promotional ticket
-                                  if (s['promotional_ticket'] != null) ...[
-                                    Text(
-                                      '₱${s['price']}',
-                                      style: TextStyle(color: isSelected ? Colors.white54 : kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough),
-                                    ),
-                                    Text(
-                                      '₱${s['promotional_ticket']['promo_price']}',
-                                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : Colors.orange),
-                                    ),
-                                  ] else
-                                    Text('₱${s['price']}', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: isSelected ? Colors.white : kPink)),
-                                ],
-                              ),
-                              Builder(builder: (ctx) {
-                                final p = double.tryParse((s['promotional_ticket'] != null ? s['promotional_ticket']['promo_price'] : s['price']).toString()) ?? 0;
-                                final pts = UserSession.calculateEarnedPoints(p);
-                                if (pts > 0) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.star_rounded, color: isSelected ? Colors.white : kPink, size: 14),
-                                        const SizedBox(width: 3),
-                                        Text('+$pts pts', style: TextStyle(color: isSelected ? Colors.white : kPink, fontWeight: FontWeight.bold, fontSize: 12)),
-                                      ],
-                                    ),
-                                  );
-                                }
-                                return const SizedBox();
-                              }),
-                            ],
-                          ),
+                          const SizedBox(),
                           Flexible(
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -5482,7 +5896,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(color: (type == 'adult' ? kGreen : kPink).withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
                                   child: Text(
-                                    '${type == 'adult' ? 'Adult' : 'Child'} ${i + 1}',
+                                    '${type == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
                                     style: TextStyle(color: type == 'adult' ? kGreen : kPink, fontSize: 11, fontWeight: FontWeight.bold),
                                   ),
                                 ),
@@ -5983,7 +6397,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         if (data['status'] == 'success') {
           setState(() {
             _qrCodeUrl = data['qr_code_url'];
-            _webAdminFee = (data['web_admin_fee'] as num?)?.toDouble() ?? 0.0;
+            _feePerPerson = (data['web_admin_fee'] as num?)?.toDouble() ?? 0.0;
             _feePerAccommodation = (data['fee_per_accommodation'] as num?)?.toDouble() ?? 0.0;
           });
         }
@@ -6033,6 +6447,10 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             'vehicle_type': widget.booking.vehicleType,
             'vehicle_plate_number': widget.booking.vehiclePlateNumber,
             'vehicle_price': widget.booking.vehiclePrice,
+            'driver_first_name': widget.booking.vehicleDriverFirstName,
+            'driver_middle_name': widget.booking.vehicleDriverMiddleName,
+            'driver_last_name': widget.booking.vehicleDriverLastName,
+            'driver_birthday': widget.booking.vehicleDriverBirthday,
           },
           'selected_transport_class_id': widget.booking.selectedTransportClassId,
           'selected_schedule_accommodation_id': widget.booking.selectedScheduleAccommodationId,
@@ -6364,7 +6782,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   // Passengers
                   _SummarySection(title: 'Passengers', children: [
                     ...List.generate(pax.length, (i) => _SummaryRow(
-                      '${pax[i]['type'] == 'adult' ? 'Adult' : 'Child'} ${i + 1}',
+                      '${pax[i]['type'] == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
                       pax[i]['name'] as String? ?? '',
                     )),
                   ]),
@@ -8024,6 +8442,118 @@ class _Field extends StatelessWidget {
 }
 
 // ==========================================
+// NOTIFICATIONS SCREEN
+// ==========================================
+class NotificationsScreen extends StatefulWidget {
+  const NotificationsScreen({super.key});
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  bool _isLoading = true;
+  List<dynamic> _notifications = [];
+  String _error = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNotifications();
+  }
+
+  Future<void> _fetchNotifications() async {
+    setState(() { _isLoading = true; _error = ''; });
+    try {
+      final res = await http.get(
+        Uri.parse('${UserSession.getBaseUrl()}/api/notifications'),
+        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _notifications = data['notifications'] ?? [];
+          UserSession.unreadNotificationsCount = data['unread_count'] ?? 0;
+        });
+      } else {
+        setState(() => _error = data['message'] ?? 'Failed to load notifications.');
+      }
+    } catch (e) {
+      setState(() => _error = 'Network error: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _markAsRead(int id) async {
+    try {
+      await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/notifications/$id/read'),
+        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+      );
+      _fetchNotifications();
+    } catch (_) {}
+  }
+
+  Future<void> _markAllAsRead() async {
+    try {
+      await http.post(
+        Uri.parse('${UserSession.getBaseUrl()}/api/notifications/mark-all-read'),
+        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+      );
+      _fetchNotifications();
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notifications'),
+        backgroundColor: kGreen,
+        foregroundColor: Colors.white,
+        actions: [
+          if (_notifications.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.done_all),
+              tooltip: 'Mark all as read',
+              onPressed: _markAllAsRead,
+            ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: kGreen))
+          : _error.isNotEmpty
+              ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
+              : _notifications.isEmpty
+                  ? const Center(child: Text('You have no notifications.', style: TextStyle(color: kSlate500)))
+                  : RefreshIndicator(
+                      onRefresh: _fetchNotifications,
+                      color: kGreen,
+                      child: ListView.builder(
+                        itemCount: _notifications.length,
+                        itemBuilder: (context, i) {
+                          final notif = _notifications[i];
+                          final bool isRead = notif['is_read'] == 1 || notif['is_read'] == true;
+                          return ListTile(
+                            tileColor: isRead ? null : kGreen.withOpacity(0.05),
+                            leading: CircleAvatar(
+                              backgroundColor: kGreen.withOpacity(0.2),
+                              child: Icon(Icons.notifications_active, color: kGreen),
+                            ),
+                            title: Text(notif['title'] ?? '', style: TextStyle(fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
+                            subtitle: Text(notif['body'] ?? ''),
+                            onTap: () {
+                              if (!isRead) _markAsRead(notif['id']);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+    );
+  }
+}
+
+// ==========================================
 // GRACIA POINTS SCREEN
 // ==========================================
 class GraciaPointsScreen extends StatefulWidget {
@@ -8421,7 +8951,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final route = filteredRoutes[index];
-                    final schedules = parseJsonList(route['schedules']);
+                    final schedules = parseAndFilterSchedules(route['schedules']);
                     final isFerry = (route['mode'] ?? 'ferry') == 'ferry';
                     
                     return Card(
@@ -9032,40 +9562,14 @@ class _DiscountCouponCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Image.asset(
-                                'assets/icon/app_icon_foreground.png',
-                                height: 40,
+                                'assets/icon/amiga_logo_white_outline.png',
+                                height: 48,
                                 fit: BoxFit.contain,
                                 errorBuilder: (_, __, ___) => const Icon(
                                   Icons.location_on,
                                   color: Colors.white,
                                   size: 34,
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Text(
-                                    'AMIGA GRACIA',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 14,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    'TRAVEL SERVICES',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 9,
-                                      letterSpacing: 0.8,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ],
                           ),
@@ -9306,7 +9810,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _availableSchedules = (data['schedules'] as List<dynamic>? ?? []));
+        setState(() => _availableSchedules = parseAndFilterSchedules(data['schedules']));
       }
     } catch (_) {}
     finally { if (mounted) setState(() => _loadingSchedules = false); }
@@ -9454,7 +9958,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _returnSchedules = (data['schedules'] as List<dynamic>? ?? []));
+        setState(() => _returnSchedules = parseAndFilterSchedules(data['schedules']));
       }
     } catch (_) {}
     finally { if (mounted) setState(() => _loadingReturnSchedules = false); }

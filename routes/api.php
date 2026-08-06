@@ -106,5 +106,16 @@ Route::middleware(['throttle:20,1', 'sensitive.actions'])->group(function () {
 Route::middleware(['auth:api', 'throttle:60,1'])->group(function () {
     Route::get('/gracia-points', [\App\Http\Controllers\Api\GraciaPointsController::class, 'index']);
     Route::post('/vouchers/claim', [\App\Http\Controllers\Api\VoucherController::class, 'claim']);
+
+    // In-app notifications
+    Route::get('/notifications',                [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read',     [\App\Http\Controllers\Api\NotificationController::class, 'markRead']);
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Api\NotificationController::class, 'markAllRead']);
+    Route::delete('/notifications/{id}',        [\App\Http\Controllers\Api\NotificationController::class, 'destroy']);
+
+    // Referral program
+    Route::get('/referral/my-code',  [\App\Http\Controllers\Api\ReferralController::class, 'myCode']);
+    Route::post('/referral/apply',   [\App\Http\Controllers\Api\ReferralController::class, 'applyCode']);
 });
+
 

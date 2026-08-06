@@ -1,6 +1,6 @@
 name: amiga_gracia
 description: Amiga Gracia Travel Services — Book ferry, airline, and tour packages.
-version: 1.0.24+28
+version: 1.0.25+29
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -39,3 +39,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/app_icon.png
+    - assets/icon/amiga_logo_white_outline.png

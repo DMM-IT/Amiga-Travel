@@ -38,6 +38,10 @@ class BookingController extends Controller
             'vehicle_type'                              => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_plate_number'                      => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price'                             => 'required_if:has_vehicle,true|nullable|numeric|min:0',
+            'driver_first_name'                         => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_middle_name'                        => 'nullable|string|max:255',
+            'driver_last_name'                          => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_birthday'                           => 'required_if:has_vehicle,true|nullable|date',
             'passengers'                                => 'required|array|min:1',
             'passengers.*.name'                         => 'required|string|max:255',
             'passengers.*.type'                         => 'required|string|in:adult,child',
@@ -214,7 +218,7 @@ class BookingController extends Controller
             ->with('transaction')
             ->firstOrFail();
 
-        if (! $booking->canCancelOrRebook() || $booking->status !== Booking::STATUS_PENDING || ! $booking->transaction || ! in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
+        if (! $booking->canCancel() || $booking->status !== Booking::STATUS_PENDING || ! $booking->transaction || ! in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'This booking can no longer be cancelled.'
@@ -306,7 +310,7 @@ class BookingController extends Controller
             ->with('transaction')
             ->firstOrFail();
 
-        if (! $booking->canCancelOrRebook() || ! in_array($booking->status, ['pending', 'unpaid'], true)) {
+        if (! $booking->canRebook() || ! in_array($booking->status, ['pending', 'unpaid'], true)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'This booking can no longer be rebooked.',

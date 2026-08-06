@@ -186,7 +186,7 @@ class BookingLookup extends Component
             return;
         }
 
-        if (! $this->booking->canCancelOrRebook()) {
+        if (! $this->booking->canCancel()) {
             $this->feedback = 'You cannot cancel this booking as the departure date has passed.';
             return;
         }
@@ -213,7 +213,7 @@ class BookingLookup extends Component
             return;
         }
 
-        if (! $this->booking->canCancelOrRebook()) {
+        if (! $this->booking->canCancel()) {
             $this->feedback = 'You cannot cancel this booking as the departure date has passed.';
             return;
         }
@@ -310,7 +310,7 @@ class BookingLookup extends Component
             return;
         }
 
-        if (! $this->booking->canCancelOrRebook()) {
+        if (! $this->booking->canCancel()) {
             $this->feedback = 'You cannot cancel this booking as the departure date has passed.';
             return;
         }
@@ -389,7 +389,7 @@ class BookingLookup extends Component
             return;
         }
 
-        if (! $this->booking->canCancelOrRebook()) {
+        if (! $this->booking->canRebook()) {
             $this->feedback = 'You cannot rebook this booking as the departure date has passed.';
             return;
         }

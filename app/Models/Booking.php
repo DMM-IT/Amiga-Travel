@@ -268,7 +268,18 @@ class Booking extends Model
      *  - Ferry: up to departure time (Starlite also allows AFTER departure + 10 min grace)
      *  - Airline: only before departure (no after-departure refund)
      */
-    public function canCancelOrRebook(): bool
+    public function canCancel(): bool
+    {
+        $departureDateTime = $this->getDepartureDateTime();
+        if (! $departureDateTime) {
+            return false;
+        }
+
+        // 1. Allowed for everyone if strictly before the 3-hour mark prior to departure
+        return now()->isBefore($departureDateTime->copy()->subHours(3));
+    }
+
+    public function canRebook(): bool
     {
         $departureDateTime = $this->getDepartureDateTime();
         if (! $departureDateTime) {
@@ -287,6 +298,11 @@ class Booking extends Model
 
         // Otherwise blocked
         return false;
+    }
+
+    public function canCancelOrRebook(): bool
+    {
+        return $this->canCancel() || $this->canRebook();
     }
 
     public function getDepartureDateTime(): ?Carbon
@@ -316,7 +332,7 @@ class Booking extends Model
         }
 
         // Time window for refunds is identical to the cancellation window
-        return $this->canCancelOrRebook();
+        return $this->canCancel();
     }
 
     /**
@@ -471,8 +487,32 @@ class Booking extends Model
 
     public function getRebookingFeeAmount(): float
     {
-        // Rebooking calculation is now handled dynamically in BookingReschedule and BookingLookup
-        return 0.0;
+        $created_at = $this->created_at ? \Carbon\Carbon::parse($this->created_at) : now();
+        
+        // No fee if rebooked within 5 minutes of booking creation
+        if ($created_at->copy()->addMinutes(5)->isFuture()) {
+            return 0.0;
+        }
+
+        $settings = \App\Models\PaymentSetting::current();
+        $passengerCount = max(1, $this->passengers()->count());
+        $revalidationFee = floatval($settings->revalidation_fee ?? 0) * $passengerCount;
+        
+        $originalFare = $this->getTicketBase();
+        $surchargePct = 0;
+        if ($this->getMode() === 'airline') {
+            $surchargePct = (float) $settings->rebook_airline_before_departure_surcharge_pct;
+        } else {
+            if ($this->isAfterDeparture()) {
+                $surchargePct = (float) $settings->rebook_ferry_after_departure_surcharge_pct;
+            } else {
+                $surchargePct = (float) $settings->rebook_ferry_before_departure_surcharge_pct;
+            }
+        }
+        
+        $surcharge = $originalFare * ($surchargePct / 100);
+        
+        return $revalidationFee + $surcharge;
     }
 
     public function verifyRebooking(?string $ticketUrl = null, ?string $receiptPath = null, ?string $receiptDisk = null): void
