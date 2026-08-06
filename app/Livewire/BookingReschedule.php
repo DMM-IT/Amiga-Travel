@@ -62,6 +62,10 @@ class BookingReschedule extends Component
         $this->transaction_number = ltrim(trim($transaction_number), '#');
         $this->loadBooking();
 
+        if (! $this->booking || ! $this->booking->serviceCancellation) {
+            abort(403, 'Unauthorized access. This page is only for bookings affected by service disruptions.');
+        }
+
         if ($this->booking && $this->booking->serviceCancellation) {
             $resumeDate = $this->booking->serviceCancellation->resume_date;
             $this->dep_date = $resumeDate ? $resumeDate->format('Y-m-d') : Carbon::tomorrow()->format('Y-m-d');
@@ -291,6 +295,14 @@ class BookingReschedule extends Component
         $originalFare = $this->originalFare;
         $newFare = $this->newFare;
 
+        if ($newFare < $originalFare) {
+            $this->feedback = "You cannot rebook to a ticket that is cheaper than your original booking.";
+            $this->rebookRateDiff = 0;
+            $this->totalRebookFee = 0;
+            $this->priceDiff = 0;
+            return;
+        }
+
         $this->rebookRevalidationFee = (floatval($settings->revalidation_fee) * $passengerCount);
 
         $surchargePct = 0;
@@ -306,11 +318,7 @@ class BookingReschedule extends Component
         $this->rebookSurcharge = $originalFare * ($surchargePct / 100);
 
         // 3. Rate Diff
-        if ($mode === 'airline') {
-            $this->rebookRateDiff = max(0, $newFare - $originalFare);
-        } else {
-            $this->rebookRateDiff = max(0, $newFare - $originalFare);
-        }
+        $this->rebookRateDiff = max(0, $newFare - $originalFare);
 
         $this->totalRebookFee = $this->rebookSurcharge + $this->rebookRevalidationFee + $this->rebookRateDiff;
         $this->priceDiff = $this->totalRebookFee;
@@ -318,24 +326,10 @@ class BookingReschedule extends Component
 
     public function getOriginalFareProperty(): float
     {
-        $passengerCount = $this->booking->passengers()->count();
-        if ($passengerCount === 0) {
-            $passengerCount = 1;
+        if (! $this->booking) {
+            return 0.0;
         }
-
-        $originalFare = 0.0;
-        $originalFare += ($this->booking->schedule_price ?? 0) * $passengerCount;
-        $originalFare += ($this->booking->schedule_accommodation_price ?? 0) * $passengerCount;
-
-        if ($this->isRoundTrip()) {
-            $originalFare += ($this->booking->return_schedule_price ?? 0) * $passengerCount;
-            $originalFare += ($this->booking->return_schedule_accommodation_price ?? 0) * $passengerCount;
-        }
-
-        $originalFare += $this->getBookingTransportClassTotal();
-        $originalFare += $this->booking->has_vehicle ? $this->booking->vehicle_price : 0;
-
-        return $originalFare;
+        return $this->booking->getTicketBase();
     }
 
     public function getNewFareProperty(): float
