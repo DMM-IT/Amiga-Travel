@@ -270,16 +270,23 @@ class Booking extends Model
      */
     public function canCancelOrRebook(): bool
     {
-        // Ferry Starlite: allow up to departure+10 min (after-departure bracket)
-        if ($this->isStarlite()) {
-            $departureDateTime = $this->getDepartureDateTime();
-            if ($departureDateTime) {
-                return now()->isBefore($departureDateTime->copy()->addMinutes(10));
-            }
+        $departureDateTime = $this->getDepartureDateTime();
+        if (! $departureDateTime) {
+            return false;
         }
 
-        // All others: today or future departure date only (before departure)
-        return $this->departure_date->isFuture() || $this->departure_date->isToday();
+        // 1. Allowed for everyone if strictly before the 3-hour mark prior to departure
+        if (now()->isBefore($departureDateTime->copy()->subHours(3))) {
+            return true;
+        }
+
+        // 2. Reactivate for Starlite ONLY if 5 minutes after departure
+        if ($this->isStarlite() && now()->isAfter($departureDateTime->copy()->addMinutes(5))) {
+            return true;
+        }
+
+        // Otherwise blocked
+        return false;
     }
 
     public function getDepartureDateTime(): ?Carbon
@@ -308,19 +315,8 @@ class Booking extends Model
             return false;
         }
 
-        $departureDateTime = $this->getDepartureDateTime();
-        if (! $departureDateTime) {
-            return false;
-        }
-
-        // After-departure bracket (Starlite ferry only, up to departure+10 min)
-        if ($this->isAfterDeparture()) {
-            return $this->isStarlite();
-        }
-
-        // Before-departure bracket: must be at least 3 hours before departure
-        $deadline = $departureDateTime->copy()->subHours(3);
-        return now()->isBefore($deadline);
+        // Time window for refunds is identical to the cancellation window
+        return $this->canCancelOrRebook();
     }
 
     /**
@@ -351,7 +347,7 @@ class Booking extends Model
     }
 
     /**
-     * True when actual departure time + 10-minute grace period has passed.
+     * True when actual departure time + 5-minute grace period has passed.
      */
     public function isAfterDeparture(): bool
     {
@@ -359,7 +355,7 @@ class Booking extends Model
         if (! $dt) {
             return false;
         }
-        return now()->isAfter($dt->copy()->addMinutes(10));
+        return now()->isAfter($dt->copy()->addMinutes(5));
     }
 
     /**
