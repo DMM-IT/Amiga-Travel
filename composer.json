@@ -17,6 +17,7 @@
         "laravel/sanctum": "*",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^3.8",
+        "maatwebsite/excel": "^3.1",
         "predis/predis": "^3.5",
         "resend/resend-laravel": "^1.4",
         "simplesoftwareio/simple-qrcode": "^4.2",

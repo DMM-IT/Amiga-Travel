@@ -87,7 +87,7 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn (): string => MyPage::getUrl())
                     ->icon('heroicon-o-chart-bar-square'),
             ])
-            ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_AFTER, function (): View {
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, function (): View {
                 return view('filament.admin.notification-bell');
             })
             ->renderHook(PanelsRenderHook::SCRIPTS_AFTER, function (): View {

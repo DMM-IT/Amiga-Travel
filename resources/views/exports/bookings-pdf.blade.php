@@ -55,6 +55,7 @@
         .status-pending          { background-color: #f39c12; color: white; }
         .status-cancelled        { background-color: #e74c3c; color: white; }
         .status-operator-cancelled { background-color: #c0392b; color: white; }
+        .status-refunded         { background-color: #8e44ad; color: white; }
         .totals-row td {
             background-color: #ecf0f1;
             font-weight: bold;
@@ -74,11 +75,10 @@
     <h1>Booking Report</h1>
 
     @php
-        $sections = [
-            ['title' => 'Confirmed Bookings',  'items' => $confirmedBookings],
-            ['title' => 'Rebooked Bookings',   'items' => $rebookedBookings],
-            ['title' => 'Cancelled Bookings',  'items' => $cancelledBookings],
-        ];
+        $sections = [];
+        foreach ($groupedBookings as $title => $items) {
+            $sections[] = ['title' => $title, 'items' => $items];
+        }
     @endphp
 
     @foreach($sections as $section)
@@ -125,8 +125,14 @@
                             <td>{{ $ferryRoute?->mode ?? $booking->schedule_service ?? '-' }}</td>
                             <td>{{ $ferryRoute?->operator ?? '-' }}</td>
                             <td>
-                                <span class="status status-{{ strtolower(str_replace('_', '-', $booking->status)) }}">
-                                    {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
+                                @php
+                                    $statusStr = ucfirst(str_replace('_', ' ', $booking->status));
+                                    if (in_array($booking->status, ['cancelled', 'operator_cancelled']) && $booking->refund_amount > 0) {
+                                        $statusStr = 'Refunded';
+                                    }
+                                @endphp
+                                <span class="status status-{{ strtolower(str_replace(' ', '-', $statusStr)) }}">
+                                    {{ $statusStr }}
                                 </span>
                             </td>
                             <td>{{ number_format($booking->total_price, 2) }}</td>

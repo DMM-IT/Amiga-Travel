@@ -78,10 +78,17 @@ class TransactionResource extends Resource
                     ->schema([
                         TextEntry::make('payment_status')
                             ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'paid' => 'success',
-                                'pending' => 'warning',
-                                'cancelled' => 'danger',
+                            ->formatStateUsing(function (string $state, Transaction $record) {
+                                if ($state === 'cancelled' && $record->booking && $record->booking->refund_amount > 0) {
+                                    return 'Refunded';
+                                }
+                                return ucfirst($state);
+                            })
+                            ->color(fn (string $state, Transaction $record): string => match (true) {
+                                $state === 'paid' => 'success',
+                                $state === 'pending' => 'warning',
+                                $state === 'cancelled' && $record->booking && $record->booking->refund_amount > 0 => 'info',
+                                $state === 'cancelled' => 'danger',
                                 default => 'gray',
                             }),
                         TextEntry::make('payment_reference')
@@ -145,7 +152,23 @@ class TransactionResource extends Resource
                             ->label('Transaction number'),
                         TextEntry::make('booking.status')
                             ->label('Booking status')
-                            ->badge(),
+                            ->badge()
+                            ->formatStateUsing(function (string $state, Transaction $record) {
+                                if (in_array($state, ['cancelled', 'operator_cancelled']) && $record->booking && $record->booking->refund_amount > 0) {
+                                    return 'Refunded';
+                                }
+                                if ($state === 'operator_cancelled') {
+                                    return 'Cancelled by Operator';
+                                }
+                                return ucfirst($state);
+                            })
+                            ->color(fn (string $state, Transaction $record): string => match (true) {
+                                $state === 'pending' => 'warning',
+                                $state === 'confirmed' => 'success',
+                                in_array($state, ['cancelled', 'operator_cancelled']) && $record->booking && $record->booking->refund_amount > 0 => 'info',
+                                in_array($state, ['cancelled', 'operator_cancelled']) => 'danger',
+                                default => 'secondary',
+                            }),
                         TextEntry::make('booking.client_name')
                             ->label('Client name'),
                         TextEntry::make('booking.client_email')
@@ -248,10 +271,17 @@ class TransactionResource extends Resource
                 TextColumn::make('payment_status')
                     ->label('Payment Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'paid' => 'success',
-                        'pending' => 'warning',
-                        'cancelled' => 'danger',
+                    ->formatStateUsing(function (string $state, Transaction $record) {
+                        if ($state === 'cancelled' && $record->booking && $record->booking->refund_amount > 0) {
+                            return 'Refunded';
+                        }
+                        return ucfirst($state);
+                    })
+                    ->color(fn (string $state, Transaction $record): string => match (true) {
+                        $state === 'paid' => 'success',
+                        $state === 'pending' => 'warning',
+                        $state === 'cancelled' && $record->booking && $record->booking->refund_amount > 0 => 'info',
+                        $state === 'cancelled' => 'danger',
                         default => 'gray',
                     })
                     ->sortable(),
@@ -262,11 +292,20 @@ class TransactionResource extends Resource
                 TextColumn::make('booking.status')
                     ->label('Booking Status')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'confirmed' => 'success',
-                        'cancelled' => 'danger',
-                        'operator_cancelled' => 'danger',
+                    ->formatStateUsing(function (?string $state, Transaction $record) {
+                        if (in_array($state, ['cancelled', 'operator_cancelled']) && $record->booking && $record->booking->refund_amount > 0) {
+                            return 'Refunded';
+                        }
+                        if ($state === 'operator_cancelled') {
+                            return 'Cancelled by Operator';
+                        }
+                        return $state ? ucfirst($state) : null;
+                    })
+                    ->color(fn (?string $state, Transaction $record): string => match (true) {
+                        $state === 'pending' => 'warning',
+                        $state === 'confirmed' => 'success',
+                        in_array($state, ['cancelled', 'operator_cancelled']) && $record->booking && $record->booking->refund_amount > 0 => 'info',
+                        in_array($state, ['cancelled', 'operator_cancelled']) => 'danger',
                         default => 'secondary',
                     }),
                 TextColumn::make('verification_timer')

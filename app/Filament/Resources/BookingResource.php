@@ -134,20 +134,36 @@ class BookingResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Booking Status')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'confirmed' => 'success',
-                        'cancelled' => 'danger',
-                        'operator_cancelled' => 'danger',
+                    ->formatStateUsing(function (string $state, Booking $record) {
+                        if (in_array($state, ['cancelled', 'operator_cancelled']) && $record->refund_amount > 0) {
+                            return 'Refunded';
+                        }
+                        if ($state === 'operator_cancelled') {
+                            return 'Cancelled by Operator';
+                        }
+                        return ucfirst($state);
+                    })
+                    ->color(fn (?string $state, Booking $record): string => match (true) {
+                        $state === 'pending' => 'warning',
+                        $state === 'confirmed' => 'success',
+                        in_array($state, ['cancelled', 'operator_cancelled']) && $record->refund_amount > 0 => 'info',
+                        in_array($state, ['cancelled', 'operator_cancelled']) => 'danger',
                         default => 'secondary',
                     }),
                 Tables\Columns\TextColumn::make('transaction.payment_status')
                     ->label('Payment Status')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
-                        'paid' => 'success',
-                        'pending' => 'warning',
-                        'cancelled' => 'danger',
+                    ->formatStateUsing(function (?string $state, Booking $record) {
+                        if ($state === 'cancelled' && $record->refund_amount > 0) {
+                            return 'Refunded';
+                        }
+                        return $state ? ucfirst($state) : null;
+                    })
+                    ->color(fn (?string $state, Booking $record): string => match (true) {
+                        $state === 'paid' => 'success',
+                        $state === 'pending' => 'warning',
+                        $state === 'cancelled' && $record->refund_amount > 0 => 'info',
+                        $state === 'cancelled' => 'danger',
                         default => 'gray',
                     })
                     ->placeholder('—'),
