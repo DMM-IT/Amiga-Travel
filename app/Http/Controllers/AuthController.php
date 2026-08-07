@@ -242,6 +242,36 @@ class AuthController extends Controller
         ]);
     }
 
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->guard('api')->user();
+        if (!$user) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 401);
+        }
+
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+        ]);
+
+        $user->name = $validated['name'];
+        if (isset($validated['phone'])) {
+            $user->phone = $validated['phone'];
+        }
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Profile updated successfully',
+            'user' => [
+                'name'  => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone ?? '',
+                'referral_code' => $user->referral_code,
+            ],
+        ]);
+    }
+
     public function apiRegister(Request $request)
     {
         $validated = $request->validate([

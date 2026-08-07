@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.29+33';
+  static const String appVersion = '1.0.30+34';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -4059,7 +4059,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 MaterialPageRoute(
                                   builder: (_) => PaymentProofScreen(
                                     bookingId: b['id'],
-                                    transactionNumber: transaction['transaction_number'],
+                                    transactionNumber: b['transaction_number'],
                                     totalPrice: (b['total_price'] as num).toDouble(),
                                     paymentDeadlineAt: transaction['payment_deadline_at'] != null
                                         ? DateTime.tryParse(transaction['payment_deadline_at'])
@@ -4705,6 +4705,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     UserSession.email = email.isNotEmpty ? email : 'user@amigagracia.com';
     UserSession.phone = phone;
     await UserSession.save();
+
+    if (UserSession.token.isNotEmpty) {
+      try {
+        final res = await http.post(
+          Uri.parse('${UserSession.getBaseUrl()}/api/profile/update'),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${UserSession.token}',
+          },
+          body: jsonEncode({
+            'name': UserSession.username,
+            'phone': UserSession.phone,
+          }),
+        );
+      } catch (_) {}
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -6534,6 +6551,9 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             transactionNumber: data['transaction_number'],
             totalPrice: (data['total_price'] as num).toDouble(),
             qrCodeUrl: _qrCodeUrl,
+            paymentDeadlineAt: data['payment_deadline_at'] != null
+                ? DateTime.tryParse(data['payment_deadline_at'])
+                : null,
           ),
         ));
       } else {

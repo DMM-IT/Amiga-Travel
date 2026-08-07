@@ -210,16 +210,27 @@ class ScheduleController extends Controller
         });
 
         $routesArray = $this->ensureSequentialArray($routes);
-        $routesArray = array_map(function ($route) {
+        
+        $now = now();
+        $routesArray = array_map(function ($route) use ($now) {
             $arr = is_array($route) ? $route : $route->toArray();
             if (isset($arr['schedules'])) {
-                $arr['schedules'] = $this->ensureSequentialArray($arr['schedules']);
+                $filtered = array_filter($arr['schedules'], function($schedule) use ($now) {
+                    $dt = \Carbon\Carbon::parse(is_array($schedule) ? $schedule['departure_time'] : $schedule->departure_time);
+                    return $dt->isAfter($now);
+                });
+                $arr['schedules'] = $this->ensureSequentialArray($filtered);
             }
             return $arr;
         }, $routesArray);
 
+        // Remove routes that have no schedules left after filtering
+        $routesArray = array_values(array_filter($routesArray, function($route) {
+            return !empty($route['schedules']);
+        }));
+
         return response()->json([
-            'status'     => 'success',
+            'status' => 'success',
             'start_date' => $startDate,
             'end_date'   => $endDate,
             'routes'     => $routesArray,

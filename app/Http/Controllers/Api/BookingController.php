@@ -75,6 +75,7 @@ class BookingController extends Controller
                 'points_used'             => $booking->points_used,
                 'points_discount'         => floatval($booking->points_discount),
                 'total_price'             => floatval($booking->total_price),
+                'payment_deadline_at'     => $booking->transaction?->payment_deadline_at?->toIso8601String(),
             ]);
 
         } catch (\InvalidArgumentException $e) {
