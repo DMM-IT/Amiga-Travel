@@ -601,21 +601,39 @@
                                                 @else
                                                     <div class="grid gap-3 sm:grid-cols-2">
                                                         @foreach($depAccommodations as $acc)
-                                                            <div 
-                                                                wire:click="selectRebookingDepartureAccommodation('{{ $acc->id }}', {{ $acc->price }})"
-                                                                class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
-                                                            >
-                                                                <div>
-                                                                    <span class="text-sm font-bold text-slate-900">{{ $acc->name }}</span>
-                                                                    @if($acc->description)
-                                                                        <p class="mt-1 text-xs text-slate-500 line-clamp-2">{{ $acc->description }}</p>
-                                                                    @endif
+                                                            @if($acc->disabled)
+                                                                <div class="rounded-xl border border-slate-100 bg-slate-50 p-4 opacity-50 cursor-not-allowed flex flex-col justify-between">
+                                                                    <div>
+                                                                        <div class="flex items-center justify-between mb-1">
+                                                                            <span class="text-sm font-bold text-slate-500">{{ $acc->name }}</span>
+                                                                            <span class="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500">Not eligible</span>
+                                                                        </div>
+                                                                        @if($acc->description)
+                                                                            <p class="mt-1 text-xs text-slate-400 line-clamp-2">{{ $acc->description }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                        <span class="text-xs text-slate-400">Total per person</span>
+                                                                        <span class="text-sm font-bold text-slate-400">₱{{ number_format(($rebooking_dep_schedule_price ?? 0) + $acc->price, 2) }}</span>
+                                                                    </div>
                                                                 </div>
-                                                                <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                                                    <span class="text-xs text-slate-500">Total per person</span>
-                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format(($rebooking_dep_schedule_price ?? 0) + $acc->price, 2) }}</span>
+                                                            @else
+                                                                <div
+                                                                    wire:click="selectRebookingDepartureAccommodation('{{ $acc->id }}', {{ $acc->price }})"
+                                                                    class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
+                                                                >
+                                                                    <div>
+                                                                        <span class="text-sm font-bold text-slate-900">{{ $acc->name }}</span>
+                                                                        @if($acc->description)
+                                                                            <p class="mt-1 text-xs text-slate-500 line-clamp-2">{{ $acc->description }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                        <span class="text-xs text-slate-500">Total per person</span>
+                                                                        <span class="text-sm font-bold text-blue-600">₱{{ number_format(($rebooking_dep_schedule_price ?? 0) + $acc->price, 2) }}</span>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
+                                                            @endif
                                                         @endforeach
                                                     </div>
                                                 @endif
@@ -692,21 +710,39 @@
                                                 @else
                                                     <div class="grid gap-3 sm:grid-cols-2">
                                                         @foreach($retAccommodations as $acc)
-                                                            <div 
-                                                                wire:click="selectRebookingReturnAccommodation('{{ $acc->id }}', {{ $acc->price }})"
-                                                                class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
-                                                            >
-                                                                <div>
-                                                                    <span class="text-sm font-bold text-slate-900">{{ $acc->name }}</span>
-                                                                    @if($acc->description)
-                                                                        <p class="mt-1 text-xs text-slate-500 line-clamp-2">{{ $acc->description }}</p>
-                                                                    @endif
+                                                            @if($acc->disabled)
+                                                                <div class="rounded-xl border border-slate-100 bg-slate-50 p-4 opacity-50 cursor-not-allowed flex flex-col justify-between">
+                                                                    <div>
+                                                                        <div class="flex items-center justify-between mb-1">
+                                                                            <span class="text-sm font-bold text-slate-500">{{ $acc->name }}</span>
+                                                                            <span class="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500">Not eligible</span>
+                                                                        </div>
+                                                                        @if($acc->description)
+                                                                            <p class="mt-1 text-xs text-slate-400 line-clamp-2">{{ $acc->description }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                        <span class="text-xs text-slate-400">Total per person</span>
+                                                                        <span class="text-sm font-bold text-slate-400">₱{{ number_format(($rebooking_ret_schedule_price ?? 0) + $acc->price, 2) }}</span>
+                                                                    </div>
                                                                 </div>
-                                                                <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                                                    <span class="text-xs text-slate-500">Total per person</span>
-                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format(($rebooking_ret_schedule_price ?? 0) + $acc->price, 2) }}</span>
+                                                            @else
+                                                                <div
+                                                                    wire:click="selectRebookingReturnAccommodation('{{ $acc->id }}', {{ $acc->price }})"
+                                                                    class="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-500 hover:bg-blue-50/40 transition flex flex-col justify-between"
+                                                                >
+                                                                    <div>
+                                                                        <span class="text-sm font-bold text-slate-900">{{ $acc->name }}</span>
+                                                                        @if($acc->description)
+                                                                            <p class="mt-1 text-xs text-slate-500 line-clamp-2">{{ $acc->description }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                                                        <span class="text-xs text-slate-500">Total per person</span>
+                                                                        <span class="text-sm font-bold text-blue-600">₱{{ number_format(($rebooking_ret_schedule_price ?? 0) + $acc->price, 2) }}</span>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
+                                                            @endif
                                                         @endforeach
                                                     </div>
                                                 @endif
@@ -757,8 +793,14 @@
                                                             <span>Original Booking Base Fare (Before)</span>
                                                             @php
                                                                 $paxCount = $booking->passengers()->count() ?: 1;
-                                                                $origDep  = (float)($booking->schedule_price ?? 0) + (float)($booking->schedule_accommodation_price ?? 0);
-                                                                $origRet  = (float)($booking->return_schedule_price ?? 0) + (float)($booking->return_schedule_accommodation_price ?? 0);
+                                                                $booking->loadMissing('transportClasses');
+                                                                $_tcs       = $booking->transportClasses->values();
+                                                                $origDep    = (float)($booking->schedule_price ?? 0)
+                                                                            + (float)(optional($_tcs->get(0))->pivot?->price ?? 0)
+                                                                            + (float)($booking->schedule_accommodation_price ?? 0);
+                                                                $origRet    = (float)($booking->return_schedule_price ?? 0)
+                                                                            + (float)(optional($_tcs->get(1))->pivot?->price ?? 0)
+                                                                            + (float)($booking->return_schedule_accommodation_price ?? 0);
                                                                 $displayOrigFare = ($origDep + $origRet) * $paxCount;
                                                             @endphp
                                                             <span class="font-medium">₱{{ number_format($displayOrigFare, 2) }}</span>

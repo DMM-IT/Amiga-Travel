@@ -476,19 +476,24 @@ class BookingLookup extends Component
         $passengerCount = max(1, $this->booking->passengers()->count());
         $mode = $this->booking ? $this->booking->getMode() : 'ferry';
 
+        // Original per-pax: base fare + transport class from pivot (index 0 = departure)
+        $this->booking->loadMissing('transportClasses');
+        $transportClasses = $this->booking->transportClasses;
+        $origDepTCPerPax = (float)optional($transportClasses->values()->get(0))->pivot?->price;
+        $originalPerPax  = (float)($this->booking->schedule_price ?? 0) + $origDepTCPerPax
+                         + (float)($this->booking->schedule_accommodation_price ?? 0);
+
         if ($mode === 'airline') {
             // For airlines, the displayed price is already (schedule + class) * 1.5 markup.
             // Divide by 1.5 to get the comparable base.
             $newPerPax = $price / 1.5;
-            $originalPerPax = ($this->booking->schedule_price ?? 0) + ($this->booking->schedule_accommodation_price ?? 0);
             if ($newPerPax < $originalPerPax) {
                 $this->feedback = "You cannot select a lower class than your original booking. Please select an equal or higher class.";
                 return;
             }
         } else {
-            // For ferries, price = schedule_price + accommodation_price per pax (combined in UI).
+            // For ferries, price = accommodation_price per pax (already combined in UI with schedule)
             $newPerPax = ($this->rebooking_dep_schedule_price ?? 0) + $price;
-            $originalPerPax = ($this->booking->schedule_price ?? 0) + ($this->booking->schedule_accommodation_price ?? 0);
             if ($newPerPax < $originalPerPax) {
                 $this->feedback = "You cannot rebook to a lower class than your original booking. Please select an equal or higher class.";
                 return;
@@ -518,16 +523,21 @@ class BookingLookup extends Component
         $passengerCount = max(1, $this->booking->passengers()->count());
         $mode = $this->booking ? $this->booking->getMode() : 'ferry';
 
+        // Original per-pax return: base fare + transport class from pivot (index 1 = return)
+        $this->booking->loadMissing('transportClasses');
+        $transportClasses = $this->booking->transportClasses;
+        $origRetTCPerPax = (float)optional($transportClasses->values()->get(1))->pivot?->price;
+        $originalPerPax  = (float)($this->booking->return_schedule_price ?? 0) + $origRetTCPerPax
+                         + (float)($this->booking->return_schedule_accommodation_price ?? 0);
+
         if ($mode === 'airline') {
             $newPerPax = $price / 1.5;
-            $originalPerPax = ($this->booking->return_schedule_price ?? 0) + ($this->booking->return_schedule_accommodation_price ?? 0);
             if ($newPerPax < $originalPerPax) {
                 $this->feedback = "You cannot select a lower class than your original return booking. Please select an equal or higher class.";
                 return;
             }
         } else {
             $newPerPax = ($this->rebooking_ret_schedule_price ?? 0) + $price;
-            $originalPerPax = ($this->booking->return_schedule_price ?? 0) + ($this->booking->return_schedule_accommodation_price ?? 0);
             if ($newPerPax < $originalPerPax) {
                 $this->feedback = "You cannot rebook to a lower class than your original return booking. Please select an equal or higher class.";
                 return;
@@ -561,8 +571,15 @@ class BookingLookup extends Component
         $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->rebooking_dep_schedule_id);
         if (!$schedule) return collect();
 
-        $isAirline = $this->booking && $this->booking->getMode() === 'airline';
+        $isAirline    = $this->booking && $this->booking->getMode() === 'airline';
         $schedulePrice = $isAirline ? ($schedule->price ?? 0) : 0;
+
+        // Compute the original per-pax minimum (ticket + original transport class)
+        $this->booking->loadMissing('transportClasses');
+        $origTCPerPax   = (float) optional($this->booking->transportClasses->values()->get(0))->pivot?->price;
+        $originalPerPax = (float)($this->booking->schedule_price ?? 0)
+                        + $origTCPerPax
+                        + (float)($this->booking->schedule_accommodation_price ?? 0);
 
         $items = collect();
         foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
@@ -570,11 +587,13 @@ class BookingLookup extends Component
             if ($isAirline) {
                 $price = ($schedulePrice + $price) * 1.5;
             }
+            $newPerPax = $isAirline ? ($price / 1.5) : (($this->rebooking_dep_schedule_price ?? 0) + $price);
             $items->push((object)[
-                'id' => 'acc_' . $acc->id,
-                'name' => $acc->name,
+                'id'       => 'acc_' . $acc->id,
+                'name'     => $acc->name,
                 'description' => $acc->description,
-                'price' => $price,
+                'price'    => $price,
+                'disabled' => $newPerPax < $originalPerPax,
             ]);
         }
         foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
@@ -582,11 +601,13 @@ class BookingLookup extends Component
             if ($isAirline) {
                 $price = ($schedulePrice + $price) * 1.5;
             }
+            $newPerPax = $isAirline ? ($price / 1.5) : (($this->rebooking_dep_schedule_price ?? 0) + $price);
             $items->push((object)[
-                'id' => 'tc_' . $tc->id,
-                'name' => $tc->name,
+                'id'       => 'tc_' . $tc->id,
+                'name'     => $tc->name,
                 'description' => $tc->pivot->description ?? $tc->description,
-                'price' => $price,
+                'price'    => $price,
+                'disabled' => $newPerPax < $originalPerPax,
             ]);
         }
         return $items;
@@ -598,8 +619,15 @@ class BookingLookup extends Component
         $schedule = Schedule::with(['scheduleAccommodations', 'transportClasses'])->find($this->rebooking_ret_schedule_id);
         if (!$schedule) return collect();
 
-        $isAirline = $this->booking && $this->booking->getMode() === 'airline';
+        $isAirline    = $this->booking && $this->booking->getMode() === 'airline';
         $schedulePrice = $isAirline ? ($schedule->price ?? 0) : 0;
+
+        // Compute the original per-pax minimum for the return leg (index 1 = return transport class)
+        $this->booking->loadMissing('transportClasses');
+        $origTCPerPax   = (float) optional($this->booking->transportClasses->values()->get(1))->pivot?->price;
+        $originalPerPax = (float)($this->booking->return_schedule_price ?? 0)
+                        + $origTCPerPax
+                        + (float)($this->booking->return_schedule_accommodation_price ?? 0);
 
         $items = collect();
         foreach ($schedule->scheduleAccommodations->where('is_active', true)->sortBy('sort_order') as $acc) {
@@ -607,11 +635,13 @@ class BookingLookup extends Component
             if ($isAirline) {
                 $price = ($schedulePrice + $price) * 1.5;
             }
+            $newPerPax = $isAirline ? ($price / 1.5) : (($this->rebooking_ret_schedule_price ?? 0) + $price);
             $items->push((object)[
-                'id' => 'acc_' . $acc->id,
-                'name' => $acc->name,
+                'id'       => 'acc_' . $acc->id,
+                'name'     => $acc->name,
                 'description' => $acc->description,
-                'price' => $price,
+                'price'    => $price,
+                'disabled' => $newPerPax < $originalPerPax,
             ]);
         }
         foreach ($schedule->transportClasses->where('pivot.is_active', true)->sortBy('pivot.sort_order') as $tc) {
@@ -619,11 +649,13 @@ class BookingLookup extends Component
             if ($isAirline) {
                 $price = ($schedulePrice + $price) * 1.5;
             }
+            $newPerPax = $isAirline ? ($price / 1.5) : (($this->rebooking_ret_schedule_price ?? 0) + $price);
             $items->push((object)[
-                'id' => 'tc_' . $tc->id,
-                'name' => $tc->name,
+                'id'       => 'tc_' . $tc->id,
+                'name'     => $tc->name,
                 'description' => $tc->pivot->description ?? $tc->description,
-                'price' => $price,
+                'price'    => $price,
+                'disabled' => $newPerPax < $originalPerPax,
             ]);
         }
         return $items;
@@ -637,10 +669,19 @@ class BookingLookup extends Component
         $mode = $this->booking->getMode();
         $isAirline = $mode === 'airline';
 
-        // ── Original per-pax fare (raw ticket + class/accommodation, no platform fees) ──
+        // ── Original per-pax fare: base schedule + transport class (pivot) + hotel accommodation ──
+        // The transport class pivot price (index 0 = departure, index 1 = return)
+        // is per-pax and is stored separately from schedule_accommodation_price (hotel).
+        $this->booking->loadMissing('transportClasses');
+        $tcs = $this->booking->transportClasses->values();
+        $depTCPerPax = (float) optional($tcs->get(0))->pivot?->price;
+        $retTCPerPax = (float) optional($tcs->get(1))->pivot?->price;
+
         $origDepPerPax = (float)($this->booking->schedule_price ?? 0)
+                       + $depTCPerPax
                        + (float)($this->booking->schedule_accommodation_price ?? 0);
         $origRetPerPax = (float)($this->booking->return_schedule_price ?? 0)
+                       + $retTCPerPax
                        + (float)($this->booking->return_schedule_accommodation_price ?? 0);
         $originalFare  = ($origDepPerPax + $origRetPerPax) * $passengerCount;
 
@@ -781,14 +822,14 @@ class BookingLookup extends Component
     {
         $this->cancellationRequested = false;
         $this->cancellationWindowActive = false;
-        $this->cancellationExpired = false;
-        $this->cancelCountdown = 300;
         $this->refund_destination = null;
         $this->refund_method = 'GCash';
         $this->refund_bank_name = '';
         $this->refund_account_number = '';
         $this->refund_account_name = '';
         $this->showCancellationWarning = false;
+        // Re-sync the expired flag from the real 5-minute timer — never blindly reset it to false.
+        $this->loadCancellationWindowFromSession();
         // NOTE: do NOT delete the cancellation_expired session key here.
         // It must survive page refreshes. Only startCancellationWindow() clears it
         // when the user explicitly begins a fresh cancellation attempt.
