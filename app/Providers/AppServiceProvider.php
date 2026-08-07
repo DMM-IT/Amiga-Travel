@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Console\Commands\PurgeExpiredSchedules;
 use App\Models\Booking;
+use Illuminate\Database\Eloquent\Model;
 use App\Models\WebsiteSetting;
 use App\Observers\BookingObserver;
 use Illuminate\Support\Facades\Cache;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Model::preventLazyLoading(! app()->isProduction());
         Schema::defaultStringLength(191);
 
         // Register model observers
