@@ -36,6 +36,11 @@ class Schedule extends Model
         'is_active' => 'boolean',
     ];
 
+    protected function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+
     public function ferryRoute(): BelongsTo
     {
         return $this->belongsTo(FerryRoute::class);

@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.30+34';
+  static const String appVersion = '1.0.31+35';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -421,9 +421,10 @@ List<dynamic> parseAndFilterSchedules(dynamic raw, [String? selectedDate]) {
   final list = parseJsonList(raw);
   final now = DateTime.now();
   return list.where((s) {
-    if (s['departure_time'] == null) return true;
+    final depTimeStr = s['departure_time_iso'] ?? s['departure_time'];
+    if (depTimeStr == null) return true;
     try {
-      String timeStr = s['departure_time'].toString();
+      String timeStr = depTimeStr.toString();
       DateTime dt;
       if (timeStr.length == 8 && selectedDate != null && selectedDate.isNotEmpty) {
         dt = DateTime.parse('$selectedDate $timeStr').toLocal();
@@ -4059,8 +4060,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 MaterialPageRoute(
                                   builder: (_) => PaymentProofScreen(
                                     bookingId: b['id'],
-                                    transactionNumber: b['transaction_number'],
-                                    totalPrice: (b['total_price'] as num).toDouble(),
+                                    transactionNumber: b['transaction_number'] ?? 'N/A',
+                                    totalPrice: b['total_price'] is num ? (b['total_price'] as num).toDouble() : double.tryParse(b['total_price'].toString()) ?? 0.0,
                                     paymentDeadlineAt: transaction['payment_deadline_at'] != null
                                         ? DateTime.tryParse(transaction['payment_deadline_at'])
                                         : null,
@@ -5310,7 +5311,15 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Text('₱${acc['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 15)),
+                              Builder(builder: (ctx) {
+                                final basePriceStr = isReturn 
+                                    ? (widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0)
+                                    : (widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
+                                final basePrice = basePriceStr is num ? basePriceStr.toDouble() : double.tryParse(basePriceStr.toString()) ?? 0.0;
+                                final accPriceStr = acc['price'] ?? 0;
+                                final accPrice = accPriceStr is num ? accPriceStr.toDouble() : double.tryParse(accPriceStr.toString()) ?? 0.0;
+                                return Text('₱${(basePrice + accPrice).toStringAsFixed(2)}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 15));
+                              }),
                             ],
                           ),
                         ),
@@ -6732,14 +6741,15 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   Builder(builder: (ctx) {
                     try {
                     double ticketPrice = 0.0;
+                    double scheduleAccommodationCost = 0.0;
                     if (widget.booking.selectedSchedule != null) {
                        final adultP = (widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
                        final childP = (widget.booking.selectedSchedule!['child_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
                        ticketPrice += (widget.booking.adults * (adultP is num ? adultP.toDouble() : double.tryParse(adultP.toString()) ?? 0)) +
                                       (widget.booking.children * (childP is num ? childP.toDouble() : double.tryParse(childP.toString()) ?? 0));
                        if (widget.booking.selectedScheduleAccommodation != null) {
-                         final accPrice = widget.booking.selectedScheduleAccommodation!['price_per_adult'] ?? 0;
-                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
+                         final accPrice = widget.booking.selectedScheduleAccommodation!['price'] ?? 0;
+                         scheduleAccommodationCost += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
                        }
                     }
                     if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
@@ -6748,8 +6758,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                        ticketPrice += (widget.booking.adults * (adultP is num ? adultP.toDouble() : double.tryParse(adultP.toString()) ?? 0)) +
                                       (widget.booking.children * (childP is num ? childP.toDouble() : double.tryParse(childP.toString()) ?? 0));
                        if (widget.booking.selectedReturnScheduleAccommodation != null) {
-                         final accPrice = widget.booking.selectedReturnScheduleAccommodation!['price_per_adult'] ?? 0;
-                         ticketPrice += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
+                         final accPrice = widget.booking.selectedReturnScheduleAccommodation!['price'] ?? 0;
+                         scheduleAccommodationCost += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
                        }
                     }
                     
@@ -6792,7 +6802,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     int travelers = widget.booking.adults + widget.booking.children;
                     double calculationFee = (travelers * _feePerPerson) + (accommodationCost > 0 ? _feePerAccommodation : 0);
                     
-                    double subtotal = ticketPrice + vehicleCost + accommodationCost + calculationFee + extraBaggageCost + _transactionFee - passengerDiscount;
+                    double subtotal = ticketPrice + scheduleAccommodationCost + vehicleCost + accommodationCost + calculationFee + extraBaggageCost + _transactionFee - passengerDiscount;
                     if (subtotal < 0) subtotal = 0.0;
 
                     // Voucher and points are blocked when promo ticket is active
@@ -6808,13 +6818,14 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                     
                     final finalTotal = (totalBeforePoints - pointsDiscount) > 0 ? (totalBeforePoints - pointsDiscount) : 0.0;
-                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost - _transactionFee).clamp(0.0, double.infinity);
+                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost - scheduleAccommodationCost - _transactionFee).clamp(0.0, double.infinity);
                     
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _SummarySection(title: 'Payment Summary', children: [
                           _SummaryRow('Base Fare', '₱${ticketPrice.toStringAsFixed(2)}'),
+                          if (scheduleAccommodationCost > 0) _SummaryRow('Accommodation', '₱${scheduleAccommodationCost.toStringAsFixed(2)}'),
                           if (passengerDiscount > 0) _SummaryRow('Passenger Discount', '-₱${passengerDiscount.toStringAsFixed(2)}'),
                           if (vehicleCost > 0) _SummaryRow('Vehicle Freight', '₱${vehicleCost.toStringAsFixed(2)}'),
                           if (accommodationCost > 0) _SummaryRow('Stay', '₱${accommodationCost.toStringAsFixed(2)}'),
