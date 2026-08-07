@@ -1832,7 +1832,7 @@
                             
                             <div class="mt-4">
                                 <h4 class="text-sm font-bold text-slate-900 mb-1">Other Discounts: PWDs, Students, and Medal of Valor Awardees</h4>
-                                <p class="mb-2">Persons with Disabilities (PWDs), students, and Medal of Valor awardees may need to visit Amiga Travel Agency Services corporate ticketing outlets or authorized retail outlets to request special discounts.</p>
+                                <p class="mb-2">Persons with Disabilities (PWDs), students, and Medal of Valor awardees may need to contact Amiga Gracia Travel Services office to request and process their applicable special discounts.</p>
                                 <p>These discounts apply to the base rate only and generally do not apply to discounted or promotional fares.</p>
                             </div>
                         </div>
@@ -1840,10 +1840,10 @@
                         <!-- Return, Refund, and Revalidation Policy -->
                         <div>
                             <h3 class="text-base font-bold text-slate-900 mb-2">Return, Refund, and Revalidation Policy</h3>
-                            <p class="mb-2">Customers may send refund requests to the official Amiga Travel Agency Services support email using the registered transaction email address. The support email should be configurable via the application settings.</p>
+                            <p class="mb-2">Customers may send refund requests to the official Amiga Gracia Travel Services support email using the registered transaction email address. The support email should be configurable via the application settings.</p>
                             <p class="mb-2">Only original eTickets that have not been boarded, remain within ticket validity, and have not undergone rebooking may be eligible for processing.</p>
                             <p class="mb-2">For wallet and credit-card paid transactions, refund requests may be accommodated by email from Monday to Friday, regular business days only, between 8:00 AM and 4:00 PM. Requests must be sent at least two regular days before ticket expiry.</p>
-                            <p class="mb-2">For cash and ATM-paid bookings, refunds must be processed through Amiga Travel Agency Services corporate ticketing outlets.</p>
+                            <p class="mb-2">For cash and ATM-paid bookings, refunds must be processed through Amiga Gracia Travel Services corporate ticketing outlets.</p>
                             <p class="mb-2">For direct refund requests at a corporate ticketing outlet, the account holder or passenger must submit the complete itinerary and present a valid government-issued ID.</p>
                             <p class="mb-2">If an account holder or passenger authorizes a representative, the representative must present:</p>
                             <ul class="list-disc pl-5 space-y-1 mb-2">
@@ -1853,22 +1853,22 @@
                             </ul>
                             <p class="mb-2">Refunds are subject to the following surcharge:</p>
                             <ul class="list-disc pl-5 space-y-1 mb-2">
-                                <li>Before vessel departure: &#8369;600.00 plus the applicable Web Admin Fee per ticket.</li>
+                                <li>Before vessel departure: &#8369;600.00 plus the applicable Web Admin Fee and Transaction Fee per ticket.</li>
                             </ul>
                             <p class="mb-2">No partial refunds are available for tickets purchased under room rates. Refunds are released only after surrendering all tickets issued for the relevant room.</p>
                             <p class="mb-2">Unused and unscanned eTickets may be revalidated during the ticket-validity period. Revalidation means changing ticket details other than the passenger name or age, and the trip origin or destination. Revalidation is processed only through corporate ticketing outlets. Passengers must present the eTicket Itinerary Receipt and a valid ID.</p>
                             <p class="mb-2">Revalidation is subject to the following surcharge:</p>
                             <ul class="list-disc pl-5 space-y-1 mb-2">
-                                <li>Before vessel departure: &#8369;600.00 + &#8369;36.00 revalidation fee + fare difference.</li>
+                                <li>Before vessel departure: 15% Surcharge + &#8369;150.00 revalidation fee + fare difference.</li>
                             </ul>
                             <p class="mb-2">Refund and revalidation surcharges may be waived if a trip is affected by typhoon, force majeure, technical problems, emergency or extended dry-docking, preventive maintenance, or carrier-initiated trip changes.</p>
-                            <p class="mb-2">The Web Admin Fee is non-refundable.</p>
+                            <p class="mb-2">The Web Admin Fee and Transaction Fee is non-refundable.</p>
                             <p>Ticket validity ends on the date and time of departure printed on the ticket.</p>
                         </div>
                         
                         <!-- Final Notice -->
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                            <p class="text-sm text-slate-700 font-medium">These terms may be updated by Amiga Travel Agency Services. Please review the current version before each booking.</p>
+                            <p class="text-sm text-slate-700 font-medium">These terms may be updated by Amiga Gracia Travel Services. Please review the current version before each booking.</p>
                         </div>
                     </div>
                 </div>
@@ -1911,12 +1911,12 @@
         <div x-data="{ accepted: @entangle('hasAcceptedPrivacy'), isSubmitting: @entangle('isSubmittingBooking'), scrolledToBottom: false }" x-init="initBookingModal($el); $nextTick(() => { const el = $refs.content; if (el) { this.scrolledToBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24; } })" class="fixed inset-x-0 top-20 bottom-0 z-[100] flex items-center justify-center px-4 pb-4 pt-6 bg-slate-900/60 backdrop-blur-sm">
             <div class="w-full max-w-2xl max-h-[calc(100vh-5rem)] overflow-hidden bg-white rounded-2xl shadow-2xl flex flex-col">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-                    <h2 class="text-xl font-bold text-slate-900">Amiga Gracia Travel Agency Data Privacy Policy</h2>
+                    <h2 class="text-xl font-bold text-slate-900">Amiga Gracia Travel Services Data Privacy Policy</h2>
                 </div>
 
                 <div x-ref="content" x-on:scroll.throttle.100ms="scrolledToBottom = $event.target.scrollTop + $event.target.clientHeight >= $event.target.scrollHeight - 24" class="flex-1 overflow-y-auto px-6 py-4">
                     <p class="text-sm text-slate-700 mb-6">
-                        Please review how Amiga Travel Agency collects, stores, and protects your personal data before continuing with your booking.
+                        Please review how Amiga Gracia Travel Services collects, stores, and protects your personal data before continuing with your booking.
                     </p>
 
                     <div class="space-y-6 text-sm text-slate-700">

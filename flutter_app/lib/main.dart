@@ -84,7 +84,9 @@ class UserSession {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final version = packageInfo.version.trim();
-      final buildNumber = packageInfo.buildNumber.trim().isEmpty ? '0' : packageInfo.buildNumber.trim();
+      final buildNumber = packageInfo.buildNumber.trim().isEmpty
+          ? '0'
+          : packageInfo.buildNumber.trim();
       installedAppVersion = '$version+$buildNumber';
     } catch (_) {
       installedAppVersion = appVersion;
@@ -111,7 +113,9 @@ class UserSession {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final version = packageInfo.version.trim();
-      final buildNumber = packageInfo.buildNumber.trim().isEmpty ? '0' : packageInfo.buildNumber.trim();
+      final buildNumber = packageInfo.buildNumber.trim().isEmpty
+          ? '0'
+          : packageInfo.buildNumber.trim();
       installedAppVersion = '$version+$buildNumber';
     } catch (_) {
       installedAppVersion = appVersion;
@@ -125,7 +129,8 @@ class UserSession {
     await prefs.setString('username', username);
     await prefs.setString('email', email);
     await prefs.setString('phone', phone);
-    if (referralCode != null) await prefs.setString('referralCode', referralCode!);
+    if (referralCode != null)
+      await prefs.setString('referralCode', referralCode!);
     await prefs.setString('token', token);
     await prefs.setString('lookupToken', lookupToken);
     await prefs.setInt('graciaPoints', graciaPoints);
@@ -133,7 +138,7 @@ class UserSession {
     await prefs.setInt('spendThreshold', spendThreshold);
   }
 
-    static Future<void> clear() async {
+  static Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('isLoggedIn');
     await prefs.remove('isEmailVerified');
@@ -198,7 +203,9 @@ class _AppVersion implements Comparable<_AppVersion> {
 
   @override
   int compareTo(_AppVersion other) {
-    for (var i = 0; i < versionParts.length || i < other.versionParts.length; i++) {
+    for (var i = 0;
+        i < versionParts.length || i < other.versionParts.length;
+        i++) {
       final a = i < versionParts.length ? versionParts[i] : 0;
       final b = i < other.versionParts.length ? other.versionParts[i] : 0;
       if (a != b) return a.compareTo(b);
@@ -212,7 +219,7 @@ class _AppVersion implements Comparable<_AppVersion> {
 // ==========================================
 class BookingData {
   static BookingData? activeSession;
-  
+
   String mode = 'ferry'; // ferry | airline
   String tripType = 'one_way';
   String? operator;
@@ -225,7 +232,7 @@ class BookingData {
 
   // Step 2 — Schedule
   bool hasExtraBaggage = false;
-  int? extraBaggageKg;       // selected kg (e.g. 10, 20, 25, 30)
+  int? extraBaggageKg; // selected kg (e.g. 10, 20, 25, 30)
   double extraBaggagePrice = 0.0; // price per pax for the selected kg
   String? extraBaggageType;
   String? extraBaggageSpecify;
@@ -234,7 +241,7 @@ class BookingData {
   Map<String, dynamic>? selectedTransportClass;
   int? selectedScheduleAccommodationId;
   Map<String, dynamic>? selectedScheduleAccommodation;
-  
+
   Map<String, dynamic>? selectedReturnSchedule;
   int? selectedReturnScheduleAccommodationId;
   Map<String, dynamic>? selectedReturnScheduleAccommodation;
@@ -265,7 +272,8 @@ class BookingData {
 
   // Voucher
   String? voucherCode;
-  Map<String, dynamic>? voucherData; // {name, discount_type, discount_value, eligible_scope, discount_amount, final_total}
+  Map<String, dynamic>?
+      voucherData; // {name, discount_type, discount_value, eligible_scope, discount_amount, final_total}
 
   // Promotional ticket (promo price applied when schedule has an active promo)
   int? promotionalTicketId;
@@ -273,7 +281,7 @@ class BookingData {
 
   // Pricing
   double totalPrice = 0;
-  
+
   // State restoration
   int savedStep = 0;
 
@@ -299,8 +307,10 @@ class BookingData {
       'selectedScheduleAccommodationId': selectedScheduleAccommodationId,
       'selectedScheduleAccommodation': selectedScheduleAccommodation,
       'selectedReturnSchedule': selectedReturnSchedule,
-      'selectedReturnScheduleAccommodationId': selectedReturnScheduleAccommodationId,
-      'selectedReturnScheduleAccommodation': selectedReturnScheduleAccommodation,
+      'selectedReturnScheduleAccommodationId':
+          selectedReturnScheduleAccommodationId,
+      'selectedReturnScheduleAccommodation':
+          selectedReturnScheduleAccommodation,
       'hasVehicle': hasVehicle,
       'selectedVehicleRateId': selectedVehicleRateId,
       'vehicleType': vehicleType,
@@ -341,17 +351,31 @@ class BookingData {
     b.extraBaggagePrice = (json['extraBaggagePrice'] ?? 0.0).toDouble();
     b.extraBaggageType = json['extraBaggageType'];
     b.extraBaggageSpecify = json['extraBaggageSpecify'];
-    
-    b.selectedSchedule = json['selectedSchedule'] != null ? Map<String, dynamic>.from(json['selectedSchedule']) : null;
+
+    b.selectedSchedule = json['selectedSchedule'] != null
+        ? Map<String, dynamic>.from(json['selectedSchedule'])
+        : null;
     b.selectedTransportClassId = json['selectedTransportClassId'];
-    b.selectedTransportClass = json['selectedTransportClass'] != null ? Map<String, dynamic>.from(json['selectedTransportClass']) : null;
+    b.selectedTransportClass = json['selectedTransportClass'] != null
+        ? Map<String, dynamic>.from(json['selectedTransportClass'])
+        : null;
     b.selectedScheduleAccommodationId = json['selectedScheduleAccommodationId'];
-    b.selectedScheduleAccommodation = json['selectedScheduleAccommodation'] != null ? Map<String, dynamic>.from(json['selectedScheduleAccommodation']) : null;
-    
-    b.selectedReturnSchedule = json['selectedReturnSchedule'] != null ? Map<String, dynamic>.from(json['selectedReturnSchedule']) : null;
-    b.selectedReturnScheduleAccommodationId = json['selectedReturnScheduleAccommodationId'];
-    b.selectedReturnScheduleAccommodation = json['selectedReturnScheduleAccommodation'] != null ? Map<String, dynamic>.from(json['selectedReturnScheduleAccommodation']) : null;
-    
+    b.selectedScheduleAccommodation =
+        json['selectedScheduleAccommodation'] != null
+            ? Map<String, dynamic>.from(json['selectedScheduleAccommodation'])
+            : null;
+
+    b.selectedReturnSchedule = json['selectedReturnSchedule'] != null
+        ? Map<String, dynamic>.from(json['selectedReturnSchedule'])
+        : null;
+    b.selectedReturnScheduleAccommodationId =
+        json['selectedReturnScheduleAccommodationId'];
+    b.selectedReturnScheduleAccommodation =
+        json['selectedReturnScheduleAccommodation'] != null
+            ? Map<String, dynamic>.from(
+                json['selectedReturnScheduleAccommodation'])
+            : null;
+
     b.hasVehicle = json['hasVehicle'] ?? false;
     b.selectedVehicleRateId = json['selectedVehicleRateId'];
     b.vehicleType = json['vehicleType'] ?? '';
@@ -361,31 +385,37 @@ class BookingData {
     b.vehicleDriverMiddleName = json['vehicleDriverMiddleName'] ?? '';
     b.vehicleDriverLastName = json['vehicleDriverLastName'] ?? '';
     b.vehicleDriverBirthday = json['vehicleDriverBirthday'] ?? '';
-    
+
     if (json['passengers'] != null) {
-      b.passengers = List<Map<String, dynamic>>.from(json['passengers'].map((x) => Map<String, dynamic>.from(x)));
+      b.passengers = List<Map<String, dynamic>>.from(
+          json['passengers'].map((x) => Map<String, dynamic>.from(x)));
     }
-    
+
     if (json['selectedAccommodationIds'] != null) {
-      b.selectedAccommodationIds = List<int>.from(json['selectedAccommodationIds']);
+      b.selectedAccommodationIds =
+          List<int>.from(json['selectedAccommodationIds']);
     }
     if (json['availableAccommodations'] != null) {
-      b.availableAccommodations = List<Map<String, dynamic>>.from(json['availableAccommodations'].map((x) => Map<String, dynamic>.from(x)));
+      b.availableAccommodations = List<Map<String, dynamic>>.from(
+          json['availableAccommodations']
+              .map((x) => Map<String, dynamic>.from(x)));
     }
-    
+
     b.clientName = json['clientName'] ?? '';
     b.clientEmail = json['clientEmail'] ?? '';
     b.clientPhone = json['clientPhone'] ?? '';
     b.voucherCode = json['voucherCode'];
-    b.voucherData = json['voucherData'] != null ? Map<String, dynamic>.from(json['voucherData']) : null;
+    b.voucherData = json['voucherData'] != null
+        ? Map<String, dynamic>.from(json['voucherData'])
+        : null;
     b.promotionalTicketId = json['promotionalTicketId'];
     b.usePromoTicket = json['usePromoTicket'] ?? true;
     b.totalPrice = (json['totalPrice'] ?? 0.0).toDouble();
     b.savedStep = json['savedStep'] ?? 0;
-    
+
     return b;
   }
-  
+
   Future<void> saveToPrefs(int currentStep) async {
     savedStep = currentStep;
     final prefs = await SharedPreferences.getInstance();
@@ -426,7 +456,9 @@ List<dynamic> parseAndFilterSchedules(dynamic raw, [String? selectedDate]) {
     try {
       String timeStr = depTimeStr.toString();
       DateTime dt;
-      if (timeStr.length == 8 && selectedDate != null && selectedDate.isNotEmpty) {
+      if (timeStr.length == 8 &&
+          selectedDate != null &&
+          selectedDate.isNotEmpty) {
         dt = DateTime.parse('$selectedDate $timeStr').toLocal();
       } else {
         dt = DateTime.parse(timeStr).toLocal();
@@ -447,7 +479,8 @@ class GlobalUpdateWrapper extends StatefulWidget {
   State<GlobalUpdateWrapper> createState() => _GlobalUpdateWrapperState();
 }
 
-class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsBindingObserver {
+class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper>
+    with WidgetsBindingObserver {
   bool _isChecking = false;
 
   @override
@@ -466,9 +499,11 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _checkVersionAndPrompt();
-    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       if (BookingData.activeSession != null) {
-        BookingData.activeSession!.saveToPrefs(BookingData.activeSession!.savedStep);
+        BookingData.activeSession!
+            .saveToPrefs(BookingData.activeSession!.savedStep);
       }
     }
   }
@@ -478,20 +513,24 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper> with WidgetsB
     _isChecking = true;
     try {
       await UserSession.refreshInstalledAppVersion();
-      final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version')).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version'))
+          .timeout(const Duration(seconds: 5));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
         final forceUpdate = data['force_update'] as bool? ?? true;
-        if (forceUpdate && UserSession.isUpdateRequired(latestVersion) && mounted) {
+        if (forceUpdate &&
+            UserSession.isUpdateRequired(latestVersion) &&
+            mounted) {
           final context = navigatorKey.currentContext;
           if (context != null) {
             await UpdateChecker.showUpdateDialog(context, latestVersion);
           }
         }
       }
-    } catch (_) {}
-    finally {
+    } catch (_) {
+    } finally {
       _isChecking = false;
     }
   }
@@ -504,7 +543,8 @@ class UpdateChecker {
   static String? _lastPromptedVersion;
   static bool _dialogAlreadyVisible = false;
 
-  static Future<void> showUpdateDialog(BuildContext context, String latestVersion) async {
+  static Future<void> showUpdateDialog(
+      BuildContext context, String latestVersion) async {
     if (_dialogAlreadyVisible && _lastPromptedVersion == latestVersion) {
       return;
     }
@@ -526,7 +566,8 @@ class UpdateChecker {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
+                  Text(
+                      'A new version ($latestVersion) of Amiga Gracia is available. Please update to continue using the app.'),
                   if (isDownloading) ...[
                     const SizedBox(height: 20),
                     LinearProgressIndicator(value: progress, color: kGreen),
@@ -535,7 +576,9 @@ class UpdateChecker {
                   ],
                   if (dlError.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    Text(dlError, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                    Text(dlError,
+                        style:
+                            const TextStyle(color: Colors.red, fontSize: 12)),
                   ]
                 ],
               ),
@@ -548,14 +591,18 @@ class UpdateChecker {
                         dlError = '';
                       });
                       try {
-                        final apkUrl = '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
+                        final apkUrl =
+                            '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
                         final request = http.Request('GET', Uri.parse(apkUrl));
                         final response = await http.Client().send(request);
-                        if (response.statusCode != 200) throw Exception('Server returned ${response.statusCode}');
+                        if (response.statusCode != 200)
+                          throw Exception(
+                              'Server returned ${response.statusCode}');
 
                         final contentLength = response.contentLength ?? 1;
                         final dir = await getExternalStorageDirectory();
-                        final file = File('${dir!.path}/update_$latestVersion.apk');
+                        final file =
+                            File('${dir!.path}/update_$latestVersion.apk');
                         final sink = file.openWrite();
 
                         int bytes = 0;
@@ -569,11 +616,13 @@ class UpdateChecker {
                         // Persist the current login/session state before leaving the app for APK install.
                         await UserSession.save();
                         if (BookingData.activeSession != null) {
-                          await BookingData.activeSession!.saveToPrefs(BookingData.activeSession!.savedStep);
+                          await BookingData.activeSession!.saveToPrefs(
+                              BookingData.activeSession!.savedStep);
                         }
 
                         final result = await OpenFilex.open(file.path);
-                        if (result.type != ResultType.done) throw Exception(result.message);
+                        if (result.type != ResultType.done)
+                          throw Exception(result.message);
 
                         if (context.mounted) {
                           Navigator.of(context, rootNavigator: true).pop();
@@ -584,7 +633,8 @@ class UpdateChecker {
                         debugPrint('Download error: $e');
                         setState(() {
                           isDownloading = false;
-                          dlError = 'Failed to download update. Please try again or download from website.';
+                          dlError =
+                              'Failed to download update. Please try again or download from website.';
                         });
                       }
                     },
@@ -666,9 +716,10 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
 
     // 2. Check for app updates
     try {
-      final response = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version'))
+      final response = await http
+          .get(Uri.parse('${UserSession.getBaseUrl()}/api/app-version'))
           .timeout(const Duration(seconds: 5));
-          
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final latestVersion = data['version'] as String;
@@ -692,7 +743,9 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => widget.isFirstLaunch ? const OnboardingScreen() : const MainScreen(),
+            builder: (_) => widget.isFirstLaunch
+                ? const OnboardingScreen()
+                : const MainScreen(),
           ),
         );
       }
@@ -707,11 +760,14 @@ class _SplashLoaderScreenState extends State<SplashLoaderScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/icon/app_icon.png', width: 180, height: 180, fit: BoxFit.contain),
+            Image.asset('assets/icon/app_icon.png',
+                width: 180, height: 180, fit: BoxFit.contain),
             const SizedBox(height: 24),
             const CircularProgressIndicator(color: kGreen),
             const SizedBox(height: 16),
-            const Text('Connecting to Amiga Travel...', style: TextStyle(color: kGreen, fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Connecting to Amiga Travel...',
+                style: TextStyle(
+                    color: kGreen, fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -733,17 +789,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<Map<String, String>> _slides = [
     {
       'title': 'Welcome to Amiga Gracia',
-      'desc': 'The fastest way to book your ferry, flight, and tour packages online.',
+      'desc':
+          'The fastest way to book your ferry, flight, and tour packages online.',
       'icon': 'explore',
     },
     {
       'title': 'Hassle-Free Travel',
-      'desc': 'Skip the lines at the terminal. Pay securely via GCash or Bank Transfer directly in the app.',
+      'desc':
+          'Skip the lines at the terminal. Pay securely via GCash or Bank Transfer directly in the app.',
       'icon': 'payments',
     },
     {
       'title': 'Exclusive Promos & Discounts',
-      'desc': 'Get access to special rates for students, seniors, PWDs, and early bookings.',
+      'desc':
+          'Get access to special rates for students, seniors, PWDs, and early bookings.',
       'icon': 'local_offer',
     },
   ];
@@ -752,7 +811,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('first_launch', false);
     if (mounted) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const MainScreen()));
     }
   }
 
@@ -781,7 +841,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          i == 0 ? Icons.explore : i == 1 ? Icons.payments : Icons.local_offer,
+                          i == 0
+                              ? Icons.explore
+                              : i == 1
+                                  ? Icons.payments
+                                  : Icons.local_offer,
                           size: 100,
                           color: kGreen,
                         ),
@@ -789,13 +853,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           _slides[i]['title']!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: kSlate800),
+                          style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: kSlate800),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           _slides[i]['desc']!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16, color: kSlate600, height: 1.5),
+                          style: const TextStyle(
+                              fontSize: 16, color: kSlate600, height: 1.5),
                         ),
                       ],
                     ),
@@ -811,7 +879,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   height: 8,
                   width: _currentPage == i ? 24 : 8,
-                  decoration: BoxDecoration(color: _currentPage == i ? kGreen : kSlate200, borderRadius: BorderRadius.circular(4)),
+                  decoration: BoxDecoration(
+                      color: _currentPage == i ? kGreen : kSlate200,
+                      borderRadius: BorderRadius.circular(4)),
                 );
               }),
             ),
@@ -824,7 +894,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_currentPage < _slides.length - 1) {
-                      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut);
                     } else {
                       _finishOnboarding();
                     }
@@ -832,11 +904,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPink,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   child: Text(
                     _currentPage == _slides.length - 1 ? 'Get Started' : 'Next',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -885,8 +959,10 @@ class _MainScreenState extends State<MainScreen> {
           setState(() {
             UserSession.graciaPoints = data['current_points'] ?? 0;
             if (data['active_rule'] != null) {
-              UserSession.pointsAwarded = data['active_rule']['points_awarded'] ?? 0;
-              UserSession.spendThreshold = data['active_rule']['spend_threshold_centavos'] ?? 0;
+              UserSession.pointsAwarded =
+                  data['active_rule']['points_awarded'] ?? 0;
+              UserSession.spendThreshold =
+                  data['active_rule']['spend_threshold_centavos'] ?? 0;
             }
           });
           UserSession.save();
@@ -902,7 +978,8 @@ class _MainScreenState extends State<MainScreen> {
         final notifData = jsonDecode(notifRes.body);
         if (notifRes.statusCode == 200 && notifData['status'] == 'success') {
           setState(() {
-            UserSession.unreadNotificationsCount = notifData['unread_count'] ?? 0;
+            UserSession.unreadNotificationsCount =
+                notifData['unread_count'] ?? 0;
           });
         }
       } catch (e) {
@@ -939,7 +1016,8 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: AppDrawer(onLogout: _handleLogout, onProfileUpdated: () => setState(() {})),
+      drawer: AppDrawer(
+          onLogout: _handleLogout, onProfileUpdated: () => setState(() {})),
       appBar: AppBar(
         leading: Stack(
           clipBehavior: Clip.none,
@@ -955,7 +1033,8 @@ class _MainScreenState extends State<MainScreen> {
                 child: Container(
                   width: 10,
                   height: 10,
-                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                      color: Colors.red, shape: BoxShape.circle),
                 ),
               ),
           ],
@@ -974,7 +1053,10 @@ class _MainScreenState extends State<MainScreen> {
             const SizedBox(width: 10),
             const Text(
               'AMIGA GRACIA',
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.2),
+              style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  letterSpacing: 1.2),
             ),
           ],
         ),
@@ -984,23 +1066,33 @@ class _MainScreenState extends State<MainScreen> {
               padding: const EdgeInsets.only(right: 8.0),
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())).then((_) => setState((){}));
+                  Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const NotificationsScreen()))
+                      .then((_) => setState(() {}));
                 },
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    const Icon(Icons.notifications_outlined, color: Colors.white, size: 24),
+                    const Icon(Icons.notifications_outlined,
+                        color: Colors.white, size: 24),
                     if (UserSession.unreadNotificationsCount > 0)
                       Positioned(
                         right: 0,
                         top: 10,
                         child: Container(
                           padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                          constraints: const BoxConstraints(minWidth: 12, minHeight: 12),
+                          decoration: const BoxDecoration(
+                              color: Colors.red, shape: BoxShape.circle),
+                          constraints:
+                              const BoxConstraints(minWidth: 12, minHeight: 12),
                           child: Text(
                             '${UserSession.unreadNotificationsCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -1013,13 +1105,20 @@ class _MainScreenState extends State<MainScreen> {
               padding: const EdgeInsets.only(right: 16.0),
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GraciaPointsScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const GraciaPointsScreen()));
                 },
                 child: Row(
                   children: [
                     const Icon(Icons.star_rounded, color: kPink, size: 20),
                     const SizedBox(width: 6),
-                    Text('${UserSession.graciaPoints} pts', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kPink)),
+                    Text('${UserSession.graciaPoints} pts',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: kPink)),
                   ],
                 ),
               ),
@@ -1036,7 +1135,8 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SchedulesScreen(),
           TravelScreen(initialMode: _travelMode),
-          VouchersScreen(onUseVoucher: () => setState(() => _selectedIndex = 2)),
+          VouchersScreen(
+              onUseVoucher: () => setState(() => _selectedIndex = 2)),
           ActivityScreen(onLoginSuccess: () => setState(() {})),
         ],
       ),
@@ -1098,7 +1198,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   List<dynamic> _promotions = [];
   late TabController _tourTabController;
   final PageController _promoPageController = PageController();
@@ -1130,38 +1231,57 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _resumeBooking() {
     if (_savedSession == null) return;
     BookingData.activeSession = _savedSession;
-    
+
     PageRouteBuilder buildRoute(Widget screen, bool animate) {
       return PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => screen,
-        transitionDuration: animate ? const Duration(milliseconds: 300) : Duration.zero,
-        reverseTransitionDuration: animate ? const Duration(milliseconds: 300) : Duration.zero,
-        transitionsBuilder: animate 
+        transitionDuration:
+            animate ? const Duration(milliseconds: 300) : Duration.zero,
+        reverseTransitionDuration:
+            animate ? const Duration(milliseconds: 300) : Duration.zero,
+        transitionsBuilder: animate
             ? (context, animation, secondaryAnimation, child) {
                 const begin = Offset(1.0, 0.0);
                 const end = Offset.zero;
                 const curve = Curves.ease;
-                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                return SlideTransition(position: animation.drive(tween), child: child);
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+                return SlideTransition(
+                    position: animation.drive(tween), child: child);
               }
             : (context, animation, secondaryAnimation, child) => child,
       );
     }
 
     if (_savedSession!.savedStep >= 0) {
-      Navigator.push(context, buildRoute(TravelScreen(initialMode: _savedSession!.mode), _savedSession!.savedStep == 0));
+      Navigator.push(
+          context,
+          buildRoute(TravelScreen(initialMode: _savedSession!.mode),
+              _savedSession!.savedStep == 0));
     }
     if (_savedSession!.savedStep >= 1) {
-      Navigator.push(context, buildRoute(ScheduleSelectScreen(booking: _savedSession!), _savedSession!.savedStep == 1));
+      Navigator.push(
+          context,
+          buildRoute(ScheduleSelectScreen(booking: _savedSession!),
+              _savedSession!.savedStep == 1));
     }
     if (_savedSession!.savedStep >= 2) {
-      Navigator.push(context, buildRoute(DiscountScreen(booking: _savedSession!), _savedSession!.savedStep == 2));
+      Navigator.push(
+          context,
+          buildRoute(DiscountScreen(booking: _savedSession!),
+              _savedSession!.savedStep == 2));
     }
     if (_savedSession!.savedStep >= 3) {
-      Navigator.push(context, buildRoute(StayScreen(booking: _savedSession!), _savedSession!.savedStep == 3));
+      Navigator.push(
+          context,
+          buildRoute(StayScreen(booking: _savedSession!),
+              _savedSession!.savedStep == 3));
     }
     if (_savedSession!.savedStep >= 4) {
-      Navigator.push(context, buildRoute(BookingSubmitScreen(booking: _savedSession!), _savedSession!.savedStep == 4));
+      Navigator.push(
+          context,
+          buildRoute(BookingSubmitScreen(booking: _savedSession!),
+              _savedSession!.savedStep == 4));
     }
   }
 
@@ -1178,16 +1298,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         final List<dynamic> data = jsonDecode(res.body);
         final domestic = <Map<String, dynamic>>[];
         final intl = <Map<String, dynamic>>[];
-        
+
         for (var t in data) {
-          final isDomestic = t['country'] != null && t['country'].toString().toLowerCase().contains('philippines');
+          final isDomestic = t['country'] != null &&
+              t['country'].toString().toLowerCase().contains('philippines');
           final formatted = {
             'name': t['tour_name'] ?? t['package_name'] ?? 'Tour',
             'desc': t['destinations'] ?? '${t['duration'] ?? ''}',
-            'price': t['price_per_pax'] != null ? '₱${t['price_per_pax']}' : 'Contact us',
+            'price': t['price_per_pax'] != null
+                ? '₱${t['price_per_pax']}'
+                : 'Contact us',
             'tag': t['country'] ?? 'Tour',
             'tagColor': isDomestic ? kGreen : kPink,
-            'gradient': isDomestic ? [kGreen, const Color(0xFF0e2709)] : [kPink, const Color(0xFF880E4F)],
+            'gradient': isDomestic
+                ? [kGreen, const Color(0xFF0e2709)]
+                : [kPink, const Color(0xFF880E4F)],
             'image': t['image'],
           };
           if (isDomestic) {
@@ -1196,7 +1321,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             intl.add(formatted);
           }
         }
-        
+
         if (mounted) {
           setState(() {
             _domesticPackages = domestic;
@@ -1223,13 +1348,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             IconData icon = Icons.check_circle_outline;
             Color color = kGreen;
             final t = (s['title'] ?? '').toString().toLowerCase();
-            if (t.contains('2go')) { icon = Icons.directions_boat; color = kPink; }
-            else if (t.contains('starlite') || t.contains('supercat')) { icon = Icons.sailing; color = kGreen; }
-            else if (t.contains('air')) { icon = Icons.flight; color = const Color(0xFF1565C0); }
-            else if (t.contains('tour')) { icon = Icons.landscape; color = const Color(0xFF7B1FA2); }
-            else if (t.contains('training') || t.contains('school')) { icon = Icons.school; color = const Color(0xFFF57C00); }
-            else if (t.contains('group')) { icon = Icons.groups; color = const Color(0xFF00897B); }
-            
+            if (t.contains('2go')) {
+              icon = Icons.directions_boat;
+              color = kPink;
+            } else if (t.contains('starlite') || t.contains('supercat')) {
+              icon = Icons.sailing;
+              color = kGreen;
+            } else if (t.contains('air')) {
+              icon = Icons.flight;
+              color = const Color(0xFF1565C0);
+            } else if (t.contains('tour')) {
+              icon = Icons.landscape;
+              color = const Color(0xFF7B1FA2);
+            } else if (t.contains('training') || t.contains('school')) {
+              icon = Icons.school;
+              color = const Color(0xFFF57C00);
+            } else if (t.contains('group')) {
+              icon = Icons.groups;
+              color = const Color(0xFF00897B);
+            }
+
             return {
               'title': s['title'] ?? 'Service',
               'desc': s['description'] ?? '',
@@ -1237,7 +1375,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               'color': color,
             };
           }).toList();
-          
+
           if (mounted) setState(() => _services = parsed);
         }
       }
@@ -1265,8 +1403,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           setState(() => _promotions = data['promotions']);
         }
       }
-    } catch (_) {}
-    finally {
+    } catch (_) {
+    } finally {
       setState(() => _promoLoading = false);
     }
   }
@@ -1291,16 +1429,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [kGreen, Color(0xFF0e2709)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                      gradient: const LinearGradient(
+                          colors: [kGreen, Color(0xFF0e2709)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight),
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: kGreen.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 6))],
+                      boxShadow: [
+                        BoxShadow(
+                            color: kGreen.withValues(alpha: 0.4),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6))
+                      ],
                     ),
                     child: Stack(
                       children: [
                         const Positioned(
                           right: -10,
                           bottom: -10,
-                          child: Opacity(opacity: 0.08, child: Icon(Icons.travel_explore, size: 180, color: Colors.white)),
+                          child: Opacity(
+                              opacity: 0.08,
+                              child: Icon(Icons.travel_explore,
+                                  size: 180, color: Colors.white)),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(22.0),
@@ -1309,12 +1458,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(color: kPink, borderRadius: BorderRadius.circular(20)),
-                                child: const Text('Your journey deserves more than a destination - it deserves an exceptional experience', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                    color: kPink,
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: const Text(
+                                    'Your journey deserves more than a destination - it deserves an exceptional experience',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(height: 10),
-                              const Text('Welcome to Amiga Gracia\nTravel Services', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                              const Text(
+                                  'Welcome to Amiga Gracia\nTravel Services',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.2)),
                             ],
                           ),
                         ),
@@ -1327,11 +1490,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   final imgUrl = promo['image_url'] as String?;
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: kSlate100),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: kSlate100),
                     clipBehavior: Clip.antiAlias,
                     child: imgUrl != null
-                        ? Image.network(imgUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.image, color: kSlate400, size: 40)))
-                        : const Center(child: Icon(Icons.image, color: kSlate400, size: 40)),
+                        ? Image.network(imgUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Center(
+                                child: Icon(Icons.image,
+                                    color: kSlate400, size: 40)))
+                        : const Center(
+                            child:
+                                Icon(Icons.image, color: kSlate400, size: 40)),
                   );
                 }
               },
@@ -1348,7 +1519,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   height: 6,
                   width: _currentPromoPage == i ? 18 : 6,
-                  decoration: BoxDecoration(color: _currentPromoPage == i ? kGreen : kSlate200, borderRadius: BorderRadius.circular(3)),
+                  decoration: BoxDecoration(
+                      color: _currentPromoPage == i ? kGreen : kSlate200,
+                      borderRadius: BorderRadius.circular(3)),
                 );
               }),
             ),
@@ -1367,9 +1540,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('You have a pending booking in progress.', style: TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text('You have a pending booking in progress.',
+                      style: TextStyle(
+                          color: kPink,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14)),
                   const SizedBox(height: 4),
-                  const Text('Return to complete your booking or cancel the draft to start a new one.', style: TextStyle(color: kSlate600, fontSize: 12)),
+                  const Text(
+                      'Return to complete your booking or cancel the draft to start a new one.',
+                      style: TextStyle(color: kSlate600, fontSize: 12)),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -1379,10 +1558,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           backgroundColor: kPink,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24)),
                         ),
-                        child: const Text('Return to booking', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const Text('Return to booking',
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton(
@@ -1390,10 +1573,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         style: OutlinedButton.styleFrom(
                           foregroundColor: kPink,
                           side: BorderSide(color: kPink.withValues(alpha: 0.5)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24)),
                         ),
-                        child: const Text('Cancel draft', style: TextStyle(fontSize: 12)),
+                        child: const Text('Cancel draft',
+                            style: TextStyle(fontSize: 12)),
                       ),
                     ],
                   ),
@@ -1407,7 +1593,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: Card(
               color: Colors.white,
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -1415,17 +1602,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   children: [
                     const Text(
                       'Track Booking',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: kSlate800),
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       decoration: InputDecoration(
                         hintText: 'Enter your booking or tracking number',
-                        hintStyle: const TextStyle(color: kSlate400, fontSize: 13),
+                        hintStyle:
+                            const TextStyle(color: kSlate400, fontSize: 13),
                         filled: true,
                         fillColor: kSlate50,
                         suffixIcon: const Icon(Icons.search, color: kGreen),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -1447,20 +1639,32 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GraciaPointsScreen())),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const GraciaPointsScreen())),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: kSlate200),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2))
+                        ],
                       ),
                       child: const Column(
                         children: [
                           Icon(Icons.star_rounded, color: kPink, size: 28),
                           SizedBox(height: 8),
-                          Text('My Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                          Text('My Points',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: kSlate800)),
                         ],
                       ),
                     ),
@@ -1469,23 +1673,35 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VouchersScreen(onUseVoucher: () {
-                      Navigator.pop(context);
-                      widget.onBookFerry();
-                    }))),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => VouchersScreen(onUseVoucher: () {
+                                  Navigator.pop(context);
+                                  widget.onBookFerry();
+                                }))),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: kSlate200),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2))
+                        ],
                       ),
                       child: const Column(
                         children: [
                           Icon(Icons.local_activity, color: kGreen, size: 28),
                           SizedBox(height: 8),
-                          Text('Vouchers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                          Text('Vouchers',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: kSlate800)),
                         ],
                       ),
                     ),
@@ -1494,7 +1710,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
 
           // Quick Services
@@ -1503,7 +1719,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Quick Services', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                const Text('Quick Services',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800)),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -1540,14 +1760,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: GestureDetector(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RequestBookingScreen())),
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const RequestBookingScreen())),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [kGreen, Color(0xFF14400e)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  gradient: const LinearGradient(
+                      colors: [kGreen, Color(0xFF14400e)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight),
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: kGreen.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 4))],
+                  boxShadow: [
+                    BoxShadow(
+                        color: kGreen.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4))
+                  ],
                 ),
                 child: const Row(
                   children: [
@@ -1557,8 +1788,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Request Travel Booking', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                          Text('Fill out our booking request form', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text('Request Travel Booking',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15)),
+                          Text('Fill out our booking request form',
+                              style: TextStyle(
+                                  color: Colors.white70, fontSize: 12)),
                         ],
                       ),
                     ),
@@ -1580,10 +1817,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Our Services', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                    const Text('Our Services',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: kSlate800)),
                     TextButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ServicesScreen())),
-                      child: const Text('See all →', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ServicesScreen())),
+                      child: const Text('See all →',
+                          style: TextStyle(
+                              color: kPink,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -1591,48 +1839,74 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 SizedBox(
                   height: 130,
                   child: _servicesLoading
-                    ? const Center(child: CircularProgressIndicator(color: kGreen))
-                    : _services.isEmpty
-                        ? const Center(
-                            child: Text('No services configured yet.', style: TextStyle(color: kSlate400, fontSize: 13)),
-                          )
-                        : ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _services.length,
-                            itemBuilder: (context, i) {
-                              final s = _services[i];
-                              return GestureDetector(
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ServicesScreen())),
-                                child: Container(
-                                  width: 110,
-                                  margin: const EdgeInsets.only(right: 12),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: kSlate200),
-                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: (s['color'] as Color).withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(10),
+                      ? const Center(
+                          child: CircularProgressIndicator(color: kGreen))
+                      : _services.isEmpty
+                          ? const Center(
+                              child: Text('No services configured yet.',
+                                  style: TextStyle(
+                                      color: kSlate400, fontSize: 13)),
+                            )
+                          : ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _services.length,
+                              itemBuilder: (context, i) {
+                                final s = _services[i];
+                                return GestureDetector(
+                                  onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const ServicesScreen())),
+                                  child: Container(
+                                    width: 110,
+                                    margin: const EdgeInsets.only(right: 12),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: kSlate200),
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.04),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2))
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: (s['color'] as Color)
+                                                .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: Icon(s['icon'] as IconData,
+                                              color: s['color'] as Color,
+                                              size: 20),
                                         ),
-                                        child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 20),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(s['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
-                                    ],
+                                        const SizedBox(height: 8),
+                                        Text(s['title'] as String,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 11,
+                                                color: kSlate800),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
@@ -1649,23 +1923,44 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Tour Packages', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                    const Text('Tour Packages',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: kSlate800)),
                     TextButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TourPackagesScreen())),
-                      child: const Text('See all →', style: TextStyle(color: kPink, fontSize: 12, fontWeight: FontWeight.bold)),
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const TourPackagesScreen())),
+                      child: const Text('See all →',
+                          style: TextStyle(
+                              color: kPink,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 if (_toursLoading)
-                  const SizedBox(height: 150, child: Center(child: CircularProgressIndicator(color: kGreen)))
-                else if (_domesticPackages.isEmpty && _internationalPackages.isEmpty)
+                  const SizedBox(
+                      height: 150,
+                      child: Center(
+                          child: CircularProgressIndicator(color: kGreen)))
+                else if (_domesticPackages.isEmpty &&
+                    _internationalPackages.isEmpty)
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 32),
-                    decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(
+                        color: kSlate100,
+                        borderRadius: BorderRadius.circular(12)),
                     child: const Center(
-                      child: Text('Coming Soon', style: TextStyle(color: kSlate500, fontWeight: FontWeight.bold, fontSize: 16)),
+                      child: Text('Coming Soon',
+                          style: TextStyle(
+                              color: kSlate500,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16)),
                     ),
                   )
                 else
@@ -1682,8 +1977,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           labelColor: kGreen,
                           unselectedLabelColor: kSlate500,
                           indicatorSize: TabBarIndicatorSize.tab,
-                          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                          tabs: const [Tab(text: 'Domestic'), Tab(text: 'International')],
+                          labelStyle: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 12),
+                          tabs: const [
+                            Tab(text: 'Domestic'),
+                            Tab(text: 'International')
+                          ],
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -1693,7 +1992,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           controller: _tourTabController,
                           children: [
                             _PackageHorizontalList(packages: _domesticPackages),
-                            _PackageHorizontalList(packages: _internationalPackages),
+                            _PackageHorizontalList(
+                                packages: _internationalPackages),
                           ],
                         ),
                       ),
@@ -1723,14 +2023,23 @@ class _PackageHorizontalList extends StatelessWidget {
         final p = packages[i];
         final gradient = p['gradient'] as List<Color>;
         return GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TourPackagesScreen())),
+          onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const TourPackagesScreen())),
           child: Container(
             width: 170,
             margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-              boxShadow: [BoxShadow(color: gradient.first.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))],
+              gradient: LinearGradient(
+                  colors: gradient,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight),
+              boxShadow: [
+                BoxShadow(
+                    color: gradient.first.withValues(alpha: 0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4))
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -1738,16 +2047,35 @@ class _PackageHorizontalList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
-                    child: Text(p['tag'] as String, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Text(p['tag'] as String,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold)),
                   ),
                   const Spacer(),
-                  Text(p['name'] as String, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 2),
+                  Text(p['name'] as String,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13),
+                      maxLines: 2),
                   const SizedBox(height: 4),
-                  Text(p['desc'] as String, style: const TextStyle(color: Colors.white70, fontSize: 10), maxLines: 2),
+                  Text(p['desc'] as String,
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 10),
+                      maxLines: 2),
                   const SizedBox(height: 8),
-                  Text(p['price'] as String, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
+                  Text(p['price'] as String,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15)),
                 ],
               ),
             ),
@@ -1785,7 +2113,12 @@ class _ServiceCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kSlate200),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2))
+          ],
         ),
         child: Column(
           children: [
@@ -1795,9 +2128,15 @@ class _ServiceCard extends StatelessWidget {
               child: Icon(icon, color: iconColor, size: 26),
             ),
             const SizedBox(height: 10),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+            Text(label,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: kSlate800)),
             const SizedBox(height: 3),
-            Text(subtitle, style: const TextStyle(color: kSlate500, fontSize: 10), textAlign: TextAlign.center),
+            Text(subtitle,
+                style: const TextStyle(color: kSlate500, fontSize: 10),
+                textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -1827,7 +2166,8 @@ class TravelScreen extends StatefulWidget {
   State<TravelScreen> createState() => _TravelScreenState();
 }
 
-class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderStateMixin {
+class _TravelScreenState extends State<TravelScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tripTabController;
   String _mode = 'ferry';
   String? _origin;
@@ -1893,11 +2233,19 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
   @override
   void didUpdateWidget(TravelScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialMode != null && widget.initialMode != oldWidget.initialMode && widget.initialMode != _mode) {
+    if (widget.initialMode != null &&
+        widget.initialMode != oldWidget.initialMode &&
+        widget.initialMode != _mode) {
       setState(() {
         _mode = widget.initialMode!;
-        _operator = null; _operators = []; _origin = null; _destination = null; _origins = []; _destinations = [];
-        _availableDepartureDates = []; _availableReturnDates = [];
+        _operator = null;
+        _operators = [];
+        _origin = null;
+        _destination = null;
+        _origins = [];
+        _destinations = [];
+        _availableDepartureDates = [];
+        _availableReturnDates = [];
       });
       _fetchOperators();
     }
@@ -1920,7 +2268,9 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       final res = await http.get(Uri.parse('$baseUrl/api/vehicle-rates'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        if (mounted) setState(() => _vehicleRates = List<Map<String, dynamic>>.from(data['vehicle_rates']));
+        if (mounted)
+          setState(() => _vehicleRates =
+              List<Map<String, dynamic>>.from(data['vehicle_rates']));
       }
     } catch (_) {}
   }
@@ -1929,12 +2279,14 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     setState(() => _loadingOperators = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/operators?mode=$_mode'));
+      final res =
+          await http.get(Uri.parse('$baseUrl/api/operators?mode=$_mode'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _operators = List<String>.from(data['operators']);
-          if (!preserveSelections || (_operator != null && !_operators.contains(_operator))) {
+          if (!preserveSelections ||
+              (_operator != null && !_operators.contains(_operator))) {
             _operator = null;
           }
         });
@@ -1950,13 +2302,17 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     setState(() => _loadingOrigins = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
-      final res = await http.get(Uri.parse('$baseUrl/api/origins?mode=$_mode$operatorQuery'));
+      final operatorQuery = _operator != null
+          ? '&operator=${Uri.encodeComponent(_operator!)}'
+          : '';
+      final res = await http
+          .get(Uri.parse('$baseUrl/api/origins?mode=$_mode$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
           _origins = List<String>.from(data['origins']);
-          if (!preserveSelections || (_origin != null && !_origins.contains(_origin))) {
+          if (!preserveSelections ||
+              (_origin != null && !_origins.contains(_origin))) {
             _origin = null;
             _destination = null;
             _destinations = [];
@@ -1976,9 +2332,12 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     setState(() => _loadingDestinations = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
+      final operatorQuery = _operator != null
+          ? '&operator=${Uri.encodeComponent(_operator!)}'
+          : '';
       final tripType = _tripTabController.index == 1 ? 'round_trip' : 'one_way';
-      final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(origin)}&mode=$_mode&trip_type=$tripType$operatorQuery'));
+      final res = await http.get(Uri.parse(
+          '$baseUrl/api/destinations?origin=${Uri.encodeComponent(origin)}&mode=$_mode&trip_type=$tripType$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
@@ -2003,9 +2362,12 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     if (_origin == null || _destination == null) return;
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
-      
-      final res = await http.get(Uri.parse('$baseUrl/api/available-dates?origin=${Uri.encodeComponent(_origin!)}&destination=${Uri.encodeComponent(_destination!)}&mode=$_mode$operatorQuery'));
+      final operatorQuery = _operator != null
+          ? '&operator=${Uri.encodeComponent(_operator!)}'
+          : '';
+
+      final res = await http.get(Uri.parse(
+          '$baseUrl/api/available-dates?origin=${Uri.encodeComponent(_origin!)}&destination=${Uri.encodeComponent(_destination!)}&mode=$_mode$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
@@ -2013,7 +2375,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
         });
       }
 
-      final resRet = await http.get(Uri.parse('$baseUrl/api/available-dates?origin=${Uri.encodeComponent(_destination!)}&destination=${Uri.encodeComponent(_origin!)}&mode=$_mode$operatorQuery'));
+      final resRet = await http.get(Uri.parse(
+          '$baseUrl/api/available-dates?origin=${Uri.encodeComponent(_destination!)}&destination=${Uri.encodeComponent(_origin!)}&mode=$_mode$operatorQuery'));
       final dataRet = jsonDecode(resRet.body);
       if (resRet.statusCode == 200 && dataRet['status'] == 'success') {
         setState(() {
@@ -2029,9 +2392,12 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     if (_origin == null || _destination == null) return;
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
+      final operatorQuery = _operator != null
+          ? '&operator=${Uri.encodeComponent(_operator!)}'
+          : '';
       const tripType = 'round_trip';
-      final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(_origin!)}&mode=$_mode&trip_type=$tripType$operatorQuery'));
+      final res = await http.get(Uri.parse(
+          '$baseUrl/api/destinations?origin=${Uri.encodeComponent(_origin!)}&mode=$_mode&trip_type=$tripType$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         final filtered = List<String>.from(data['destinations']);
@@ -2047,7 +2413,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('No return schedule exists for this route in Round Trip mode. Please select a different destination.'),
+                content: Text(
+                    'No return schedule exists for this route in Round Trip mode. Please select a different destination.'),
                 backgroundColor: Colors.red,
                 duration: Duration(seconds: 4),
               ),
@@ -2077,7 +2444,9 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
         }
       },
       builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: kGreen, secondary: kPink)),
+        data: Theme.of(context).copyWith(
+            colorScheme:
+                const ColorScheme.light(primary: kGreen, secondary: kPink)),
         child: child!,
       ),
     );
@@ -2092,9 +2461,23 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     }
   }
 
-  String _fmt(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  String _fmt(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   String _fmtDisplay(DateTime d) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${months[d.month - 1]} ${d.day}, ${d.year}';
   }
 
@@ -2102,35 +2485,49 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
 
   void _goToSchedule() {
     if (!UserSession.isLoggedIn) {
-      showDialog(context: context, builder: (_) => AlertDialog(
-        title: const Text('Login Required'),
-        content: const Text('You must be logged in to proceed with the booking.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(onPressed: () {
-            Navigator.pop(context);
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.white,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-              builder: (modalCtx) => Padding(
-                padding: EdgeInsets.only(bottom: MediaQuery.of(modalCtx).viewInsets.bottom),
-                child: SizedBox(
-                  height: MediaQuery.of(modalCtx).size.height * 0.85,
-                  child: ActivityScreen(onLoginSuccess: () {
-                    Navigator.pop(modalCtx); // Close the ActivityScreen modal on success
-                    _goToSchedule(); // Resume the booking flow
-                  }),
-                ),
-              ),
-            );
-          }, child: const Text('Login')),
-        ],
-      ));
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: const Text('Login Required'),
+                content: const Text(
+                    'You must be logged in to proceed with the booking.'),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel')),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20))),
+                          builder: (modalCtx) => Padding(
+                            padding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(modalCtx).viewInsets.bottom),
+                            child: SizedBox(
+                              height:
+                                  MediaQuery.of(modalCtx).size.height * 0.85,
+                              child: ActivityScreen(onLoginSuccess: () {
+                                Navigator.pop(
+                                    modalCtx); // Close the ActivityScreen modal on success
+                                _goToSchedule(); // Resume the booking flow
+                              }),
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Login')),
+                ],
+              ));
       return;
     }
-    if (_origin == null || _destination == null || _departureDate == null) return;
+    if (_origin == null || _destination == null || _departureDate == null)
+      return;
     if (_tripTabController.index == 1 && _returnDate == null) return;
     final booking = BookingData()
       ..mode = _mode
@@ -2143,27 +2540,33 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
       ..adults = _adults
       ..children = _children;
 
-    final bool isStarlite = _mode == 'ferry' && (_operator?.toLowerCase().contains('starlite') ?? false);
+    final bool isStarlite = _mode == 'ferry' &&
+        (_operator?.toLowerCase().contains('starlite') ?? false);
     if (_mode == 'ferry' && _isVehicleBookingEnabled && isStarlite) {
-       booking.hasVehicle = true;
-       booking.vehiclePlateNumber = _plateCtrl.text;
-       booking.vehicleDriverFirstName = _driverFirstNameCtrl.text;
-       booking.vehicleDriverMiddleName = _driverMiddleNameCtrl.text;
-       booking.vehicleDriverLastName = _driverLastNameCtrl.text;
-       booking.vehicleDriverBirthday = _driverBirthdayCtrl.text;
-       final selected = _vehicleRates.where((r) => r['selected'] == true).toList();
-       if (selected.isNotEmpty) {
-           booking.selectedVehicleRateId = selected.first['id'];
-           booking.vehicleType = selected.first['name'];
-           booking.vehiclePrice = double.tryParse(selected.first['price'].toString()) ?? 0;
-       }
+      booking.hasVehicle = true;
+      booking.vehiclePlateNumber = _plateCtrl.text;
+      booking.vehicleDriverFirstName = _driverFirstNameCtrl.text;
+      booking.vehicleDriverMiddleName = _driverMiddleNameCtrl.text;
+      booking.vehicleDriverLastName = _driverLastNameCtrl.text;
+      booking.vehicleDriverBirthday = _driverBirthdayCtrl.text;
+      final selected =
+          _vehicleRates.where((r) => r['selected'] == true).toList();
+      if (selected.isNotEmpty) {
+        booking.selectedVehicleRateId = selected.first['id'];
+        booking.vehicleType = selected.first['name'];
+        booking.vehiclePrice =
+            double.tryParse(selected.first['price'].toString()) ?? 0;
+      }
     }
 
     BookingData.activeSession = booking;
     booking.savedStep = 1;
     booking.saveToPrefs(1);
 
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ScheduleSelectScreen(booking: booking))).then((_) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ScheduleSelectScreen(booking: booking))).then((_) {
       if (mounted) {
         booking.savedStep = 0;
         booking.saveToPrefs(0);
@@ -2181,19 +2584,43 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: Row(
             children: [
-              _ModeTab(label: 'Ferry', icon: Icons.directions_boat, selected: _mode == 'ferry', onTap: () {
-                if (_mode != 'ferry') {
-                  setState(() { _mode = 'ferry'; _operator = null; _operators = []; _origin = null; _destination = null; _origins = []; _destinations = []; });
-                  _fetchOperators();
-                }
-              }),
+              _ModeTab(
+                  label: 'Ferry',
+                  icon: Icons.directions_boat,
+                  selected: _mode == 'ferry',
+                  onTap: () {
+                    if (_mode != 'ferry') {
+                      setState(() {
+                        _mode = 'ferry';
+                        _operator = null;
+                        _operators = [];
+                        _origin = null;
+                        _destination = null;
+                        _origins = [];
+                        _destinations = [];
+                      });
+                      _fetchOperators();
+                    }
+                  }),
               const SizedBox(width: 10),
-              _ModeTab(label: 'Airline', icon: Icons.flight, selected: _mode == 'airline', onTap: () {
-                if (_mode != 'airline') {
-                  setState(() { _mode = 'airline'; _operator = null; _operators = []; _origin = null; _destination = null; _origins = []; _destinations = []; });
-                  _fetchOperators();
-                }
-              }),
+              _ModeTab(
+                  label: 'Airline',
+                  icon: Icons.flight,
+                  selected: _mode == 'airline',
+                  onTap: () {
+                    if (_mode != 'airline') {
+                      setState(() {
+                        _mode = 'airline';
+                        _operator = null;
+                        _operators = [];
+                        _origin = null;
+                        _destination = null;
+                        _origins = [];
+                        _destinations = [];
+                      });
+                      _fetchOperators();
+                    }
+                  }),
             ],
           ),
         ),
@@ -2219,7 +2646,8 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                   child: Card(
                     color: Colors.white,
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -2229,9 +2657,15 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _label('Operator'),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            initialValue: _operators.contains(_operator) ? _operator : null,
+                            initialValue: _operators.contains(_operator)
+                                ? _operator
+                                : null,
                             hint: const Text('Choose an operator'),
-                            items: _operators.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                            items: _operators
+                                .toSet()
+                                .map((c) =>
+                                    DropdownMenuItem(value: c, child: Text(c)))
+                                .toList(),
                             onChanged: (val) {
                               setState(() {
                                 _operator = val;
@@ -2253,15 +2687,30 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _label('Origin'),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            initialValue: _origins.contains(_origin) ? _origin : null,
+                            initialValue:
+                                _origins.contains(_origin) ? _origin : null,
                             hint: const Text('Select Origin'),
-                            items: _origins.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                            onChanged: _operator == null ? null : (v) {
-                              if (v != null) {
-                                setState(() { _origin = v; _destination = null; _destinations = []; _departureDate = null; _returnDate = null; _availableDepartureDates = []; _availableReturnDates = []; });
-                                _fetchDestinations(v);
-                              }
-                            },
+                            items: _origins
+                                .toSet()
+                                .map((c) =>
+                                    DropdownMenuItem(value: c, child: Text(c)))
+                                .toList(),
+                            onChanged: _operator == null
+                                ? null
+                                : (v) {
+                                    if (v != null) {
+                                      setState(() {
+                                        _origin = v;
+                                        _destination = null;
+                                        _destinations = [];
+                                        _departureDate = null;
+                                        _returnDate = null;
+                                        _availableDepartureDates = [];
+                                        _availableReturnDates = [];
+                                      });
+                                      _fetchDestinations(v);
+                                    }
+                                  },
                             decoration: _dropDecor(Icons.location_on),
                           ),
                           const SizedBox(height: 16),
@@ -2270,15 +2719,34 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _label('Destination'),
                           const SizedBox(height: 6),
                           _loadingDestinations
-                              ? const SizedBox(height: 52, child: Center(child: CircularProgressIndicator(color: kGreen)))
+                              ? const SizedBox(
+                                  height: 52,
+                                  child: Center(
+                                      child: CircularProgressIndicator(
+                                          color: kGreen)))
                               : DropdownButtonFormField<String>(
-                                  initialValue: _destinations.contains(_destination) ? _destination : null,
+                                  initialValue:
+                                      _destinations.contains(_destination)
+                                          ? _destination
+                                          : null,
                                   hint: const Text('Select Destination'),
-                                  items: _destinations.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                                  onChanged: _origin == null ? null : (v) {
-                                    setState(() { _destination = v; _departureDate = null; _returnDate = null; _availableDepartureDates = []; _availableReturnDates = []; });
-                                    if (v != null) _fetchAvailableDates();
-                                  },
+                                  items: _destinations
+                                      .toSet()
+                                      .map((c) => DropdownMenuItem(
+                                          value: c, child: Text(c)))
+                                      .toList(),
+                                  onChanged: _origin == null
+                                      ? null
+                                      : (v) {
+                                          setState(() {
+                                            _destination = v;
+                                            _departureDate = null;
+                                            _returnDate = null;
+                                            _availableDepartureDates = [];
+                                            _availableReturnDates = [];
+                                          });
+                                          if (v != null) _fetchAvailableDates();
+                                        },
                                   decoration: _dropDecor(Icons.navigation),
                                 ),
                           const SizedBox(height: 16),
@@ -2286,10 +2754,23 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           // Travel Dates
                           _label('Travel Dates'),
                           const SizedBox(height: 6),
-                          _datePicker(_departureDate != null ? _fmtDisplay(_departureDate!) : 'Select Date', _destination == null ? null : () => _selectDate(context, true)),
+                          _datePicker(
+                              _departureDate != null
+                                  ? _fmtDisplay(_departureDate!)
+                                  : 'Select Date',
+                              _destination == null
+                                  ? null
+                                  : () => _selectDate(context, true)),
                           if (_tripTabController.index == 1) ...[
                             const SizedBox(height: 10),
-                            _datePicker(_returnDate != null ? _fmtDisplay(_returnDate!) : 'Select Date', _destination == null ? null : () => _selectDate(context, false), label: 'Return'),
+                            _datePicker(
+                                _returnDate != null
+                                    ? _fmtDisplay(_returnDate!)
+                                    : 'Select Date',
+                                _destination == null
+                                    ? null
+                                    : () => _selectDate(context, false),
+                                label: 'Return'),
                           ],
                           const SizedBox(height: 16),
 
@@ -2297,25 +2778,34 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _label('Passenger'),
                           const SizedBox(height: 6),
                           GestureDetector(
-                            onTap: () => setState(() => _showPassengerDropdown = !_showPassengerDropdown),
+                            onTap: () => setState(() => _showPassengerDropdown =
+                                !_showPassengerDropdown),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 14),
                               decoration: BoxDecoration(
                                 border: Border.all(color: kSlate200),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(children: [
-                                    const Icon(Icons.people, color: kGreen, size: 20),
+                                    const Icon(Icons.people,
+                                        color: kGreen, size: 20),
                                     const SizedBox(width: 8),
                                     Text(
                                       '$_adults Adult${_adults > 1 ? 's' : ''}${_children > 0 ? '  $_children Minor${_children > 1 ? 's' : ''}' : ''}',
-                                      style: const TextStyle(fontSize: 14, color: kSlate800),
+                                      style: const TextStyle(
+                                          fontSize: 14, color: kSlate800),
                                     ),
                                   ]),
-                                  Icon(_showPassengerDropdown ? Icons.expand_less : Icons.expand_more, color: kSlate400),
+                                  Icon(
+                                      _showPassengerDropdown
+                                          ? Icons.expand_less
+                                          : Icons.expand_more,
+                                      color: kSlate400),
                                 ],
                               ),
                             ),
@@ -2328,44 +2818,70 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: kSlate200),
-                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
+                                boxShadow: [
+                                  BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.06),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4))
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Maximum 8 passengers per booking', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                  const Text('Maximum 8 passengers per booking',
+                                      style: TextStyle(
+                                          color: kSlate500, fontSize: 12)),
                                   const SizedBox(height: 12),
                                   _PassengerCounter(
                                     label: 'Adult',
                                     subtitle: '12 years and above',
                                     count: _adults,
-                                    onIncrement: _totalPassengers < 8 ? () => setState(() => _adults++) : null,
-                                    onDecrement: _adults > 1 ? () => setState(() => _adults--) : null,
+                                    onIncrement: _totalPassengers < 8
+                                        ? () => setState(() => _adults++)
+                                        : null,
+                                    onDecrement: _adults > 1
+                                        ? () => setState(() => _adults--)
+                                        : null,
                                   ),
                                   const Divider(height: 20),
                                   _PassengerCounter(
                                     label: 'Minor',
                                     subtitle: '2 - 11 years',
                                     count: _children,
-                                    onIncrement: _totalPassengers < 8 ? () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (c) => AlertDialog(
-                                          title: const Text('Minor age reminder', style: TextStyle(fontWeight: FontWeight.bold)),
-                                          content: const Text('23 months and under will be issued upon arrival at the port/airport.', style: TextStyle(color: kSlate700)),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(c);
-                                                setState(() => _children++);
-                                              },
-                                              child: const Text('Close', style: TextStyle(color: kPink)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    } : null,
-                                    onDecrement: _children > 0 ? () => setState(() => _children--) : null,
+                                    onIncrement: _totalPassengers < 8
+                                        ? () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (c) => AlertDialog(
+                                                title: const Text(
+                                                    'Minor age reminder',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                content: const Text(
+                                                    '23 months and under will be issued upon arrival at the port/airport.',
+                                                    style: TextStyle(
+                                                        color: kSlate700)),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(c);
+                                                      setState(
+                                                          () => _children++);
+                                                    },
+                                                    child: const Text('Close',
+                                                        style: TextStyle(
+                                                            color: kPink)),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }
+                                        : null,
+                                    onDecrement: _children > 0
+                                        ? () => setState(() => _children--)
+                                        : null,
                                   ),
                                   const Divider(height: 20),
                                   GestureDetector(
@@ -2373,19 +2889,33 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                       showDialog(
                                         context: context,
                                         builder: (ctx) => AlertDialog(
-                                          title: const Text('Passenger limits and guidance', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                          title: const Text(
+                                              'Passenger limits and guidance',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16)),
                                           content: const Text(
                                             'You can book up to 8 travelers total. This includes both adults and minors combined. Any discounts are applied per traveler on the next step.\n\n'
                                             '1. Adults are counted separately from minors, but both count toward the same 8-person total.\n\n'
                                             '2. Minors aged 2 to 11 are still part of the booking capacity limit.\n\n'
                                             '3. Use the buttons to update counts. The form prevents totals above 8.',
-                                            style: TextStyle(fontSize: 13, color: kSlate600, height: 1.5),
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                color: kSlate600,
+                                                height: 1.5),
                                           ),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16)),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(ctx),
-                                              child: const Text('Close', style: TextStyle(color: kPink, fontWeight: FontWeight.bold)),
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx),
+                                              child: const Text('Close',
+                                                  style: TextStyle(
+                                                      color: kPink,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ),
                                           ],
                                         ),
@@ -2393,9 +2923,14 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                     },
                                     child: const Row(
                                       children: [
-                                        Text('Info', style: TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13)),
+                                        Text('Info',
+                                            style: TextStyle(
+                                                color: kPink,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13)),
                                         SizedBox(width: 4),
-                                        Icon(Icons.info_outline, color: kPink, size: 14),
+                                        Icon(Icons.info_outline,
+                                            color: kPink, size: 14),
                                       ],
                                     ),
                                   ),
@@ -2406,7 +2941,9 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           const SizedBox(height: 24),
 
                           // Vehicle / Car Booking (Ferry only, Starlite only)
-                          if (_mode == 'ferry' && (_operator?.toLowerCase().contains('starlite') ?? false)) ...[
+                          if (_mode == 'ferry' &&
+                              (_operator?.toLowerCase().contains('starlite') ??
+                                  false)) ...[
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
@@ -2418,13 +2955,23 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text('Vehicle / Car Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
-                                          Text('Bring your vehicle on the ferry', style: TextStyle(color: kSlate500, fontSize: 12)),
+                                          Text('Vehicle / Car Booking',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                  color: kSlate800)),
+                                          Text(
+                                              'Bring your vehicle on the ferry',
+                                              style: TextStyle(
+                                                  color: kSlate500,
+                                                  fontSize: 12)),
                                         ],
                                       ),
                                       Switch(
@@ -2439,9 +2986,13 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                               _driverMiddleNameCtrl.clear();
                                               _driverLastNameCtrl.clear();
                                               _driverBirthdayCtrl.clear();
-                                              for (var r in _vehicleRates) { r['selected'] = false; }
+                                              for (var r in _vehicleRates) {
+                                                r['selected'] = false;
+                                              }
                                             } else {
-                                              if (_vehicleRates.isNotEmpty) _vehicleRates.first['selected'] = true;
+                                              if (_vehicleRates.isNotEmpty)
+                                                _vehicleRates
+                                                    .first['selected'] = true;
                                             }
                                           });
                                         },
@@ -2454,45 +3005,89 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
                                         color: Colors.amber.shade50,
-                                        border: Border.all(color: Colors.amber.shade200),
+                                        border: Border.all(
+                                            color: Colors.amber.shade200),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: const Row(
                                         children: [
-                                          Icon(Icons.info_outline, color: Colors.amber, size: 18),
+                                          Icon(Icons.info_outline,
+                                              color: Colors.amber, size: 18),
                                           SizedBox(width: 8),
-                                          Expanded(child: Text('Vehicle bookings are subject to availability.', style: TextStyle(color: Colors.amber, fontSize: 12))),
+                                          Expanded(
+                                              child: Text(
+                                                  'Vehicle bookings are subject to availability.',
+                                                  style: TextStyle(
+                                                      color: Colors.amber,
+                                                      fontSize: 12))),
                                         ],
                                       ),
                                     ),
                                     const SizedBox(height: 14),
-                                    const Text('Vehicle Type', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const Text('Vehicle Type',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: kSlate700,
+                                            fontSize: 13)),
                                     const SizedBox(height: 8),
                                     if (_vehicleRates.isNotEmpty)
                                       Column(
                                         children: _vehicleRates.map((rate) {
-                                          final selected = rate['selected'] == true;
+                                          final selected =
+                                              rate['selected'] == true;
                                           return GestureDetector(
                                             onTap: () {
                                               setState(() {
-                                                for (var r in _vehicleRates) { r['selected'] = false; }
+                                                for (var r in _vehicleRates) {
+                                                  r['selected'] = false;
+                                                }
                                                 rate['selected'] = true;
                                               });
                                             },
                                             child: Container(
-                                              margin: const EdgeInsets.only(bottom: 8),
-                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                              margin: const EdgeInsets.only(
+                                                  bottom: 8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 14,
+                                                      vertical: 12),
                                               decoration: BoxDecoration(
-                                                color: selected ? kGreen.withValues(alpha: 0.05) : kSlate50,
-                                                border: Border.all(color: selected ? kGreen : kSlate200, width: selected ? 2 : 1),
-                                                borderRadius: BorderRadius.circular(12),
+                                                color: selected
+                                                    ? kGreen.withValues(
+                                                        alpha: 0.05)
+                                                    : kSlate50,
+                                                border: Border.all(
+                                                    color: selected
+                                                        ? kGreen
+                                                        : kSlate200,
+                                                    width: selected ? 2 : 1),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
                                               ),
                                               child: Row(
                                                 children: [
-                                                  Icon(Icons.directions_car, color: selected ? kGreen : kSlate400, size: 20),
+                                                  Icon(Icons.directions_car,
+                                                      color: selected
+                                                          ? kGreen
+                                                          : kSlate400,
+                                                      size: 20),
                                                   const SizedBox(width: 10),
-                                                  Expanded(child: Text(rate['name'], style: TextStyle(fontWeight: FontWeight.w600, color: selected ? kGreen : kSlate800))),
-                                                  Text('₱${rate['price']}', style: TextStyle(color: selected ? kGreen : kPink, fontWeight: FontWeight.bold)),
+                                                  Expanded(
+                                                      child: Text(rate['name'],
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: selected
+                                                                  ? kGreen
+                                                                  : kSlate800))),
+                                                  Text('₱${rate['price']}',
+                                                      style: TextStyle(
+                                                          color: selected
+                                                              ? kGreen
+                                                              : kPink,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
                                                 ],
                                               ),
                                             ),
@@ -2500,63 +3095,112 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                         }).toList(),
                                       ),
                                     const SizedBox(height: 14),
-                                    const Text('Plate Number', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const Text('Plate Number',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: kSlate700,
+                                            fontSize: 13)),
                                     const SizedBox(height: 8),
                                     TextField(
                                       controller: _plateCtrl,
-                                      decoration: InputDecoration(hintText: 'e.g., ABC 1234', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                      decoration: InputDecoration(
+                                          hintText: 'e.g., ABC 1234',
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12))),
                                     ),
                                     const SizedBox(height: 14),
-                                    const Text('Driver First Name', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const Text('Driver First Name',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: kSlate700,
+                                            fontSize: 13)),
                                     const SizedBox(height: 8),
                                     TextField(
                                       controller: _driverFirstNameCtrl,
-                                      decoration: InputDecoration(hintText: 'e.g., John', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                      decoration: InputDecoration(
+                                          hintText: 'e.g., John',
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12))),
                                     ),
                                     const SizedBox(height: 14),
-                                    const Text('Driver Middle Name (Optional)', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const Text('Driver Middle Name (Optional)',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: kSlate700,
+                                            fontSize: 13)),
                                     const SizedBox(height: 8),
                                     TextField(
                                       controller: _driverMiddleNameCtrl,
-                                      decoration: InputDecoration(hintText: 'e.g., A', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                      decoration: InputDecoration(
+                                          hintText: 'e.g., A',
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12))),
                                     ),
                                     const SizedBox(height: 14),
-                                    const Text('Driver Last Name', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const Text('Driver Last Name',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: kSlate700,
+                                            fontSize: 13)),
                                     const SizedBox(height: 8),
                                     TextField(
                                       controller: _driverLastNameCtrl,
-                                      decoration: InputDecoration(hintText: 'e.g., Doe', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                                      decoration: InputDecoration(
+                                          hintText: 'e.g., Doe',
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12))),
                                     ),
                                     const SizedBox(height: 14),
-                                    const Text('Driver Birthdate', style: TextStyle(fontWeight: FontWeight.w600, color: kSlate700, fontSize: 13)),
+                                    const Text('Driver Birthdate',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: kSlate700,
+                                            fontSize: 13)),
                                     const SizedBox(height: 8),
                                     TextField(
                                       controller: _driverBirthdayCtrl,
                                       readOnly: true,
                                       onTap: () async {
                                         final date = await showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-                                          firstDate: DateTime(1900),
-                                          lastDate: DateTime.now(),
-                                          builder: (context, child) {
-                                            return Theme(
-                                              data: Theme.of(context).copyWith(
-                                                colorScheme: const ColorScheme.light(primary: kPink, onPrimary: Colors.white, surface: Colors.white, onSurface: Colors.black),
-                                              ),
-                                              child: child!,
-                                            );
-                                          }
-                                        );
+                                            context: context,
+                                            initialDate: DateTime.now()
+                                                .subtract(const Duration(
+                                                    days: 365 * 18)),
+                                            firstDate: DateTime(1900),
+                                            lastDate: DateTime.now(),
+                                            builder: (context, child) {
+                                              return Theme(
+                                                data:
+                                                    Theme.of(context).copyWith(
+                                                  colorScheme:
+                                                      const ColorScheme.light(
+                                                          primary: kPink,
+                                                          onPrimary:
+                                                              Colors.white,
+                                                          surface: Colors.white,
+                                                          onSurface:
+                                                              Colors.black),
+                                                ),
+                                                child: child!,
+                                              );
+                                            });
                                         if (date != null) {
-                                          _driverBirthdayCtrl.text = "\${date.year}-\${date.month.toString().padLeft(2, '0')}-\${date.day.toString().padLeft(2, '0')}";
+                                          _driverBirthdayCtrl.text =
+                                              "\${date.year}-\${date.month.toString().padLeft(2, '0')}-\${date.day.toString().padLeft(2, '0')}";
                                         }
                                       },
                                       decoration: InputDecoration(
-                                        hintText: 'YYYY-MM-DD', 
-                                        suffixIcon: const Icon(Icons.calendar_today, color: kSlate400),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
-                                      ),
+                                          hintText: 'YYYY-MM-DD',
+                                          suffixIcon: const Icon(
+                                              Icons.calendar_today,
+                                              color: kSlate400),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12))),
                                     ),
                                   ],
                                 ],
@@ -2570,15 +3214,22 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton(
-                              onPressed: (_origin == null || _destination == null) ? null : _goToSchedule,
+                              onPressed:
+                                  (_origin == null || _destination == null)
+                                      ? null
+                                      : _goToSchedule,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kPink,
                                 foregroundColor: Colors.white,
                                 disabledBackgroundColor: kSlate200,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                                 elevation: 4,
                               ),
-                              child: const Text('Next', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                              child: const Text('Next',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16)),
                             ),
                           ),
                         ],
@@ -2591,26 +3242,39 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _label(String text) => Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate600));
+  Widget _label(String text) => Text(text,
+      style: const TextStyle(
+          fontSize: 12, fontWeight: FontWeight.bold, color: kSlate600));
 
   InputDecoration _dropDecor(IconData icon) => InputDecoration(
         prefixIcon: Icon(icon, color: kGreen),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kSlate200)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: kSlate200)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       );
 
-  Widget _datePicker(String value, VoidCallback? onTap, {String? label}) => InkWell(
+  Widget _datePicker(String value, VoidCallback? onTap, {String? label}) =>
+      InkWell(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          decoration: BoxDecoration(border: Border.all(color: kSlate400), borderRadius: BorderRadius.circular(12), color: onTap == null ? kSlate50 : Colors.white),
+          decoration: BoxDecoration(
+              border: Border.all(color: kSlate400),
+              borderRadius: BorderRadius.circular(12),
+              color: onTap == null ? kSlate50 : Colors.white),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(children: [
-                if (label != null) ...[Text('$label: ', style: const TextStyle(color: kSlate500, fontSize: 13)), ],
-                Text(value, style: const TextStyle(fontSize: 14, color: kSlate800)),
+                if (label != null) ...[
+                  Text('$label: ',
+                      style: const TextStyle(color: kSlate500, fontSize: 13)),
+                ],
+                Text(value,
+                    style: const TextStyle(fontSize: 14, color: kSlate800)),
               ]),
               const Icon(Icons.calendar_today, size: 20, color: kPink),
             ],
@@ -2625,7 +3289,11 @@ class _ModeTab extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _ModeTab({required this.label, required this.icon, required this.selected, required this.onTap});
+  const _ModeTab(
+      {required this.label,
+      required this.icon,
+      required this.selected,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -2637,13 +3305,24 @@ class _ModeTab extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? kGreen : kSlate100,
           borderRadius: BorderRadius.circular(30),
-          boxShadow: selected ? [BoxShadow(color: kGreen.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))] : [],
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                      color: kGreen.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3))
+                ]
+              : [],
         ),
         child: Row(
           children: [
             Icon(icon, size: 16, color: selected ? Colors.white : kSlate600),
             const SizedBox(width: 6),
-            Text(label, style: TextStyle(color: selected ? Colors.white : kSlate600, fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(label,
+                style: TextStyle(
+                    color: selected ? Colors.white : kSlate600,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
           ],
         ),
       ),
@@ -2674,15 +3353,27 @@ class _PassengerCounter extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
-              Text(subtitle, style: const TextStyle(color: kSlate500, fontSize: 12)),
+              Text(label,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: kSlate800)),
+              Text(subtitle,
+                  style: const TextStyle(color: kSlate500, fontSize: 12)),
             ],
           ),
         ),
         Row(
           children: [
             _CounterButton(icon: Icons.remove, onPressed: onDecrement),
-            SizedBox(width: 44, child: Text('$count', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800))),
+            SizedBox(
+                width: 44,
+                child: Text('$count',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: kSlate800))),
             _CounterButton(icon: Icons.add, onPressed: onIncrement),
           ],
         ),
@@ -2709,7 +3400,8 @@ class _CounterButton extends StatelessWidget {
           border: Border.all(color: onPressed != null ? kSlate400 : kSlate200),
           color: onPressed != null ? Colors.white : kSlate50,
         ),
-        child: Icon(icon, size: 16, color: onPressed != null ? kSlate800 : kSlate400),
+        child: Icon(icon,
+            size: 16, color: onPressed != null ? kSlate800 : kSlate400),
       ),
     );
   }
@@ -2733,8 +3425,11 @@ void showTermsModal(BuildContext context) {
             children: [
               const Expanded(
                 child: Text(
-                  'Amiga Travel Agency Services Terms & Conditions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800),
+                  'Amiga Gracia Travel Services Terms & Conditions',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: kSlate800),
                 ),
               ),
               IconButton(
@@ -2751,7 +3446,10 @@ void showTermsModal(BuildContext context) {
                 children: [
                   Text(
                     'Boarding Requirements',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800),
                   ),
                   SizedBox(height: 4),
                   Text(
@@ -2759,28 +3457,37 @@ void showTermsModal(BuildContext context) {
                     '• Presentation of each passenger\'s valid ID.\n'
                     '• Passengers must arrive at the terminal 3–4 hours before departure. Boarding gates close 1 hour before departure.\n'
                     '• The operating ferry carrier reserves the right to refuse boarding if a passenger cannot present the required documents upon request.',
-                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                    style:
+                        TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
                   ),
                   SizedBox(height: 16),
                   Text(
                     'eTicket Itinerary Receipt',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'The eTicket Itinerary Receipt is non-transferable. It is valid only until the date and time of departure printed on the ticket. Unused or expired eTickets are non-refundable and cannot be revalidated, subject to applicable return policies.',
-                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                    style:
+                        TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
                   ),
                   SizedBox(height: 16),
                   Text(
                     'Government-Mandated Discounts',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800),
                   ),
                   SizedBox(height: 4),
                   Text(
                     '• Senior Citizens: Applicable to passengers aged 60 or above with valid OSCA or government-issued ID. A 20% discount applies to the base rate.\n'
                     '• Infants: Infants below 2 years old and below 1 meter in height may be allowed to board. A fixed rate of ₱500.00 applies per infant regardless of destination or accommodation.',
-                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                    style:
+                        TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
                   ),
                 ],
               ),
@@ -2795,9 +3502,11 @@ void showTermsModal(BuildContext context) {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kPink,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('Got It', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Got It',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -2825,7 +3534,10 @@ void showPrivacyModal(BuildContext context) {
               const Expanded(
                 child: Text(
                   'Amiga Travel Agency Data Privacy Policy',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: kSlate800),
                 ),
               ),
               IconButton(
@@ -2842,42 +3554,58 @@ void showPrivacyModal(BuildContext context) {
                 children: [
                   Text(
                     'Personal Data Collection',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'We collect only the personal information necessary to process your booking, issue tickets, and contact you about your travel reservation.',
-                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                    style:
+                        TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
                   ),
                   SizedBox(height: 16),
                   Text(
                     'Use of Personal Data',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'Your information is used to confirm your booking, communicate updates, send receipts, and comply with transportation partner requirements.',
-                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                    style:
+                        TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
                   ),
                   SizedBox(height: 16),
                   Text(
                     'Data Security & Retention',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'We take technical and organizational measures to safeguard your personal data. We retain booking details only as long as necessary to fulfill our services and comply with legal obligations.',
-                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                    style:
+                        TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
                   ),
                   SizedBox(height: 16),
                   Text(
                     'Your Rights',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: kSlate800),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'You have the right to access, correct, or request deletion of your personal data in accordance with applicable privacy laws.',
-                    style: TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
+                    style:
+                        TextStyle(fontSize: 13, color: kSlate600, height: 1.4),
                   ),
                 ],
               ),
@@ -2892,9 +3620,11 @@ void showPrivacyModal(BuildContext context) {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kPink,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('Got It', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Got It',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -2927,7 +3657,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool _agreePrivacy = false;
 
   // OTP registration state
-  String? _pendingRegisterEmail;  // non-null when OTP step is active
+  String? _pendingRegisterEmail; // non-null when OTP step is active
   final _otpCtrl = TextEditingController();
   bool _otpLoading = false;
 
@@ -2979,7 +3709,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
   Future<void> _requestEmailVerification() async {
     final email = _guestEmailCtrl.text.trim();
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter the email used for your booking.'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Enter the email used for your booking.'),
+          backgroundColor: Colors.red));
       return;
     }
     setState(() => _verificationLoading = true);
@@ -2992,12 +3724,18 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
         setState(() => _verificationRequested = true);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Verification code sent to your email.'), backgroundColor: kGreen));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Verification code sent to your email.'),
+            backgroundColor: kGreen));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Unable to send verification code.'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(data['message'] ?? 'Unable to send verification code.'),
+            backgroundColor: Colors.red));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Connection error: $e'), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _verificationLoading = false);
     }
@@ -3007,7 +3745,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
     final email = _guestEmailCtrl.text.trim();
     final code = _verificationCodeCtrl.text.trim();
     if (code.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter the six-digit verification code.'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Enter the six-digit verification code.'),
+          backgroundColor: Colors.red));
       return;
     }
     setState(() => _verificationLoading = true);
@@ -3029,10 +3769,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
         });
         _fetchBookings();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Verification failed.'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(data['message'] ?? 'Verification failed.'),
+            backgroundColor: Colors.red));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Connection error: $e'), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _verificationLoading = false);
     }
@@ -3047,7 +3790,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
         headers['Authorization'] = 'Bearer ${UserSession.token}';
       }
       final response = await http.get(
-        Uri.parse('$baseUrl/api/bookings?email=${Uri.encodeComponent(UserSession.email)}&lookup_token=${Uri.encodeComponent(UserSession.lookupToken)}'),
+        Uri.parse(
+            '$baseUrl/api/bookings?email=${Uri.encodeComponent(UserSession.email)}&lookup_token=${Uri.encodeComponent(UserSession.lookupToken)}'),
         headers: headers,
       );
       final data = jsonDecode(response.body);
@@ -3074,11 +3818,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(labelText: 'GCash, wallet, or bank account'),
+          decoration: const InputDecoration(
+              labelText: 'GCash, wallet, or bank account'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Back')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Continue')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Back')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+              child: const Text('Continue')),
         ],
       ),
     );
@@ -3094,11 +3842,18 @@ class _ActivityScreenState extends State<ActivityScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cancel Booking'),
-        content: const Text('Are you sure you want to cancel this booking? This action cannot be undone.'),
+        content: const Text(
+            'Are you sure you want to cancel this booking? This action cannot be undone.'),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No', style: TextStyle(color: kSlate600))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Yes, Cancel', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('No', style: TextStyle(color: kSlate600))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Yes, Cancel',
+                  style: TextStyle(
+                      color: Colors.red, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -3118,17 +3873,24 @@ class _ActivityScreenState extends State<ActivityScreen> {
         cancellationFee = (startData['cancellation_fee'] as num?)?.toDouble();
         refundAmount = (startData['refund_amount'] as num?)?.toDouble();
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(startData['message'] ?? 'Unable to start cancellation.'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(startData['message'] ?? 'Unable to start cancellation.'),
+            backgroundColor: Colors.red));
         return;
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Connection error: $e'),
+            backgroundColor: Colors.red));
       return;
     }
 
     // Step 3: Collect refund destination
     final refundDestination = await _askRefundDestination();
-    if (refundDestination == null || refundDestination.isEmpty || !mounted) return;
+    if (refundDestination == null || refundDestination.isEmpty || !mounted)
+      return;
 
     // Step 4: Confirm with real fee breakdown
     final totalPrice = (booking['total_price'] as num?)?.toDouble() ?? 0.0;
@@ -3141,20 +3903,44 @@ class _ActivityScreenState extends State<ActivityScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Summary:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Summary:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Original Total'), Text('₱${totalPrice.toStringAsFixed(2)}')]),
-            if (cancellationFee != null) Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Cancellation Fee', style: TextStyle(color: Colors.red)), Text('-₱${cancellationFee.toStringAsFixed(2)}', style: const TextStyle(color: Colors.red))]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('Original Total'),
+              Text('₱${totalPrice.toStringAsFixed(2)}')
+            ]),
+            if (cancellationFee != null)
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                const Text('Cancellation Fee',
+                    style: TextStyle(color: Colors.red)),
+                Text('-₱${cancellationFee.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.red))
+              ]),
             const Divider(height: 16),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Estimated Refund', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)), Text('₱${(refundAmount ?? 0.0).toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green))]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('Estimated Refund',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.green)),
+              Text('₱${(refundAmount ?? 0.0).toStringAsFixed(2)}',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.green))
+            ]),
             const SizedBox(height: 12),
             const Text('Refund destination: ', style: TextStyle(fontSize: 12)),
-            Text(refundDestination, style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+            Text(refundDestination,
+                style:
+                    const TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), style: FilledButton.styleFrom(backgroundColor: Colors.red), child: const Text('Confirm')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Back')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Confirm')),
         ],
       ),
     );
@@ -3165,17 +3951,29 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final res = await http.post(
         Uri.parse('$baseUrl/api/bookings/$id/cancel'),
         headers: {'Accept': 'application/json'},
-        body: {'email': UserSession.email, 'action': 'confirm', 'refund_destination': refundDestination},
+        body: {
+          'email': UserSession.email,
+          'action': 'confirm',
+          'refund_destination': refundDestination
+        },
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         await _fetchBookings();
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cancelled. Refund: ₱${data['refund_amount']}'), backgroundColor: Colors.green));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Cancelled. Refund: ₱${data['refund_amount']}'),
+              backgroundColor: Colors.green));
       } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Failed to cancel booking.'), backgroundColor: Colors.red));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(data['message'] ?? 'Failed to cancel booking.'),
+              backgroundColor: Colors.red));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
     }
   }
 
@@ -3205,7 +4003,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
     XFile? proof;
     final picker = ImagePicker();
-    final fee = (booking['calculated_rebooking_fee'] as num?)?.toDouble() ?? (((booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
+    final fee = (booking['calculated_rebooking_fee'] as num?)?.toDouble() ??
+        (((booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
     final shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -3217,21 +4016,28 @@ class _ActivityScreenState extends State<ActivityScreen> {
             children: [
               Text('Rebooking fee: ₱${fee.toStringAsFixed(2)}'),
               const SizedBox(height: 8),
-              const Text('Upload your payment proof so staff can verify the request.'),
+              const Text(
+                  'Upload your payment proof so staff can verify the request.'),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () async {
-                  proof = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+                  proof = await picker.pickImage(
+                      source: ImageSource.gallery, imageQuality: 80);
                   setDialogState(() {});
                 },
                 icon: const Icon(Icons.upload_file),
-                label: Text(proof == null ? 'Choose proof image' : 'Proof selected'),
+                label: Text(
+                    proof == null ? 'Choose proof image' : 'Proof selected'),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit request')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Back')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Submit request')),
           ],
         ),
       ),
@@ -3240,48 +4046,66 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/${booking['id']}/rebook'));
+      final request = http.MultipartRequest(
+          'POST', Uri.parse('$baseUrl/api/bookings/${booking['id']}/rebook'));
       request.headers['Accept'] = 'application/json';
       request.fields['email'] = UserSession.email;
-      request.fields['departure_date'] = departure.toIso8601String().split('T')[0];
-      if (returnDate != null) request.fields['return_date'] = returnDate.toIso8601String().split('T')[0];
-      if (proof != null) request.files.add(await http.MultipartFile.fromPath('proof', proof!.path));
+      request.fields['departure_date'] =
+          departure.toIso8601String().split('T')[0];
+      if (returnDate != null)
+        request.fields['return_date'] =
+            returnDate.toIso8601String().split('T')[0];
+      if (proof != null)
+        request.files
+            .add(await http.MultipartFile.fromPath('proof', proof!.path));
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
         await _fetchBookings();
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rebooking request submitted for verification.'), backgroundColor: Colors.green));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Rebooking request submitted for verification.'),
+              backgroundColor: Colors.green));
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Rebooking failed.'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(data['message'] ?? 'Rebooking failed.'),
+            backgroundColor: Colors.red));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
     }
   }
 
   // Step 1 of registration: request OTP
   Future<void> _requestRegisterOtp() async {
-    final email    = _emailCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
     final password = _passCtrl.text;
-    final name     = _nameCtrl.text.trim();
+    final name = _nameCtrl.text.trim();
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in your username, email, and password.'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('Please fill in your username, email, and password.'),
+            backgroundColor: Colors.red),
       );
       return;
     }
     if (password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 8 characters.'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('Password must be at least 8 characters.'),
+            backgroundColor: Colors.red),
       );
       return;
     }
     if (!_agreeTerms || !_agreePrivacy) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('You must agree to the Terms & Conditions and Data Privacy Policy to register.'),
+          content: Text(
+              'You must agree to the Terms & Conditions and Data Privacy Policy to register.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -3302,17 +4126,22 @@ class _ActivityScreenState extends State<ActivityScreen> {
           _otpCtrl.clear();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'OTP sent! Check your email.'), backgroundColor: kGreen),
+          SnackBar(
+              content: Text(data['message'] ?? 'OTP sent! Check your email.'),
+              backgroundColor: kGreen),
         );
       } else {
-        final msg = data['message'] ?? data['errors']?.values?.first?.first ?? 'Could not send OTP.';
+        final msg = data['message'] ??
+            data['errors']?.values?.first?.first ??
+            'Could not send OTP.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Connection error: $e'), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -3324,7 +4153,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
     final otp = _otpCtrl.text.trim();
     if (otp.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter the 6-digit code sent to your email.'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('Enter the 6-digit code sent to your email.'),
+            backgroundColor: Colors.red),
       );
       return;
     }
@@ -3349,7 +4180,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
           _pendingRegisterEmail = null;
         });
         await UserSession.save();
-        
+
         // Attempt to apply referral code if provided
         final refCode = _referralCtrl.text.trim();
         if (refCode.isNotEmpty) {
@@ -3370,16 +4201,22 @@ class _ActivityScreenState extends State<ActivityScreen> {
         widget.onLoginSuccess();
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Welcome, ${UserSession.username}!'), backgroundColor: kGreen),
+          SnackBar(
+              content:
+                  Text(data['message'] ?? 'Welcome, ${UserSession.username}!'),
+              backgroundColor: kGreen),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Verification failed.'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text(data['message'] ?? 'Verification failed.'),
+              backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Connection error: $e'), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _otpLoading = false);
@@ -3387,12 +4224,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   void _submitAuth() async {
-    final email    = _emailCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
     final password = _passCtrl.text;
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill out all required fields.'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('Please fill out all required fields.'),
+            backgroundColor: Colors.red),
       );
       return;
     }
@@ -3425,17 +4264,22 @@ class _ActivityScreenState extends State<ActivityScreen> {
         widget.onLoginSuccess();
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Welcome back, ${data['user']['name']}!'), backgroundColor: kGreen),
+          SnackBar(
+              content: Text('Welcome back, ${data['user']['name']}!'),
+              backgroundColor: kGreen),
         );
       } else {
-        final errorMsg = data['message'] ?? 'Authentication failed. Please check your credentials.';
+        final errorMsg = data['message'] ??
+            'Authentication failed. Please check your credentials.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error connecting to server: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Error connecting to server: $e'),
+            backgroundColor: Colors.red),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -3463,7 +4307,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
           return Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: 20, right: 20, top: 20,
+              left: 20,
+              right: 20,
+              top: 20,
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -3475,7 +4321,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     children: [
                       Text(
                         isOtpSent ? 'Reset Your Password' : 'Forgot Password',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kSlate800),
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: kSlate800),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -3497,60 +4346,86 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: 'Registered Email Address',
-                        prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon:
+                            const Icon(Icons.email_outlined, color: kGreen),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
-                      width: double.infinity, height: 50,
+                      width: double.infinity,
+                      height: 50,
                       child: ElevatedButton(
-                        onPressed: modalLoading ? null : () async {
-                          final email = emailController.text.trim();
-                          if (email.isEmpty || !email.contains('@')) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter a valid email address.'), backgroundColor: Colors.red),
-                            );
-                            return;
-                          }
-                          setModalState(() => modalLoading = true);
-                          try {
-                            final res = await http.post(
-                              Uri.parse('${UserSession.getBaseUrl()}/api/forgot-password/request-otp'),
-                              headers: {'Accept': 'application/json'},
-                              body: {'email': email},
-                            );
-                            final data = jsonDecode(res.body);
-                            if (res.statusCode == 200 && data['status'] == 'success') {
-                              setModalState(() {
-                                isOtpSent = true;
-                                modalLoading = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(data['message'] ?? 'Reset code sent! Check your email.'), backgroundColor: kGreen),
-                              );
-                            } else {
-                              final msg = data['message'] ?? 'Failed to send verification code.';
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(msg), backgroundColor: Colors.red),
-                              );
-                            }
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
-                            );
-                          } finally {
-                            if (context.mounted) setModalState(() => modalLoading = false);
-                          }
-                        },
+                        onPressed: modalLoading
+                            ? null
+                            : () async {
+                                final email = emailController.text.trim();
+                                if (email.isEmpty || !email.contains('@')) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Please enter a valid email address.'),
+                                        backgroundColor: Colors.red),
+                                  );
+                                  return;
+                                }
+                                setModalState(() => modalLoading = true);
+                                try {
+                                  final res = await http.post(
+                                    Uri.parse(
+                                        '${UserSession.getBaseUrl()}/api/forgot-password/request-otp'),
+                                    headers: {'Accept': 'application/json'},
+                                    body: {'email': email},
+                                  );
+                                  final data = jsonDecode(res.body);
+                                  if (res.statusCode == 200 &&
+                                      data['status'] == 'success') {
+                                    setModalState(() {
+                                      isOtpSent = true;
+                                      modalLoading = false;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(data['message'] ??
+                                              'Reset code sent! Check your email.'),
+                                          backgroundColor: kGreen),
+                                    );
+                                  } else {
+                                    final msg = data['message'] ??
+                                        'Failed to send verification code.';
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(msg),
+                                          backgroundColor: Colors.red),
+                                    );
+                                  }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text('Connection error: $e'),
+                                        backgroundColor: Colors.red),
+                                  );
+                                } finally {
+                                  if (context.mounted)
+                                    setModalState(() => modalLoading = false);
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kPink,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         child: modalLoading
-                            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                            : const Text('Send Reset Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2.5))
+                            : const Text('Send Reset Code',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
                   ] else ...[
@@ -3560,8 +4435,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       maxLength: 6,
                       decoration: InputDecoration(
                         labelText: '6-Digit Verification Code',
-                        prefixIcon: const Icon(Icons.pin_outlined, color: kGreen),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon:
+                            const Icon(Icons.pin_outlined, color: kGreen),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -3570,12 +4447,19 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       obscureText: obscurePass,
                       decoration: InputDecoration(
                         labelText: 'New Password',
-                        prefixIcon: const Icon(Icons.lock_outline, color: kGreen),
+                        prefixIcon:
+                            const Icon(Icons.lock_outline, color: kGreen),
                         suffixIcon: IconButton(
-                          icon: Icon(obscurePass ? Icons.visibility_off : Icons.visibility, color: kSlate400),
-                          onPressed: () => setModalState(() => obscurePass = !obscurePass),
+                          icon: Icon(
+                              obscurePass
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: kSlate400),
+                          onPressed: () =>
+                              setModalState(() => obscurePass = !obscurePass),
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -3584,85 +4468,123 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       obscureText: obscureConfirm,
                       decoration: InputDecoration(
                         labelText: 'Confirm New Password',
-                        prefixIcon: const Icon(Icons.lock_outline, color: kGreen),
+                        prefixIcon:
+                            const Icon(Icons.lock_outline, color: kGreen),
                         suffixIcon: IconButton(
-                          icon: Icon(obscureConfirm ? Icons.visibility_off : Icons.visibility, color: kSlate400),
-                          onPressed: () => setModalState(() => obscureConfirm = !obscureConfirm),
+                          icon: Icon(
+                              obscureConfirm
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: kSlate400),
+                          onPressed: () => setModalState(
+                              () => obscureConfirm = !obscureConfirm),
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
-                      width: double.infinity, height: 50,
+                      width: double.infinity,
+                      height: 50,
                       child: ElevatedButton(
-                        onPressed: modalLoading ? null : () async {
-                          final otp = otpController.text.trim();
-                          final newPass = passController.text;
-                          final confirmPass = confirmPassController.text;
-                          if (otp.length != 6) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter the 6-digit code.'), backgroundColor: Colors.red),
-                            );
-                            return;
-                          }
-                          if (newPass.length < 8) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Password must be at least 8 characters.'), backgroundColor: Colors.red),
-                            );
-                            return;
-                          }
-                          if (newPass != confirmPass) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Passwords do not match.'), backgroundColor: Colors.red),
-                            );
-                            return;
-                          }
-                          setModalState(() => modalLoading = true);
-                          try {
-                            final res = await http.post(
-                              Uri.parse('${UserSession.getBaseUrl()}/api/forgot-password/reset'),
-                              headers: {'Accept': 'application/json'},
-                              body: {
-                                'email': emailController.text.trim(),
-                                'otp': otp,
-                                'password': newPass,
-                                'password_confirmation': confirmPass,
+                        onPressed: modalLoading
+                            ? null
+                            : () async {
+                                final otp = otpController.text.trim();
+                                final newPass = passController.text;
+                                final confirmPass = confirmPassController.text;
+                                if (otp.length != 6) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Please enter the 6-digit code.'),
+                                        backgroundColor: Colors.red),
+                                  );
+                                  return;
+                                }
+                                if (newPass.length < 8) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Password must be at least 8 characters.'),
+                                        backgroundColor: Colors.red),
+                                  );
+                                  return;
+                                }
+                                if (newPass != confirmPass) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content:
+                                            Text('Passwords do not match.'),
+                                        backgroundColor: Colors.red),
+                                  );
+                                  return;
+                                }
+                                setModalState(() => modalLoading = true);
+                                try {
+                                  final res = await http.post(
+                                    Uri.parse(
+                                        '${UserSession.getBaseUrl()}/api/forgot-password/reset'),
+                                    headers: {'Accept': 'application/json'},
+                                    body: {
+                                      'email': emailController.text.trim(),
+                                      'otp': otp,
+                                      'password': newPass,
+                                      'password_confirmation': confirmPass,
+                                    },
+                                  );
+                                  final data = jsonDecode(res.body);
+                                  if (res.statusCode == 200 &&
+                                      data['status'] == 'success') {
+                                    Navigator.pop(ctx);
+                                    setState(() {
+                                      _emailCtrl.text =
+                                          emailController.text.trim();
+                                      _passCtrl.clear();
+                                      _isSignUp = false;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(data['message'] ??
+                                              'Password reset successfully! Please log in.'),
+                                          backgroundColor: kGreen),
+                                    );
+                                  } else {
+                                    final msg = data['message'] ??
+                                        'Failed to reset password.';
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(msg),
+                                          backgroundColor: Colors.red),
+                                    );
+                                  }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text('Connection error: $e'),
+                                        backgroundColor: Colors.red),
+                                  );
+                                } finally {
+                                  if (context.mounted)
+                                    setModalState(() => modalLoading = false);
+                                }
                               },
-                            );
-                            final data = jsonDecode(res.body);
-                            if (res.statusCode == 200 && data['status'] == 'success') {
-                              Navigator.pop(ctx);
-                              setState(() {
-                                _emailCtrl.text = emailController.text.trim();
-                                _passCtrl.clear();
-                                _isSignUp = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(data['message'] ?? 'Password reset successfully! Please log in.'), backgroundColor: kGreen),
-                              );
-                            } else {
-                              final msg = data['message'] ?? 'Failed to reset password.';
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(msg), backgroundColor: Colors.red),
-                              );
-                            }
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Connection error: $e'), backgroundColor: Colors.red),
-                            );
-                          } finally {
-                            if (context.mounted) setModalState(() => modalLoading = false);
-                          }
-                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kPink,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         child: modalLoading
-                            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                            : const Text('Reset Password', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2.5))
+                            : const Text('Reset Password',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
                   ],
@@ -3686,11 +4608,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset('assets/icon/app_icon.png', height: 90, width: 90, fit: BoxFit.contain),
+              Image.asset('assets/icon/app_icon.png',
+                  height: 90, width: 90, fit: BoxFit.contain),
               const SizedBox(height: 24),
               const Text(
                 'Verify Your Email',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: kGreen),
+                style: TextStyle(
+                    fontSize: 24, fontWeight: FontWeight.w900, color: kGreen),
               ),
               const SizedBox(height: 8),
               Text(
@@ -3704,12 +4628,18 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 12),
+                style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 12),
                 decoration: InputDecoration(
                   hintText: '000000',
-                  hintStyle: const TextStyle(color: kSlate300, fontSize: 28, letterSpacing: 12),
-                  prefixIcon: const Icon(Icons.lock_clock_outlined, color: kGreen),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  hintStyle: const TextStyle(
+                      color: kSlate300, fontSize: 28, letterSpacing: 12),
+                  prefixIcon:
+                      const Icon(Icons.lock_clock_outlined, color: kGreen),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 8),
@@ -3719,24 +4649,33 @@ class _ActivityScreenState extends State<ActivityScreen> {
               ),
               const SizedBox(height: 24),
               SizedBox(
-                width: double.infinity, height: 52,
+                width: double.infinity,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: _otpLoading ? null : _verifyRegisterOtp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPink,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     elevation: 4,
                   ),
                   child: _otpLoading
-                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                      : const Text('Verify & Create Account', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5))
+                      : const Text('Verify & Create Account',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () => setState(() => _pendingRegisterEmail = null),
-                child: const Text('← Back to sign up', style: TextStyle(color: kSlate500)),
+                child: const Text('← Back to sign up',
+                    style: TextStyle(color: kSlate500)),
               ),
             ],
           ),
@@ -3753,23 +4692,26 @@ class _ActivityScreenState extends State<ActivityScreen> {
             // Amiga Gracia logo (transparent bg) instead of ship icon
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: kGreen, borderRadius: BorderRadius.circular(20)),
-              child: Image.asset('assets/icon/amiga_logo_white_outline.png', height: 64, width: 64, fit: BoxFit.contain),
+              decoration: BoxDecoration(
+                  color: kGreen, borderRadius: BorderRadius.circular(20)),
+              child: Image.asset('assets/icon/amiga_logo_white_outline.png',
+                  height: 64, width: 64, fit: BoxFit.contain),
             ),
             const SizedBox(height: 20),
             Text(
               _isSignUp ? 'Create Account' : 'Welcome Back!',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: kGreen),
+              style: const TextStyle(
+                  fontSize: 24, fontWeight: FontWeight.w900, color: kGreen),
             ),
             const SizedBox(height: 6),
             Text(
-              _isSignUp ? 'Sign up to start booking ferry and flights' : 'Sign in to view your bookings & transactions',
+              _isSignUp
+                  ? 'Sign up to start booking ferry and flights'
+                  : 'Sign in to view your bookings & transactions',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 13, color: kSlate500),
             ),
             const SizedBox(height: 36),
-
-
 
             // ── Sign-up extra field: Username ──────────────────────────────
             if (_isSignUp) ...[
@@ -3779,7 +4721,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 decoration: InputDecoration(
                   labelText: 'Username',
                   prefixIcon: const Icon(Icons.person_outline, color: kGreen),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -3790,7 +4733,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 decoration: InputDecoration(
                   labelText: 'Referral Code (Optional)',
                   prefixIcon: const Icon(Icons.card_giftcard, color: kGreen),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -3802,7 +4746,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
               decoration: InputDecoration(
                 labelText: 'Email address',
                 prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
             const SizedBox(height: 16),
@@ -3814,10 +4759,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 labelText: 'Password',
                 prefixIcon: const Icon(Icons.lock_outline, color: kGreen),
                 suffixIcon: IconButton(
-                  icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility, color: kSlate400),
+                  icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility,
+                      color: kSlate400),
                   onPressed: () => setState(() => _obscure = !_obscure),
                 ),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
             if (!_isSignUp) ...[
@@ -3827,13 +4774,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 child: TextButton(
                   onPressed: _showForgotPasswordSheet,
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: const Text(
                     'Forgot Password?',
-                    style: TextStyle(color: kGreen, fontWeight: FontWeight.w600, fontSize: 13),
+                    style: TextStyle(
+                        color: kGreen,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13),
                   ),
                 ),
               ),
@@ -3845,7 +4796,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 children: [
                   Checkbox(
                     value: _agreeTerms,
-                    onChanged: (val) => setState(() => _agreeTerms = val ?? false),
+                    onChanged: (val) =>
+                        setState(() => _agreeTerms = val ?? false),
                     activeColor: kPink,
                   ),
                   Expanded(
@@ -3858,7 +4810,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             TextSpan(text: 'I agree to the '),
                             TextSpan(
                               text: 'Terms and Conditions / Agreement',
-                              style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                              style: TextStyle(
+                                  color: kPink,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline),
                             ),
                           ],
                         ),
@@ -3872,7 +4827,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 children: [
                   Checkbox(
                     value: _agreePrivacy,
-                    onChanged: (val) => setState(() => _agreePrivacy = val ?? false),
+                    onChanged: (val) =>
+                        setState(() => _agreePrivacy = val ?? false),
                     activeColor: kPink,
                   ),
                   Expanded(
@@ -3885,7 +4841,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             TextSpan(text: 'I agree to the '),
                             TextSpan(
                               text: 'Data Privacy Policy',
-                              style: TextStyle(color: kPink, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                              style: TextStyle(
+                                  color: kPink,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline),
                             ),
                           ],
                         ),
@@ -3898,18 +4857,28 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ],
 
             SizedBox(
-              width: double.infinity, height: 52,
+              width: double.infinity,
+              height: 52,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : (_isSignUp ? _requestRegisterOtp : _submitAuth),
+                onPressed: _isLoading
+                    ? null
+                    : (_isSignUp ? _requestRegisterOtp : _submitAuth),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPink,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 4,
                 ),
                 child: _isLoading
-                    ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                    : Text(_isSignUp ? 'Sign Up' : 'Login', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2.5))
+                    : Text(_isSignUp ? 'Sign Up' : 'Login',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
             const SizedBox(height: 12),
@@ -3921,8 +4890,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 _nameCtrl.clear();
               }),
               child: Text(
-                _isSignUp ? 'Already have an account? Login' : "Don't have an account? Register",
-                style: const TextStyle(color: kPink, fontWeight: FontWeight.bold),
+                _isSignUp
+                    ? 'Already have an account? Login'
+                    : "Don't have an account? Register",
+                style:
+                    const TextStyle(color: kPink, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -3940,7 +4912,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+          const Text('My Bookings',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
           const SizedBox(height: 12),
           if (_bookings.isEmpty)
             const Center(
@@ -3950,8 +4924,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   children: [
                     Icon(Icons.receipt_long, size: 64, color: kSlate200),
                     SizedBox(height: 16),
-                    Text('No bookings yet', style: TextStyle(color: kSlate400, fontSize: 16)),
-                    Text('Your bookings will appear here after you book.', style: TextStyle(color: kSlate400, fontSize: 12), textAlign: TextAlign.center),
+                    Text('No bookings yet',
+                        style: TextStyle(color: kSlate400, fontSize: 16)),
+                    Text('Your bookings will appear here after you book.',
+                        style: TextStyle(color: kSlate400, fontSize: 12),
+                        textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -3960,13 +4937,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ..._bookings.whereType<Map>().map((b) {
               final status = b['status']?.toString() ?? 'pending';
               Color statusColor = Colors.orange;
-              if (status == 'confirmed' || status == 'paid') statusColor = kGreen;
-              if (status == 'cancelled' || status == 'operator_cancelled') statusColor = Colors.red;
+              if (status == 'confirmed' || status == 'paid')
+                statusColor = kGreen;
+              if (status == 'cancelled' || status == 'operator_cancelled')
+                statusColor = Colors.red;
 
               return Card(
                 color: Colors.white,
                 margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -3977,17 +4957,24 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         children: [
                           Text(
                             b['transaction_number'] ?? '',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, color: kGreen),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: statusColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              status == 'operator_cancelled' ? 'CANCELLED BY OPERATOR' : status.toUpperCase(),
-                              style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                              status == 'operator_cancelled'
+                                  ? 'CANCELLED BY OPERATOR'
+                                  : status.toUpperCase(),
+                              style: TextStyle(
+                                  color: statusColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -3997,27 +4984,45 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         children: [
                           const Icon(Icons.location_on, color: kPink, size: 16),
                           const SizedBox(width: 6),
-                          Text('${b['origin']} → ${b['destination']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('${b['origin']} → ${b['destination']}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today, color: kSlate400, size: 14),
+                          const Icon(Icons.calendar_today,
+                              color: kSlate400, size: 14),
                           const SizedBox(width: 6),
-                          Text(b['departure_date'] != null ? b['departure_date'].toString().split('T')[0] : '', style: const TextStyle(fontSize: 12, color: kSlate600)),
+                          Text(
+                              b['departure_date'] != null
+                                  ? b['departure_date'].toString().split('T')[0]
+                                  : '',
+                              style: const TextStyle(
+                                  fontSize: 12, color: kSlate600)),
                           if (b['return_date'] != null) ...[
-                            const Text('  |  Return: ', style: TextStyle(fontSize: 12, color: kSlate400)),
-                            Text(b['return_date'].toString().split('T')[0], style: const TextStyle(fontSize: 12, color: kSlate600)),
+                            const Text('  |  Return: ',
+                                style:
+                                    TextStyle(fontSize: 12, color: kSlate400)),
+                            Text(b['return_date'].toString().split('T')[0],
+                                style: const TextStyle(
+                                    fontSize: 12, color: kSlate600)),
                           ],
                         ],
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.directions_boat, color: kSlate400, size: 14),
+                          const Icon(Icons.directions_boat,
+                              color: kSlate400, size: 14),
                           const SizedBox(width: 6),
-                          Text(b['schedule_summary'] ?? b['schedule_service'] ?? '', style: const TextStyle(fontSize: 12, color: kSlate600)),
+                          Text(
+                              b['schedule_summary'] ??
+                                  b['schedule_service'] ??
+                                  '',
+                              style: const TextStyle(
+                                  fontSize: 12, color: kSlate600)),
                         ],
                       ),
                       const Divider(height: 20),
@@ -4026,32 +5031,52 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         children: [
                           Text(
                             '₱${b['total_price']}',
-                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: kPink),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                                color: kPink),
                           ),
-                              if (b['gracia_points'] != null && (int.tryParse(b['gracia_points'].toString()) ?? 0) > 0)
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star_rounded, color: kPink, size: 14),
-                                    const SizedBox(width: 4),
-                                    Text('+${b['gracia_points']} pts', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 12)),
-                                  ],
-                                ),
+                          if (b['gracia_points'] != null &&
+                              (int.tryParse(b['gracia_points'].toString()) ??
+                                      0) >
+                                  0)
+                            Row(
+                              children: [
+                                const Icon(Icons.star_rounded,
+                                    color: kPink, size: 14),
+                                const SizedBox(width: 4),
+                                Text('+${b['gracia_points']} pts',
+                                    style: const TextStyle(
+                                        color: kPink,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12)),
+                              ],
+                            ),
                           Text(
-                            b['created_at'] != null ? 'Booked: ${b['created_at'].toString().split('T')[0]}' : '',
-                            style: const TextStyle(fontSize: 11, color: kSlate400),
+                            b['created_at'] != null
+                                ? 'Booked: ${b['created_at'].toString().split('T')[0]}'
+                                : '',
+                            style:
+                                const TextStyle(fontSize: 11, color: kSlate400),
                           ),
                         ],
                       ),
                       if (b['rebooking_status'] == 'pending') ...[
                         const SizedBox(height: 12),
-                        const Text('Rebooking request pending verification', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
+                        const Text('Rebooking request pending verification',
+                            style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12)),
                       ],
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: () async {
-                            final transaction = b['transaction'] is Map ? b['transaction'] : null;
+                            final transaction = b['transaction'] is Map
+                                ? b['transaction']
+                                : null;
                             if (transaction != null &&
                                 transaction['payment_status'] == 'unpaid' &&
                                 transaction['proof_of_payment'] == null) {
@@ -4060,25 +5085,40 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 MaterialPageRoute(
                                   builder: (_) => PaymentProofScreen(
                                     bookingId: b['id'],
-                                    transactionNumber: b['transaction_number'] ?? 'N/A',
-                                    totalPrice: b['total_price'] is num ? (b['total_price'] as num).toDouble() : double.tryParse(b['total_price'].toString()) ?? 0.0,
-                                    paymentDeadlineAt: transaction['payment_deadline_at'] != null
-                                        ? DateTime.tryParse(transaction['payment_deadline_at'])
+                                    transactionNumber:
+                                        b['transaction_number'] ?? 'N/A',
+                                    totalPrice: b['total_price'] is num
+                                        ? (b['total_price'] as num).toDouble()
+                                        : double.tryParse(
+                                                b['total_price'].toString()) ??
+                                            0.0,
+                                    paymentDeadlineAt: transaction[
+                                                'payment_deadline_at'] !=
+                                            null
+                                        ? DateTime.tryParse(
+                                            transaction['payment_deadline_at'])
                                         : null,
                                   ),
                                 ),
                               );
                             } else {
-                              await Navigator.push(context, MaterialPageRoute(builder: (_) => BookingDetailsScreen(booking: Map<String, dynamic>.from(b))));
+                              await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => BookingDetailsScreen(
+                                          booking:
+                                              Map<String, dynamic>.from(b))));
                             }
                             _fetchBookings();
                           },
                           icon: const Icon(Icons.open_in_new, size: 18),
-                          label: const Text('Open booking', style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: const Text('Open booking',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: kGreen,
                             side: const BorderSide(color: kGreen),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                         ),
                       ),
@@ -4116,13 +5156,20 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   double? _refundAmount;
 
   String get _baseUrl => UserSession.getBaseUrl();
-  String get _paymentStatus => (_booking['transaction'] is Map ? (_booking['transaction']['payment_status'] ?? 'unpaid') : 'unpaid').toString();
-  bool get _canManage => _booking['status'] == 'pending' && _paymentStatus != 'paid' && _paymentStatus != 'cancelled';
+  String get _paymentStatus => (_booking['transaction'] is Map
+          ? (_booking['transaction']['payment_status'] ?? 'unpaid')
+          : 'unpaid')
+      .toString();
+  bool get _canManage =>
+      _booking['status'] == 'pending' &&
+      _paymentStatus != 'paid' &&
+      _paymentStatus != 'cancelled';
   bool get _isRoundTrip => _booking['return_date'] != null;
 
   DateTime? get _freeCancellationExpiresAt {
     if (_booking['created_at'] == null) return null;
-    return DateTime.tryParse(_booking['created_at'].toString())?.add(const Duration(minutes: 5));
+    return DateTime.tryParse(_booking['created_at'].toString())
+        ?.add(const Duration(minutes: 5));
   }
 
   @override
@@ -4130,10 +5177,18 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     super.initState();
     _booking = Map<String, dynamic>.from(widget.booking);
     if (_booking['price_breakdown'] is String) {
-      try { _booking['price_breakdown'] = jsonDecode(_booking['price_breakdown']); } catch (_) { _booking['price_breakdown'] = []; }
+      try {
+        _booking['price_breakdown'] = jsonDecode(_booking['price_breakdown']);
+      } catch (_) {
+        _booking['price_breakdown'] = [];
+      }
     }
     if (_booking['passengers'] is String) {
-      try { _booking['passengers'] = jsonDecode(_booking['passengers']); } catch (_) { _booking['passengers'] = []; }
+      try {
+        _booking['passengers'] = jsonDecode(_booking['passengers']);
+      } catch (_) {
+        _booking['passengers'] = [];
+      }
     }
     _fetchPaymentSettings();
     _cancellationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -4152,15 +5207,19 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
   Future<void> _fetchPaymentSettings() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/api/payment-settings'), headers: {'Accept': 'application/json'});
+      final response = await http.get(
+          Uri.parse('$_baseUrl/api/payment-settings'),
+          headers: {'Accept': 'application/json'});
       final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && mounted) setState(() => _qrCodeUrl = data['qr_code_url']);
+      if (response.statusCode == 200 && mounted)
+        setState(() => _qrCodeUrl = data['qr_code_url']);
     } catch (_) {}
   }
 
   void _showMessage(String message, {bool error = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: error ? Colors.red : kGreen));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(message), backgroundColor: error ? Colors.red : kGreen));
   }
 
   Future<void> _startCancellation() async {
@@ -4173,7 +5232,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       );
       final data = jsonDecode(response.body);
       if (response.statusCode != 200 || data['status'] != 'success') {
-        _showMessage(data['message'] ?? 'Unable to start cancellation.', error: true);
+        _showMessage(data['message'] ?? 'Unable to start cancellation.',
+            error: true);
         return;
       }
       _cancellationFee = (data['cancellation_fee'] as num?)?.toDouble();
@@ -4189,14 +5249,18 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
   String _refundDestination() {
     final parts = ['Method: $_refundMethod'];
-    if (_refundMethod != 'GCash') parts.add('Institution: ${_refundInstitutionCtrl.text.trim()}');
+    if (_refundMethod != 'GCash')
+      parts.add('Institution: ${_refundInstitutionCtrl.text.trim()}');
     parts.add('Account No: ${_refundAccountCtrl.text.trim()}');
     parts.add('Name: ${_refundNameCtrl.text.trim()}');
     return parts.join(' | ');
   }
 
   Future<void> _confirmCancellation() async {
-    if (_refundAccountCtrl.text.trim().isEmpty || _refundNameCtrl.text.trim().isEmpty || (_refundMethod != 'GCash' && _refundInstitutionCtrl.text.trim().isEmpty)) {
+    if (_refundAccountCtrl.text.trim().isEmpty ||
+        _refundNameCtrl.text.trim().isEmpty ||
+        (_refundMethod != 'GCash' &&
+            _refundInstitutionCtrl.text.trim().isEmpty)) {
       _showMessage('Complete the refund details first.', error: true);
       return;
     }
@@ -4212,18 +5276,23 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Summary of your cancellation:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Summary of your cancellation:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             _feeRow('Original Total', totalPrice, color: Colors.black87),
             _feeRow('Cancellation Fee', -displayFee, color: Colors.red),
             const Divider(height: 20),
-            _feeRow('Estimated Refund', displayRefund, color: Colors.green.shade700, bold: true),
+            _feeRow('Estimated Refund', displayRefund,
+                color: Colors.green.shade700, bold: true),
             const SizedBox(height: 12),
-            const Text('Refund will be processed in 3–5 business days.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const Text('Refund will be processed in 3–5 business days.',
+                style: TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Back')),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -4238,7 +5307,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       final response = await http.post(
         Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/cancel'),
         headers: {'Accept': 'application/json'},
-        body: {'email': UserSession.email, 'action': 'confirm', 'refund_destination': _refundDestination()},
+        body: {
+          'email': UserSession.email,
+          'action': 'confirm',
+          'refund_destination': _refundDestination()
+        },
       );
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -4258,18 +5331,21 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   }
 
   Future<void> _uploadPaymentProof() async {
-    final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final proof = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (proof == null) return;
     setState(() => _busy = true);
     try {
-      final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/proof'));
+      final request = http.MultipartRequest(
+          'POST', Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/proof'));
       request.headers['Accept'] = 'application/json';
       request.fields['email'] = UserSession.email;
       request.files.add(await http.MultipartFile.fromPath('proof', proof.path));
       final response = await http.Response.fromStream(await request.send());
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
-        final transaction = Map<String, dynamic>.from(_booking['transaction'] ?? {});
+        final transaction =
+            Map<String, dynamic>.from(_booking['transaction'] ?? {});
         transaction['payment_status'] = 'pending';
         _booking['transaction'] = transaction;
         setState(() {});
@@ -4286,41 +5362,75 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
   Future<void> _rebook() async {
     final now = DateTime.now();
-    final departure = await showDatePicker(context: context, firstDate: now.add(const Duration(days: 1)), lastDate: DateTime(now.year + 2), initialDate: now.add(const Duration(days: 1)), helpText: 'New departure date');
+    final departure = await showDatePicker(
+        context: context,
+        firstDate: now.add(const Duration(days: 1)),
+        lastDate: DateTime(now.year + 2),
+        initialDate: now.add(const Duration(days: 1)),
+        helpText: 'New departure date');
     if (departure == null || !mounted) return;
     DateTime? returnDate;
     if (_isRoundTrip) {
-      returnDate = await showDatePicker(context: context, firstDate: departure, lastDate: DateTime(now.year + 2), initialDate: departure.add(const Duration(days: 1)), helpText: 'New return date');
+      returnDate = await showDatePicker(
+          context: context,
+          firstDate: departure,
+          lastDate: DateTime(now.year + 2),
+          initialDate: departure.add(const Duration(days: 1)),
+          helpText: 'New return date');
       if (returnDate == null || !mounted) return;
     }
-    final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final proof = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (proof == null) return;
-    final fee = (_booking['calculated_rebooking_fee'] as num?)?.toDouble() ?? (((_booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
+    final fee = (_booking['calculated_rebooking_fee'] as num?)?.toDouble() ??
+        (((_booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Would you like to proceed with rebooking?'),
-        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('• Please select your preferred new travel date.'),
-          const SizedBox(height: 8),
-          const Text('• Rebooking charges apply and fare difference (if applicable.)'),
-          const SizedBox(height: 12),
-          Text('Rebooking fee: ₱${fee.toStringAsFixed(2)}'),
-          if (_qrCodeUrl != null) ...[const SizedBox(height: 12), Image.network(_qrCodeUrl!, height: 120, width: 120, errorBuilder: (_, __, ___) => const SizedBox.shrink())],
-          const SizedBox(height: 12),
-          const Text('To proceed with rebooking, please select your preferred new travel date and submit your proof of payment for the rebooking fee.'),
-        ]),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Submit'))],
+        content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('• Please select your preferred new travel date.'),
+              const SizedBox(height: 8),
+              const Text(
+                  '• Rebooking charges apply and fare difference (if applicable.)'),
+              const SizedBox(height: 12),
+              Text('Rebooking fee: ₱${fee.toStringAsFixed(2)}'),
+              if (_qrCodeUrl != null) ...[
+                const SizedBox(height: 12),
+                Image.network(_qrCodeUrl!,
+                    height: 120,
+                    width: 120,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink())
+              ],
+              const SizedBox(height: 12),
+              const Text(
+                  'To proceed with rebooking, please select your preferred new travel date and submit your proof of payment for the rebooking fee.'),
+            ]),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Back')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Submit'))
+        ],
       ),
     );
     if (confirm != true) return;
     setState(() => _busy = true);
     try {
-      final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/rebook'));
+      final request = http.MultipartRequest(
+          'POST', Uri.parse('$_baseUrl/api/bookings/${_booking['id']}/rebook'));
       request.headers['Accept'] = 'application/json';
       request.fields['email'] = UserSession.email;
-      request.fields['departure_date'] = departure.toIso8601String().split('T')[0];
-      if (returnDate != null) request.fields['return_date'] = returnDate.toIso8601String().split('T')[0];
+      request.fields['departure_date'] =
+          departure.toIso8601String().split('T')[0];
+      if (returnDate != null)
+        request.fields['return_date'] =
+            returnDate.toIso8601String().split('T')[0];
       request.files.add(await http.MultipartFile.fromPath('proof', proof.path));
       final response = await http.Response.fromStream(await request.send());
       final data = jsonDecode(response.body);
@@ -4338,16 +5448,24 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     }
   }
 
-  Widget _feeRow(String label, double amount, {Color color = Colors.black87, bool bold = false}) {
+  Widget _feeRow(String label, double amount,
+      {Color color = Colors.black87, bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, color: color, fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 13,
+                  color: color,
+                  fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
           Text(
             '${amount < 0 ? '-' : ''}₱${amount.abs().toStringAsFixed(2)}',
-            style: TextStyle(fontSize: 13, color: color, fontWeight: bold ? FontWeight.bold : FontWeight.normal),
+            style: TextStyle(
+                fontSize: 13,
+                color: color,
+                fontWeight: bold ? FontWeight.bold : FontWeight.normal),
           ),
         ],
       ),
@@ -4365,15 +5483,20 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Payment', style: TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+              const Text('Payment',
+                  style:
+                      TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
               const SizedBox(height: 8),
-              Text('Status: ${_paymentStatus.toUpperCase()}', style: const TextStyle(color: kSlate600)),
+              Text('Status: ${_paymentStatus.toUpperCase()}',
+                  style: const TextStyle(color: kSlate600)),
               const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('₱${total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Total',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('₱${total.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
@@ -4393,20 +5516,32 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Price Breakdown', style: TextStyle(fontWeight: FontWeight.bold, color: kSlate800, fontSize: 15)),
+                const Text('Price Breakdown',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: kSlate800,
+                        fontSize: 15)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: _paymentStatus == 'paid' ? Colors.green.shade50 : Colors.orange.shade50,
+                    color: _paymentStatus == 'paid'
+                        ? Colors.green.shade50
+                        : Colors.orange.shade50,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: _paymentStatus == 'paid' ? Colors.green.shade300 : Colors.orange.shade300),
+                    border: Border.all(
+                        color: _paymentStatus == 'paid'
+                            ? Colors.green.shade300
+                            : Colors.orange.shade300),
                   ),
                   child: Text(
                     _paymentStatus.toUpperCase(),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: _paymentStatus == 'paid' ? Colors.green.shade700 : Colors.orange.shade700,
+                      color: _paymentStatus == 'paid'
+                          ? Colors.green.shade700
+                          : Colors.orange.shade700,
                     ),
                   ),
                 ),
@@ -4417,7 +5552,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               final amount = (item['amount'] as num?)?.toDouble() ?? 0.0;
               final label = item['label']?.toString() ?? '';
               final isDiscount = amount < 0;
-              final isSubtle = (item['class'] ?? '').toString().contains('slate');
+              final isSubtle =
+                  (item['class'] ?? '').toString().contains('slate');
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 3),
                 child: Row(
@@ -4428,8 +5564,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         label,
                         style: TextStyle(
                           fontSize: 13,
-                          color: isDiscount ? Colors.green.shade700 : (isSubtle ? Colors.grey.shade600 : kSlate700),
-                          fontStyle: isSubtle ? FontStyle.italic : FontStyle.normal,
+                          color: isDiscount
+                              ? Colors.green.shade700
+                              : (isSubtle ? Colors.grey.shade600 : kSlate700),
+                          fontStyle:
+                              isSubtle ? FontStyle.italic : FontStyle.normal,
                         ),
                       ),
                     ),
@@ -4437,8 +5576,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                       '${isDiscount ? '-' : ''}₱${amount.abs().toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isDiscount ? FontWeight.bold : FontWeight.normal,
-                        color: isDiscount ? Colors.green.shade700 : (isSubtle ? Colors.grey.shade600 : kSlate700),
+                        fontWeight:
+                            isDiscount ? FontWeight.bold : FontWeight.normal,
+                        color: isDiscount
+                            ? Colors.green.shade700
+                            : (isSubtle ? Colors.grey.shade600 : kSlate700),
                       ),
                     ),
                   ],
@@ -4449,8 +5591,14 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                Text('₱${total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kGreen)),
+                const Text('Total Amount',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text('₱${total.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: kGreen)),
               ],
             ),
           ],
@@ -4460,29 +5608,50 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   }
 
   Future<void> _openSupport() async {
-    final subjectCtrl = TextEditingController(text: 'Booking ${_booking['transaction_number']} support');
+    final subjectCtrl = TextEditingController(
+        text: 'Booking ${_booking['transaction_number']} support');
     final messageCtrl = TextEditingController();
     final submit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Contact support'),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(controller: subjectCtrl, decoration: const InputDecoration(labelText: 'Subject')),
-          TextField(controller: messageCtrl, maxLines: 4, decoration: const InputDecoration(labelText: 'Message')),
+          TextField(
+              controller: subjectCtrl,
+              decoration: const InputDecoration(labelText: 'Subject')),
+          TextField(
+              controller: messageCtrl,
+              maxLines: 4,
+              decoration: const InputDecoration(labelText: 'Message')),
         ]),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Send'))],
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Back')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Send'))
+        ],
       ),
     );
     if (submit != true || messageCtrl.text.trim().isEmpty) return;
     try {
-      final response = await http.post(Uri.parse('$_baseUrl/api/support'), headers: {'Accept': 'application/json'}, body: {
+      final response =
+          await http.post(Uri.parse('$_baseUrl/api/support'), headers: {
+        'Accept': 'application/json'
+      }, body: {
         'name': UserSession.username,
         'email': UserSession.email,
         'subject': subjectCtrl.text.trim(),
-        'message': 'Booking ${_booking['transaction_number']}: ${messageCtrl.text.trim()}',
+        'message':
+            'Booking ${_booking['transaction_number']}: ${messageCtrl.text.trim()}',
       });
       final data = jsonDecode(response.body);
-      _showMessage(response.statusCode == 200 ? 'Support request sent.' : (data['message'] ?? 'Unable to contact support.'), error: response.statusCode != 200);
+      _showMessage(
+          response.statusCode == 200
+              ? 'Support request sent.'
+              : (data['message'] ?? 'Unable to contact support.'),
+          error: response.statusCode != 200);
     } catch (e) {
       _showMessage('Connection error: $e', error: true);
     } finally {
@@ -4496,13 +5665,17 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     final status = (_booking['status'] ?? 'pending').toString();
     final expiry = _freeCancellationExpiresAt;
     final isWithin5Mins = expiry != null && DateTime.now().isBefore(expiry);
-    final secondsLeft = expiry == null ? 0 : expiry.difference(DateTime.now()).inSeconds.clamp(0, 300);
-    final transaction = Map<String, dynamic>.from(_booking['transaction'] ?? {});
+    final secondsLeft = expiry == null
+        ? 0
+        : expiry.difference(DateTime.now()).inSeconds.clamp(0, 300);
+    final transaction =
+        Map<String, dynamic>.from(_booking['transaction'] ?? {});
     return Scaffold(
       appBar: AppBar(title: const Text('Booking details')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         _detailHeader(status),
-        if (status == 'operator_cancelled' || _booking['service_cancellation_id'] != null)
+        if (status == 'operator_cancelled' ||
+            _booking['service_cancellation_id'] != null)
           Card(
             color: Colors.red.shade50,
             margin: const EdgeInsets.only(bottom: 12),
@@ -4517,12 +5690,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+                      const Icon(Icons.warning_amber_rounded,
+                          color: Colors.red, size: 24),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'Service Cancelled by Operator',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red.shade900, fontSize: 16),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red.shade900,
+                              fontSize: 16),
                         ),
                       ),
                     ],
@@ -4535,13 +5712,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ServiceCancellationScreen(booking: _booking),
+                            builder: (_) =>
+                                ServiceCancellationScreen(booking: _booking),
                           ),
                         );
                       },
                       icon: const Icon(Icons.swap_horiz_rounded),
                       label: const Text('Reschedule / Refund Options'),
-                      style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700, foregroundColor: Colors.white),
+                      style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red.shade700,
+                          foregroundColor: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -4557,11 +5737,15 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         _detailSection('Trip', [
           '${_booking['origin']} → ${_booking['destination']}',
           'Departure: ${_booking['departure_date']?.toString().split('T')[0] ?? '—'}',
-          if (_booking['return_date'] != null) 'Return: ${_booking['return_date'].toString().split('T')[0]}',
-          _booking['schedule_summary'] ?? _booking['schedule_service'] ?? 'Schedule not recorded',
+          if (_booking['return_date'] != null)
+            'Return: ${_booking['return_date'].toString().split('T')[0]}',
+          _booking['schedule_summary'] ??
+              _booking['schedule_service'] ??
+              'Schedule not recorded',
         ]),
         _priceBreakdownCard(),
-        if (_booking['passengers'] != null && (_booking['passengers'] as List).isNotEmpty)
+        if (_booking['passengers'] != null &&
+            (_booking['passengers'] as List).isNotEmpty)
           _detailSection(
             'Passengers & Discount IDs',
             (_booking['passengers'] as List).map((p) {
@@ -4572,45 +5756,75 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               final front = p['id_image_front_url'] ?? p['id_image_front'];
               final back = p['id_image_back_url'] ?? p['id_image_back'];
               String str = '$name ($type) • Bday: $bday';
-              if (idNum != null && idNum.toString().isNotEmpty) str += ' • ID: $idNum';
+              if (idNum != null && idNum.toString().isNotEmpty)
+                str += ' • ID: $idNum';
               if (front != null) str += ' • Front ID: Attached';
               if (back != null) str += ' • Back ID: Attached';
               return str;
             }).toList(),
           ),
         if (_paymentStatus == 'unpaid' || _paymentStatus == 'pending') ...[
-          OutlinedButton.icon(onPressed: _busy ? null : _uploadPaymentProof, icon: const Icon(Icons.upload_file), label: const Text('Upload payment proof')),
+          OutlinedButton.icon(
+              onPressed: _busy ? null : _uploadPaymentProof,
+              icon: const Icon(Icons.upload_file),
+              label: const Text('Upload payment proof')),
         ],
         if (_booking['rebooking_status'] == 'pending')
-          _detailSection('Rebooking', ['Request pending verification', 'New dates will appear after approval.']),
+          _detailSection('Rebooking', [
+            'Request pending verification',
+            'New dates will appear after approval.'
+          ]),
         if (transaction['confirmation_url'] != null)
-          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(transaction['confirmation_url'])), icon: const Icon(Icons.confirmation_num), label: const Text('Payment Acknowledgement')),
+          OutlinedButton.icon(
+              onPressed: () =>
+                  launchUrl(Uri.parse(transaction['confirmation_url'])),
+              icon: const Icon(Icons.confirmation_num),
+              label: const Text('Payment Acknowledgement')),
         if (_booking['confirmation_url'] != null)
-          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_url'])), icon: const Icon(Icons.link), label: const Text('Payment Acknowledgement')),
+          OutlinedButton.icon(
+              onPressed: () =>
+                  launchUrl(Uri.parse(_booking['confirmation_url'])),
+              icon: const Icon(Icons.link),
+              label: const Text('Payment Acknowledgement')),
         if (_booking['confirmation_pdf_url'] != null)
-          OutlinedButton.icon(onPressed: () => launchUrl(Uri.parse(_booking['confirmation_pdf_url'])), icon: const Icon(Icons.picture_as_pdf), label: const Text('Payment Acknowledgement (PDF)')),
+          OutlinedButton.icon(
+              onPressed: () =>
+                  launchUrl(Uri.parse(_booking['confirmation_pdf_url'])),
+              icon: const Icon(Icons.picture_as_pdf),
+              label: const Text('Payment Acknowledgement (PDF)')),
         if (_booking['ticket_url'] != null)
           FilledButton.icon(
             onPressed: () => launchUrl(Uri.parse(_booking['ticket_url'])),
             icon: const Icon(Icons.download),
             label: const Text('Download Ticket'),
-            style: FilledButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white),
+            style: FilledButton.styleFrom(
+                backgroundColor: kGreen, foregroundColor: Colors.white),
           ),
         const SizedBox(height: 12),
         if (_canManage && !_cancellationStarted) ...[
-          OutlinedButton.icon(onPressed: _busy ? null : _rebook, icon: const Icon(Icons.calendar_month), label: const Text('Request rebooking')),
+          OutlinedButton.icon(
+              onPressed: _busy ? null : _rebook,
+              icon: const Icon(Icons.calendar_month),
+              label: const Text('Request rebooking')),
           OutlinedButton.icon(
             onPressed: _busy ? null : _startCancellation,
-            icon: Icon(isWithin5Mins ? Icons.cancel_outlined : Icons.monetization_on_outlined),
-            label: Text(isWithin5Mins ? 'Cancel Booking (Free) - ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}' : 'Request Refund'),
-            style: OutlinedButton.styleFrom(foregroundColor: isWithin5Mins ? Colors.red : Colors.orange),
+            icon: Icon(isWithin5Mins
+                ? Icons.cancel_outlined
+                : Icons.monetization_on_outlined),
+            label: Text(isWithin5Mins
+                ? 'Cancel Booking (Free) - ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}'
+                : 'Request Refund'),
+            style: OutlinedButton.styleFrom(
+                foregroundColor: isWithin5Mins ? Colors.red : Colors.orange),
           ),
         ],
         if (_cancellationStarted) ...[
           Card(
             color: Colors.red.shade50,
             margin: const EdgeInsets.only(bottom: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.red.shade200)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.red.shade200)),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
@@ -4619,40 +5833,109 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   if (isWithin5Mins) ...[
                     Row(
                       children: [
-                        Icon(Icons.timer_outlined, color: Colors.red.shade700, size: 18),
+                        Icon(Icons.timer_outlined,
+                            color: Colors.red.shade700, size: 18),
                         const SizedBox(width: 8),
-                        Text('Free cancellation expires in ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red.shade700)),
+                        Text(
+                            'Free cancellation expires in ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red.shade700)),
                       ],
                     ),
                     const SizedBox(height: 10),
                   ],
-                  if (_cancellationFee != null) _feeRow('Cancellation Fee', _cancellationFee!, color: Colors.red.shade700),
-                  if (_refundAmount != null) _feeRow('Estimated Refund', _refundAmount!, color: Colors.green.shade700, bold: true),
+                  if (_cancellationFee != null)
+                    _feeRow('Cancellation Fee', _cancellationFee!,
+                        color: Colors.red.shade700),
+                  if (_refundAmount != null)
+                    _feeRow('Estimated Refund', _refundAmount!,
+                        color: Colors.green.shade700, bold: true),
                 ],
               ),
             ),
           ),
-          DropdownButtonFormField<String>(initialValue: _refundMethod, decoration: const InputDecoration(labelText: 'Refund method'), items: const [DropdownMenuItem(value: 'GCash', child: Text('GCash')), DropdownMenuItem(value: 'Online Wallet', child: Text('Online Wallet')), DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account'))], onChanged: (value) => setState(() => _refundMethod = value ?? 'GCash')),
-          if (_refundMethod != 'GCash') TextField(controller: _refundInstitutionCtrl, decoration: const InputDecoration(labelText: 'Bank or wallet provider')),
-          TextField(controller: _refundAccountCtrl, decoration: InputDecoration(labelText: _refundMethod == 'GCash' ? 'GCash number' : 'Account number')),
-          TextField(controller: _refundNameCtrl, decoration: const InputDecoration(labelText: 'Account name')),
+          DropdownButtonFormField<String>(
+              initialValue: _refundMethod,
+              decoration: const InputDecoration(labelText: 'Refund method'),
+              items: const [
+                DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                DropdownMenuItem(
+                    value: 'Online Wallet', child: Text('Online Wallet')),
+                DropdownMenuItem(
+                    value: 'Bank Account', child: Text('Bank Account'))
+              ],
+              onChanged: (value) =>
+                  setState(() => _refundMethod = value ?? 'GCash')),
+          if (_refundMethod != 'GCash')
+            TextField(
+                controller: _refundInstitutionCtrl,
+                decoration: const InputDecoration(
+                    labelText: 'Bank or wallet provider')),
+          TextField(
+              controller: _refundAccountCtrl,
+              decoration: InputDecoration(
+                  labelText: _refundMethod == 'GCash'
+                      ? 'GCash number'
+                      : 'Account number')),
+          TextField(
+              controller: _refundNameCtrl,
+              decoration: const InputDecoration(labelText: 'Account name')),
           const SizedBox(height: 12),
-          FilledButton.icon(onPressed: _busy ? null : _confirmCancellation, icon: const Icon(Icons.check), label: Text(isWithin5Mins ? 'Confirm cancellation' : 'Confirm refund')),
+          FilledButton.icon(
+              onPressed: _busy ? null : _confirmCancellation,
+              icon: const Icon(Icons.check),
+              label: Text(
+                  isWithin5Mins ? 'Confirm cancellation' : 'Confirm refund')),
         ],
         const SizedBox(height: 12),
-        OutlinedButton.icon(onPressed: _openSupport, icon: const Icon(Icons.support_agent), label: const Text('Contact support')),
+        OutlinedButton.icon(
+            onPressed: _openSupport,
+            icon: const Icon(Icons.support_agent),
+            label: const Text('Contact support')),
       ]),
     );
   }
 
   Widget _detailHeader(String status) {
-    final isOpCancelled = status == 'operator_cancelled' || _booking['service_cancellation_id'] != null;
+    final isOpCancelled = status == 'operator_cancelled' ||
+        _booking['service_cancellation_id'] != null;
     final bg = isOpCancelled || status == 'cancelled' ? Colors.red : kGreen;
-    return Card(color: bg, child: Padding(padding: const EdgeInsets.all(18), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_booking['transaction_number'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)), const SizedBox(height: 8), Text(isOpCancelled ? 'CANCELLED BY OPERATOR' : status.toUpperCase(), style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold))])));
+    return Card(
+        color: bg,
+        child: Padding(
+            padding: const EdgeInsets.all(18),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(_booking['transaction_number'] ?? '',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18)),
+              const SizedBox(height: 8),
+              Text(
+                  isOpCancelled
+                      ? 'CANCELLED BY OPERATOR'
+                      : status.toUpperCase(),
+                  style: const TextStyle(
+                      color: Colors.white70, fontWeight: FontWeight.bold))
+            ])));
   }
 
-  Widget _detailSection(String title, List<String> values) => Card(margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)), const SizedBox(height: 8), ...values.map((value) => Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(value, style: const TextStyle(color: kSlate600))))])));
+  Widget _detailSection(String title, List<String> values) => Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+          padding: const EdgeInsets.all(16),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: kSlate800)),
+            const SizedBox(height: 8),
+            ...values.map((value) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(value, style: const TextStyle(color: kSlate600))))
+          ])));
 }
 
 class _NotificationDot extends StatelessWidget {
@@ -4664,7 +5947,8 @@ class _NotificationDot extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+      decoration:
+          const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
     );
   }
 }
@@ -4726,7 +6010,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated'), backgroundColor: kGreen),
+        const SnackBar(
+            content: Text('Profile updated'), backgroundColor: kGreen),
       );
       Navigator.pop(context);
     }
@@ -4750,7 +6035,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const Row(
                     children: [
-                      Text('Profile Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                      Text('Profile Details',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: kSlate800)),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -4758,8 +6047,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     controller: _nameCtrl,
                     decoration: InputDecoration(
                       labelText: 'Name',
-                      prefixIcon: const Icon(Icons.person_outline, color: kGreen),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      prefixIcon:
+                          const Icon(Icons.person_outline, color: kGreen),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -4768,8 +6059,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: const Icon(Icons.email_outlined, color: kGreen),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      prefixIcon:
+                          const Icon(Icons.email_outlined, color: kGreen),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -4787,15 +6080,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ],
                       ),
-                      prefixIcon: const Icon(Icons.phone_android_outlined, color: kGreen),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      prefixIcon: const Icon(Icons.phone_android_outlined,
+                          color: kGreen),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          if (UserSession.referralCode != null && UserSession.referralCode!.isNotEmpty) ...[
+          if (UserSession.referralCode != null &&
+              UserSession.referralCode!.isNotEmpty) ...[
             const SizedBox(height: 16),
             Card(
               color: Colors.white,
@@ -4808,7 +6104,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Icon(Icons.card_giftcard, color: kPink, size: 20),
                         SizedBox(width: 8),
-                        Text('My Referral Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                        Text('My Referral Code',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: kSlate800)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -4816,7 +6116,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               color: kSlate100,
                               borderRadius: BorderRadius.circular(8),
@@ -4824,7 +6125,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: Text(
                               UserSession.referralCode!,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 2.0),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  letterSpacing: 2.0),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -4849,9 +6153,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kPink,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Save Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Save Profile',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -4866,7 +6172,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class AppDrawer extends StatelessWidget {
   final VoidCallback onLogout;
   final VoidCallback onProfileUpdated;
-  const AppDrawer({super.key, required this.onLogout, required this.onProfileUpdated});
+  const AppDrawer(
+      {super.key, required this.onLogout, required this.onProfileUpdated});
 
   @override
   Widget build(BuildContext context) {
@@ -4879,15 +6186,20 @@ class AppDrawer extends StatelessWidget {
               backgroundColor: Colors.white,
               child: Text(
                 UserSession.isLoggedIn ? UserSession.username[0] : '?',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: kGreen),
+                style: const TextStyle(
+                    fontSize: 28, fontWeight: FontWeight.bold, color: kGreen),
               ),
             ),
             accountName: Text(
-              UserSession.isLoggedIn ? 'Hi, ${UserSession.username}!' : 'Guest User',
+              UserSession.isLoggedIn
+                  ? 'Hi, ${UserSession.username}!'
+                  : 'Guest User',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             accountEmail: Text(
-              UserSession.isLoggedIn ? UserSession.email : 'Sign in to access your activities',
+              UserSession.isLoggedIn
+                  ? UserSession.email
+                  : 'Sign in to access your activities',
               style: const TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ),
@@ -4895,12 +6207,16 @@ class AppDrawer extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.person_outline, color: kGreen),
               title: const Text('My Profile'),
-              trailing: UserSession.isLoggedIn && UserSession.phone.trim().isEmpty
-                  ? const _NotificationDot()
-                  : null,
+              trailing:
+                  UserSession.isLoggedIn && UserSession.phone.trim().isEmpty
+                      ? const _NotificationDot()
+                      : null,
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())).then((_) {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const ProfileScreen())).then((_) {
                   onProfileUpdated();
                 });
               },
@@ -4910,7 +6226,8 @@ class AppDrawer extends StatelessWidget {
             title: const Text('About'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AboutScreen()));
             },
           ),
           ListTile(
@@ -4918,7 +6235,8 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Contacts'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ContactScreen()));
             },
           ),
           ListTile(
@@ -4927,14 +6245,16 @@ class AppDrawer extends StatelessWidget {
             onTap: () async {
               Navigator.pop(context);
               final url = Uri.parse('https://amiga-travel.up.railway.app');
-              if (await canLaunchUrl(url)) await launchUrl(url, mode: LaunchMode.externalApplication);
+              if (await canLaunchUrl(url))
+                await launchUrl(url, mode: LaunchMode.externalApplication);
             },
           ),
           const Spacer(),
           if (UserSession.isLoggedIn)
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
-              title: const Text('Log out', style: TextStyle(color: Colors.redAccent)),
+              title: const Text('Log out',
+                  style: TextStyle(color: Colors.redAccent)),
               onTap: () {
                 Navigator.pop(context);
                 onLogout(); // Clears full session & navigates to Home tab
@@ -4946,7 +6266,10 @@ class AppDrawer extends StatelessWidget {
               children: [
                 Text(
                   'Version ${UserSession.appVersion}',
-                  style: TextStyle(color: kSlate400, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: kSlate400,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 4),
@@ -4975,12 +6298,18 @@ class _StepProgress extends StatelessWidget {
 
   IconData _getStepIcon(String stepName) {
     switch (stepName.toLowerCase()) {
-      case 'route': return Icons.directions_boat;
-      case 'schedule': return Icons.calendar_month;
-      case 'discount': return Icons.local_offer;
-      case 'hotels': return Icons.hotel;
-      case 'submit': return Icons.fact_check;
-      default: return Icons.circle;
+      case 'route':
+        return Icons.directions_boat;
+      case 'schedule':
+        return Icons.calendar_month;
+      case 'discount':
+        return Icons.local_offer;
+      case 'hotels':
+        return Icons.hotel;
+      case 'submit':
+        return Icons.fact_check;
+      default:
+        return Icons.circle;
     }
   }
 
@@ -5014,16 +6343,30 @@ class _StepProgress extends StatelessWidget {
                 height: 28,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: done ? kGreen : active ? kPink : kSlate200,
+                  color: done
+                      ? kGreen
+                      : active
+                          ? kPink
+                          : kSlate200,
                 ),
                 child: Center(
                   child: done
                       ? const Icon(Icons.check, color: Colors.white, size: 14)
-                      : Icon(_getStepIcon(steps[i ~/ 2]), color: active ? Colors.white : kSlate500, size: 14),
+                      : Icon(_getStepIcon(steps[i ~/ 2]),
+                          color: active ? Colors.white : kSlate500, size: 14),
                 ),
               ),
               const SizedBox(height: 4),
-              Text(steps[i ~/ 2], style: TextStyle(fontSize: 9, color: active ? kPink : done ? kGreen : kSlate400, fontWeight: active ? FontWeight.bold : FontWeight.normal)),
+              Text(steps[i ~/ 2],
+                  style: TextStyle(
+                      fontSize: 9,
+                      color: active
+                          ? kPink
+                          : done
+                              ? kGreen
+                              : kSlate400,
+                      fontWeight:
+                          active ? FontWeight.bold : FontWeight.normal)),
             ],
           );
         }),
@@ -5059,51 +6402,67 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
   }
 
   void _fetchSchedules() async {
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final baseUrl = UserSession.getBaseUrl();
       final res = await http.post(
         Uri.parse('$baseUrl/api/schedules'),
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
         body: jsonEncode({
           'origin': widget.booking.origin,
           'destination': widget.booking.destination,
           'date': widget.booking.departureDate,
           'mode': widget.booking.mode,
-          if (widget.booking.operator != null) 'operator': widget.booking.operator,
+          if (widget.booking.operator != null)
+            'operator': widget.booking.operator,
         }),
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        _schedules = parseAndFilterSchedules(data['schedules'], widget.booking.departureDate);
+        _schedules = parseAndFilterSchedules(
+            data['schedules'], widget.booking.departureDate);
       } else {
         setState(() => _error = data['message'] ?? 'Failed to load schedules.');
         return;
       }
 
-      if (widget.booking.tripType == 'round_trip' && widget.booking.returnDate != null) {
+      if (widget.booking.tripType == 'round_trip' &&
+          widget.booking.returnDate != null) {
         final returnRes = await http.post(
           Uri.parse('$baseUrl/api/schedules'),
-          headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
           body: jsonEncode({
             'origin': widget.booking.destination,
             'destination': widget.booking.origin,
             'date': widget.booking.returnDate,
             'mode': widget.booking.mode,
-            if (widget.booking.operator != null) 'operator': widget.booking.operator,
+            if (widget.booking.operator != null)
+              'operator': widget.booking.operator,
           }),
         );
         final returnData = jsonDecode(returnRes.body);
         if (returnRes.statusCode == 200 && returnData['status'] == 'success') {
-          _returnSchedules = parseAndFilterSchedules(returnData['schedules'], widget.booking.returnDate);
+          _returnSchedules = parseAndFilterSchedules(
+              returnData['schedules'], widget.booking.returnDate);
         } else {
-          setState(() => _error = returnData['message'] ?? 'Failed to load returning schedules.');
+          setState(() => _error =
+              returnData['message'] ?? 'Failed to load returning schedules.');
           return;
         }
       }
 
       if (widget.booking.mode == 'airline') {
-        final baggageRes = await http.get(Uri.parse('$baseUrl/api/baggage-rules'));
+        final baggageRes =
+            await http.get(Uri.parse('$baseUrl/api/baggage-rules'));
         if (baggageRes.statusCode == 200) {
           final bData = jsonDecode(baggageRes.body);
           if (bData['status'] == 'success') {
@@ -5144,7 +6503,11 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       widget.booking.selectedScheduleAccommodation = null;
       widget.booking.savedStep = 2;
       widget.booking.saveToPrefs(2);
-      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+      Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => DiscountScreen(booking: widget.booking)))
+          .then((_) {
         if (mounted) {
           widget.booking.savedStep = 1;
           widget.booking.saveToPrefs(1);
@@ -5153,10 +6516,12 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     }
   }
 
-  void _showAirlineClassPicker(BuildContext context, List<dynamic> classes, {bool isReturn = false}) {
+  void _showAirlineClassPicker(BuildContext context, List<dynamic> classes,
+      {bool isReturn = false}) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
@@ -5164,7 +6529,11 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Select Cabin Class', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+              const Text('Select Cabin Class',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: kSlate800)),
               const SizedBox(height: 12),
               Flexible(
                 child: ListView.builder(
@@ -5177,7 +6546,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                     return Card(
                       color: Colors.white,
                       margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: kSlate200)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: kSlate200)),
                       child: InkWell(
                         onTap: () {
                           if (isReturn) {
@@ -5186,19 +6557,28 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                             // widget.booking.selectedReturnTransportClassId = c['id'];
                           } else {
                             widget.booking.selectedTransportClassId = c['id'];
-                            widget.booking.selectedTransportClass = Map<String, dynamic>.from(c);
-                            widget.booking.selectedScheduleAccommodationId = null;
+                            widget.booking.selectedTransportClass =
+                                Map<String, dynamic>.from(c);
+                            widget.booking.selectedScheduleAccommodationId =
+                                null;
                             widget.booking.selectedScheduleAccommodation = null;
                             Navigator.pop(context);
-                            if (widget.booking.tripType != 'round_trip' || (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)) {
-                                widget.booking.savedStep = 2;
-                                widget.booking.saveToPrefs(2);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
-                                  if (mounted) {
-                                    widget.booking.savedStep = 1;
-                                    widget.booking.saveToPrefs(1);
-                                  }
-                                });
+                            if (widget.booking.tripType != 'round_trip' ||
+                                (widget.booking.selectedSchedule != null &&
+                                    widget.booking.selectedReturnSchedule !=
+                                        null)) {
+                              widget.booking.savedStep = 2;
+                              widget.booking.saveToPrefs(2);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => DiscountScreen(
+                                          booking: widget.booking))).then((_) {
+                                if (mounted) {
+                                  widget.booking.savedStep = 1;
+                                  widget.booking.saveToPrefs(1);
+                                }
+                              });
                             }
                           }
                         },
@@ -5213,20 +6593,35 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(c['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                                        Text(c['name'] ?? '',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                                color: kSlate800)),
                                         if (isOnSale) ...[
                                           const SizedBox(width: 8),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
-                                            child: const Text('SALE', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(4)),
+                                            child: const Text('SALE',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 9,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
                                           ),
                                         ],
                                       ],
                                     ),
                                     if (c['description'] != null) ...[
                                       const SizedBox(height: 4),
-                                      Text(c['description'], style: const TextStyle(color: kSlate500, fontSize: 12)),
+                                      Text(c['description'],
+                                          style: const TextStyle(
+                                              color: kSlate500, fontSize: 12)),
                                     ],
                                   ],
                                 ),
@@ -5237,8 +6632,17 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   if (isOnSale)
-                                    Text('₱${c['price']}', style: const TextStyle(color: kSlate400, fontSize: 12, decoration: TextDecoration.lineThrough)),
-                                  Text('₱$price', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 16)),
+                                    Text('₱${c['price']}',
+                                        style: const TextStyle(
+                                            color: kSlate400,
+                                            fontSize: 12,
+                                            decoration:
+                                                TextDecoration.lineThrough)),
+                                  Text('₱$price',
+                                      style: const TextStyle(
+                                          color: kPink,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16)),
                                 ],
                               ),
                             ],
@@ -5256,10 +6660,13 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     );
   }
 
-  void _showFerryAccommodationPicker(BuildContext context, List<dynamic> accommodations, {bool isReturn = false}) {
+  void _showFerryAccommodationPicker(
+      BuildContext context, List<dynamic> accommodations,
+      {bool isReturn = false}) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
@@ -5267,7 +6674,11 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Select Accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+              const Text('Select Accommodation',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: kSlate800)),
               const SizedBox(height: 12),
               Flexible(
                 child: ListView.builder(
@@ -5278,15 +6689,22 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                     return Card(
                       color: Colors.white,
                       margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: kSlate200)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: kSlate200)),
                       child: InkWell(
                         onTap: () {
                           if (isReturn) {
-                            widget.booking.selectedReturnScheduleAccommodationId = acc['id'];
-                            widget.booking.selectedReturnScheduleAccommodation = Map<String, dynamic>.from(acc);
+                            widget.booking
+                                    .selectedReturnScheduleAccommodationId =
+                                acc['id'];
+                            widget.booking.selectedReturnScheduleAccommodation =
+                                Map<String, dynamic>.from(acc);
                           } else {
-                            widget.booking.selectedScheduleAccommodationId = acc['id'];
-                            widget.booking.selectedScheduleAccommodation = Map<String, dynamic>.from(acc);
+                            widget.booking.selectedScheduleAccommodationId =
+                                acc['id'];
+                            widget.booking.selectedScheduleAccommodation =
+                                Map<String, dynamic>.from(acc);
                             widget.booking.selectedTransportClassId = null;
                             widget.booking.selectedTransportClass = null;
                           }
@@ -5302,23 +6720,49 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(acc['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                                    Text(acc['name'] ?? '',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                            color: kSlate800)),
                                     if (acc['description'] != null) ...[
                                       const SizedBox(height: 4),
-                                      Text(acc['description'], style: const TextStyle(color: kSlate500, fontSize: 12)),
+                                      Text(acc['description'],
+                                          style: const TextStyle(
+                                              color: kSlate500, fontSize: 12)),
                                     ],
                                   ],
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Builder(builder: (ctx) {
-                                final basePriceStr = isReturn 
-                                    ? (widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0)
-                                    : (widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
-                                final basePrice = basePriceStr is num ? basePriceStr.toDouble() : double.tryParse(basePriceStr.toString()) ?? 0.0;
+                                final basePriceStr = isReturn
+                                    ? (widget.booking.selectedReturnSchedule![
+                                            'adult_price'] ??
+                                        widget.booking
+                                            .selectedReturnSchedule!['price'] ??
+                                        0)
+                                    : (widget.booking
+                                            .selectedSchedule!['adult_price'] ??
+                                        widget.booking
+                                            .selectedSchedule!['price'] ??
+                                        0);
+                                final basePrice = basePriceStr is num
+                                    ? basePriceStr.toDouble()
+                                    : double.tryParse(
+                                            basePriceStr.toString()) ??
+                                        0.0;
                                 final accPriceStr = acc['price'] ?? 0;
-                                final accPrice = accPriceStr is num ? accPriceStr.toDouble() : double.tryParse(accPriceStr.toString()) ?? 0.0;
-                                return Text('₱${(basePrice + accPrice).toStringAsFixed(2)}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 15));
+                                final accPrice = accPriceStr is num
+                                    ? accPriceStr.toDouble()
+                                    : double.tryParse(accPriceStr.toString()) ??
+                                        0.0;
+                                return Text(
+                                    '₱${(basePrice + accPrice).toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        color: kPink,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15));
                               }),
                             ],
                           ),
@@ -5345,15 +6789,25 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+                color: kGreen.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
-                Icon(widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight, color: kGreen, size: 20),
+                Icon(
+                    widget.booking.mode == 'ferry'
+                        ? Icons.directions_boat
+                        : Icons.flight,
+                    color: kGreen,
+                    size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     '${widget.booking.origin} → ${widget.booking.destination}  ·  ${widget.booking.departureDate}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: kGreen,
+                        fontSize: 13),
                   ),
                 ),
               ],
@@ -5367,12 +6821,16 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                            Text(_error!,
+                                style: const TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _fetchSchedules,
-                              style: ElevatedButton.styleFrom(backgroundColor: kGreen),
-                              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: kGreen),
+                              child: const Text('Retry',
+                                  style: TextStyle(color: Colors.white)),
                             ),
                           ],
                         ),
@@ -5384,50 +6842,103 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                             if (widget.booking.tripType == 'round_trip') ...[
                               _buildBaggageReminder(),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 8.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Departure Trip', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                                    const Text('Departure Trip',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: kSlate800)),
                                     const SizedBox(height: 4),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(color: const Color(0xFFE0EFFF), borderRadius: BorderRadius.circular(8)),
-                                      child: Text('From ${widget.booking.origin} • To ${widget.booking.destination}', style: const TextStyle(color: Color(0xFF5C1C85), fontWeight: FontWeight.bold, fontSize: 13)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                          color: const Color(0xFFE0EFFF),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      child: Text(
+                                          'From ${widget.booking.origin} • To ${widget.booking.destination}',
+                                          style: const TextStyle(
+                                              color: Color(0xFF5C1C85),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13)),
                                     ),
                                   ],
                                 ),
                               ),
-                              _buildHorizontalScheduleList(_schedules, isReturn: false),
-                              if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
-                                _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
+                              _buildHorizontalScheduleList(_schedules,
+                                  isReturn: false),
+                              if (widget.booking.selectedSchedule != null &&
+                                  widget.booking.selectedSchedule![
+                                          'promotional_ticket'] !=
+                                      null)
+                                _buildPromoTicketBanner(widget.booking
+                                    .selectedSchedule!['promotional_ticket']),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 8.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Returning Trip', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                                    const Text('Returning Trip',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: kSlate800)),
                                     const SizedBox(height: 4),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(color: const Color(0xFFE0EFFF), borderRadius: BorderRadius.circular(8)),
-                                      child: Text('From ${widget.booking.destination} • To ${widget.booking.origin}', style: const TextStyle(color: Color(0xFF5C1C85), fontWeight: FontWeight.bold, fontSize: 13)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                          color: const Color(0xFFE0EFFF),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      child: Text(
+                                          'From ${widget.booking.destination} • To ${widget.booking.origin}',
+                                          style: const TextStyle(
+                                              color: Color(0xFF5C1C85),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13)),
                                     ),
                                   ],
                                 ),
                               ),
-                              _buildHorizontalScheduleList(_returnSchedules, isReturn: true),
-                              if (widget.booking.selectedReturnSchedule != null && widget.booking.selectedReturnSchedule!['promotional_ticket'] != null)
-                                _buildPromoTicketBanner(widget.booking.selectedReturnSchedule!['promotional_ticket'], isReturn: true),
+                              _buildHorizontalScheduleList(_returnSchedules,
+                                  isReturn: true),
+                              if (widget.booking.selectedReturnSchedule !=
+                                      null &&
+                                  widget.booking.selectedReturnSchedule![
+                                          'promotional_ticket'] !=
+                                      null)
+                                _buildPromoTicketBanner(
+                                    widget.booking.selectedReturnSchedule![
+                                        'promotional_ticket'],
+                                    isReturn: true),
                               const SizedBox(height: 20),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
                                 child: ElevatedButton(
-                                  onPressed: (widget.booking.selectedSchedule != null && widget.booking.selectedReturnSchedule != null)
+                                  onPressed: (widget.booking.selectedSchedule !=
+                                              null &&
+                                          widget.booking
+                                                  .selectedReturnSchedule !=
+                                              null)
                                       ? () {
                                           widget.booking.savedStep = 2;
                                           widget.booking.saveToPrefs(2);
-                                          Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+                                          Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          DiscountScreen(
+                                                              booking: widget
+                                                                  .booking)))
+                                              .then((_) {
                                             if (mounted) {
                                               widget.booking.savedStep = 1;
                                               widget.booking.saveToPrefs(1);
@@ -5437,41 +6948,72 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                       : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: kPink,
-                                    minimumSize: const Size(double.infinity, 50),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    minimumSize:
+                                        const Size(double.infinity, 50),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
                                   ),
-                                  child: const Text('Continue to Discounts', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                  child: const Text('Continue to Discounts',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
                                 ),
                               ),
                             ] else ...[
                               _buildBaggageReminder(),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0, vertical: 8.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Available Schedules', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate800)),
+                                    const Text('Available Schedules',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: kSlate800)),
                                     const SizedBox(height: 4),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(color: const Color(0xFFE0EFFF), borderRadius: BorderRadius.circular(8)),
-                                      child: Text('From ${widget.booking.origin} • To ${widget.booking.destination}', style: const TextStyle(color: Color(0xFF5C1C85), fontWeight: FontWeight.bold, fontSize: 13)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                          color: const Color(0xFFE0EFFF),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      child: Text(
+                                          'From ${widget.booking.origin} • To ${widget.booking.destination}',
+                                          style: const TextStyle(
+                                              color: Color(0xFF5C1C85),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13)),
                                     ),
                                   ],
                                 ),
                               ),
-                              _buildHorizontalScheduleList(_schedules, isReturn: false),
-                              if (widget.booking.selectedSchedule != null && widget.booking.selectedSchedule!['promotional_ticket'] != null)
-                                _buildPromoTicketBanner(widget.booking.selectedSchedule!['promotional_ticket']),
-                              
+                              _buildHorizontalScheduleList(_schedules,
+                                  isReturn: false),
+                              if (widget.booking.selectedSchedule != null &&
+                                  widget.booking.selectedSchedule![
+                                          'promotional_ticket'] !=
+                                      null)
+                                _buildPromoTicketBanner(widget.booking
+                                    .selectedSchedule!['promotional_ticket']),
                               if (widget.booking.selectedSchedule != null) ...[
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0, vertical: 12.0),
                                   child: ElevatedButton(
                                     onPressed: () {
                                       widget.booking.savedStep = 2;
                                       widget.booking.saveToPrefs(2);
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => DiscountScreen(booking: widget.booking))).then((_) {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) => DiscountScreen(
+                                                  booking: widget
+                                                      .booking))).then((_) {
                                         if (mounted) {
                                           widget.booking.savedStep = 1;
                                           widget.booking.saveToPrefs(1);
@@ -5480,10 +7022,17 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: kPink,
-                                      minimumSize: const Size(double.infinity, 50),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      minimumSize:
+                                          const Size(double.infinity, 50),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
                                     ),
-                                    child: const Text('Continue to Discounts', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                    child: const Text('Continue to Discounts',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
                                   ),
                                 ),
                               ],
@@ -5498,7 +7047,8 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     );
   }
 
-  Widget _buildPromoTicketBanner(Map<String, dynamic> promo, {bool isReturn = false}) {
+  Widget _buildPromoTicketBanner(Map<String, dynamic> promo,
+      {bool isReturn = false}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(16),
@@ -5515,8 +7065,13 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
               const Text('✨ ', style: TextStyle(fontSize: 18)),
               Expanded(
                 child: Text(
-                  isReturn ? 'Return Trip Promo Ticket Available!' : 'Promotional Ticket Available!',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800),
+                  isReturn
+                      ? 'Return Trip Promo Ticket Available!'
+                      : 'Promotional Ticket Available!',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: kSlate800),
                 ),
               ),
               Switch(
@@ -5525,7 +7080,8 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                 onChanged: (val) {
                   setState(() {
                     widget.booking.usePromoTicket = val;
-                    widget.booking.promotionalTicketId = val ? promo['id'] : null;
+                    widget.booking.promotionalTicketId =
+                        val ? promo['id'] : null;
                   });
                 },
               ),
@@ -5534,7 +7090,10 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
           const SizedBox(height: 6),
           Text(
             'Promo price: ₱${promo['promo_price']}   •   Remaining: ${promo['quantity_remaining']} tickets',
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFFdb2777)),
+            style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: Color(0xFFdb2777)),
           ),
           const SizedBox(height: 4),
           Text(
@@ -5553,7 +7112,10 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: const Color(0xFFFFF7ED), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFFED7AA))),
+        decoration: BoxDecoration(
+            color: const Color(0xFFFFF7ED),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFFED7AA))),
         child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -5561,29 +7123,35 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
               children: [
                 Icon(Icons.luggage, color: Color(0xFFEA580C), size: 18),
                 SizedBox(width: 8),
-                Text('Baggage Rules & Reminders', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF9A3412))),
+                Text('Baggage Rules & Reminders',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Color(0xFF9A3412))),
               ],
             ),
             SizedBox(height: 8),
-            Text('• Standard ticket includes 1 hand carry bag (up to 7kg).', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
+            Text('• Standard ticket includes 1 hand carry bag (up to 7kg).',
+                style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
             SizedBox(height: 4),
-            Text('• Ensure valuables are kept with you at all times.', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
+            Text('• Ensure valuables are kept with you at all times.',
+                style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
           ],
         ),
       ),
     );
   }
 
-
-
-  Widget _buildHorizontalScheduleList(List<dynamic> schedules, {required bool isReturn}) {
+  Widget _buildHorizontalScheduleList(List<dynamic> schedules,
+      {required bool isReturn}) {
     if (schedules.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
-        child: Text('No trips available for this date.', style: TextStyle(color: kSlate500)),
+        child: Text('No trips available for this date.',
+            style: TextStyle(color: kSlate500)),
       );
     }
-    
+
     return SizedBox(
       height: 220,
       child: ListView.builder(
@@ -5592,50 +7160,59 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
         itemCount: schedules.length,
         itemBuilder: (context, index) {
           final s = schedules[index];
-          final bool isSelected = isReturn 
+          final bool isSelected = isReturn
               ? (widget.booking.selectedReturnSchedule?['id'] == s['id'])
               : (widget.booking.selectedSchedule?['id'] == s['id']);
-              
+
           return Container(
             width: 300,
             margin: const EdgeInsets.only(right: 12),
             child: Card(
               color: isSelected ? kPink : Colors.white,
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               child: InkWell(
                 onTap: () {
                   setState(() {
                     if (isReturn) {
-                      widget.booking.selectedReturnSchedule = Map<String, dynamic>.from(s);
-                      
+                      widget.booking.selectedReturnSchedule =
+                          Map<String, dynamic>.from(s);
+
                       if (widget.booking.mode != 'airline') {
-                        final accommodations = s['accommodations'] as List<dynamic>? ?? [];
+                        final accommodations =
+                            s['accommodations'] as List<dynamic>? ?? [];
                         if (accommodations.isNotEmpty) {
-                          _showFerryAccommodationPicker(context, accommodations, isReturn: true);
+                          _showFerryAccommodationPicker(context, accommodations,
+                              isReturn: true);
                         }
                       }
                     } else {
-                      widget.booking.selectedSchedule = Map<String, dynamic>.from(s);
+                      widget.booking.selectedSchedule =
+                          Map<String, dynamic>.from(s);
                       // Store promotional ticket ID so it is passed to the booking API
                       final promo = s['promotional_ticket'];
-                      widget.booking.promotionalTicketId = promo != null ? promo['id'] as int? : null;
+                      widget.booking.promotionalTicketId =
+                          promo != null ? promo['id'] as int? : null;
                       widget.booking.passengers = [
                         for (int i = 0; i < widget.booking.adults; i++)
                           {'type': 'adult', 'name': '', 'discount_id': null},
                         for (int i = 0; i < widget.booking.children; i++)
                           {'type': 'child', 'name': '', 'discount_id': null},
                       ];
-                      
+
                       if (widget.booking.mode != 'airline') {
-                        final accommodations = s['accommodations'] as List<dynamic>? ?? [];
+                        final accommodations =
+                            s['accommodations'] as List<dynamic>? ?? [];
                         if (accommodations.isNotEmpty) {
-                          _showFerryAccommodationPicker(context, accommodations, isReturn: false);
+                          _showFerryAccommodationPicker(context, accommodations,
+                              isReturn: false);
                         }
                       } else {
-                        final classes = s['transport_classes'] as List<dynamic>? ?? [];
+                        final classes =
+                            s['transport_classes'] as List<dynamic>? ?? [];
                         if (classes.isNotEmpty) {
-                           _showAirlineClassPicker(context, classes); 
+                          _showAirlineClassPicker(context, classes);
                         }
                       }
                     }
@@ -5659,24 +7236,43 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 if (s['promotional_ticket'] != null)
                                   Container(
                                     margin: const EdgeInsets.only(right: 6),
-                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                    decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(6)),
-                                    child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(
+                                        color: Colors.orange,
+                                        borderRadius: BorderRadius.circular(6)),
+                                    child: const Text('PROMO',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold)),
                                   ),
-                                if (getOperatorLogoUrl(s['operator'] ?? '').isNotEmpty)
+                                if (getOperatorLogoUrl(s['operator'] ?? '')
+                                    .isNotEmpty)
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        SizedBox(height: 60, child: Image.network(
-                                          getOperatorLogoUrl(s['operator'] ?? ''),
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                                        )),
+                                        SizedBox(
+                                            height: 60,
+                                            child: Image.network(
+                                              getOperatorLogoUrl(
+                                                  s['operator'] ?? ''),
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  const SizedBox(),
+                                            )),
                                         const SizedBox(height: 8),
                                         Text(
                                           s['operator'] ?? 'Operator',
-                                          style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 12),
+                                          style: TextStyle(
+                                              color: isSelected
+                                                  ? Colors.white
+                                                  : kGreen,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12),
                                           textAlign: TextAlign.center,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -5684,14 +7280,26 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                       ],
                                     ),
                                   ),
-                                if (getOperatorLogoUrl(s['operator'] ?? '').isEmpty)
+                                if (getOperatorLogoUrl(s['operator'] ?? '')
+                                    .isEmpty)
                                   Flexible(
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? Colors.white24
+                                              : kGreen.withValues(alpha: 0.08),
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
                                       child: Text(
                                         s['operator'] ?? 'Operator',
-                                        style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 11),
+                                        style: TextStyle(
+                                            color: isSelected
+                                                ? Colors.white
+                                                : kGreen,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -5703,21 +7311,53 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(s['service'] ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isSelected ? Colors.white : kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
-                      if (s['vehicle_name'] != null && s['vehicle_name'].toString().trim().isNotEmpty) ...[
+                      Text(s['service'] ?? '',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: isSelected ? Colors.white : kSlate800),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      if (s['vehicle_name'] != null &&
+                          s['vehicle_name'].toString().trim().isNotEmpty) ...[
                         const SizedBox(height: 2),
-                        Text(s['vehicle_name'], style: TextStyle(color: isSelected ? Colors.white70 : kSlate500, fontSize: 12)),
+                        Text(s['vehicle_name'],
+                            style: TextStyle(
+                                color: isSelected ? Colors.white70 : kSlate500,
+                                fontSize: 12)),
                       ],
                       const Spacer(),
-                      Text('${s['departure']} → ${s['arrival']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isSelected ? Colors.white : kSlate800)),
-                      Text('Duration: ${s['duration'] ?? 'N/A'}', style: TextStyle(fontSize: 11, color: isSelected ? Colors.white70 : kSlate500)),
-                      
-                      if (isReturn && widget.booking.selectedReturnScheduleAccommodation != null && isSelected) ...[
+                      Text('${s['departure']} → ${s['arrival']}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: isSelected ? Colors.white : kSlate800)),
+                      Text('Duration: ${s['duration'] ?? 'N/A'}',
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: isSelected ? Colors.white70 : kSlate500)),
+                      if (isReturn &&
+                          widget.booking.selectedReturnScheduleAccommodation !=
+                              null &&
+                          isSelected) ...[
                         const SizedBox(height: 4),
-                        Text('Accommodation: ${widget.booking.selectedReturnScheduleAccommodation?['name']}', style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-                      ] else if (!isReturn && widget.booking.selectedScheduleAccommodation != null && isSelected) ...[
+                        Text(
+                            'Accommodation: ${widget.booking.selectedReturnScheduleAccommodation?['name']}',
+                            style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                      ] else if (!isReturn &&
+                          widget.booking.selectedScheduleAccommodation !=
+                              null &&
+                          isSelected) ...[
                         const SizedBox(height: 4),
-                        Text('Accommodation: ${widget.booking.selectedScheduleAccommodation?['name']}', style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                        Text(
+                            'Accommodation: ${widget.booking.selectedScheduleAccommodation?['name']}',
+                            style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
                       ]
                     ],
                   ),
@@ -5730,8 +7370,6 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     );
   }
 }
-
-
 
 // ==========================================
 // STEP 3: DISCOUNT (Passenger Details + Discount)
@@ -5759,13 +7397,17 @@ class _DiscountScreenState extends State<DiscountScreen> {
   void initState() {
     super.initState();
     _nameControllers = List.generate(widget.booking.passengers.length, (i) {
-      return TextEditingController(text: widget.booking.passengers[i]['name'] ?? '');
+      return TextEditingController(
+          text: widget.booking.passengers[i]['name'] ?? '');
     });
-    _birthdateControllers = List.generate(widget.booking.passengers.length, (i) {
-      return TextEditingController(text: widget.booking.passengers[i]['birthdate'] ?? '');
+    _birthdateControllers =
+        List.generate(widget.booking.passengers.length, (i) {
+      return TextEditingController(
+          text: widget.booking.passengers[i]['birthdate'] ?? '');
     });
     _idControllers = List.generate(widget.booking.passengers.length, (i) {
-      return TextEditingController(text: widget.booking.passengers[i]['id_number'] ?? '');
+      return TextEditingController(
+          text: widget.booking.passengers[i]['id_number'] ?? '');
     });
     _idFrontBase64 = List.generate(widget.booking.passengers.length, (i) {
       return widget.booking.passengers[i]['id_image_front'];
@@ -5792,7 +7434,11 @@ class _DiscountScreenState extends State<DiscountScreen> {
 
   Future<void> _pickIdImage(int index, bool isFront) async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70, maxWidth: 800, maxHeight: 800);
+    final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+        maxWidth: 800,
+        maxHeight: 800);
     if (picked != null) {
       final bytes = await picked.readAsBytes();
       final b64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
@@ -5818,13 +7464,19 @@ class _DiscountScreenState extends State<DiscountScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
           color: hasImg ? kGreen.withValues(alpha: 0.08) : Colors.grey.shade50,
-          border: Border.all(color: hasImg ? kGreen : Colors.grey.shade300, width: hasImg ? 1.5 : 1),
+          border: Border.all(
+              color: hasImg ? kGreen : Colors.grey.shade300,
+              width: hasImg ? 1.5 : 1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
             Icon(
-              hasImg ? Icons.check_circle : (isFront ? Icons.badge_outlined : Icons.credit_card_outlined),
+              hasImg
+                  ? Icons.check_circle
+                  : (isFront
+                      ? Icons.badge_outlined
+                      : Icons.credit_card_outlined),
               color: hasImg ? kGreen : kSlate600,
               size: 24,
             ),
@@ -5843,7 +7495,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    hasImg ? 'Image attached • Tap to change' : 'Tap to upload picture',
+                    hasImg
+                        ? 'Image attached • Tap to change'
+                        : 'Tap to upload picture',
                     style: TextStyle(
                       fontSize: 11,
                       color: hasImg ? kGreen.withValues(alpha: 0.8) : kSlate400,
@@ -5855,7 +7509,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
             if (hasImg)
               const Icon(Icons.refresh, color: kGreen, size: 18)
             else
-              const Icon(Icons.add_a_photo_outlined, color: kSlate500, size: 20),
+              const Icon(Icons.add_a_photo_outlined,
+                  color: kSlate500, size: 20),
           ],
         ),
       ),
@@ -5869,7 +7524,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data['status'] == 'success') {
-          setState(() => _discounts = List<Map<String, dynamic>>.from(data['discounts']));
+          setState(() =>
+              _discounts = List<Map<String, dynamic>>.from(data['discounts']));
         }
       }
     } catch (_) {}
@@ -5879,10 +7535,12 @@ class _DiscountScreenState extends State<DiscountScreen> {
     if (!_formKey.currentState!.validate()) return;
     for (int i = 0; i < widget.booking.passengers.length; i++) {
       widget.booking.passengers[i]['name'] = _nameControllers[i].text.trim();
-      widget.booking.passengers[i]['birthdate'] = _birthdateControllers[i].text.trim();
+      widget.booking.passengers[i]['birthdate'] =
+          _birthdateControllers[i].text.trim();
 
       final discId = widget.booking.passengers[i]['discount_id'];
-      final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
+      final disc =
+          _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
       final discName = disc['name']?.toString().toLowerCase() ?? '';
 
       if (discId != null && discName != 'infant') {
@@ -5893,7 +7551,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
           if (_idFrontBase64[i] == null || _idBackBase64[i] == null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Please upload both Front and Back ID images for Passenger #${i + 1}.'),
+                content: Text(
+                    'Please upload both Front and Back ID images for Passenger #${i + 1}.'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -5915,7 +7574,10 @@ class _DiscountScreenState extends State<DiscountScreen> {
     }
     widget.booking.savedStep = 3;
     widget.booking.saveToPrefs(3);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => StayScreen(booking: widget.booking))).then((_) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => StayScreen(booking: widget.booking))).then((_) {
       if (mounted) {
         widget.booking.savedStep = 2;
         widget.booking.saveToPrefs(2);
@@ -5942,10 +7604,15 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   // Schedule summary
                   Container(
                     padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(
+                        color: kGreen.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(12)),
                     child: Text(
                       '${widget.booking.origin} → ${widget.booking.destination}  ·  ${s['service']}  ·  ₱${s['price']} / person',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen, fontSize: 13),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: kGreen,
+                          fontSize: 13),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -5955,7 +7622,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
                     return Card(
                       color: Colors.white,
                       margin: const EdgeInsets.only(bottom: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -5964,11 +7632,18 @@ class _DiscountScreenState extends State<DiscountScreen> {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(color: (type == 'adult' ? kGreen : kPink).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                      color: (type == 'adult' ? kGreen : kPink)
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(20)),
                                   child: Text(
                                     '${type == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
-                                    style: TextStyle(color: type == 'adult' ? kGreen : kPink, fontSize: 11, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        color: type == 'adult' ? kGreen : kPink,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               ],
@@ -5978,9 +7653,12 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               controller: _nameControllers[i],
                               decoration: InputDecoration(
                                 labelText: 'Full Name',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10)),
                               ),
-                              validator: (v) => (v == null || v.trim().isEmpty) ? 'Full name is required' : null,
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? 'Full name is required'
+                                  : null,
                             ),
                             const SizedBox(height: 10),
                             TextFormField(
@@ -5989,23 +7667,30 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               onTap: () async {
                                 final d = await showDatePicker(
                                   context: context,
-                                  initialDate: DateTime.now().subtract(const Duration(days: 365 * 10)),
+                                  initialDate: DateTime.now()
+                                      .subtract(const Duration(days: 365 * 10)),
                                   firstDate: DateTime(1900),
                                   lastDate: DateTime.now(),
                                 );
                                 if (d != null) {
-                                  final selectedDate = "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
-                                  setState(() => _birthdateControllers[i].text = selectedDate);
-                                  
+                                  final selectedDate =
+                                      "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+                                  setState(() => _birthdateControllers[i].text =
+                                      selectedDate);
+
                                   // Infant check
-                                  final age = DateTime.now().difference(d).inDays / 365.25;
+                                  final age =
+                                      DateTime.now().difference(d).inDays /
+                                          365.25;
                                   if (age < 2 && type == 'child') {
                                     if (mounted) {
                                       showDialog(
                                         context: context,
                                         builder: (c) => AlertDialog(
-                                          title: const Text('Minor / Infant Notice'),
-                                          content: const Text('Please note: If the passenger is an infant (under 2 years old), additional requirements and fees may apply depending on the operator.'),
+                                          title: const Text(
+                                              'Minor / Infant Notice'),
+                                          content: const Text(
+                                              'Please note: If the passenger is an infant (under 2 years old), additional requirements and fees may apply depending on the operator.'),
                                           actions: [
                                             TextButton(
                                               onPressed: () => Navigator.pop(c),
@@ -6021,28 +7706,38 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               decoration: InputDecoration(
                                 labelText: 'Birthdate *',
                                 hintText: 'YYYY-MM-DD',
-                                suffixIcon: const Icon(Icons.calendar_today, size: 20),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                suffixIcon:
+                                    const Icon(Icons.calendar_today, size: 20),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10)),
                               ),
-                              validator: (v) => (v == null || v.trim().isEmpty) ? 'Birthdate is required' : null,
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? 'Birthdate is required'
+                                  : null,
                             ),
-                            if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) ...[
+                            if (widget.booking.usePromoTicket &&
+                                widget.booking.promotionalTicketId != null) ...[
                               const SizedBox(height: 10),
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFFF3CD),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFFFD700)),
+                                  border: Border.all(
+                                      color: const Color(0xFFFFD700)),
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.local_activity, color: Color(0xFFC08000), size: 18),
+                                    Icon(Icons.local_activity,
+                                        color: Color(0xFFC08000), size: 18),
                                     SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         'Promotional ticket applied — passenger discounts are not applicable.',
-                                        style: TextStyle(fontSize: 12, color: Color(0xFF7B5800), fontWeight: FontWeight.w500),
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFF7B5800),
+                                            fontWeight: FontWeight.w500),
                                       ),
                                     ),
                                   ],
@@ -6054,13 +7749,16 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 initialValue: pax[i]['discount_id'],
                                 hint: const Text('No Discount'),
                                 items: [
-                                  const DropdownMenuItem<int?>(value: null, child: Text('No Discount')),
+                                  const DropdownMenuItem<int?>(
+                                      value: null, child: Text('No Discount')),
                                   ..._discounts
-                                      .where((d) => d['name'].toString().toLowerCase() != 'infant')
+                                      .where((d) =>
+                                          d['name'].toString().toLowerCase() !=
+                                          'infant')
                                       .map((d) => DropdownMenuItem<int?>(
-                                    value: d['id'] as int,
-                                    child: Text('${d['name']}'),
-                                  )),
+                                            value: d['id'] as int,
+                                            child: Text('${d['name']}'),
+                                          )),
                                 ],
                                 onChanged: (v) {
                                   setState(() {
@@ -6071,7 +7769,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                       context: context,
                                       builder: (c) => AlertDialog(
                                         title: const Text('Discount Applied'),
-                                        content: const Text('Your discount has been applied.\n\nKindly present a valid ID upon boarding to verify and enjoy your discount'),
+                                        content: const Text(
+                                            'Your discount has been applied.\n\nKindly present a valid ID upon boarding to verify and enjoy your discount'),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(c),
@@ -6084,22 +7783,30 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 },
                                 decoration: InputDecoration(
                                   labelText: 'Discount',
-                                  prefixIcon: const Icon(Icons.local_offer, color: kGreen, size: 18),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  prefixIcon: const Icon(Icons.local_offer,
+                                      color: kGreen, size: 18),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
                               Builder(
                                 builder: (context) {
                                   final discId = pax[i]['discount_id'];
-                                  final disc = _discounts.firstWhere((d) => d['id'] == discId, orElse: () => {});
-                                  final discName = disc['name']?.toString().toLowerCase() ?? '';
+                                  final disc = _discounts.firstWhere(
+                                      (d) => d['id'] == discId,
+                                      orElse: () => {});
+                                  final discName =
+                                      disc['name']?.toString().toLowerCase() ??
+                                          '';
 
                                   if (discId != null && discName != 'infant') {
                                     String idLabel = 'ID Number *';
                                     if (discName == 'student') {
                                       idLabel = 'Student ID Number *';
-                                    } else if (discName == 'senior citizen') idLabel = 'Senior Citizen ID Number *';
-                                    else if (discName == 'pwd') idLabel = 'PWD ID Number *';
+                                    } else if (discName == 'senior citizen')
+                                      idLabel = 'Senior Citizen ID Number *';
+                                    else if (discName == 'pwd')
+                                      idLabel = 'PWD ID Number *';
 
                                     return Column(
                                       children: [
@@ -6108,15 +7815,22 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                           controller: _idControllers[i],
                                           decoration: InputDecoration(
                                             labelText: idLabel,
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
                                           ),
-                                          validator: (v) => (v == null || v.trim().isEmpty) ? 'ID number is required' : null,
+                                          validator: (v) =>
+                                              (v == null || v.trim().isEmpty)
+                                                  ? 'ID number is required'
+                                                  : null,
                                         ),
                                         if (discName == 'student') ...[
                                           const SizedBox(height: 12),
-                                          _buildIdImagePicker(i, 'ID Image (Front) *', true),
+                                          _buildIdImagePicker(
+                                              i, 'ID Image (Front) *', true),
                                           const SizedBox(height: 10),
-                                          _buildIdImagePicker(i, 'ID Image (Back) *', false),
+                                          _buildIdImagePicker(
+                                              i, 'ID Image (Back) *', false),
                                         ],
                                       ],
                                     );
@@ -6140,10 +7854,13 @@ class _DiscountScreenState extends State<DiscountScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kPink,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 4,
                       ),
-                      child: const Text('Next: Select Stay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      child: const Text('Next: Select Stay',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
                 ],
@@ -6185,15 +7902,17 @@ class _StayScreenState extends State<StayScreen> {
       final destination = widget.booking.destination.trim();
       final uri = destination.isEmpty
           ? Uri.parse('$baseUrl/api/accommodations')
-          : Uri.parse('$baseUrl/api/accommodations?destination=${Uri.encodeComponent(destination)}');
+          : Uri.parse(
+              '$baseUrl/api/accommodations?destination=${Uri.encodeComponent(destination)}');
       final res = await http.get(uri);
       final accData = jsonDecode(res.body);
       if (res.statusCode == 200 && accData['status'] == 'success') {
-        _accommodations = List<Map<String, dynamic>>.from(accData['accommodations']);
+        _accommodations =
+            List<Map<String, dynamic>>.from(accData['accommodations']);
         widget.booking.availableAccommodations = _accommodations;
       }
-    } catch (_) {}
-    finally {
+    } catch (_) {
+    } finally {
       setState(() => _isLoading = false);
     }
   }
@@ -6214,37 +7933,52 @@ class _StayScreenState extends State<StayScreen> {
                       // ── Hotel / Accommodation Add-ons ──
                       const Text(
                         'Hotels',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: kSlate800),
                       ),
                       const SizedBox(height: 4),
-                      const Text('Select one or more stays to add to your booking.', style: TextStyle(color: kSlate500, fontSize: 12)),
+                      const Text(
+                          'Select one or more stays to add to your booking.',
+                          style: TextStyle(color: kSlate500, fontSize: 12)),
                       const SizedBox(height: 16),
 
                       if (_accommodations.isEmpty)
                         const Center(
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Text('No accommodations available at this time.', style: TextStyle(color: kSlate400)),
+                            child: Text(
+                                'No accommodations available at this time.',
+                                style: TextStyle(color: kSlate400)),
                           ),
                         )
                       else
                         ..._accommodations.map((a) {
                           final id = a['id'] as int;
-                          final selected = widget.booking.selectedAccommodationIds.contains(id);
+                          final selected = widget
+                              .booking.selectedAccommodationIds
+                              .contains(id);
                           return Card(
-                            color: selected ? kGreen.withValues(alpha: 0.05) : Colors.white,
+                            color: selected
+                                ? kGreen.withValues(alpha: 0.05)
+                                : Colors.white,
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
-                              side: BorderSide(color: selected ? kGreen : kSlate200, width: selected ? 2 : 1),
+                              side: BorderSide(
+                                  color: selected ? kGreen : kSlate200,
+                                  width: selected ? 2 : 1),
                             ),
                             child: InkWell(
                               onTap: () {
                                 setState(() {
                                   if (selected) {
-                                    widget.booking.selectedAccommodationIds.remove(id);
+                                    widget.booking.selectedAccommodationIds
+                                        .remove(id);
                                   } else {
-                                    widget.booking.selectedAccommodationIds.add(id);
+                                    widget.booking.selectedAccommodationIds
+                                        .add(id);
                                   }
                                 });
                               },
@@ -6256,22 +7990,58 @@ class _StayScreenState extends State<StayScreen> {
                                     if (a['cover_image'] != null)
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
-                                        child: Image.network(a['cover_image'] as String, width: 60, height: 60, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width: 60, height: 60, color: kSlate100, child: const Icon(Icons.hotel, color: kSlate400))),
+                                        child: Image.network(
+                                            a['cover_image'] as String,
+                                            width: 60,
+                                            height: 60,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                Container(
+                                                    width: 60,
+                                                    height: 60,
+                                                    color: kSlate100,
+                                                    child: const Icon(
+                                                        Icons.hotel,
+                                                        color: kSlate400))),
                                       )
                                     else
-                                      Container(width: 60, height: 60, decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.hotel, color: kSlate400)),
+                                      Container(
+                                          width: 60,
+                                          height: 60,
+                                          decoration: BoxDecoration(
+                                              color: kSlate100,
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          child: const Icon(Icons.hotel,
+                                              color: kSlate400)),
                                     const SizedBox(width: 14),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text(a['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                                          Text(a['name'] as String,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: kSlate800)),
                                           if (a['description'] != null)
-                                            Text(a['description'] as String, style: const TextStyle(color: kSlate500, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                            Text(a['description'] as String,
+                                                style: const TextStyle(
+                                                    color: kSlate500,
+                                                    fontSize: 12),
+                                                maxLines: 2,
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                           const SizedBox(height: 4),
                                           Row(
                                             children: [
-                                              Text('₱${a['price']}', style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 14)),
+                                              Text('₱${a['price']}',
+                                                  style: const TextStyle(
+                                                      color: kPink,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14)),
                                             ],
                                           ),
                                         ],
@@ -6282,9 +8052,13 @@ class _StayScreenState extends State<StayScreen> {
                                       onChanged: (_) {
                                         setState(() {
                                           if (selected) {
-                                            widget.booking.selectedAccommodationIds.remove(id);
+                                            widget.booking
+                                                .selectedAccommodationIds
+                                                .remove(id);
                                           } else {
-                                            widget.booking.selectedAccommodationIds.add(id);
+                                            widget.booking
+                                                .selectedAccommodationIds
+                                                .add(id);
                                           }
                                         });
                                       },
@@ -6305,7 +8079,11 @@ class _StayScreenState extends State<StayScreen> {
                           onPressed: () {
                             widget.booking.savedStep = 4;
                             widget.booking.saveToPrefs(4);
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => BookingSubmitScreen(booking: widget.booking))).then((_) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => BookingSubmitScreen(
+                                        booking: widget.booking))).then((_) {
                               if (mounted) {
                                 widget.booking.savedStep = 3;
                                 widget.booking.saveToPrefs(3);
@@ -6315,10 +8093,13 @@ class _StayScreenState extends State<StayScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kPink,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             elevation: 4,
                           ),
-                          child: const Text('Next: Review & Submit', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          child: const Text('Next: Review & Submit',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                       ),
                     ],
@@ -6365,11 +8146,21 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   @override
   void initState() {
     super.initState();
-    _clientNameCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.username : widget.booking.clientName);
-    _clientEmailCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.email : widget.booking.clientEmail);
-    _clientPhoneCtrl = TextEditingController(text: UserSession.isLoggedIn ? UserSession.phone : widget.booking.clientPhone);
+    _clientNameCtrl = TextEditingController(
+        text: UserSession.isLoggedIn
+            ? UserSession.username
+            : widget.booking.clientName);
+    _clientEmailCtrl = TextEditingController(
+        text: UserSession.isLoggedIn
+            ? UserSession.email
+            : widget.booking.clientEmail);
+    _clientPhoneCtrl = TextEditingController(
+        text: UserSession.isLoggedIn
+            ? UserSession.phone
+            : widget.booking.clientPhone);
     // If promo ticket is active, clear any voucher that may have been applied
-    if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) {
+    if (widget.booking.usePromoTicket &&
+        widget.booking.promotionalTicketId != null) {
       widget.booking.voucherCode = null;
       widget.booking.voucherData = null;
     }
@@ -6380,7 +8171,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
 
   Future<void> _autoApplySavedVoucher() async {
     // Don't auto-apply vouchers when promo ticket is active
-    if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) return;
+    if (widget.booking.usePromoTicket &&
+        widget.booking.promotionalTicketId != null) return;
     final code = UserSession.autoApplyVoucherCode;
     if (code == null || code.isEmpty) return;
     UserSession.autoApplyVoucherCode = null;
@@ -6392,10 +8184,17 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         'origin': booking.origin,
         'destination': booking.destination,
         'trip_type': booking.tripType,
-        'client_email': booking.clientEmail.isNotEmpty ? booking.clientEmail : UserSession.email,
+        'client_email': booking.clientEmail.isNotEmpty
+            ? booking.clientEmail
+            : UserSession.email,
         'passengers': booking.passengers.isNotEmpty
-            ? booking.passengers.map((p) => {'type': p['type'], 'discount_id': p['discount_id']}).toList()
-            : [{'type': 'adult', 'discount_id': null}],
+            ? booking.passengers
+                .map(
+                    (p) => {'type': p['type'], 'discount_id': p['discount_id']})
+                .toList()
+            : [
+                {'type': 'adult', 'discount_id': null}
+              ],
         'accommodation_ids': booking.selectedAccommodationIds,
         'has_vehicle': booking.hasVehicle,
         if (booking.hasVehicle) 'vehicle_price': booking.vehiclePrice,
@@ -6405,7 +8204,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+          if (UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}',
         },
         body: jsonEncode(body),
       );
@@ -6426,7 +8226,9 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             };
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Voucher "$code" applied automatically!'), backgroundColor: kGreen),
+            SnackBar(
+                content: Text('Voucher "$code" applied automatically!'),
+                backgroundColor: kGreen),
           );
         }
       }
@@ -6447,14 +8249,18 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     try {
       final res = await http.get(
         Uri.parse('${UserSession.getBaseUrl()}/api/gracia-points'),
-        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${UserSession.token}'
+        },
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _availablePoints = double.parse(data['current_points'].toString()));
+        setState(() =>
+            _availablePoints = double.parse(data['current_points'].toString()));
       }
-    } catch (_) {}
-    finally {
+    } catch (_) {
+    } finally {
       if (mounted) setState(() => _fetchingPoints = false);
     }
   }
@@ -6462,20 +8268,23 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   void _fetchPaymentSettings() async {
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/payment-settings'), headers: {'Accept': 'application/json'});
+      final res = await http.get(Uri.parse('$baseUrl/api/payment-settings'),
+          headers: {'Accept': 'application/json'});
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data['status'] == 'success') {
           setState(() {
             _qrCodeUrl = data['qr_code_url'];
             _feePerPerson = (data['web_admin_fee'] as num?)?.toDouble() ?? 0.0;
-            _feePerAccommodation = (data['fee_per_accommodation'] as num?)?.toDouble() ?? 0.0;
-            _transactionFee = (data['transaction_fee'] as num?)?.toDouble() ?? 0.0;
+            _feePerAccommodation =
+                (data['fee_per_accommodation'] as num?)?.toDouble() ?? 0.0;
+            _transactionFee =
+                (data['transaction_fee'] as num?)?.toDouble() ?? 0.0;
           });
         }
       }
-    } catch (_) {}
-    finally {
+    } catch (_) {
+    } finally {
       setState(() => _loadingPaymentSettings = false);
     }
   }
@@ -6487,7 +8296,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     if (phone.isNotEmpty) {
       UserSession.phone = phone;
       await UserSession.save();
-      
+
       if (UserSession.isLoggedIn && UserSession.token.isNotEmpty) {
         try {
           await http.post(
@@ -6515,7 +8324,8 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          if (UserSession.isLoggedIn && UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+          if (UserSession.isLoggedIn && UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}',
         },
         body: jsonEncode({
           'schedule_id': widget.booking.selectedSchedule!['id'],
@@ -6541,16 +8351,27 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             'driver_last_name': widget.booking.vehicleDriverLastName,
             'driver_birthday': widget.booking.vehicleDriverBirthday,
           },
-          'selected_transport_class_id': widget.booking.selectedTransportClassId,
-          'selected_schedule_accommodation_id': widget.booking.selectedScheduleAccommodationId,
-          if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null)
+          'selected_transport_class_id':
+              widget.booking.selectedTransportClassId,
+          'selected_schedule_accommodation_id':
+              widget.booking.selectedScheduleAccommodationId,
+          if (widget.booking.tripType == 'round_trip' &&
+              widget.booking.selectedReturnSchedule != null)
             'return_schedule_id': widget.booking.selectedReturnSchedule!['id'],
-          if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnScheduleAccommodationId != null)
-            'selected_return_schedule_accommodation_id': widget.booking.selectedReturnScheduleAccommodationId,
-          if (widget.booking.voucherCode != null && !(widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null))
+          if (widget.booking.tripType == 'round_trip' &&
+              widget.booking.selectedReturnScheduleAccommodationId != null)
+            'selected_return_schedule_accommodation_id':
+                widget.booking.selectedReturnScheduleAccommodationId,
+          if (widget.booking.voucherCode != null &&
+              !(widget.booking.usePromoTicket &&
+                  widget.booking.promotionalTicketId != null))
             'voucher_code': widget.booking.voucherCode,
-          if (widget.booking.promotionalTicketId != null) 'promotional_ticket_id': widget.booking.promotionalTicketId,
-          if (_usePoints && !(widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null)) 'use_points': true,
+          if (widget.booking.promotionalTicketId != null)
+            'promotional_ticket_id': widget.booking.promotionalTicketId,
+          if (_usePoints &&
+              !(widget.booking.usePromoTicket &&
+                  widget.booking.promotionalTicketId != null))
+            'use_points': true,
           // Extra baggage
           'has_extra_baggage': widget.booking.hasExtraBaggage,
           if (widget.booking.hasExtraBaggage) ...{
@@ -6569,7 +8390,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       if (res.statusCode == 200 && data['status'] == 'success') {
         BookingData.clearPrefs();
         BookingData.activeSession = null;
-        
+
         if (!mounted) return;
         Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (_) => PaymentProofScreen(
@@ -6584,7 +8405,9 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         ));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Booking failed.'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text(data['message'] ?? 'Booking failed.'),
+              backgroundColor: Colors.red),
         );
       }
     } catch (e) {
@@ -6615,28 +8438,42 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                 children: [
                   // Trip Summary
                   _SummarySection(title: 'Trip Details', children: [
-                    _SummaryRow('Route', '${widget.booking.origin} → ${widget.booking.destination}'),
-                    _SummaryRow('Mode', widget.booking.mode == 'ferry' ? 'Ferry' : 'Airline'),
+                    _SummaryRow('Route',
+                        '${widget.booking.origin} → ${widget.booking.destination}'),
+                    _SummaryRow('Mode',
+                        widget.booking.mode == 'ferry' ? 'Ferry' : 'Airline'),
                     _SummaryRow('Date', widget.booking.departureDate),
-                    _SummaryRow('Trip Type', widget.booking.tripType == 'one_way' ? 'One-Way' : 'Round Trip'),
-                    _SummaryRow('Schedule', '${s['service']}  ${s['departure']} – ${s['arrival']}'),
+                    _SummaryRow(
+                        'Trip Type',
+                        widget.booking.tripType == 'one_way'
+                            ? 'One-Way'
+                            : 'Round Trip'),
+                    _SummaryRow('Schedule',
+                        '${s['service']}  ${s['departure']} – ${s['arrival']}'),
                     _SummaryRow('Fare / person', '₱${s['price']}'),
-                    if (widget.booking.hasExtraBaggage && widget.booking.mode == 'airline')
-                      _SummaryRow('Extra Baggage', '${widget.booking.extraBaggageKg ?? 20} kg (₱${widget.booking.extraBaggagePrice.toStringAsFixed(0)}/pax)'),
-                    if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') ...[
-                      _SummaryRow('Extra Baggage Category', widget.booking.extraBaggageType ?? 'Specified'),
+                    if (widget.booking.hasExtraBaggage &&
+                        widget.booking.mode == 'airline')
+                      _SummaryRow('Extra Baggage',
+                          '${widget.booking.extraBaggageKg ?? 20} kg (₱${widget.booking.extraBaggagePrice.toStringAsFixed(0)}/pax)'),
+                    if (widget.booking.hasExtraBaggage &&
+                        widget.booking.mode == 'ferry') ...[
+                      _SummaryRow('Extra Baggage Category',
+                          widget.booking.extraBaggageType ?? 'Specified'),
                       if ((widget.booking.extraBaggageSpecify ?? '').isNotEmpty)
-                        _SummaryRow('Baggage Details', widget.booking.extraBaggageSpecify!),
+                        _SummaryRow('Baggage Details',
+                            widget.booking.extraBaggageSpecify!),
                     ],
                   ]),
                   const SizedBox(height: 16),
 
                   // Passengers
                   _SummarySection(title: 'Passengers', children: [
-                    ...List.generate(pax.length, (i) => _SummaryRow(
-                      '${pax[i]['type'] == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
-                      pax[i]['name'] as String? ?? '',
-                    )),
+                    ...List.generate(
+                        pax.length,
+                        (i) => _SummaryRow(
+                              '${pax[i]['type'] == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
+                              pax[i]['name'] as String? ?? '',
+                            )),
                   ]),
                   const SizedBox(height: 16),
 
@@ -6644,11 +8481,15 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   if (widget.booking.selectedAccommodationIds.isNotEmpty) ...[
                     _SummarySection(title: 'Hotel Stays', children: [
                       ...widget.booking.selectedAccommodationIds.map((id) {
-                        final acc = widget.booking.availableAccommodations.firstWhere(
-                          (a) => a['id'] == id, orElse: () => {'name': 'Accommodation #$id', 'price': '0'},
+                        final acc =
+                            widget.booking.availableAccommodations.firstWhere(
+                          (a) => a['id'] == id,
+                          orElse: () =>
+                              {'name': 'Accommodation #$id', 'price': '0'},
                         );
                         final p = double.tryParse(acc['price'].toString()) ?? 0;
-                        return _SummaryRow(acc['name'] as String, '₱${p.toStringAsFixed(2)}');
+                        return _SummaryRow(
+                            acc['name'] as String, '₱${p.toStringAsFixed(2)}');
                       }),
                     ]),
                     const SizedBox(height: 16),
@@ -6657,12 +8498,22 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   // Vehicle (ferry only)
                   if (widget.booking.hasVehicle) ...[
                     _SummarySection(title: 'Vehicle / Car Booking', children: [
-                      _SummaryRow('Vehicle Type', widget.booking.vehicleType.isEmpty ? '—' : widget.booking.vehicleType),
-                      _SummaryRow('Plate Number', widget.booking.vehiclePlateNumber.isEmpty ? '—' : widget.booking.vehiclePlateNumber),
+                      _SummaryRow(
+                          'Vehicle Type',
+                          widget.booking.vehicleType.isEmpty
+                              ? '—'
+                              : widget.booking.vehicleType),
+                      _SummaryRow(
+                          'Plate Number',
+                          widget.booking.vehiclePlateNumber.isEmpty
+                              ? '—'
+                              : widget.booking.vehiclePlateNumber),
                       _SummaryRow('Vehicle Fee', () {
-                         final p = widget.booking.vehiclePrice;
-                         final pts = UserSession.calculateEarnedPoints(p);
-                         return pts > 0 ? '₱${p.toStringAsFixed(2)}  (+${pts}pts)' : '₱${p.toStringAsFixed(2)}';
+                        final p = widget.booking.vehiclePrice;
+                        final pts = UserSession.calculateEarnedPoints(p);
+                        return pts > 0
+                            ? '₱${p.toStringAsFixed(2)}  (+${pts}pts)'
+                            : '₱${p.toStringAsFixed(2)}';
                       }()),
                     ]),
                     const SizedBox(height: 16),
@@ -6671,25 +8522,40 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                   // Contact
                   Card(
                     color: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Contact Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                          const Text('Contact Details',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: kSlate800)),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _clientNameCtrl,
-                            decoration: InputDecoration(labelText: 'Contact Name', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            decoration: InputDecoration(
+                                labelText: 'Contact Name',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10))),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _clientEmailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(labelText: 'Email', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            decoration: InputDecoration(
+                                labelText: 'Email',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10))),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
@@ -6697,17 +8563,21 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
                               labelText: 'Mobile Phone Number',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                             ),
-                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
                           ),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
-                  if (widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null) ...[
+
+                  if (widget.booking.usePromoTicket &&
+                      widget.booking.promotionalTicketId != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -6717,12 +8587,16 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.info_outline, color: Color(0xFFC08000), size: 20),
+                          Icon(Icons.info_outline,
+                              color: Color(0xFFC08000), size: 20),
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               'Promotional ticket is active. Vouchers, Gracia Points, and passenger discounts cannot be combined with a promo fare.',
-                              style: TextStyle(fontSize: 12, color: Color(0xFF7B5800), fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF7B5800),
+                                  fontWeight: FontWeight.w500),
                             ),
                           ),
                         ],
@@ -6730,12 +8604,23 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     ),
                     const SizedBox(height: 16),
                   ] else ...[
-                    const Text('Discount Coupon (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                    const Text('Discount Coupon (Optional)',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: kSlate600)),
                     const SizedBox(height: 8),
-                    _VoucherSection(booking: widget.booking, scopeFilter: null, onVoucherChanged: () => setState(() {})),
+                    _VoucherSection(
+                        booking: widget.booking,
+                        scopeFilter: null,
+                        onVoucherChanged: () => setState(() {})),
                     const SizedBox(height: 16),
                     if (UserSession.isLoggedIn) ...[
-                      const Text('Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate600)),
+                      const Text('Gracia Points',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: kSlate600)),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
@@ -6744,10 +8629,20 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           border: Border.all(color: kSlate200),
                         ),
                         child: SwitchListTile(
-                          title: const Text('Use Gracia Points', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          subtitle: _fetchingPoints ? const Text('Loading...', style: TextStyle(fontSize: 12)) : Text('Available: ${_availablePoints.toInt()} pts', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                          title: const Text('Use Gracia Points',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
+                          subtitle: _fetchingPoints
+                              ? const Text('Loading...',
+                                  style: TextStyle(fontSize: 12))
+                              : Text(
+                                  'Available: ${_availablePoints.toInt()} pts',
+                                  style: const TextStyle(
+                                      fontSize: 12, color: kSlate500)),
                           value: _usePoints,
-                          onChanged: _availablePoints > 0 ? (val) => setState(() => _usePoints = val) : null,
+                          onChanged: _availablePoints > 0
+                              ? (val) => setState(() => _usePoints = val)
+                              : null,
                           activeThumbColor: kGreen,
                         ),
                       ),
@@ -6757,153 +8652,287 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
 
                   Builder(builder: (ctx) {
                     try {
-                    double ticketPrice = 0.0;
-                    double scheduleAccommodationCost = 0.0;
-                    if (widget.booking.selectedSchedule != null) {
-                       final adultP = (widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
-                       final childP = (widget.booking.selectedSchedule!['child_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0);
-                       ticketPrice += (widget.booking.adults * (adultP is num ? adultP.toDouble() : double.tryParse(adultP.toString()) ?? 0)) +
-                                      (widget.booking.children * (childP is num ? childP.toDouble() : double.tryParse(childP.toString()) ?? 0));
-                       if (widget.booking.selectedScheduleAccommodation != null) {
-                         final accPrice = widget.booking.selectedScheduleAccommodation!['price'] ?? 0;
-                         scheduleAccommodationCost += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
-                       }
-                    }
-                    if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
-                       final adultP = (widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0);
-                       final childP = (widget.booking.selectedReturnSchedule!['child_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0);
-                       ticketPrice += (widget.booking.adults * (adultP is num ? adultP.toDouble() : double.tryParse(adultP.toString()) ?? 0)) +
-                                      (widget.booking.children * (childP is num ? childP.toDouble() : double.tryParse(childP.toString()) ?? 0));
-                       if (widget.booking.selectedReturnScheduleAccommodation != null) {
-                         final accPrice = widget.booking.selectedReturnScheduleAccommodation!['price'] ?? 0;
-                         scheduleAccommodationCost += ((widget.booking.adults + widget.booking.children) * (accPrice is num ? accPrice.toDouble() : double.tryParse(accPrice.toString()) ?? 0));
-                       }
-                    }
-                    
-                    final bool isPromo = widget.booking.usePromoTicket && widget.booking.promotionalTicketId != null;
-
-                    double passengerDiscount = 0.0;
-                    if (!isPromo) {
-                      for (var p in widget.booking.passengers) {
-                        if (p['discount_id'] != null && widget.booking.selectedSchedule != null) {
-                           final ap = widget.booking.selectedSchedule!['adult_price'] ?? widget.booking.selectedSchedule!['price'] ?? 0;
-                           passengerDiscount += ((ap is num ? ap.toDouble() : double.tryParse(ap.toString()) ?? 0) * 0.20);
-                           if (widget.booking.tripType == 'round_trip' && widget.booking.selectedReturnSchedule != null) {
-                               final rp = widget.booking.selectedReturnSchedule!['adult_price'] ?? widget.booking.selectedReturnSchedule!['price'] ?? 0;
-                               passengerDiscount += ((rp is num ? rp.toDouble() : double.tryParse(rp.toString()) ?? 0) * 0.20);
-                           }
+                      double ticketPrice = 0.0;
+                      double scheduleAccommodationCost = 0.0;
+                      if (widget.booking.selectedSchedule != null) {
+                        final adultP =
+                            (widget.booking.selectedSchedule!['adult_price'] ??
+                                widget.booking.selectedSchedule!['price'] ??
+                                0);
+                        final childP =
+                            (widget.booking.selectedSchedule!['child_price'] ??
+                                widget.booking.selectedSchedule!['price'] ??
+                                0);
+                        ticketPrice += (widget.booking.adults *
+                                (adultP is num
+                                    ? adultP.toDouble()
+                                    : double.tryParse(adultP.toString()) ??
+                                        0)) +
+                            (widget.booking.children *
+                                (childP is num
+                                    ? childP.toDouble()
+                                    : double.tryParse(childP.toString()) ?? 0));
+                        if (widget.booking.selectedScheduleAccommodation !=
+                            null) {
+                          final accPrice = widget.booking
+                                  .selectedScheduleAccommodation!['price'] ??
+                              0;
+                          scheduleAccommodationCost += ((widget.booking.adults +
+                                  widget.booking.children) *
+                              (accPrice is num
+                                  ? accPrice.toDouble()
+                                  : double.tryParse(accPrice.toString()) ?? 0));
                         }
                       }
-                    }
-                    
-                    double vehicleCost = 0.0;
-                    if (widget.booking.hasVehicle && widget.booking.mode == 'ferry') {
-                        vehicleCost = widget.booking.vehiclePrice;
-                    }
-                    
-                    double accommodationCost = 0.0;
-                    if (widget.booking.selectedAccommodationIds.isNotEmpty) {
-                        for (var acc in widget.booking.availableAccommodations) {
-                            if (widget.booking.selectedAccommodationIds.contains(acc['id'])) {
-                                accommodationCost += (acc['price'] ?? 0).toDouble();
-                            }
+                      if (widget.booking.tripType == 'round_trip' &&
+                          widget.booking.selectedReturnSchedule != null) {
+                        final adultP = (widget.booking
+                                .selectedReturnSchedule!['adult_price'] ??
+                            widget.booking.selectedReturnSchedule!['price'] ??
+                            0);
+                        final childP = (widget.booking
+                                .selectedReturnSchedule!['child_price'] ??
+                            widget.booking.selectedReturnSchedule!['price'] ??
+                            0);
+                        ticketPrice += (widget.booking.adults *
+                                (adultP is num
+                                    ? adultP.toDouble()
+                                    : double.tryParse(adultP.toString()) ??
+                                        0)) +
+                            (widget.booking.children *
+                                (childP is num
+                                    ? childP.toDouble()
+                                    : double.tryParse(childP.toString()) ?? 0));
+                        if (widget
+                                .booking.selectedReturnScheduleAccommodation !=
+                            null) {
+                          final accPrice = widget.booking
+                                      .selectedReturnScheduleAccommodation![
+                                  'price'] ??
+                              0;
+                          scheduleAccommodationCost += ((widget.booking.adults +
+                                  widget.booking.children) *
+                              (accPrice is num
+                                  ? accPrice.toDouble()
+                                  : double.tryParse(accPrice.toString()) ?? 0));
                         }
-                    }
+                      }
 
-                    // Extra baggage cost (airline only — prepaid per pax)
-                    double extraBaggageCost = 0.0;
-                    if (widget.booking.hasExtraBaggage && widget.booking.mode == 'airline' && widget.booking.extraBaggagePrice > 0) {
-                      extraBaggageCost = widget.booking.extraBaggagePrice * (widget.booking.adults + widget.booking.children);
-                    }
-                    
-                    int travelers = widget.booking.adults + widget.booking.children;
-                    int multiplier = travelers + (widget.booking.mode == 'ferry' ? travelers : 0);
-                    
-                    double calculationFee = (multiplier * _feePerPerson) + (accommodationCost > 0 ? _feePerAccommodation : 0);
-                    double transactionFeeTotal = multiplier * _transactionFee;
-                    
-                    double subtotal = ticketPrice + scheduleAccommodationCost + vehicleCost + accommodationCost + calculationFee + extraBaggageCost + transactionFeeTotal - passengerDiscount;
-                    if (subtotal < 0) subtotal = 0.0;
+                      final bool isPromo = widget.booking.usePromoTicket &&
+                          widget.booking.promotionalTicketId != null;
 
-                    // Voucher and points are blocked when promo ticket is active
-                    final discount = (!isPromo && widget.booking.voucherData != null)
-                        ? ((widget.booking.voucherData!['discount_amount'] as num?) ?? 0).toDouble()
-                        : 0.0;
-                    double totalBeforePoints = subtotal - discount;
-                    if (totalBeforePoints < 0) totalBeforePoints = 0.0;
-                    
-                    double pointsDiscount = 0.0;
-                    if (!isPromo && _usePoints) {
-                        pointsDiscount = _availablePoints > totalBeforePoints ? totalBeforePoints.ceilToDouble() : _availablePoints;
-                    }
-                    
-                    final finalTotal = (totalBeforePoints - pointsDiscount) > 0 ? (totalBeforePoints - pointsDiscount) : 0.0;
-                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost - scheduleAccommodationCost - transactionFeeTotal).clamp(0.0, double.infinity);
-                    
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _SummarySection(title: 'Payment Summary', children: [
-                          _SummaryRow('Base Fare', '₱${ticketPrice.toStringAsFixed(2)}'),
-                          if (scheduleAccommodationCost > 0) _SummaryRow('Accommodation', '₱${scheduleAccommodationCost.toStringAsFixed(2)}'),
-                          if (passengerDiscount > 0) _SummaryRow('Passenger Discount', '-₱${passengerDiscount.toStringAsFixed(2)}'),
-                          if (vehicleCost > 0) _SummaryRow('Vehicle Freight', '₱${vehicleCost.toStringAsFixed(2)}'),
-                          if (accommodationCost > 0) _SummaryRow('Stay', '₱${accommodationCost.toStringAsFixed(2)}'),
-                          if (extraBaggageCost > 0) _SummaryRow('Extra Baggage (${widget.booking.extraBaggageKg} kg)', '₱${extraBaggageCost.toStringAsFixed(2)}'),
-                          if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') _SummaryRow('Extra Baggage (${widget.booking.extraBaggageType ?? 'Specified'})', 'Settled at Terminal'),
-                          if (calculationFee > 0) _SummaryRow('Web Admin Fee', '₱${calculationFee.toStringAsFixed(2)}'),
-                          if (transactionFeeTotal > 0) _SummaryRow('Transaction Fee', '₱${transactionFeeTotal.toStringAsFixed(2)}'),
-                          const Divider(height: 16),
-                          _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
-                          if (discount > 0) _SummaryRow('Voucher Discount', '-₱${discount.toStringAsFixed(2)}'),
-                          if (pointsDiscount > 0) _SummaryRow('Points Discount (${pointsDiscount.toInt()} pts)', '-₱${pointsDiscount.toStringAsFixed(2)}'),
-                          const Divider(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
-                              Text('₱${finalTotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, color: kPink, fontSize: 18)),
-                            ],
-                          ),
-                        ]),
-                        const SizedBox(height: 16),
-                        Builder(builder: (ctx) {
-                          final pts = UserSession.calculateEarnedPoints(eligiblePointsTotal);
-                          if (pts > 0) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: kPink.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: kPink.withValues(alpha: 0.3)),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.star_rounded, color: kPink, size: 20),
-                                    const SizedBox(width: 8),
-                                    Flexible(
-                                      child: Text(
-                                        'You will earn $pts Gracia Points for this booking!',
-                                        style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
+                      double passengerDiscount = 0.0;
+                      if (!isPromo) {
+                        for (var p in widget.booking.passengers) {
+                          if (p['discount_id'] != null &&
+                              widget.booking.selectedSchedule != null) {
+                            final ap = widget
+                                    .booking.selectedSchedule!['adult_price'] ??
+                                widget.booking.selectedSchedule!['price'] ??
+                                0;
+                            passengerDiscount += ((ap is num
+                                    ? ap.toDouble()
+                                    : double.tryParse(ap.toString()) ?? 0) *
+                                0.20);
+                            if (widget.booking.tripType == 'round_trip' &&
+                                widget.booking.selectedReturnSchedule != null) {
+                              final rp = widget.booking
+                                      .selectedReturnSchedule!['adult_price'] ??
+                                  widget.booking
+                                      .selectedReturnSchedule!['price'] ??
+                                  0;
+                              passengerDiscount += ((rp is num
+                                      ? rp.toDouble()
+                                      : double.tryParse(rp.toString()) ?? 0) *
+                                  0.20);
+                            }
                           }
-                          return const SizedBox();
-                        }),
-                      ],
-                    );
+                        }
+                      }
+
+                      double vehicleCost = 0.0;
+                      if (widget.booking.hasVehicle &&
+                          widget.booking.mode == 'ferry') {
+                        vehicleCost = widget.booking.vehiclePrice;
+                      }
+
+                      double accommodationCost = 0.0;
+                      if (widget.booking.selectedAccommodationIds.isNotEmpty) {
+                        for (var acc
+                            in widget.booking.availableAccommodations) {
+                          if (widget.booking.selectedAccommodationIds
+                              .contains(acc['id'])) {
+                            accommodationCost += (acc['price'] ?? 0).toDouble();
+                          }
+                        }
+                      }
+
+                      // Extra baggage cost (airline only — prepaid per pax)
+                      double extraBaggageCost = 0.0;
+                      if (widget.booking.hasExtraBaggage &&
+                          widget.booking.mode == 'airline' &&
+                          widget.booking.extraBaggagePrice > 0) {
+                        extraBaggageCost = widget.booking.extraBaggagePrice *
+                            (widget.booking.adults + widget.booking.children);
+                      }
+
+                      int travelers =
+                          widget.booking.adults + widget.booking.children;
+                      int multiplier = travelers +
+                          (widget.booking.mode == 'ferry' ? travelers : 0);
+
+                      double calculationFee = (multiplier * _feePerPerson) +
+                          (accommodationCost > 0 ? _feePerAccommodation : 0);
+                      double transactionFeeTotal = multiplier * _transactionFee;
+
+                      double subtotal = ticketPrice +
+                          scheduleAccommodationCost +
+                          vehicleCost +
+                          accommodationCost +
+                          calculationFee +
+                          extraBaggageCost +
+                          transactionFeeTotal -
+                          passengerDiscount;
+                      if (subtotal < 0) subtotal = 0.0;
+
+                      // Voucher and points are blocked when promo ticket is active
+                      final discount =
+                          (!isPromo && widget.booking.voucherData != null)
+                              ? ((widget.booking.voucherData!['discount_amount']
+                                          as num?) ??
+                                      0)
+                                  .toDouble()
+                              : 0.0;
+                      double totalBeforePoints = subtotal - discount;
+                      if (totalBeforePoints < 0) totalBeforePoints = 0.0;
+
+                      double pointsDiscount = 0.0;
+                      if (!isPromo && _usePoints) {
+                        pointsDiscount = _availablePoints > totalBeforePoints
+                            ? totalBeforePoints.ceilToDouble()
+                            : _availablePoints;
+                      }
+
+                      final finalTotal =
+                          (totalBeforePoints - pointsDiscount) > 0
+                              ? (totalBeforePoints - pointsDiscount)
+                              : 0.0;
+                      final eligiblePointsTotal = (finalTotal -
+                              calculationFee -
+                              accommodationCost -
+                              scheduleAccommodationCost -
+                              transactionFeeTotal)
+                          .clamp(0.0, double.infinity);
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _SummarySection(title: 'Payment Summary', children: [
+                            _SummaryRow('Base Fare',
+                                '₱${ticketPrice.toStringAsFixed(2)}'),
+                            if (scheduleAccommodationCost > 0)
+                              _SummaryRow('Accommodation',
+                                  '₱${scheduleAccommodationCost.toStringAsFixed(2)}'),
+                            if (passengerDiscount > 0)
+                              _SummaryRow('Passenger Discount',
+                                  '-₱${passengerDiscount.toStringAsFixed(2)}'),
+                            if (vehicleCost > 0)
+                              _SummaryRow('Vehicle Freight',
+                                  '₱${vehicleCost.toStringAsFixed(2)}'),
+                            if (accommodationCost > 0)
+                              _SummaryRow('Stay',
+                                  '₱${accommodationCost.toStringAsFixed(2)}'),
+                            if (extraBaggageCost > 0)
+                              _SummaryRow(
+                                  'Extra Baggage (${widget.booking.extraBaggageKg} kg)',
+                                  '₱${extraBaggageCost.toStringAsFixed(2)}'),
+                            if (widget.booking.hasExtraBaggage &&
+                                widget.booking.mode == 'ferry')
+                              _SummaryRow(
+                                  'Extra Baggage (${widget.booking.extraBaggageType ?? 'Specified'})',
+                                  'Settled at Terminal'),
+                            if (calculationFee > 0)
+                              _SummaryRow('Web Admin Fee',
+                                  '₱${calculationFee.toStringAsFixed(2)}'),
+                            if (transactionFeeTotal > 0)
+                              _SummaryRow('Transaction Fee',
+                                  '₱${transactionFeeTotal.toStringAsFixed(2)}'),
+                            const Divider(height: 16),
+                            _SummaryRow(
+                                'Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
+                            if (discount > 0)
+                              _SummaryRow('Voucher Discount',
+                                  '-₱${discount.toStringAsFixed(2)}'),
+                            if (pointsDiscount > 0)
+                              _SummaryRow(
+                                  'Points Discount (${pointsDiscount.toInt()} pts)',
+                                  '-₱${pointsDiscount.toStringAsFixed(2)}'),
+                            const Divider(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Grand Total',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: kSlate800)),
+                                Text('₱${finalTotal.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        color: kPink,
+                                        fontSize: 18)),
+                              ],
+                            ),
+                          ]),
+                          const SizedBox(height: 16),
+                          Builder(builder: (ctx) {
+                            final pts = UserSession.calculateEarnedPoints(
+                                eligiblePointsTotal);
+                            if (pts > 0) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: kPink.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: kPink.withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.star_rounded,
+                                          color: kPink, size: 20),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          'You will earn $pts Gracia Points for this booking!',
+                                          style: const TextStyle(
+                                              color: kPink,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox();
+                          }),
+                        ],
+                      );
                     } catch (e) {
                       return Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange.shade200)),
-                        child: Text('Could not calculate price summary: $e', style: const TextStyle(color: Colors.orange, fontSize: 12)),
+                        decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.orange.shade200)),
+                        child: Text('Could not calculate price summary: $e',
+                            style: const TextStyle(
+                                color: Colors.orange, fontSize: 12)),
                       );
                     }
                   }),
@@ -6918,12 +8947,19 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kGreen,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 4,
                       ),
                       child: _isSubmitting
-                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Text('Submit Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2.5))
+                          : const Text('Submit Booking',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
                 ],
@@ -6951,7 +8987,11 @@ class _SummarySection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+            Text(title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: kSlate800)),
             const Divider(height: 16),
             ...children,
           ],
@@ -6975,14 +9015,16 @@ class _SummaryRow extends StatelessWidget {
         children: [
           Expanded(
             flex: 1,
-            child: Text(label, style: const TextStyle(color: kSlate500, fontSize: 13)),
+            child: Text(label,
+                style: const TextStyle(color: kSlate500, fontSize: 13)),
           ),
           const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: Text(
               value,
-              style: const TextStyle(color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: kSlate800, fontSize: 13, fontWeight: FontWeight.bold),
               textAlign: TextAlign.end,
             ),
           ),
@@ -7048,15 +9090,16 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
   void _fetchPaymentSettings() async {
     try {
       final baseUrl = UserSession.getBaseUrl();
-      final res = await http.get(Uri.parse('$baseUrl/api/payment-settings'), headers: {'Accept': 'application/json'});
+      final res = await http.get(Uri.parse('$baseUrl/api/payment-settings'),
+          headers: {'Accept': 'application/json'});
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (data['status'] == 'success') {
           if (mounted) setState(() => _qrCodeUrl = data['qr_code_url']);
         }
       }
-    } catch (_) {}
-    finally {
+    } catch (_) {
+    } finally {
       if (mounted) setState(() => _loadingPaymentSettings = false);
     }
   }
@@ -7095,13 +9138,15 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
   Future<void> _pickProofImage() async {
     final ImagePicker picker = ImagePicker();
     try {
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      final XFile? image =
+          await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
       if (image != null && mounted) {
         setState(() => _proofImage = image);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error picking image: $e')));
       }
     }
   }
@@ -7118,22 +9163,34 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
       }
       request.headers['Accept'] = 'application/json';
       request.fields['email'] = UserSession.email;
-      request.files.add(await http.MultipartFile.fromPath('proof', _proofImage!.path));
+      request.files
+          .add(await http.MultipartFile.fromPath('proof', _proofImage!.path));
       final streamed = await request.send();
       final res = await http.Response.fromStream(streamed);
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         if (mounted) {
-          setState(() { _proofUploaded = true; _countdownTimer?.cancel(); });
+          setState(() {
+            _proofUploaded = true;
+            _countdownTimer?.cancel();
+          });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Proof of payment uploaded! We will verify it shortly.'), backgroundColor: Colors.green),
+            const SnackBar(
+                content: Text(
+                    'Proof of payment uploaded! We will verify it shortly.'),
+                backgroundColor: Colors.green),
           );
         }
       } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Upload failed.'), backgroundColor: Colors.red));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(data['message'] ?? 'Upload failed.'),
+              backgroundColor: Colors.red));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload error: $e'), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Upload error: $e'), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _isUploadingProof = false);
     }
@@ -7142,64 +9199,96 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment'), automaticallyImplyLeading: false),
+      appBar: AppBar(
+          title: const Text('Payment'), automaticallyImplyLeading: false),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           // Success banner
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: kGreen.withValues(alpha: 0.3))),
+            decoration: BoxDecoration(
+                color: kGreen.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: kGreen.withValues(alpha: 0.3))),
             child: Column(
               children: [
                 const Icon(Icons.check_circle, color: kGreen, size: 48),
                 const SizedBox(height: 8),
-                const Text('Booking Confirmed!', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: kGreen)),
+                const Text('Booking Confirmed!',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 20,
+                        color: kGreen)),
                 const SizedBox(height: 4),
-                Text('Transaction #: ${widget.transactionNumber}', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                Text('Transaction #: ${widget.transactionNumber}',
+                    style: const TextStyle(color: kSlate600, fontSize: 13)),
                 const SizedBox(height: 4),
-                Text('Total: ₱${widget.totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kPink)),
+                Text('Total: ₱${widget.totalPrice.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: kPink)),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          
+
           if (widget.paymentDeadlineAt != null && !_proofUploaded)
-             Card(
+            Card(
               color: _isExpired ? Colors.red.shade50 : Colors.orange.shade50,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Column(
                   children: [
                     Text(
-                      _isExpired ? 'Payment Window Expired' : 'Time Remaining to Pay',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: _isExpired ? Colors.red.shade800 : Colors.orange.shade900),
+                      _isExpired
+                          ? 'Payment Window Expired'
+                          : 'Time Remaining to Pay',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: _isExpired
+                              ? Colors.red.shade800
+                              : Colors.orange.shade900),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _countdownText,
-                      style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: _isExpired ? Colors.red : Colors.orange.shade800, letterSpacing: 2),
+                      style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color:
+                              _isExpired ? Colors.red : Colors.orange.shade800,
+                          letterSpacing: 2),
                     ),
                   ],
                 ),
               ),
             ),
-            
+
           const SizedBox(height: 20),
 
           // QR Code section
           Card(
             color: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             child: Padding(
               padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Payment QR Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                  const Text('Payment QR Code',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: kSlate800)),
                   const SizedBox(height: 4),
-                  const Text('Scan the QR code below to pay via GCash, Maya, or bank transfer.', style: TextStyle(fontSize: 12, color: kSlate500)),
+                  const Text(
+                      'Scan the QR code below to pay via GCash, Maya, or bank transfer.',
+                      style: TextStyle(fontSize: 12, color: kSlate500)),
                   const SizedBox(height: 16),
                   Center(
                     child: _loadingPaymentSettings
@@ -7213,30 +9302,46 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                                   height: 220,
                                   fit: BoxFit.contain,
                                   errorBuilder: (_, __, ___) => Container(
-                                    width: 220, height: 220,
-                                    decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                                    width: 220,
+                                    height: 220,
+                                    decoration: BoxDecoration(
+                                        color: kSlate100,
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
                                     child: const Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.qr_code, size: 64, color: kSlate400),
+                                        Icon(Icons.qr_code,
+                                            size: 64, color: kSlate400),
                                         SizedBox(height: 8),
-                                        Text('QR Code unavailable', style: TextStyle(color: kSlate400, fontSize: 12)),
+                                        Text('QR Code unavailable',
+                                            style: TextStyle(
+                                                color: kSlate400,
+                                                fontSize: 12)),
                                       ],
                                     ),
                                   ),
-                                )
-                              )
+                                ))
                             : Container(
-                                width: 220, height: 220,
-                                decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                                width: 220,
+                                height: 220,
+                                decoration: BoxDecoration(
+                                    color: kSlate100,
+                                    borderRadius: BorderRadius.circular(12)),
                                 child: const Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.qr_code, size: 64, color: kSlate400),
+                                    Icon(Icons.qr_code,
+                                        size: 64, color: kSlate400),
                                     SizedBox(height: 8),
-                                    Text('No QR code set', style: TextStyle(color: kSlate400, fontSize: 12)),
+                                    Text('No QR code set',
+                                        style: TextStyle(
+                                            color: kSlate400, fontSize: 12)),
                                     SizedBox(height: 4),
-                                    Text('Please contact the admin.', style: TextStyle(color: kSlate400, fontSize: 11)),
+                                    Text('Please contact the admin.',
+                                        style: TextStyle(
+                                            color: kSlate400, fontSize: 11)),
                                   ],
                                 ),
                               ),
@@ -7250,38 +9355,56 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
           // Proof of payment upload section
           Card(
             color: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             child: Padding(
               padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Attach Proof of Payment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                  const Text('Attach Proof of Payment',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: kSlate800)),
                   const SizedBox(height: 4),
-                  const Text('Upload a screenshot or photo of your payment receipt.', style: TextStyle(fontSize: 12, color: kSlate500)),
+                  const Text(
+                      'Upload a screenshot or photo of your payment receipt.',
+                      style: TextStyle(fontSize: 12, color: kSlate500)),
                   const SizedBox(height: 16),
-
                   if (_proofUploaded)
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10)),
                       child: const Row(
                         children: [
                           Icon(Icons.check_circle, color: Colors.green),
                           SizedBox(width: 10),
-                          Expanded(child: Text('Proof uploaded! Our team will verify your payment within 24 hours.', style: TextStyle(color: Colors.green, fontSize: 13))),
+                          Expanded(
+                              child: Text(
+                                  'Proof uploaded! Our team will verify your payment within 24 hours.',
+                                  style: TextStyle(
+                                      color: Colors.green, fontSize: 13))),
                         ],
                       ),
                     )
                   else if (_isExpired)
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10)),
                       child: const Row(
                         children: [
                           Icon(Icons.cancel, color: Colors.red),
                           SizedBox(width: 10),
-                          Expanded(child: Text('Payment time expired. Your booking has been cancelled.', style: TextStyle(color: Colors.red, fontSize: 13))),
+                          Expanded(
+                              child: Text(
+                                  'Payment time expired. Your booking has been cancelled.',
+                                  style: TextStyle(
+                                      color: Colors.red, fontSize: 13))),
                         ],
                       ),
                     )
@@ -7290,7 +9413,10 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                     if (_proofImage != null) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.file(File(_proofImage!.path), height: 180, width: double.infinity, fit: BoxFit.cover),
+                        child: Image.file(File(_proofImage!.path),
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover),
                       ),
                       const SizedBox(height: 12),
                     ] else
@@ -7307,9 +9433,12 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                           child: const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.add_photo_alternate_outlined, size: 40, color: kSlate400),
+                              Icon(Icons.add_photo_alternate_outlined,
+                                  size: 40, color: kSlate400),
                               SizedBox(height: 8),
-                              Text('Tap to select image', style: TextStyle(color: kSlate400, fontSize: 13)),
+                              Text('Tap to select image',
+                                  style: TextStyle(
+                                      color: kSlate400, fontSize: 13)),
                             ],
                           ),
                         ),
@@ -7324,7 +9453,9 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                               onPressed: _pickProofImage,
                               icon: const Icon(Icons.image, size: 16),
                               label: const Text('Change Image'),
-                              style: OutlinedButton.styleFrom(foregroundColor: kSlate600, side: const BorderSide(color: kSlate200)),
+                              style: OutlinedButton.styleFrom(
+                                  foregroundColor: kSlate600,
+                                  side: const BorderSide(color: kSlate200)),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -7332,15 +9463,26 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
-                            onPressed: (_proofImage == null || _isUploadingProof || _isExpired) ? null : _uploadProof,
+                            onPressed: (_proofImage == null ||
+                                    _isUploadingProof ||
+                                    _isExpired)
+                                ? null
+                                : _uploadProof,
                             icon: _isUploadingProof
-                                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2, color: Colors.white))
                                 : const Icon(Icons.upload, size: 16),
-                            label: Text(_isUploadingProof ? 'Uploading...' : 'Upload Proof'),
+                            label: Text(_isUploadingProof
+                                ? 'Uploading...'
+                                : 'Upload Proof'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: kGreen,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                             ),
                           ),
                         ),
@@ -7360,27 +9502,29 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
             child: ElevatedButton(
               onPressed: () {
                 if (_proofUploaded || _isExpired) {
-                    Navigator.popUntil(context, (route) => route.isFirst);
+                  Navigator.popUntil(context, (route) => route.isFirst);
                 } else {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BookingSuccessScreen(
-                          transactionNumber: widget.transactionNumber,
-                          totalPrice: widget.totalPrice,
-                        ),
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BookingSuccessScreen(
+                        transactionNumber: widget.transactionNumber,
+                        totalPrice: widget.totalPrice,
                       ),
-                      (route) => route.isFirst,
-                    );
+                    ),
+                    (route) => route.isFirst,
+                  );
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: kPink,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 elevation: 4,
               ),
-              child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: const Text('Done',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
         ],
@@ -7393,12 +9537,15 @@ class BookingSuccessScreen extends StatelessWidget {
   final String transactionNumber;
   final double totalPrice;
 
-  const BookingSuccessScreen({super.key, required this.transactionNumber, required this.totalPrice});
+  const BookingSuccessScreen(
+      {super.key, required this.transactionNumber, required this.totalPrice});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Booking Success'), automaticallyImplyLeading: false),
+      appBar: AppBar(
+          title: const Text('Booking Success'),
+          automaticallyImplyLeading: false),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -7406,7 +9553,9 @@ class BookingSuccessScreen extends StatelessWidget {
           children: [
             const Icon(Icons.check_circle, color: kGreen, size: 96),
             const SizedBox(height: 24),
-            const Text('Booking Submitted!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: kGreen)),
+            const Text('Booking Submitted!',
+                style: TextStyle(
+                    fontSize: 24, fontWeight: FontWeight.bold, color: kGreen)),
             const SizedBox(height: 8),
             const Text(
               'Your booking has been submitted.\n\nCancellation is free within 5 minutes after providing proof of payment.',
@@ -7417,7 +9566,8 @@ class BookingSuccessScreen extends StatelessWidget {
             Card(
               color: kSlate100,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -7425,16 +9575,24 @@ class BookingSuccessScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Transaction #', style: TextStyle(color: kSlate600)),
-                        Text(transactionNumber, style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                        const Text('Transaction #',
+                            style: TextStyle(color: kSlate600)),
+                        Text(transactionNumber,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, color: kSlate800)),
                       ],
                     ),
                     const Divider(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Amount', style: TextStyle(color: kSlate600)),
-                        Text('₱${totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w900, color: kPink, fontSize: 18)),
+                        const Text('Total Amount',
+                            style: TextStyle(color: kSlate600)),
+                        Text('₱${totalPrice.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: kPink,
+                                fontSize: 18)),
                       ],
                     ),
                   ],
@@ -7446,9 +9604,16 @@ class BookingSuccessScreen extends StatelessWidget {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-                style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: const Text('Back to Home', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                onPressed: () =>
+                    Navigator.popUntil(context, (route) => route.isFirst),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: kGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12))),
+                child: const Text('Back to Home',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
           ],
@@ -7501,8 +9666,13 @@ class _VoucherSectionState extends State<_VoucherSection> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Discount Coupon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
-                    Text('Apply your discount coupon here', style: TextStyle(color: kSlate500, fontSize: 12)),
+                    Text('Discount Coupon',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: kSlate800)),
+                    Text('Apply your discount coupon here',
+                        style: TextStyle(color: kSlate500, fontSize: 12)),
                   ],
                 ),
               ),
@@ -7512,7 +9682,8 @@ class _VoucherSectionState extends State<_VoucherSection> {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => VoucherPickerScreen(booking: widget.booking, scopeFilter: null),
+                      builder: (_) => VoucherPickerScreen(
+                          booking: widget.booking, scopeFilter: null),
                     ),
                   );
                   if (mounted) {
@@ -7525,12 +9696,15 @@ class _VoucherSectionState extends State<_VoucherSection> {
                 icon: const Icon(Icons.card_giftcard, size: 16, color: kPink),
                 label: Text(
                   vCode != null ? 'Change' : 'Select',
-                  style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                      color: kPink, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: kPink, width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -7557,7 +9731,8 @@ class _VoucherSectionState extends State<_VoucherSection> {
                 children: [
                   Icon(Icons.close, size: 14, color: kSlate500),
                   SizedBox(width: 4),
-                  Text('Remove coupon', style: TextStyle(color: kSlate500, fontSize: 12)),
+                  Text('Remove coupon',
+                      style: TextStyle(color: kSlate500, fontSize: 12)),
                 ],
               ),
             ),
@@ -7568,14 +9743,15 @@ class _VoucherSectionState extends State<_VoucherSection> {
   }
 }
 
-
 // ==========================================
 // VOUCHER PICKER SCREEN (booking context)
 // ==========================================
 class VoucherPickerScreen extends StatefulWidget {
   final BookingData booking;
-  final String? scopeFilter; // null = all scopes, 'ticket_fare', 'vehicle', 'accommodation', 'booking_total'
-  const VoucherPickerScreen({super.key, required this.booking, this.scopeFilter});
+  final String?
+      scopeFilter; // null = all scopes, 'ticket_fare', 'vehicle', 'accommodation', 'booking_total'
+  const VoucherPickerScreen(
+      {super.key, required this.booking, this.scopeFilter});
 
   @override
   State<VoucherPickerScreen> createState() => _VoucherPickerScreenState();
@@ -7607,16 +9783,23 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
         Uri.parse('${UserSession.getBaseUrl()}/api/vouchers'),
         headers: {
           'Accept': 'application/json',
-          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+          if (UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}',
         },
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         var vouchers = data['vouchers'] as List<dynamic>? ?? [];
         if (widget.scopeFilter != null) {
-          vouchers = vouchers.where((v) => v['eligible_scope'] == widget.scopeFilter).toList();
+          vouchers = vouchers
+              .where((v) => v['eligible_scope'] == widget.scopeFilter)
+              .toList();
         }
-        if (mounted) setState(() { _vouchers = vouchers; _isLoading = false; });
+        if (mounted)
+          setState(() {
+            _vouchers = vouchers;
+            _isLoading = false;
+          });
       } else {
         if (mounted) setState(() => _isLoading = false);
       }
@@ -7627,7 +9810,10 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
 
   Future<void> _applyCode(String code) async {
     if (code.trim().isEmpty) return;
-    setState(() { _isValidating = true; _errorMsg = null; });
+    setState(() {
+      _isValidating = true;
+      _errorMsg = null;
+    });
     try {
       final booking = widget.booking;
       final body = {
@@ -7636,10 +9822,17 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
         'origin': booking.origin,
         'destination': booking.destination,
         'trip_type': booking.tripType,
-        'client_email': booking.clientEmail.isNotEmpty ? booking.clientEmail : UserSession.email,
+        'client_email': booking.clientEmail.isNotEmpty
+            ? booking.clientEmail
+            : UserSession.email,
         'passengers': booking.passengers.isNotEmpty
-            ? booking.passengers.map((p) => {'type': p['type'], 'discount_id': p['discount_id']}).toList()
-            : [{'type': 'adult', 'discount_id': null}],
+            ? booking.passengers
+                .map(
+                    (p) => {'type': p['type'], 'discount_id': p['discount_id']})
+                .toList()
+            : [
+                {'type': 'adult', 'discount_id': null}
+              ],
         'accommodation_ids': booking.selectedAccommodationIds,
         'has_vehicle': booking.hasVehicle,
         if (booking.hasVehicle) 'vehicle_price': booking.vehiclePrice,
@@ -7649,7 +9842,8 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+          if (UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}',
         },
         body: jsonEncode(body),
       );
@@ -7704,33 +9898,56 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                         textCapitalization: TextCapitalization.characters,
                         decoration: InputDecoration(
                           hintText: 'Enter voucher / promo code',
-                          prefixIcon: const Icon(Icons.confirmation_num_outlined, color: kPink),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          prefixIcon: const Icon(
+                              Icons.confirmation_num_outlined,
+                              color: kPink),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
-                      onPressed: _isValidating ? null : () => _applyCode(_codeCtrl.text),
+                      onPressed: _isValidating
+                          ? null
+                          : () => _applyCode(_codeCtrl.text),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kPink,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       child: _isValidating
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text('Apply', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2))
+                          : const Text('Apply',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
-                if (_errorMsg != null) ...[ const SizedBox(height: 8), Text(_errorMsg!, style: const TextStyle(color: Colors.red, fontSize: 13)) ],
-                if (currentCode != null && widget.booking.voucherData != null) ...[
+                if (_errorMsg != null) ...[
+                  const SizedBox(height: 8),
+                  Text(_errorMsg!,
+                      style: const TextStyle(color: Colors.red, fontSize: 13))
+                ],
+                if (currentCode != null &&
+                    widget.booking.voucherData != null) ...[
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: kGreen.withValues(alpha: 0.3))),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                        color: kGreen.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border:
+                            Border.all(color: kGreen.withValues(alpha: 0.3))),
                     child: Row(
                       children: [
                         const Icon(Icons.check_circle, color: kGreen, size: 18),
@@ -7738,7 +9955,10 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                         Expanded(
                           child: Text(
                             'Applied: $currentCode — Saves ₱${(widget.booking.voucherData!['discount_amount'] as num).toStringAsFixed(2)}',
-                            style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: const TextStyle(
+                                color: kGreen,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
                           ),
                         ),
                         GestureDetector(
@@ -7748,7 +9968,8 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                             _codeCtrl.clear();
                             setState(() {});
                           },
-                          child: const Icon(Icons.close, color: kSlate500, size: 20),
+                          child: const Icon(Icons.close,
+                              color: kSlate500, size: 20),
                         ),
                       ],
                     ),
@@ -7767,9 +9988,12 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.local_activity, size: 60, color: kSlate200),
+                            Icon(Icons.local_activity,
+                                size: 60, color: kSlate200),
                             SizedBox(height: 12),
-                            Text('No applicable vouchers available', style: TextStyle(color: kSlate400, fontSize: 15)),
+                            Text('No applicable vouchers available',
+                                style:
+                                    TextStyle(color: kSlate400, fontSize: 15)),
                           ],
                         ),
                       )
@@ -7778,7 +10002,8 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                         itemCount: _vouchers.length,
                         itemBuilder: (context, i) {
                           final v = _vouchers[i];
-                          final isSelected = widget.booking.voucherCode == v['code'];
+                          final isSelected =
+                              widget.booking.voucherCode == v['code'];
                           return _DiscountCouponCard(
                             voucher: v,
                             isSelected: isSelected,
@@ -7802,9 +10027,12 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('Remove Voucher', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  child: const Text('Remove Voucher',
+                      style: TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
@@ -7834,48 +10062,84 @@ class AboutScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [kGreen, Color(0xFF14400e)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: const LinearGradient(
+                    colors: [kGreen, Color(0xFF14400e)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('About Us', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                  Text('About Us',
+                      style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2)),
                   SizedBox(height: 6),
-                  Text('Our Journey &\nMission', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, height: 1.2)),
+                  Text('Our Journey &\nMission',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          height: 1.2)),
                   SizedBox(height: 8),
-                  Text('Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free.', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  Text(
+                      'Discover the story behind Amiga Gracia Travel Services and our dedication to making every journey hassle-free.',
+                      style: TextStyle(color: Colors.white70, fontSize: 13)),
                 ],
               ),
             ),
             const SizedBox(height: 20),
             Card(
               color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               child: const Padding(
                 padding: EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Backed by Experience, Driven by Excellence', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                    Text('Backed by Experience, Driven by Excellence',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: kSlate800)),
                     SizedBox(height: 12),
                     Text(
                       'Amiga Gracia was established in July 2017. Its humble beginning was born from the dedication of its founder, Mrs. MGA-Ting, whose extensive experience with 2GO laid the foundation for the company\'s first-class standard of service.',
-                      style: TextStyle(color: kSlate600, fontSize: 13, height: 1.6),
+                      style: TextStyle(
+                          color: kSlate600, fontSize: 13, height: 1.6),
                     ),
                     SizedBox(height: 12),
                     Text(
                       'What started in the municipality of Roxas, Oriental Mindoro has expanded. Following the challenges of the pandemic, our main office relocated to the thriving City of Calapan, positioned to serve travelers better than ever.',
-                      style: TextStyle(color: kSlate600, fontSize: 13, height: 1.6),
+                      style: TextStyle(
+                          color: kSlate600, fontSize: 13, height: 1.6),
                     ),
                     SizedBox(height: 20),
-                    Text('Quick Facts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    Text('Quick Facts',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: kSlate800)),
                     SizedBox(height: 12),
-                    _AboutFact(number: '01', title: 'Established', desc: 'July 2017 in Oriental Mindoro'),
+                    _AboutFact(
+                        number: '01',
+                        title: 'Established',
+                        desc: 'July 2017 in Oriental Mindoro'),
                     SizedBox(height: 10),
-                    _AboutFact(number: '02', title: 'Key Partnerships', desc: '2GO, Starlite Ferries, Supercat'),
+                    _AboutFact(
+                        number: '02',
+                        title: 'Key Partnerships',
+                        desc: '2GO, Starlite Ferries, Supercat'),
                     SizedBox(height: 10),
-                    _AboutFact(number: '03', title: 'Specialty', desc: 'Ferry bookings, Educational tours, Apprenticeship programs'),
+                    _AboutFact(
+                        number: '03',
+                        title: 'Specialty',
+                        desc:
+                            'Ferry bookings, Educational tours, Apprenticeship programs'),
                   ],
                 ),
               ),
@@ -7885,29 +10149,52 @@ class AboutScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [kGreen, Color(0xFF14400e)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: const LinearGradient(
+                    colors: [kGreen, Color(0xFF14400e)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Our Trusted Travel Operators', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const Text('Our Trusted Travel Operators',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15)),
                   const SizedBox(height: 14),
                   Row(
-                    children: ['2GO TRAVEL', 'STARLITE', 'SUPERCAT'].map((name) => Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                        child: Text(name, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5)),
-                      ),
-                    )).toList(),
+                    children: ['2GO TRAVEL', 'STARLITE', 'SUPERCAT']
+                        .map((name) => Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: Text(name,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 11,
+                                        letterSpacing: 0.5)),
+                              ),
+                            ))
+                        .toList(),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Kay Amiga, Hassle Free Ka!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800), textAlign: TextAlign.center),
+            const Text('Kay Amiga, Hassle Free Ka!',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: kSlate800),
+                textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -7919,24 +10206,38 @@ class _AboutFact extends StatelessWidget {
   final String number;
   final String title;
   final String desc;
-  const _AboutFact({required this.number, required this.title, required this.desc});
+  const _AboutFact(
+      {required this.number, required this.title, required this.desc});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
-          width: 38, height: 38,
-          decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-          child: Center(child: Text(number, style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12))),
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+              color: kGreen.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10)),
+          child: Center(
+              child: Text(number,
+                  style: const TextStyle(
+                      color: kGreen,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12))),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
-              Text(desc, style: const TextStyle(color: kSlate500, fontSize: 12)),
+              Text(title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: kSlate800)),
+              Text(desc,
+                  style: const TextStyle(color: kSlate500, fontSize: 12)),
             ],
           ),
         ),
@@ -7964,7 +10265,10 @@ class _ContactScreenState extends State<ContactScreen> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _emailCtrl.dispose(); _subjectCtrl.dispose(); _msgCtrl.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _subjectCtrl.dispose();
+    _msgCtrl.dispose();
     super.dispose();
   }
 
@@ -7977,63 +10281,135 @@ class _ContactScreenState extends State<ContactScreen> {
         child: Column(
           children: [
             // Info cards
-            const _ContactInfoCard(icon: Icons.phone, color: kPink, title: 'Phone Numbers', lines: ['Mobile: 0930-928-4278', 'Landline: (043) 738-2989']),
+            const _ContactInfoCard(
+                icon: Icons.phone,
+                color: kPink,
+                title: 'Phone Numbers',
+                lines: ['Mobile: 0930-928-4278', 'Landline: (043) 738-2989']),
             const SizedBox(height: 12),
-            const _ContactInfoCard(icon: Icons.email, color: kGreen, title: 'Email Addresses', lines: ['agt.salesmarketing1103@gmail.com', 'amigagracia.travelservices@gmail.com']),
+            const _ContactInfoCard(
+                icon: Icons.email,
+                color: kGreen,
+                title: 'Email Addresses',
+                lines: [
+                  'agt.salesmarketing1103@gmail.com',
+                  'amigagracia.travelservices@gmail.com'
+                ]),
             const SizedBox(height: 12),
-            const _ContactInfoCard(icon: Icons.location_on, color: Color(0xFF1565C0), title: 'Office Location', lines: ['Roxas Drive, Libis, Calapan City,', 'Oriental Mindoro, 5200']),
+            const _ContactInfoCard(
+                icon: Icons.location_on,
+                color: Color(0xFF1565C0),
+                title: 'Office Location',
+                lines: [
+                  'Roxas Drive, Libis, Calapan City,',
+                  'Oriental Mindoro, 5200'
+                ]),
             const SizedBox(height: 12),
-            const _ContactInfoCard(icon: Icons.facebook, color: Color(0xFF7B1FA2), title: 'Social Media', lines: ['Facebook: Amiga Gracia']),
+            const _ContactInfoCard(
+                icon: Icons.facebook,
+                color: Color(0xFF7B1FA2),
+                title: 'Social Media',
+                lines: ['Facebook: Amiga Gracia']),
             const SizedBox(height: 20),
 
             // Form
             if (_submitted)
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: kGreen.withValues(alpha: 0.2))),
+                decoration: BoxDecoration(
+                    color: kGreen.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: kGreen.withValues(alpha: 0.2))),
                 child: Column(
                   children: [
                     const Icon(Icons.check_circle, color: kGreen, size: 48),
                     const SizedBox(height: 12),
-                    const Text('Inquiry Sent!', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 16)),
-                    const Text('Our team will get back to you shortly.', style: TextStyle(color: kSlate500, fontSize: 13), textAlign: TextAlign.center),
+                    const Text('Inquiry Sent!',
+                        style: TextStyle(
+                            color: kGreen,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16)),
+                    const Text('Our team will get back to you shortly.',
+                        style: TextStyle(color: kSlate500, fontSize: 13),
+                        textAlign: TextAlign.center),
                     const SizedBox(height: 12),
-                    TextButton(onPressed: () => setState(() => _submitted = false), child: const Text('Send another', style: TextStyle(color: kPink))),
+                    TextButton(
+                        onPressed: () => setState(() => _submitted = false),
+                        child: const Text('Send another',
+                            style: TextStyle(color: kPink))),
                   ],
                 ),
               )
             else
               Card(
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Send an Inquiry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
+                      const Text('Send an Inquiry',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: kSlate800)),
                       const SizedBox(height: 14),
-                      TextField(controller: _nameCtrl, decoration: InputDecoration(labelText: 'Your Name *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
+                      TextField(
+                          controller: _nameCtrl,
+                          decoration: InputDecoration(
+                              labelText: 'Your Name *',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)))),
                       const SizedBox(height: 10),
-                      TextField(controller: _emailCtrl, keyboardType: TextInputType.emailAddress, decoration: InputDecoration(labelText: 'Email Address *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
+                      TextField(
+                          controller: _emailCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                              labelText: 'Email Address *',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)))),
                       const SizedBox(height: 10),
-                      TextField(controller: _subjectCtrl, decoration: InputDecoration(labelText: 'Subject', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
+                      TextField(
+                          controller: _subjectCtrl,
+                          decoration: InputDecoration(
+                              labelText: 'Subject',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)))),
                       const SizedBox(height: 10),
-                      TextField(controller: _msgCtrl, maxLines: 4, decoration: InputDecoration(labelText: 'Message *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
+                      TextField(
+                          controller: _msgCtrl,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                              labelText: 'Message *',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)))),
                       const SizedBox(height: 14),
                       SizedBox(
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
                           onPressed: () {
-                            if (_nameCtrl.text.isEmpty || _emailCtrl.text.isEmpty || _msgCtrl.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill required fields'), backgroundColor: Colors.red));
+                            if (_nameCtrl.text.isEmpty ||
+                                _emailCtrl.text.isEmpty ||
+                                _msgCtrl.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Please fill required fields'),
+                                      backgroundColor: Colors.red));
                               return;
                             }
                             setState(() => _submitted = true);
                           },
-                          style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                          child: const Text('Send Message', style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: kGreen,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10))),
+                          child: const Text('Send Message',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
@@ -8052,19 +10428,28 @@ class _ContactInfoCard extends StatelessWidget {
   final Color color;
   final String title;
   final List<String> lines;
-  const _ContactInfoCard({required this.icon, required this.color, required this.title, required this.lines});
+  const _ContactInfoCard(
+      {required this.icon,
+      required this.color,
+      required this.title,
+      required this.lines});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: kSlate200)),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: kSlate200)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
@@ -8072,9 +10457,14 @@ class _ContactInfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: kSlate800)),
                 const SizedBox(height: 4),
-                ...lines.map((l) => Text(l, style: const TextStyle(color: kSlate600, fontSize: 12))),
+                ...lines.map((l) => Text(l,
+                    style: const TextStyle(color: kSlate600, fontSize: 12))),
               ],
             ),
           ),
@@ -8093,56 +10483,64 @@ class ServicesScreen extends StatelessWidget {
   static const List<Map<String, dynamic>> _services = [
     {
       'title': '2GO Travel Booking',
-      'desc': 'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel. Ideal for family retreats, business logistics, and leisure trips.',
+      'desc':
+          'Book premier overnight ship accommodation and fast cargo transits with 2GO Travel. Ideal for family retreats, business logistics, and leisure trips.',
       'icon': Icons.directions_boat,
       'color': Color(0xFFEE018D),
       'tag': 'Available Online',
     },
     {
       'title': 'Starlite & Supercat',
-      'desc': 'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings, roll-on/roll-off (RoRo) cargo slots, and fastcraft ticketing.',
+      'desc':
+          'Affordable regional transits between Batangas, Calapan, and Roxas. We manage standard ferry bookings, roll-on/roll-off (RoRo) cargo slots, and fastcraft ticketing.',
       'icon': Icons.sailing,
       'color': Color(0xFF216417),
       'tag': 'Available Online',
     },
     {
       'title': '2GO Onboarding Training',
-      'desc': 'Comprehensive onboarding and orientation programs for individuals joining 2GO operations.',
+      'desc':
+          'Comprehensive onboarding and orientation programs for individuals joining 2GO operations.',
       'icon': Icons.directions_boat,
       'color': Color(0xFFD81B60),
       'tag': 'For New Hires & Trainees',
     },
     {
       'title': 'Educ Tour',
-      'desc': 'Educational tours for students and academic groups, featuring visits to travel facilities and cultural sites.',
+      'desc':
+          'Educational tours for students and academic groups, featuring visits to travel facilities and cultural sites.',
       'icon': Icons.school,
       'color': Color(0xFF00796B),
       'tag': 'For Schools & Groups',
     },
     {
       'title': 'Stay and Learn',
-      'desc': 'Combined accommodation and learning packages, perfect for workshops, seminars, and training sessions.',
+      'desc':
+          'Combined accommodation and learning packages, perfect for workshops, seminars, and training sessions.',
       'icon': Icons.hotel,
       'color': Color(0xFF1E88E5),
       'tag': 'Workshops & Seminars',
     },
     {
       'title': 'Marine Related Trainings',
-      'desc': 'Specialized training programs for maritime professionals, including safety, navigation, and vessel operations.',
+      'desc':
+          'Specialized training programs for maritime professionals, including safety, navigation, and vessel operations.',
       'icon': Icons.anchor,
       'color': Color(0xFF8E24AA),
       'tag': 'For Mariners & Seafarers',
     },
     {
       'title': 'Transport',
-      'desc': 'Reliable transport solutions including ferry, airline, and land transfers for individuals, groups, and corporate needs.',
+      'desc':
+          'Reliable transport solutions including ferry, airline, and land transfers for individuals, groups, and corporate needs.',
       'icon': Icons.emoji_transportation,
       'color': Color(0xFFF4511E),
       'tag': 'Multi-Modal Transport',
     },
     {
       'title': 'Visa & Passport Assistance',
-      'desc': 'Complete assistance with visa applications and passport processing, helping you prepare required documents.',
+      'desc':
+          'Complete assistance with visa applications and passport processing, helping you prepare required documents.',
       'icon': Icons.article,
       'color': Color(0xFF00897B),
       'tag': 'Document Processing',
@@ -8161,53 +10559,81 @@ class ServicesScreen extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 20),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [kGreen, Color(0xFF14400e)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              gradient: const LinearGradient(
+                  colors: [kGreen, Color(0xFF14400e)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight),
               borderRadius: BorderRadius.circular(18),
             ),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Book Ferry Tickets Directly Online', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 17)),
+                Text('Book Ferry Tickets Directly Online',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 17)),
                 SizedBox(height: 6),
-                Text('Quickly check available schedules, fares, and cabins. Complete your passenger credentials instantly.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(
+                    'Quickly check available schedules, fares, and cabins. Complete your passenger credentials instantly.',
+                    style: TextStyle(color: Colors.white70, fontSize: 12)),
               ],
             ),
           ),
           ..._services.map((s) => Card(
-            color: Colors.white,
-            margin: const EdgeInsets.only(bottom: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: (s['color'] as Color).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
-                    child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 26),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(s['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
-                        const SizedBox(height: 6),
-                        Text(s['desc'] as String, style: const TextStyle(color: kSlate500, fontSize: 12, height: 1.5)),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(10)),
-                          child: Text(s['tag'] as String, style: const TextStyle(color: kSlate500, fontSize: 10, fontWeight: FontWeight.bold)),
+                color: Colors.white,
+                margin: const EdgeInsets.only(bottom: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                            color: (s['color'] as Color).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(14)),
+                        child: Icon(s['icon'] as IconData,
+                            color: s['color'] as Color, size: 26),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(s['title'] as String,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: kSlate800)),
+                            const SizedBox(height: 6),
+                            Text(s['desc'] as String,
+                                style: const TextStyle(
+                                    color: kSlate500,
+                                    fontSize: 12,
+                                    height: 1.5)),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                  color: kSlate100,
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: Text(s['tag'] as String,
+                                  style: const TextStyle(
+                                      color: kSlate500,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          )),
+                ),
+              )),
         ],
       ),
     );
@@ -8224,7 +10650,8 @@ class TourPackagesScreen extends StatefulWidget {
   State<TourPackagesScreen> createState() => _TourPackagesScreenState();
 }
 
-class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTickerProviderStateMixin {
+class _TourPackagesScreenState extends State<TourPackagesScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   List<Map<String, dynamic>> _domestic = [];
@@ -8233,7 +10660,8 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
 
   Future<void> _fetchTours() async {
     try {
-      final res = await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/tours'));
+      final res =
+          await http.get(Uri.parse('${UserSession.getBaseUrl()}/api/tours'));
       if (res.statusCode == 200) {
         final List<dynamic> tours = json.decode(res.body) as List<dynamic>;
         List<Map<String, dynamic>> normalized = tours.map((e) {
@@ -8241,8 +10669,18 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
           return _normalizeTour(m);
         }).toList();
 
-        final dom = normalized.where((t) => (t['country'] ?? '').toString().toLowerCase().contains('philipp')).toList();
-        final intl = normalized.where((t) => !( (t['country'] ?? '').toString().toLowerCase().contains('philipp'))).toList();
+        final dom = normalized
+            .where((t) => (t['country'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains('philipp'))
+            .toList();
+        final intl = normalized
+            .where((t) => !((t['country'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains('philipp')))
+            .toList();
         setState(() {
           _domestic = dom.cast<Map<String, dynamic>>();
           _international = intl.cast<Map<String, dynamic>>();
@@ -8306,19 +10744,19 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
             ),
           ),
           Expanded(
-            child: _loadingTours 
-              ? const Center(child: CircularProgressIndicator())
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _domestic.isEmpty
-                      ? _buildEmptyState('No Domestic Packages')
-                      : _PackageList(packages: _domestic),
-                    _international.isEmpty
-                      ? _buildEmptyState('No International Packages')
-                      : _PackageList(packages: _international),
-                  ],
-                ),
+            child: _loadingTours
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _domestic.isEmpty
+                          ? _buildEmptyState('No Domestic Packages')
+                          : _PackageList(packages: _domestic),
+                      _international.isEmpty
+                          ? _buildEmptyState('No International Packages')
+                          : _PackageList(packages: _international),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -8332,9 +10770,12 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
         children: [
           const Icon(Icons.landscape, size: 80, color: kSlate200),
           const SizedBox(height: 16),
-          Text(message, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate400)),
+          Text(message,
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: kSlate400)),
           const SizedBox(height: 8),
-          const Text('Packages will be available soon.', style: TextStyle(color: kSlate400)),
+          const Text('Packages will be available soon.',
+              style: TextStyle(color: kSlate400)),
         ],
       ),
     );
@@ -8355,7 +10796,8 @@ class _PackageList extends StatelessWidget {
         final gradient = p['gradient'] as List<Color>;
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           elevation: 3,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -8363,8 +10805,12 @@ class _PackageList extends StatelessWidget {
               Container(
                 height: 120,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                  gradient: LinearGradient(
+                      colors: gradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(18)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -8372,13 +10818,26 @@ class _PackageList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
-                        child: Text(p['tag'] as String, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Text(p['tag'] as String,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold)),
                       ),
                       const Spacer(),
-                      Text(p['name'] as String, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 17)),
-                      Text(p['detail'] as String, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                      Text(p['name'] as String,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 17)),
+                      Text(p['detail'] as String,
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -8388,19 +10847,41 @@ class _PackageList extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(p['desc'] as String, style: const TextStyle(color: kSlate600, fontSize: 13, height: 1.5)),
+                    Text(p['desc'] as String,
+                        style: const TextStyle(
+                            color: kSlate600, fontSize: 13, height: 1.5)),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('Starting from', style: TextStyle(color: kSlate400, fontSize: 11)),
-                          Text(p['price'] as String, style: const TextStyle(color: kGreen, fontWeight: FontWeight.w900, fontSize: 16)),
-                        ]),
+                        Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Starting from',
+                                  style: TextStyle(
+                                      color: kSlate400, fontSize: 11)),
+                              Text(p['price'] as String,
+                                  style: const TextStyle(
+                                      color: kGreen,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16)),
+                            ]),
                         ElevatedButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => RequestBookingScreen(package: p))),
-                          style: ElevatedButton.styleFrom(backgroundColor: kPink, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), padding: const EdgeInsets.symmetric(horizontal: 20)),
-                          child: const Text('Book Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      RequestBookingScreen(package: p))),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: kPink,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20)),
+                          child: const Text('Book Now',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13)),
                         ),
                       ],
                     ),
@@ -8444,7 +10925,13 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
   final _notesCtrl = TextEditingController();
   bool _submitted = false;
 
-  static const _services = ['Ferry Ticket', 'Airline Ticket', 'Tour Package', 'Custom Group Package', 'Apprenticeship / Educational Tour'];
+  static const _services = [
+    'Ferry Ticket',
+    'Airline Ticket',
+    'Tour Package',
+    'Custom Group Package',
+    'Apprenticeship / Educational Tour'
+  ];
   static const _tripTypes = ['One Way', 'Round Trip'];
 
   @override
@@ -8463,7 +10950,8 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
       _phoneCtrl.text = UserSession.phone;
     } else if (widget.initialData != null) {
       final init = widget.initialData!;
-      _serviceType = init['mode'] == 'airline' ? 'Airline Ticket' : 'Ferry Ticket';
+      _serviceType =
+          init['mode'] == 'airline' ? 'Airline Ticket' : 'Ferry Ticket';
       _fromCtrl.text = init['origin'] ?? '';
       _toCtrl.text = init['destination'] ?? '';
       _dateCtrl.text = init['departure_date'] ?? '';
@@ -8478,7 +10966,8 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
 
   void _next() {
     if (_page < 2) {
-      _pageCtrl.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageCtrl.nextPage(
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
       setState(() => _page++);
     } else {
       setState(() => _submitted = true);
@@ -8487,7 +10976,8 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
 
   void _prev() {
     if (_page > 0) {
-      _pageCtrl.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageCtrl.previousPage(
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
       setState(() => _page--);
     }
   }
@@ -8505,14 +10995,27 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                   children: [
                     const Icon(Icons.check_circle, color: kGreen, size: 80),
                     const SizedBox(height: 20),
-                    const Text('Request Submitted!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: kGreen)),
+                    const Text('Request Submitted!',
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: kGreen)),
                     const SizedBox(height: 12),
-                    const Text('Our travel consultants will contact you within 24-48 hours to confirm your booking.', textAlign: TextAlign.center, style: TextStyle(color: kSlate500, fontSize: 14, height: 1.6)),
+                    const Text(
+                        'Our travel consultants will contact you within 24-48 hours to confirm your booking.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: kSlate500, fontSize: 14, height: 1.6)),
                     const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                      child: const Text('Back to Home', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: kGreen,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12))),
+                      child: const Text('Back to Home',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -8524,29 +11027,34 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
-                    children: List.generate(3, (i) => Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: i <= _page ? kGreen : kSlate200,
-                                borderRadius: BorderRadius.circular(2),
+                    children: List.generate(
+                        3,
+                        (i) => Expanded(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        color: i <= _page ? kGreen : kSlate200,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                  ),
+                                  if (i < 2) const SizedBox(width: 4),
+                                ],
                               ),
-                            ),
-                          ),
-                          if (i < 2) const SizedBox(width: 4),
-                        ],
-                      ),
-                    )),
+                            )),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     ['Contact Info', 'Trip Details', 'Notes & Submit'][_page],
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: kSlate800),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -8557,9 +11065,20 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                     children: [
                       // Page 1: Contact
                       _FormPage(children: [
-                        _Field(ctrl: _nameCtrl, label: 'Full Name *', icon: Icons.person),
-                        _Field(ctrl: _emailCtrl, label: 'Email Address *', icon: Icons.email, keyboard: TextInputType.emailAddress),
-                        _Field(ctrl: _phoneCtrl, label: 'Phone Number', icon: Icons.phone, keyboard: TextInputType.phone),
+                        _Field(
+                            ctrl: _nameCtrl,
+                            label: 'Full Name *',
+                            icon: Icons.person),
+                        _Field(
+                            ctrl: _emailCtrl,
+                            label: 'Email Address *',
+                            icon: Icons.email,
+                            keyboard: TextInputType.emailAddress),
+                        _Field(
+                            ctrl: _phoneCtrl,
+                            label: 'Phone Number',
+                            icon: Icons.phone,
+                            keyboard: TextInputType.phone),
                       ]),
                       // Page 2: Trip
                       _FormPage(children: [
@@ -8567,25 +11086,53 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                           padding: const EdgeInsets.only(bottom: 14),
                           child: DropdownButtonFormField<String>(
                             initialValue: _serviceType,
-                            items: _services.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                            items: _services
+                                .map((s) =>
+                                    DropdownMenuItem(value: s, child: Text(s)))
+                                .toList(),
                             onChanged: (v) => setState(() => _serviceType = v!),
-                            decoration: InputDecoration(labelText: 'Service Type', prefixIcon: const Icon(Icons.category, color: kGreen), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                            decoration: InputDecoration(
+                                labelText: 'Service Type',
+                                prefixIcon:
+                                    const Icon(Icons.category, color: kGreen),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10))),
                           ),
                         ),
-                        if (_serviceType == 'Ferry Ticket' || _serviceType == 'Airline Ticket')
+                        if (_serviceType == 'Ferry Ticket' ||
+                            _serviceType == 'Airline Ticket')
                           Padding(
                             padding: const EdgeInsets.only(bottom: 14),
                             child: DropdownButtonFormField<String>(
                               initialValue: _tripType,
-                              items: _tripTypes.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                              items: _tripTypes
+                                  .map((s) => DropdownMenuItem(
+                                      value: s, child: Text(s)))
+                                  .toList(),
                               onChanged: (v) => setState(() => _tripType = v!),
-                              decoration: InputDecoration(labelText: 'Trip Type', prefixIcon: const Icon(Icons.swap_horiz, color: kGreen), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                              decoration: InputDecoration(
+                                  labelText: 'Trip Type',
+                                  prefixIcon: const Icon(Icons.swap_horiz,
+                                      color: kGreen),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10))),
                             ),
                           ),
-                        _Field(ctrl: _fromCtrl, label: 'From', icon: Icons.location_on),
-                        _Field(ctrl: _toCtrl, label: 'To', icon: Icons.navigation),
-                        _Field(ctrl: _dateCtrl, label: 'Travel Date (or Date Range)', icon: Icons.calendar_today),
-                        _Field(ctrl: _passengersCtrl, label: 'Number of Passengers', icon: Icons.people, keyboard: TextInputType.number),
+                        _Field(
+                            ctrl: _fromCtrl,
+                            label: 'From',
+                            icon: Icons.location_on),
+                        _Field(
+                            ctrl: _toCtrl, label: 'To', icon: Icons.navigation),
+                        _Field(
+                            ctrl: _dateCtrl,
+                            label: 'Travel Date (or Date Range)',
+                            icon: Icons.calendar_today),
+                        _Field(
+                            ctrl: _passengersCtrl,
+                            label: 'Number of Passengers',
+                            icon: Icons.people,
+                            keyboard: TextInputType.number),
                       ]),
                       // Page 3: Notes
                       _FormPage(children: [
@@ -8597,24 +11144,33 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                             decoration: InputDecoration(
                               labelText: 'Additional Notes or Requirements',
                               prefixIcon: const Icon(Icons.note, color: kGreen),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                             ),
                           ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(
+                              color: kGreen.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12)),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                              const Text('Summary',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: kSlate800)),
                               const Divider(),
                               _SummaryRow('Name', _nameCtrl.text),
                               _SummaryRow('Email', _emailCtrl.text),
                               _SummaryRow('Service', _serviceType),
-                              if (_serviceType == 'Ferry Ticket' || _serviceType == 'Airline Ticket')
+                              if (_serviceType == 'Ferry Ticket' ||
+                                  _serviceType == 'Airline Ticket')
                                 _SummaryRow('Trip Type', _tripType),
-                              _SummaryRow('From → To', '${_fromCtrl.text} → ${_toCtrl.text}'),
+                              _SummaryRow('From → To',
+                                  '${_fromCtrl.text} → ${_toCtrl.text}'),
                               _SummaryRow('Date', _dateCtrl.text),
                               _SummaryRow('Passengers', _passengersCtrl.text),
                             ],
@@ -8633,8 +11189,15 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: _prev,
-                            style: OutlinedButton.styleFrom(foregroundColor: kGreen, side: const BorderSide(color: kGreen), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.symmetric(vertical: 14)),
-                            child: const Text('Back', style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: OutlinedButton.styleFrom(
+                                foregroundColor: kGreen,
+                                side: const BorderSide(color: kGreen),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14)),
+                            child: const Text('Back',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ),
                       if (_page > 0) const SizedBox(width: 12),
@@ -8642,8 +11205,16 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                         flex: 2,
                         child: ElevatedButton(
                           onPressed: _next,
-                          style: ElevatedButton.styleFrom(backgroundColor: kPink, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.symmetric(vertical: 14)),
-                          child: Text(_page < 2 ? 'Next' : 'Submit Request', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: kPink,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14)),
+                          child: Text(_page < 2 ? 'Next' : 'Submit Request',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15)),
                         ),
                       ),
                     ],
@@ -8674,7 +11245,11 @@ class _Field extends StatelessWidget {
   final IconData icon;
   final TextInputType keyboard;
 
-  const _Field({required this.ctrl, required this.label, required this.icon, this.keyboard = TextInputType.text});
+  const _Field(
+      {required this.ctrl,
+      required this.label,
+      required this.icon,
+      this.keyboard = TextInputType.text});
 
   @override
   Widget build(BuildContext context) {
@@ -8714,11 +11289,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _fetchNotifications() async {
-    setState(() { _isLoading = true; _error = ''; });
+    setState(() {
+      _isLoading = true;
+      _error = '';
+    });
     try {
       final res = await http.get(
         Uri.parse('${UserSession.getBaseUrl()}/api/notifications'),
-        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${UserSession.token}'
+        },
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
@@ -8727,7 +11308,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           UserSession.unreadNotificationsCount = data['unread_count'] ?? 0;
         });
       } else {
-        setState(() => _error = data['message'] ?? 'Failed to load notifications.');
+        setState(
+            () => _error = data['message'] ?? 'Failed to load notifications.');
       }
     } catch (e) {
       setState(() => _error = 'Network error: $e');
@@ -8740,7 +11322,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await http.post(
         Uri.parse('${UserSession.getBaseUrl()}/api/notifications/$id/read'),
-        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${UserSession.token}'
+        },
       );
       _fetchNotifications();
     } catch (_) {}
@@ -8749,8 +11334,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _markAllAsRead() async {
     try {
       await http.post(
-        Uri.parse('${UserSession.getBaseUrl()}/api/notifications/mark-all-read'),
-        headers: {'Accept': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
+        Uri.parse(
+            '${UserSession.getBaseUrl()}/api/notifications/mark-all-read'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${UserSession.token}'
+        },
       );
       _fetchNotifications();
     } catch (_) {}
@@ -8775,9 +11364,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: kGreen))
           : _error.isNotEmpty
-              ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
+              ? Center(
+                  child:
+                      Text(_error, style: const TextStyle(color: Colors.red)))
               : _notifications.isEmpty
-                  ? const Center(child: Text('You have no notifications.', style: TextStyle(color: kSlate500)))
+                  ? const Center(
+                      child: Text('You have no notifications.',
+                          style: TextStyle(color: kSlate500)))
                   : RefreshIndicator(
                       onRefresh: _fetchNotifications,
                       color: kGreen,
@@ -8785,14 +11378,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         itemCount: _notifications.length,
                         itemBuilder: (context, i) {
                           final notif = _notifications[i];
-                          final bool isRead = notif['is_read'] == 1 || notif['is_read'] == true;
+                          final bool isRead =
+                              notif['is_read'] == 1 || notif['is_read'] == true;
                           return ListTile(
-                            tileColor: isRead ? null : kGreen.withValues(alpha: 0.05),
+                            tileColor:
+                                isRead ? null : kGreen.withValues(alpha: 0.05),
                             leading: CircleAvatar(
                               backgroundColor: kGreen.withValues(alpha: 0.2),
-                              child: const Icon(Icons.notifications_active, color: kGreen),
+                              child: const Icon(Icons.notifications_active,
+                                  color: kGreen),
                             ),
-                            title: Text(notif['title'] ?? '', style: TextStyle(fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
+                            title: Text(notif['title'] ?? '',
+                                style: TextStyle(
+                                    fontWeight: isRead
+                                        ? FontWeight.normal
+                                        : FontWeight.bold)),
                             subtitle: Text(notif['body'] ?? ''),
                             onTap: () {
                               if (!isRead) _markAsRead(notif['id']);
@@ -8846,7 +11446,7 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
           'Authorization': 'Bearer ${UserSession.token}',
         },
       );
-      
+
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         setState(() {
@@ -8859,7 +11459,8 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
           UserSession.graciaPoints = _currentPoints;
           if (_activeRule != null) {
             UserSession.pointsAwarded = _activeRule!['points_awarded'] ?? 0;
-            UserSession.spendThreshold = _activeRule!['spend_threshold_centavos'] ?? 0;
+            UserSession.spendThreshold =
+                _activeRule!['spend_threshold_centavos'] ?? 0;
           }
           UserSession.save();
         });
@@ -8888,16 +11489,19 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
             children: [
               Icon(Icons.star_rounded, size: 80, color: kSlate300),
               SizedBox(height: 16),
-              Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Gracia Points',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
-              Text('Sign in to view and use your Gracia Points.', style: TextStyle(color: kSlate500)),
+              Text('Sign in to view and use your Gracia Points.',
+                  style: TextStyle(color: kSlate500)),
             ],
           ),
         ),
       );
     }
 
-    if (_error == 'Please log in to view your Gracia Points.' && UserSession.isLoggedIn) {
+    if (_error == 'Please log in to view your Gracia Points.' &&
+        UserSession.isLoggedIn) {
       _error = '';
       _isLoading = true;
       Future.microtask(() => _fetchPoints());
@@ -8910,7 +11514,9 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: kPink))
           : _error.isNotEmpty
-              ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
+              ? Center(
+                  child:
+                      Text(_error, style: const TextStyle(color: Colors.red)))
               : RefreshIndicator(
                   onRefresh: _fetchPoints,
                   color: kPink,
@@ -8921,27 +11527,46 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                       Card(
                         color: kPink,
                         elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             children: [
-                              const Text('CURRENT BALANCE', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                              const Text('CURRENT BALANCE',
+                                  style: TextStyle(
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.2)),
                               const SizedBox(height: 8),
-                              Text('$_currentPoints pts', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w900)),
+                              Text('$_currentPoints pts',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w900)),
                               const SizedBox(height: 16),
                               if (_activeRule != null) ...[
-                                Text('Unconverted Spend: ₱${(_unconvertedSpend / 100).toStringAsFixed(2)}', style: const TextStyle(color: Colors.white)),
+                                Text(
+                                    'Unconverted Spend: ₱${(_unconvertedSpend / 100).toStringAsFixed(2)}',
+                                    style:
+                                        const TextStyle(color: Colors.white)),
                                 const SizedBox(height: 4),
-                                Text('Earn ${_activeRule!['points_awarded']} pts for every ₱${(_activeRule!['spend_threshold_centavos'] / 100).toStringAsFixed(0)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                Text(
+                                    'Earn ${_activeRule!['points_awarded']} pts for every ₱${(_activeRule!['spend_threshold_centavos'] / 100).toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                        color: Colors.white70, fontSize: 12)),
                                 const SizedBox(height: 12),
                                 LinearProgressIndicator(
-                                  value: _unconvertedSpend / _activeRule!['spend_threshold_centavos'],
+                                  value: _unconvertedSpend /
+                                      _activeRule!['spend_threshold_centavos'],
                                   backgroundColor: Colors.white24,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
                                 ),
                               ] else ...[
-                                const Text('No active earning rule.', style: TextStyle(color: Colors.white70)),
+                                const Text('No active earning rule.',
+                                    style: TextStyle(color: Colors.white70)),
                               ]
                             ],
                           ),
@@ -8958,7 +11583,8 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                                 children: [
                                   Icon(Icons.info_outline, color: kPink),
                                   SizedBox(width: 8),
-                                  Text('Rules & Guidelines', style: TextStyle(fontSize: 18)),
+                                  Text('Rules & Guidelines',
+                                      style: TextStyle(fontSize: 18)),
                                 ],
                               ),
                               content: const Column(
@@ -8967,17 +11593,23 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                                 children: [
                                   Text('Gracia coins Guidelines'),
                                   SizedBox(height: 8),
-                                  Text('• Book your ferry or flight and earn points along the way.'),
+                                  Text(
+                                      '• Book your ferry or flight and earn points along the way.'),
                                   SizedBox(height: 8),
-                                  Text('• For every ₱1,000 spent, you will earn 5 Gracia coins.'),
+                                  Text(
+                                      '• For every ₱1,000 spent, you will earn 5 Gracia coins.'),
                                   SizedBox(height: 8),
-                                  Text('• Points will be automatically credited once your booking has been paid and verified.'),
+                                  Text(
+                                      '• Points will be automatically credited once your booking has been paid and verified.'),
                                   SizedBox(height: 8),
-                                  Text('• Redeem your Gracia coins to enjoy exciting rewards and discounts on your future travels.'),
+                                  Text(
+                                      '• Redeem your Gracia coins to enjoy exciting rewards and discounts on your future travels.'),
                                 ],
                               ),
                               actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+                                TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('Close')),
                               ],
                             ),
                           );
@@ -8985,17 +11617,30 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.help_outline, color: kSlate500, size: 16),
+                            Icon(Icons.help_outline,
+                                color: kSlate500, size: 16),
                             SizedBox(width: 6),
-                            Text('Learn more about Gracia Points', style: TextStyle(color: kSlate500, decoration: TextDecoration.underline, fontSize: 13)),
+                            Text('Learn more about Gracia Points',
+                                style: TextStyle(
+                                    color: kSlate500,
+                                    decoration: TextDecoration.underline,
+                                    fontSize: 13)),
                           ],
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Text('RECENT ACTIVITY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                      const Text('RECENT ACTIVITY',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: kSlate800)),
                       const SizedBox(height: 12),
                       if (_history.isEmpty)
-                        const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('No points activity yet.', style: TextStyle(color: kSlate400))))
+                        const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(
+                                child: Text('No points activity yet.',
+                                    style: TextStyle(color: kSlate400))))
                       else
                         ..._history.map((entry) {
                           final isEarned = entry['entry_type'] == 'earned';
@@ -9005,12 +11650,31 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
                               leading: Icon(
-                                isEarned ? Icons.add_circle : isReversed ? Icons.remove_circle : Icons.admin_panel_settings,
-                                color: isEarned ? Colors.green : isReversed ? Colors.red : Colors.orange,
+                                isEarned
+                                    ? Icons.add_circle
+                                    : isReversed
+                                        ? Icons.remove_circle
+                                        : Icons.admin_panel_settings,
+                                color: isEarned
+                                    ? Colors.green
+                                    : isReversed
+                                        ? Colors.red
+                                        : Colors.orange,
                               ),
-                              title: Text(entry['reason'] ?? 'Point adjustment', style: const TextStyle(fontSize: 14)),
-                              subtitle: Text(entry['created_at'] != null ? entry['created_at'].toString().substring(0, 10) : ''),
-                              trailing: Text('${points > 0 ? '+' : ''}$points', style: TextStyle(fontWeight: FontWeight.bold, color: points > 0 ? Colors.green : Colors.red, fontSize: 16)),
+                              title: Text(entry['reason'] ?? 'Point adjustment',
+                                  style: const TextStyle(fontSize: 14)),
+                              subtitle: Text(entry['created_at'] != null
+                                  ? entry['created_at']
+                                      .toString()
+                                      .substring(0, 10)
+                                  : ''),
+                              trailing: Text('${points > 0 ? '+' : ''}$points',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: points > 0
+                                          ? Colors.green
+                                          : Colors.red,
+                                      fontSize: 16)),
                             ),
                           );
                         }),
@@ -9027,11 +11691,14 @@ String getOperatorLogoUrl(String operatorName) {
   String logo = '';
   if (lower.contains('2go')) {
     logo = '2GO-Logo.png';
-  } else if (lower.contains('starlite')) logo = 'Starlite_Logo.png';
-  else if (lower.contains('cebu')) logo = 'CebuPecific-Logo.png';
-  else if (lower.contains('pal') || lower.contains('philippine airlines')) logo = 'Pal-Logo.jfif';
+  } else if (lower.contains('starlite'))
+    logo = 'Starlite_Logo.png';
+  else if (lower.contains('cebu'))
+    logo = 'CebuPecific-Logo.png';
+  else if (lower.contains('pal') || lower.contains('philippine airlines'))
+    logo = 'Pal-Logo.jfif';
   else if (lower.contains('airasia')) logo = 'AirAsia-Logo.png';
-  
+
   if (logo.isEmpty) return '';
   return '${UserSession.getBaseUrl()}/images/$logo';
 }
@@ -9064,7 +11731,11 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
       final res = await http.get(Uri.parse('$baseUrl/api/all-schedules'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        if (mounted) setState(() { _routes = parseJsonList(data['routes']); _loading = false; });
+        if (mounted)
+          setState(() {
+            _routes = parseJsonList(data['routes']);
+            _loading = false;
+          });
       } else {
         if (mounted) setState(() => _loading = false);
       }
@@ -9075,7 +11746,8 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator(color: kGreen));
+    if (_loading)
+      return const Center(child: CircularProgressIndicator(color: kGreen));
 
     final filteredRoutes = _routes.where((r) {
       if (_filterMode != 'all') {
@@ -9083,13 +11755,21 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
         if (mode != _filterMode) return false;
       }
       if (_originFilter != null && r['origin'] != _originFilter) return false;
-      if (_destinationFilter != null && r['destination'] != _destinationFilter) return false;
+      if (_destinationFilter != null && r['destination'] != _destinationFilter)
+        return false;
       return true;
     }).toList();
 
-    final allOrigins = _routes.map((r) => r['origin']?.toString() ?? '').where((s) => s.isNotEmpty).toSet().toList();
-    final allDestinations = _routes.map((r) => r['destination']?.toString() ?? '').where((s) => s.isNotEmpty).toSet().toList();
-
+    final allOrigins = _routes
+        .map((r) => r['origin']?.toString() ?? '')
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    final allDestinations = _routes
+        .map((r) => r['destination']?.toString() ?? '')
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
 
     return RefreshIndicator(
       onRefresh: _fetchSchedules,
@@ -9104,7 +11784,8 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -9114,14 +11795,24 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                       children: [
                         Icon(Icons.bolt, color: Colors.greenAccent, size: 16),
                         SizedBox(width: 4),
-                        Text('Real-time schedules', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text('Real-time schedules',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Schedule and Routes', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
+                  const Text('Schedule and Routes',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
-                  const Text('Browse available ferry and airline routes with live pricing, departure times, and accommodation options.', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const Text(
+                      'Browse available ferry and airline routes with live pricing, departure times, and accommodation options.',
+                      style: TextStyle(color: Colors.white70, fontSize: 14)),
                 ],
               ),
             ),
@@ -9147,40 +11838,66 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      initialValue: allOrigins.contains(_originFilter) ? _originFilter : null,
-                      hint: const Text('Origin', style: TextStyle(fontSize: 13)),
+                      initialValue: allOrigins.contains(_originFilter)
+                          ? _originFilter
+                          : null,
+                      hint:
+                          const Text('Origin', style: TextStyle(fontSize: 13)),
                       isExpanded: true,
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kSlate200)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: kSlate200)),
                         filled: true,
                         fillColor: Colors.white,
                       ),
-                      items: allOrigins.map((o) => DropdownMenuItem(value: o, child: Text(o, style: const TextStyle(fontSize: 13)))).toList(),
+                      items: allOrigins
+                          .map((o) => DropdownMenuItem(
+                              value: o,
+                              child: Text(o,
+                                  style: const TextStyle(fontSize: 13))))
+                          .toList(),
                       onChanged: (val) => setState(() => _originFilter = val),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      initialValue: allDestinations.contains(_destinationFilter) ? _destinationFilter : null,
-                      hint: const Text('Destination', style: TextStyle(fontSize: 13)),
+                      initialValue: allDestinations.contains(_destinationFilter)
+                          ? _destinationFilter
+                          : null,
+                      hint: const Text('Destination',
+                          style: TextStyle(fontSize: 13)),
                       isExpanded: true,
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kSlate200)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: kSlate200)),
                         filled: true,
                         fillColor: Colors.white,
                       ),
-                      items: allDestinations.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 13)))).toList(),
-                      onChanged: (val) => setState(() => _destinationFilter = val),
+                      items: allDestinations
+                          .map((d) => DropdownMenuItem(
+                              value: d,
+                              child: Text(d,
+                                  style: const TextStyle(fontSize: 13))))
+                          .toList(),
+                      onChanged: (val) =>
+                          setState(() => _destinationFilter = val),
                     ),
                   ),
                   if (_originFilter != null || _destinationFilter != null) ...[
                     const SizedBox(width: 8),
                     IconButton(
                       icon: const Icon(Icons.clear, color: Colors.red),
-                      onPressed: () => setState(() { _originFilter = null; _destinationFilter = null; }),
+                      onPressed: () => setState(() {
+                        _originFilter = null;
+                        _destinationFilter = null;
+                      }),
                     )
                   ]
                 ],
@@ -9193,7 +11910,8 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
               child: Padding(
                 padding: EdgeInsets.all(32),
                 child: Center(
-                  child: Text('No active schedules found.', style: TextStyle(color: kSlate500)),
+                  child: Text('No active schedules found.',
+                      style: TextStyle(color: kSlate500)),
                 ),
               ),
             )
@@ -9204,13 +11922,16 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final route = filteredRoutes[index];
-                    final schedules = parseAndFilterSchedules(route['schedules']);
+                    final schedules =
+                        parseAndFilterSchedules(route['schedules']);
                     final isFerry = (route['mode'] ?? 'ferry') == 'ferry';
-                    
+
                     return Card(
                       elevation: 3,
                       margin: const EdgeInsets.only(bottom: 24),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: kSlate200)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(color: kSlate200)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -9218,48 +11939,84 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                             padding: const EdgeInsets.all(16),
                             decoration: const BoxDecoration(
                               color: kSlate50,
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                              border: Border(bottom: BorderSide(color: kSlate200)),
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(16)),
+                              border:
+                                  Border(bottom: BorderSide(color: kSlate200)),
                             ),
                             child: Row(
                               children: [
                                 // Large operator logo
-                                if (getOperatorLogoUrl(route['operator'] ?? '').isNotEmpty)
+                                if (getOperatorLogoUrl(route['operator'] ?? '')
+                                    .isNotEmpty)
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: Image.network(
-                                      getOperatorLogoUrl(route['operator'] ?? ''),
+                                      getOperatorLogoUrl(
+                                          route['operator'] ?? ''),
                                       height: 52,
                                       width: 84,
                                       fit: BoxFit.contain,
-                                      errorBuilder: (ctx, err, stack) => CircleAvatar(
-                                        backgroundColor: isFerry ? Colors.blue.withValues(alpha: 0.1) : Colors.amber.withValues(alpha: 0.1),
-                                        child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
+                                      errorBuilder: (ctx, err, stack) =>
+                                          CircleAvatar(
+                                        backgroundColor: isFerry
+                                            ? Colors.blue.withValues(alpha: 0.1)
+                                            : Colors.amber
+                                                .withValues(alpha: 0.1),
+                                        child: Icon(
+                                            isFerry
+                                                ? Icons.directions_boat
+                                                : Icons.flight,
+                                            color: isFerry
+                                                ? Colors.blue
+                                                : Colors.amber),
                                       ),
                                     ),
                                   )
                                 else
                                   CircleAvatar(
-                                    backgroundColor: isFerry ? Colors.blue.withValues(alpha: 0.1) : Colors.amber.withValues(alpha: 0.1),
-                                    child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
+                                    backgroundColor: isFerry
+                                        ? Colors.blue.withValues(alpha: 0.1)
+                                        : Colors.amber.withValues(alpha: 0.1),
+                                    child: Icon(
+                                        isFerry
+                                            ? Icons.directions_boat
+                                            : Icons.flight,
+                                        color: isFerry
+                                            ? Colors.blue
+                                            : Colors.amber),
                                   ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          Text(route['origin'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                          Text(route['origin'],
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16)),
                                           const Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 8),
-                                            child: Icon(Icons.arrow_forward, size: 16, color: kSlate400),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8),
+                                            child: Icon(Icons.arrow_forward,
+                                                size: 16, color: kSlate400),
                                           ),
-                                          Text(route['destination'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                          Text(route['destination'],
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16)),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(route['vehicle']?['full_name'] ?? route['operator'] ?? 'Amiga Gracia', style: const TextStyle(fontSize: 12, color: kSlate500)),
+                                      Text(
+                                          route['vehicle']?['full_name'] ??
+                                              route['operator'] ??
+                                              'Amiga Gracia',
+                                          style: const TextStyle(
+                                              fontSize: 12, color: kSlate500)),
                                     ],
                                   ),
                                 ),
@@ -9272,23 +12029,39 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                               scrollDirection: Axis.horizontal,
                               padding: const EdgeInsets.all(16),
                               itemCount: schedules.length,
-                              separatorBuilder: (_, __) => const SizedBox(width: 16),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 16),
                               itemBuilder: (context, sIndex) {
                                 final s = schedules[sIndex];
 
                                 DateTime? depTime;
                                 DateTime? arrTime;
-                                String formattedDepTime = s['formatted_departure'] ?? s['departure_time'].toString().substring(11, 16);
-                                String formattedArrTime = s['formatted_arrival'] ?? s['arrival_time'].toString().substring(11, 16);
-                                String exactDate = s['departure_time'].toString().substring(0, 10);
+                                String formattedDepTime =
+                                    s['formatted_departure'] ??
+                                        s['departure_time']
+                                            .toString()
+                                            .substring(11, 16);
+                                String formattedArrTime =
+                                    s['formatted_arrival'] ??
+                                        s['arrival_time']
+                                            .toString()
+                                            .substring(11, 16);
+                                String exactDate = s['departure_time']
+                                    .toString()
+                                    .substring(0, 10);
                                 String durationStr = '';
 
                                 try {
-                                  depTime = DateTime.parse(s['departure_time'].toString());
-                                  arrTime = DateTime.parse(s['arrival_time'].toString());
-                                  formattedDepTime = DateFormat('h:mm a').format(depTime);
-                                  formattedArrTime = DateFormat('h:mm a').format(arrTime);
-                                  exactDate = '${DateFormat('MMM d, yyyy').format(depTime)} - ${DateFormat('MMM d, yyyy').format(arrTime)}';
+                                  depTime = DateTime.parse(
+                                      s['departure_time'].toString());
+                                  arrTime = DateTime.parse(
+                                      s['arrival_time'].toString());
+                                  formattedDepTime =
+                                      DateFormat('h:mm a').format(depTime);
+                                  formattedArrTime =
+                                      DateFormat('h:mm a').format(arrTime);
+                                  exactDate =
+                                      '${DateFormat('MMM d, yyyy').format(depTime)} - ${DateFormat('MMM d, yyyy').format(arrTime)}';
 
                                   final diff = arrTime.difference(depTime);
                                   final hours = diff.inHours;
@@ -9298,7 +12071,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                 } catch (_) {}
 
                                 return Container(
-                                  width: schedules.length == 1 ? MediaQuery.of(context).size.width - 64 : 260,
+                                  width: schedules.length == 1
+                                      ? MediaQuery.of(context).size.width - 64
+                                      : 260,
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -9306,42 +12081,89 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Expanded(child: Text(s['service_name'] ?? 'Economy', style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                          Text('$formattedDepTime - $formattedArrTime', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kGreen)),
+                                          Expanded(
+                                              child: Text(
+                                                  s['service_name'] ??
+                                                      'Economy',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis)),
+                                          Text(
+                                              '$formattedDepTime - $formattedArrTime',
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: kGreen)),
                                         ],
                                       ),
                                       const Spacer(),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              Text(formattedDepTime, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                              const Text('DEPART', style: TextStyle(fontSize: 10, color: kSlate400, fontWeight: FontWeight.bold)),
+                                              Text(formattedDepTime,
+                                                  style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              const Text('DEPART',
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: kSlate400,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ],
                                           ),
                                           Column(
                                             children: [
-                                              if (durationStr.isNotEmpty) Text(durationStr, style: const TextStyle(fontSize: 10, color: kSlate500)),
+                                              if (durationStr.isNotEmpty)
+                                                Text(durationStr,
+                                                    style: const TextStyle(
+                                                        fontSize: 10,
+                                                        color: kSlate500)),
                                               Row(
                                                 children: [
-                                                  Container(width: 8, height: 2, color: kSlate300),
-                                                  const Icon(Icons.arrow_forward_ios, color: kGreen, size: 12),
+                                                  Container(
+                                                      width: 8,
+                                                      height: 2,
+                                                      color: kSlate300),
+                                                  const Icon(
+                                                      Icons.arrow_forward_ios,
+                                                      color: kGreen,
+                                                      size: 12),
                                                 ],
                                               ),
                                             ],
                                           ),
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
                                             children: [
-                                              Text(formattedArrTime, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                              const Text('ARRIVE', style: TextStyle(fontSize: 10, color: kSlate400, fontWeight: FontWeight.bold)),
+                                              Text(formattedArrTime,
+                                                  style: const TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              const Text('ARRIVE',
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: kSlate400,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ],
                                           ),
                                         ],
@@ -9349,9 +12171,14 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                       const Spacer(),
                                       Row(
                                         children: [
-                                          const Icon(Icons.event, size: 14, color: kSlate400),
+                                          const Icon(Icons.event,
+                                              size: 14, color: kSlate400),
                                           const SizedBox(width: 4),
-                                          Expanded(child: Text(exactDate, style: const TextStyle(fontSize: 12, color: kSlate600))),
+                                          Expanded(
+                                              child: Text(exactDate,
+                                                  style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: kSlate600))),
                                         ],
                                       ),
                                       const Spacer(),
@@ -9359,28 +12186,57 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         width: double.infinity,
                                         child: ElevatedButton.icon(
                                           onPressed: () {
-                                            Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
-                                              appBar: AppBar(
-                                                title: const Text('Book Trip', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                                backgroundColor: kGreen,
-                                                iconTheme: const IconThemeData(color: Colors.white),
-                                              ),
-                                              body: TravelScreen(
-                                                initialMode: route['mode'] ?? 'ferry',
-                                                initialOperator: route['operator'],
-                                                initialOrigin: route['origin'],
-                                                initialDestination: route['destination'],
-                                                initialDate: s['departure_time'].toString().substring(0, 10),
-                                              ),
-                                            )));
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (_) => Scaffold(
+                                                          appBar: AppBar(
+                                                            title: const Text(
+                                                                'Book Trip',
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold)),
+                                                            backgroundColor:
+                                                                kGreen,
+                                                            iconTheme:
+                                                                const IconThemeData(
+                                                                    color: Colors
+                                                                        .white),
+                                                          ),
+                                                          body: TravelScreen(
+                                                            initialMode:
+                                                                route['mode'] ??
+                                                                    'ferry',
+                                                            initialOperator:
+                                                                route[
+                                                                    'operator'],
+                                                            initialOrigin:
+                                                                route['origin'],
+                                                            initialDestination:
+                                                                route[
+                                                                    'destination'],
+                                                            initialDate:
+                                                                s['departure_time']
+                                                                    .toString()
+                                                                    .substring(
+                                                                        0, 10),
+                                                          ),
+                                                        )));
                                           },
-                                          icon: const Icon(Icons.book_online, size: 16),
+                                          icon: const Icon(Icons.book_online,
+                                              size: 16),
                                           label: const Text('Book Now'),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: kGreen,
                                             foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
                                           ),
                                         ),
                                       ),
@@ -9414,13 +12270,24 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
             color: isActive ? kGreen : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: isActive ? kGreen : kSlate200),
-            boxShadow: isActive ? [const BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))] : [],
+            boxShadow: isActive
+                ? [
+                    const BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2))
+                  ]
+                : [],
           ),
           child: Column(
             children: [
               Icon(icon, size: 20, color: isActive ? Colors.white : kSlate600),
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isActive ? Colors.white : kSlate600)),
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? Colors.white : kSlate600)),
             ],
           ),
         ),
@@ -9456,12 +12323,12 @@ class _VouchersScreenState extends State<VouchersScreen> {
       setState(() => _isLoading = false);
     }
   }
+
   @override
   void dispose() {
     _promoCtrl.dispose();
     super.dispose();
   }
-
 
   Future<void> _fetchVouchers() async {
     try {
@@ -9469,7 +12336,8 @@ class _VouchersScreenState extends State<VouchersScreen> {
         Uri.parse('${UserSession.getBaseUrl()}/api/vouchers'),
         headers: {
           'Accept': 'application/json',
-          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+          if (UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}',
         },
       );
       final data = jsonDecode(res.body);
@@ -9520,16 +12388,28 @@ class _VouchersScreenState extends State<VouchersScreen> {
                         color: kPink.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.card_giftcard, size: 56, color: kPink),
+                      child: const Icon(Icons.card_giftcard,
+                          size: 56, color: kPink),
                     ),
                     const SizedBox(height: 20),
-                    const Text('Login Required', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                    const Text('Login Required',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: kSlate800)),
                     const SizedBox(height: 8),
-                    const Text('Please log in to view your available discount coupons.', style: TextStyle(color: kSlate500, fontSize: 14), textAlign: TextAlign.center),
+                    const Text(
+                        'Please log in to view your available discount coupons.',
+                        style: TextStyle(color: kSlate500, fontSize: 14),
+                        textAlign: TextAlign.center),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: kGreen,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12))),
                       child: const Text('Go Back'),
                     ),
                   ],
@@ -9539,7 +12419,9 @@ class _VouchersScreenState extends State<VouchersScreen> {
           : _isLoading
               ? const Center(child: CircularProgressIndicator(color: kPink))
               : _error.isNotEmpty
-                  ? Center(child: Text(_error, style: const TextStyle(color: Colors.red)))
+                  ? Center(
+                      child: Text(_error,
+                          style: const TextStyle(color: Colors.red)))
                   : RefreshIndicator(
                       onRefresh: _fetchVouchers,
                       color: kPink,
@@ -9549,7 +12431,8 @@ class _VouchersScreenState extends State<VouchersScreen> {
                           // Input Promo Code at top
                           Container(
                             margin: const EdgeInsets.only(bottom: 20),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
@@ -9557,51 +12440,96 @@ class _VouchersScreenState extends State<VouchersScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.card_giftcard, color: kPink, size: 20),
+                                const Icon(Icons.card_giftcard,
+                                    color: kPink, size: 20),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: TextField(
                                     controller: _promoCtrl,
-                                    textCapitalization: TextCapitalization.characters,
+                                    textCapitalization:
+                                        TextCapitalization.characters,
                                     decoration: const InputDecoration(
                                       border: InputBorder.none,
-                                      hintText: 'Input promo code / discount coupon',
-                                      hintStyle: TextStyle(color: kSlate400, fontSize: 14),
+                                      hintText:
+                                          'Input promo code / discount coupon',
+                                      hintStyle: TextStyle(
+                                          color: kSlate400, fontSize: 14),
                                     ),
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: _isClaiming ? null : () async {
-                                    final code = _promoCtrl.text.trim();
-                                    if (code.isEmpty) return;
-                                    setState(() => _isClaiming = true);
-                                    try {
-                                      final res = await http.post(
-                                        Uri.parse('${UserSession.getBaseUrl()}/api/vouchers/claim'),
-                                        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ${UserSession.token}'},
-                                        body: jsonEncode({'code': code}),
-                                      );
-                                      final data = jsonDecode(res.body);
-                                      if (res.statusCode == 200 && data['status'] == 'success') {
-                                        _promoCtrl.clear();
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Discount coupon added!'), backgroundColor: kGreen));
-                                        _fetchVouchers();
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Invalid coupon code.'), backgroundColor: Colors.red));
-                                      }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error.'), backgroundColor: Colors.red));
-                                    } finally {
-                                      if (mounted) setState(() => _isClaiming = false);
-                                    }
-                                  },
-                                  child: _isClaiming ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Apply', style: TextStyle(color: kGreen, fontWeight: FontWeight.bold)),
+                                  onPressed: _isClaiming
+                                      ? null
+                                      : () async {
+                                          final code = _promoCtrl.text.trim();
+                                          if (code.isEmpty) return;
+                                          setState(() => _isClaiming = true);
+                                          try {
+                                            final res = await http.post(
+                                              Uri.parse(
+                                                  '${UserSession.getBaseUrl()}/api/vouchers/claim'),
+                                              headers: {
+                                                'Accept': 'application/json',
+                                                'Content-Type':
+                                                    'application/json',
+                                                'Authorization':
+                                                    'Bearer ${UserSession.token}'
+                                              },
+                                              body: jsonEncode({'code': code}),
+                                            );
+                                            final data = jsonDecode(res.body);
+                                            if (res.statusCode == 200 &&
+                                                data['status'] == 'success') {
+                                              _promoCtrl.clear();
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                      content: Text(data[
+                                                              'message'] ??
+                                                          'Discount coupon added!'),
+                                                      backgroundColor: kGreen));
+                                              _fetchVouchers();
+                                            } else {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                      content: Text(data[
+                                                              'message'] ??
+                                                          'Invalid coupon code.'),
+                                                      backgroundColor:
+                                                          Colors.red));
+                                            }
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(const SnackBar(
+                                                    content:
+                                                        Text('Network error.'),
+                                                    backgroundColor:
+                                                        Colors.red));
+                                          } finally {
+                                            if (mounted)
+                                              setState(
+                                                  () => _isClaiming = false);
+                                          }
+                                        },
+                                  child: _isClaiming
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2))
+                                      : const Text('Apply',
+                                          style: TextStyle(
+                                              color: kGreen,
+                                              fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
                           ),
 
-                          const Text('Available Discount Coupons', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                          const Text('Available Discount Coupons',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: kSlate800)),
                           const SizedBox(height: 12),
                           if (_vouchers.isEmpty)
                             const Center(
@@ -9609,9 +12537,12 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                 padding: EdgeInsets.symmetric(vertical: 48),
                                 child: Column(
                                   children: [
-                                    Icon(Icons.card_giftcard, size: 64, color: kSlate200),
+                                    Icon(Icons.card_giftcard,
+                                        size: 64, color: kSlate200),
                                     SizedBox(height: 16),
-                                    Text('No discount coupons available', style: TextStyle(color: kSlate400, fontSize: 16)),
+                                    Text('No discount coupons available',
+                                        style: TextStyle(
+                                            color: kSlate400, fontSize: 16)),
                                   ],
                                 ),
                               ),
@@ -9629,21 +12560,40 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                     showDialog(
                                       context: context,
                                       builder: (ctx) => AlertDialog(
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                        title: const Text('Use Discount Coupon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                        content: Text('Discount Coupon "${v['code']}" (${_getVoucherPercentage(v)}% OFF) will be automatically applied on your booking submission.\n\nProceed to booking?', style: const TextStyle(fontSize: 14)),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16)),
+                                        title: const Text('Use Discount Coupon',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16)),
+                                        content: Text(
+                                            'Discount Coupon "${v['code']}" (${_getVoucherPercentage(v)}% OFF) will be automatically applied on your booking submission.\n\nProceed to booking?',
+                                            style:
+                                                const TextStyle(fontSize: 14)),
                                         actions: [
-                                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx),
+                                              child: const Text('Cancel')),
                                           ElevatedButton(
                                             onPressed: () {
                                               Navigator.pop(ctx);
                                               Navigator.pushAndRemoveUntil(
                                                 context,
-                                                MaterialPageRoute(builder: (_) => const MainScreen()),
+                                                MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        const MainScreen()),
                                                 (route) => false,
                                               );
                                             },
-                                            style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor: kGreen,
+                                                foregroundColor: Colors.white,
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8))),
                                             child: const Text('Go to Booking'),
                                           ),
                                         ],
@@ -9712,8 +12662,18 @@ String _formatVoucherDate(String? dateStr) {
   try {
     final dt = DateTime.parse(dateStr);
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return 'Valid Until ${months[dt.month - 1]} ${dt.year}';
   } catch (_) {
@@ -9794,7 +12754,8 @@ class _DiscountCouponCard extends StatelessWidget {
           ],
         ),
         child: ClipPath(
-          clipper: _CouponCardClipper(dividerRatio: 0.63, notchCount: 13, notchRadius: 4.5),
+          clipper: _CouponCardClipper(
+              dividerRatio: 0.63, notchCount: 13, notchRadius: 4.5),
           child: Stack(
             children: [
               Row(
@@ -9881,7 +12842,8 @@ class _DiscountCouponCard extends StatelessWidget {
                     flex: 37,
                     child: Container(
                       color: voucherPink,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -9979,15 +12941,18 @@ class TicketClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     final path = Path();
     path.lineTo(dividerX - punchRadius, 0);
-    path.arcToPoint(Offset(dividerX + punchRadius, 0), radius: Radius.circular(punchRadius), clockwise: false);
+    path.arcToPoint(Offset(dividerX + punchRadius, 0),
+        radius: Radius.circular(punchRadius), clockwise: false);
     path.lineTo(size.width, 0);
     path.lineTo(size.width, size.height);
     path.lineTo(dividerX + punchRadius, size.height);
-    path.arcToPoint(Offset(dividerX - punchRadius, size.height), radius: Radius.circular(punchRadius), clockwise: false);
+    path.arcToPoint(Offset(dividerX - punchRadius, size.height),
+        radius: Radius.circular(punchRadius), clockwise: false);
     path.lineTo(0, size.height);
     path.close();
     return path;
   }
+
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
@@ -10000,7 +12965,8 @@ class ServiceCancellationScreen extends StatefulWidget {
   const ServiceCancellationScreen({super.key, required this.booking});
 
   @override
-  State<ServiceCancellationScreen> createState() => _ServiceCancellationScreenState();
+  State<ServiceCancellationScreen> createState() =>
+      _ServiceCancellationScreenState();
 }
 
 class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
@@ -10044,28 +13010,45 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
 
   Future<void> _fetchSchedules(String date) async {
     if (date.isEmpty) return;
-    setState(() { _loadingSchedules = true; _availableSchedules = []; _selectedScheduleId = null; _selectedSchedule = null; _selectedAccommodationId = null; _selectedAccommodationPrice = 0.0; _selectedAccommodationName = ''; });
+    setState(() {
+      _loadingSchedules = true;
+      _availableSchedules = [];
+      _selectedScheduleId = null;
+      _selectedSchedule = null;
+      _selectedAccommodationId = null;
+      _selectedAccommodationPrice = 0.0;
+      _selectedAccommodationName = '';
+    });
     try {
       final baseUrl = UserSession.getBaseUrl();
       final origin = widget.booking['origin'] ?? '';
       final dest = widget.booking['destination'] ?? '';
       final res = await http.post(
         Uri.parse('$baseUrl/api/schedules'),
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}'
+        },
         body: jsonEncode({
           'origin': origin,
           'destination': dest,
           'date': date,
           if (widget.booking['mode'] != null) 'mode': widget.booking['mode'],
-          if (widget.booking['operator'] != null) 'operator': widget.booking['operator'],
+          if (widget.booking['operator'] != null)
+            'operator': widget.booking['operator'],
         }),
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _availableSchedules = parseAndFilterSchedules(data['schedules'], date));
+        setState(() => _availableSchedules =
+            parseAndFilterSchedules(data['schedules'], date));
       }
-    } catch (_) {}
-    finally { if (mounted) setState(() => _loadingSchedules = false); }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _loadingSchedules = false);
+    }
   }
 
   String get _refundDestination {
@@ -10079,7 +13062,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
   }
 
   Future<void> _submitRefund() async {
-    if (_accountNumberCtrl.text.trim().isEmpty || _accountNameCtrl.text.trim().isEmpty) {
+    if (_accountNumberCtrl.text.trim().isEmpty ||
+        _accountNameCtrl.text.trim().isEmpty) {
       setState(() => _feedback = 'Please fill in all refund fields.');
       return;
     }
@@ -10092,7 +13076,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}',
+          if (UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}',
         },
         body: jsonEncode({
           'email': widget.booking['client_email'],
@@ -10101,9 +13086,13 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() { _submitted = true; _feedback = data['message'] ?? 'Refund request submitted!'; });
+        setState(() {
+          _submitted = true;
+          _feedback = data['message'] ?? 'Refund request submitted!';
+        });
       } else {
-        setState(() => _feedback = data['message'] ?? 'Failed to submit refund request.');
+        setState(() =>
+            _feedback = data['message'] ?? 'Failed to submit refund request.');
       }
     } catch (e) {
       setState(() => _feedback = 'Network error: $e');
@@ -10120,18 +13109,22 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
     return (adults + children) > 0 ? (adults + children) : 1;
   }
 
-  double get _oldTotalPrice => (widget.booking['total_price'] as num?)?.toDouble() ?? 0.0;
+  double get _oldTotalPrice =>
+      (widget.booking['total_price'] as num?)?.toDouble() ?? 0.0;
 
   double get _selectedDepartureCost {
     if (_selectedSchedule == null) return 0.0;
-    final schedulePrice = (_selectedSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+    final schedulePrice =
+        (_selectedSchedule!['price'] as num?)?.toDouble() ?? 0.0;
     return (schedulePrice + _selectedAccommodationPrice) * _passengerCount;
   }
 
   double get _selectedReturnCost {
     if (_selectedReturnSchedule == null) return 0.0;
-    final schedulePrice = (_selectedReturnSchedule!['price'] as num?)?.toDouble() ?? 0.0;
-    return (schedulePrice + _selectedReturnAccommodationPrice) * _passengerCount;
+    final schedulePrice =
+        (_selectedReturnSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+    return (schedulePrice + _selectedReturnAccommodationPrice) *
+        _passengerCount;
   }
 
   double get _newTotalPrice {
@@ -10141,11 +13134,15 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
     return _selectedDepartureCost + _selectedReturnCost + vehiclePrice;
   }
 
-  double get _priceDiff => (_newTotalPrice - _oldTotalPrice) > 0 ? (_newTotalPrice - _oldTotalPrice) : 0.0;
+  double get _priceDiff => (_newTotalPrice - _oldTotalPrice) > 0
+      ? (_newTotalPrice - _oldTotalPrice)
+      : 0.0;
 
   bool get _isReturnTrip => widget.booking['return_date'] != null;
 
-  String? get _resumeDate => (widget.booking['service_cancellation'] as Map<String, dynamic>?)?['resume_date']?.toString();
+  String? get _resumeDate => (widget.booking['service_cancellation']
+          as Map<String, dynamic>?)?['resume_date']
+      ?.toString();
 
   DateTime? get _resumeDateTime {
     if (_resumeDate == null || _resumeDate!.isEmpty) return null;
@@ -10181,44 +13178,64 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
   }
 
   bool get _requiresDepartureAccommodation {
-    final accommodations = (_selectedSchedule?['accommodations'] as List<dynamic>?) ?? [];
+    final accommodations =
+        (_selectedSchedule?['accommodations'] as List<dynamic>?) ?? [];
     return accommodations.isNotEmpty;
   }
 
   bool get _requiresReturnAccommodation {
-    final accommodations = (_selectedReturnSchedule?['accommodations'] as List<dynamic>?) ?? [];
+    final accommodations =
+        (_selectedReturnSchedule?['accommodations'] as List<dynamic>?) ?? [];
     return accommodations.isNotEmpty;
   }
 
   Future<void> _fetchReturnSchedules(String date) async {
     if (date.isEmpty) return;
-    setState(() { _loadingReturnSchedules = true; _returnSchedules = []; _selectedReturnScheduleId = null; _selectedReturnSchedule = null; _selectedReturnAccommodationId = null; _selectedReturnAccommodationPrice = 0.0; _selectedReturnAccommodationName = ''; });
+    setState(() {
+      _loadingReturnSchedules = true;
+      _returnSchedules = [];
+      _selectedReturnScheduleId = null;
+      _selectedReturnSchedule = null;
+      _selectedReturnAccommodationId = null;
+      _selectedReturnAccommodationPrice = 0.0;
+      _selectedReturnAccommodationName = '';
+    });
     try {
       final baseUrl = UserSession.getBaseUrl();
       final origin = widget.booking['destination'] ?? '';
       final dest = widget.booking['origin'] ?? '';
       final res = await http.post(
         Uri.parse('$baseUrl/api/schedules'),
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json', if (UserSession.token.isNotEmpty) 'Authorization': 'Bearer ${UserSession.token}'},
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (UserSession.token.isNotEmpty)
+            'Authorization': 'Bearer ${UserSession.token}'
+        },
         body: jsonEncode({
           'origin': origin,
           'destination': dest,
           'date': date,
           if (widget.booking['mode'] != null) 'mode': widget.booking['mode'],
-          if (widget.booking['operator'] != null) 'operator': widget.booking['operator'],
+          if (widget.booking['operator'] != null)
+            'operator': widget.booking['operator'],
         }),
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _returnSchedules = parseAndFilterSchedules(data['schedules']));
+        setState(() =>
+            _returnSchedules = parseAndFilterSchedules(data['schedules']));
       }
-    } catch (_) {}
-    finally { if (mounted) setState(() => _loadingReturnSchedules = false); }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _loadingReturnSchedules = false);
+    }
   }
 
   Future<void> _pickPriceProof() async {
     try {
-      final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+      final proof = await ImagePicker()
+          .pickImage(source: ImageSource.gallery, imageQuality: 80);
       if (proof != null) {
         setState(() => _priceProofFile = proof);
       }
@@ -10229,16 +13246,19 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
 
   Future<void> _submitReschedule() async {
     if (_isResumeTba) {
-      setState(() => _feedback = 'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
+      setState(() => _feedback =
+          'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
       return;
     }
     if (_selectedScheduleId == null || _depDate.isEmpty) return;
     if (_isBeforeResumeDate) {
-      setState(() => _feedback = 'Selected departure date cannot be earlier than the operator resume date.');
+      setState(() => _feedback =
+          'Selected departure date cannot be earlier than the operator resume date.');
       return;
     }
     if (_isReturnTrip && _retDate.isNotEmpty && _isReturnBeforeResumeDate) {
-      setState(() => _feedback = 'Selected return date cannot be earlier than the operator resume date.');
+      setState(() => _feedback =
+          'Selected return date cannot be earlier than the operator resume date.');
       return;
     }
     if (_requiresDepartureAccommodation && _selectedAccommodationId == null) {
@@ -10253,12 +13273,15 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
       setState(() => _feedback = 'Please select a return schedule.');
       return;
     }
-    if (_isReturnTrip && _requiresReturnAccommodation && _selectedReturnAccommodationId == null) {
-      setState(() => _feedback = 'Please select a return accommodation.' );
+    if (_isReturnTrip &&
+        _requiresReturnAccommodation &&
+        _selectedReturnAccommodationId == null) {
+      setState(() => _feedback = 'Please select a return accommodation.');
       return;
     }
     if (_priceDiff > 0 && _priceProofFile == null) {
-      setState(() => _feedback = 'Please upload proof of payment for the price difference.');
+      setState(() => _feedback =
+          'Please upload proof of payment for the price difference.');
       return;
     }
 
@@ -10266,27 +13289,33 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
     try {
       final baseUrl = UserSession.getBaseUrl();
       final bookingId = widget.booking['id'];
-      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/$bookingId/submit-replacement'));
+      final request = http.MultipartRequest('POST',
+          Uri.parse('$baseUrl/api/bookings/$bookingId/submit-replacement'));
       request.headers['Accept'] = 'application/json';
       if (UserSession.token.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer ${UserSession.token}';
       }
-      request.fields['email'] = widget.booking['client_email']?.toString() ?? '';
+      request.fields['email'] =
+          widget.booking['client_email']?.toString() ?? '';
       request.fields['dep_date'] = _depDate;
       request.fields['dep_schedule_id'] = _selectedScheduleId.toString();
       if (_selectedAccommodationId != null) {
-        request.fields['dep_accommodation_id'] = _selectedAccommodationId.toString();
+        request.fields['dep_accommodation_id'] =
+            _selectedAccommodationId.toString();
       }
       if (_isReturnTrip) {
         request.fields['ret_date'] = _retDate;
-        request.fields['ret_schedule_id'] = _selectedReturnScheduleId.toString();
+        request.fields['ret_schedule_id'] =
+            _selectedReturnScheduleId.toString();
         if (_selectedReturnAccommodationId != null) {
-          request.fields['ret_accommodation_id'] = _selectedReturnAccommodationId.toString();
+          request.fields['ret_accommodation_id'] =
+              _selectedReturnAccommodationId.toString();
         }
       }
       request.fields['price_diff'] = _priceDiff.toStringAsFixed(2);
       if (_priceDiff > 0 && _priceProofFile != null) {
-        request.files.add(await http.MultipartFile.fromPath('proof', _priceProofFile!.path));
+        request.files.add(
+            await http.MultipartFile.fromPath('proof', _priceProofFile!.path));
       }
 
       final streamedResponse = await request.send();
@@ -10298,7 +13327,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
           _feedback = data['message'] ?? 'Reschedule submitted successfully!';
         });
       } else {
-        setState(() => _feedback = data['message'] ?? 'Failed to submit reschedule.');
+        setState(() =>
+            _feedback = data['message'] ?? 'Failed to submit reschedule.');
       }
     } catch (e) {
       setState(() => _feedback = 'Network error: $e');
@@ -10309,7 +13339,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cancellation = widget.booking['service_cancellation'] as Map<String, dynamic>?;
+    final cancellation =
+        widget.booking['service_cancellation'] as Map<String, dynamic>?;
     final resumeDate = cancellation?['resume_date'];
     final carrier = cancellation?['carrier'] ?? 'the operator';
     final reason = cancellation?['reason_category'] ?? 'service disruption';
@@ -10330,7 +13361,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [Colors.amber.shade50, Colors.orange.shade50]),
+              gradient: LinearGradient(
+                  colors: [Colors.amber.shade50, Colors.orange.shade50]),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.amber.shade200),
             ),
@@ -10338,19 +13370,32 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.amber.shade200, borderRadius: BorderRadius.circular(20)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                      color: Colors.amber.shade200,
+                      borderRadius: BorderRadius.circular(20)),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.warning_amber_rounded, size: 16, color: Color(0xFF78350F)),
+                      Icon(Icons.warning_amber_rounded,
+                          size: 16, color: Color(0xFF78350F)),
                       SizedBox(width: 6),
-                      Text('Unavoidable Schedule Disruption', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Color(0xFF78350F), letterSpacing: 0.5)),
+                      Text('Unavoidable Schedule Disruption',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 11,
+                              color: Color(0xFF78350F),
+                              letterSpacing: 0.5)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Select Replacement Travel Date', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: kSlate800)),
+                const Text('Select Replacement Travel Date',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 22,
+                        color: kSlate800)),
                 const SizedBox(height: 6),
                 Text(
                   'Your original voyage on ${widget.booking['departure_date'] ?? '—'} was cancelled by $carrier due to ${reason.toString().replaceAll('_', ' ')}.',
@@ -10360,11 +13405,20 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.amber.shade200)),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.amber.shade200)),
                     child: Text.rich(
                       TextSpan(children: [
-                        const TextSpan(text: 'Operator Statement: ', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF78350F))),
-                        TextSpan(text: customerMsg, style: const TextStyle(color: Color(0xFF78350F))),
+                        const TextSpan(
+                            text: 'Operator Statement: ',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF78350F))),
+                        TextSpan(
+                            text: customerMsg,
+                            style: const TextStyle(color: Color(0xFF78350F))),
                       ]),
                     ),
                   ),
@@ -10375,13 +13429,24 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: kSlate200)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Booking Reference', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: kSlate400, letterSpacing: 1)),
+                            const Text('Booking Reference',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: kSlate400,
+                                    letterSpacing: 1)),
                             const SizedBox(height: 4),
-                            Text(widget.booking['transaction_number'] ?? '—', style: const TextStyle(fontWeight: FontWeight.w900, color: kSlate800)),
+                            Text(widget.booking['transaction_number'] ?? '—',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    color: kSlate800)),
                           ],
                         ),
                       ),
@@ -10390,15 +13455,27 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: kSlate200)),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: kSlate200)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Service Resume Date', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: kSlate400, letterSpacing: 1)),
+                            const Text('Service Resume Date',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: kSlate400,
+                                    letterSpacing: 1)),
                             const SizedBox(height: 4),
                             Text(
                               resumeDate ?? 'To Be Announced',
-                              style: TextStyle(fontWeight: FontWeight.w900, color: resumeDate != null ? kGreen : Colors.amber.shade700),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  color: resumeDate != null
+                                      ? kGreen
+                                      : Colors.amber.shade700),
                             ),
                           ],
                         ),
@@ -10417,11 +13494,19 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: _submitted ? kGreen.withValues(alpha: 0.08) : Colors.red.shade50,
+                color: _submitted
+                    ? kGreen.withValues(alpha: 0.08)
+                    : Colors.red.shade50,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _submitted ? kGreen.withValues(alpha: 0.3) : Colors.red.shade200),
+                border: Border.all(
+                    color: _submitted
+                        ? kGreen.withValues(alpha: 0.3)
+                        : Colors.red.shade200),
               ),
-              child: Text(_feedback, style: TextStyle(fontWeight: FontWeight.w600, color: _submitted ? kGreen : Colors.red.shade800)),
+              child: Text(_feedback,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: _submitted ? kGreen : Colors.red.shade800)),
             ),
 
           if (_isResumeTba)
@@ -10436,9 +13521,15 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Rescheduling not available yet', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF7A4A04))),
+                  Text('Rescheduling not available yet',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF7A4A04))),
                   SizedBox(height: 8),
-                  Text('The operator has not announced a resume date. Please wait until a confirmed service resume date is available before selecting a replacement travel date.', style: TextStyle(fontSize: 13, color: Color(0xFF7A4A04))),
+                  Text(
+                      'The operator has not announced a resume date. Please wait until a confirmed service resume date is available before selecting a replacement travel date.',
+                      style: TextStyle(fontSize: 13, color: Color(0xFF7A4A04))),
                 ],
               ),
             ),
@@ -10449,8 +13540,13 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(backgroundColor: kGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: const Text('Back to Booking Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: kGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12))),
+                child: const Text('Back to Booking Details',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ] else ...[
@@ -10458,7 +13554,9 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             if (_showRefundForm) ...[
               Card(
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.red.shade200)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: Colors.red.shade200)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -10467,8 +13565,15 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Cancel & Request 100% Refund', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.red.shade700)),
-                          IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() => _showRefundForm = false)),
+                          Text('Cancel & Request 100% Refund',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                  color: Colors.red.shade700)),
+                          IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () =>
+                                  setState(() => _showRefundForm = false)),
                         ],
                       ),
                       Text(
@@ -10477,49 +13582,92 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                       ),
                       const SizedBox(height: 16),
                       // Refund Method
-                      const Text('Refund Method', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                      const Text('Refund Method',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: kSlate500)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
                         initialValue: _refundMethod,
-                        decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10)),
                         items: const [
-                          DropdownMenuItem(value: 'GCash', child: Text('GCash')),
-                          DropdownMenuItem(value: 'Online Wallet', child: Text('Other Online Wallet')),
-                          DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account')),
+                          DropdownMenuItem(
+                              value: 'GCash', child: Text('GCash')),
+                          DropdownMenuItem(
+                              value: 'Online Wallet',
+                              child: Text('Other Online Wallet')),
+                          DropdownMenuItem(
+                              value: 'Bank Account',
+                              child: Text('Bank Account')),
                         ],
                         onChanged: (v) => setState(() => _refundMethod = v!),
                       ),
                       if (_refundMethod != 'GCash') ...[
                         const SizedBox(height: 12),
-                        const Text('Institution Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                        const Text('Institution Name',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: kSlate500)),
                         const SizedBox(height: 6),
                         TextFormField(
                           controller: _bankNameCtrl,
-                          decoration: InputDecoration(hintText: 'e.g. BDO, Maya', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                          decoration: InputDecoration(
+                              hintText: 'e.g. BDO, Maya',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10)),
                         ),
                       ],
                       const SizedBox(height: 12),
-                      const Text('Account Number / Mobile', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                      const Text('Account Number / Mobile',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: kSlate500)),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _accountNumberCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(hintText: 'e.g. 09123456789', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                        decoration: InputDecoration(
+                            hintText: 'e.g. 09123456789',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10)),
                       ),
                       const SizedBox(height: 12),
-                      const Text('Account Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
+                      const Text('Account Name',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: kSlate500)),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _accountNameCtrl,
-                        decoration: InputDecoration(hintText: 'e.g. Juan Dela Cruz', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                        decoration: InputDecoration(
+                            hintText: 'e.g. Juan Dela Cruz',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10)),
                       ),
                       const SizedBox(height: 20),
                       Row(
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: () => setState(() => _showRefundForm = false),
-                              style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                              onPressed: () =>
+                                  setState(() => _showRefundForm = false),
+                              style: OutlinedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10))),
                               child: const Text('Cancel'),
                             ),
                           ),
@@ -10528,10 +13676,20 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                             flex: 2,
                             child: ElevatedButton(
                               onPressed: _isSubmitting ? null : _submitRefund,
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red.shade700,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10))),
                               child: _isSubmitting
-                                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                  : const Text('Submit Refund Request', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                          color: Colors.white, strokeWidth: 2))
+                                  : const Text('Submit Refund Request',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
@@ -10547,11 +13705,19 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Replacement Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: kSlate800)),
+                const Text('Replacement Booking',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: kSlate800)),
                 if (!_showRefundForm)
                   TextButton(
                     onPressed: () => setState(() => _showRefundForm = true),
-                    child: Text('Or Cancel & Refund instead', style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold, fontSize: 13)),
+                    child: Text('Or Cancel & Refund instead',
+                        style: TextStyle(
+                            color: Colors.red.shade700,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13)),
                   ),
               ],
             ),
@@ -10560,27 +13726,38 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             // ── Date pickers ──
             Card(
               color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Step 1: Pick new travel dates', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    const Text('Step 1: Pick new travel dates',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: kSlate800)),
                     const SizedBox(height: 12),
                     TextFormField(
                       readOnly: true,
                       enabled: !_isResumeTba,
                       decoration: InputDecoration(
-                        hintText: _isResumeTba ? 'Awaiting resume date' : 'Select departure date',
-                        prefixIcon: const Icon(Icons.calendar_today, color: kGreen),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        hintText: _isResumeTba
+                            ? 'Awaiting resume date'
+                            : 'Select departure date',
+                        prefixIcon:
+                            const Icon(Icons.calendar_today, color: kGreen),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         suffixText: _depDate.isNotEmpty ? _depDate : null,
                       ),
                       onTap: _isResumeTba
                           ? () {
-                              setState(() => _feedback = 'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
+                              setState(() => _feedback =
+                                  'Rescheduling is temporarily unavailable until the operator publishes a resume date.');
                             }
                           : () async {
                               final minDate = _resumeDateTime ?? DateTime.now();
@@ -10588,10 +13765,12 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                                 context: context,
                                 initialDate: minDate,
                                 firstDate: minDate,
-                                lastDate: DateTime.now().add(const Duration(days: 365)),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 365)),
                               );
                               if (picked != null) {
-                                final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                                final dateStr =
+                                    '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                                 setState(() {
                                   _depDate = dateStr;
                                   _selectedScheduleId = null;
@@ -10610,25 +13789,33 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                         readOnly: true,
                         decoration: InputDecoration(
                           hintText: 'Select return date',
-                          prefixIcon: const Icon(Icons.calendar_today, color: kGreen),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          prefixIcon:
+                              const Icon(Icons.calendar_today, color: kGreen),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                           suffixText: _retDate.isNotEmpty ? _retDate : null,
                         ),
                         onTap: () async {
                           if (_depDate.isEmpty) {
-                            setState(() => _feedback = _isResumeTba ? 'Rescheduling is not available until the operator publishes a resume date.' : 'Select a departure date first.');
+                            setState(() => _feedback = _isResumeTba
+                                ? 'Rescheduling is not available until the operator publishes a resume date.'
+                                : 'Select a departure date first.');
                             return;
                           }
-                          final startDate = DateTime.parse(_depDate).add(const Duration(days: 1));
+                          final startDate = DateTime.parse(_depDate)
+                              .add(const Duration(days: 1));
                           final picked = await showDatePicker(
                             context: context,
                             initialDate: startDate,
                             firstDate: startDate,
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
                           );
                           if (picked != null) {
-                            final dateStr = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                            final dateStr =
+                                '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                             setState(() {
                               _retDate = dateStr;
                               _selectedReturnScheduleId = null;
@@ -10652,21 +13839,34 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             if (_depDate.isNotEmpty) ...[
               Card(
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Available departure schedules for $_depDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      Text('Available departure schedules for $_depDate',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: kSlate800)),
                       const SizedBox(height: 12),
                       if (_loadingSchedules)
-                        const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: kGreen)))
+                        const Center(
+                            child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child:
+                                    CircularProgressIndicator(color: kGreen)))
                       else if (_availableSchedules.isEmpty)
                         Container(
                           padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(color: kSlate50, borderRadius: BorderRadius.circular(10)),
-                          child: const Text('No schedules available on this date for this route.', style: TextStyle(color: kSlate500, fontSize: 13)),
+                          decoration: BoxDecoration(
+                              color: kSlate50,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: const Text(
+                              'No schedules available on this date for this route.',
+                              style: TextStyle(color: kSlate500, fontSize: 13)),
                         )
                       else
                         ...(_availableSchedules.map((s) {
@@ -10684,23 +13884,40 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
+                                color: isSelected
+                                    ? kGreen.withValues(alpha: 0.06)
+                                    : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                                border: Border.all(
+                                    color: isSelected ? kGreen : kSlate200,
+                                    width: isSelected ? 2 : 1),
                               ),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(s['service'] ?? s['service_name'] ?? 'Schedule', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                        Text(
+                                            s['service'] ??
+                                                s['service_name'] ??
+                                                'Schedule',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: kSlate800)),
                                         const SizedBox(height: 4),
-                                        Text('${s['departure'] ?? s['formatted_departure'] ?? '—'} → ${s['arrival'] ?? s['formatted_arrival'] ?? '—'}', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                                        Text(
+                                            '${s['departure'] ?? s['formatted_departure'] ?? '—'} → ${s['arrival'] ?? s['formatted_arrival'] ?? '—'}',
+                                            style: const TextStyle(
+                                                color: kSlate600,
+                                                fontSize: 13)),
                                       ],
                                     ),
                                   ),
-                                  if (isSelected) const Icon(Icons.check_circle, color: kGreen),
+                                  if (isSelected)
+                                    const Icon(Icons.check_circle,
+                                        color: kGreen),
                                 ],
                               ),
                             ),
@@ -10713,18 +13930,27 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               const SizedBox(height: 16),
             ],
 
-            if (_selectedSchedule != null && _requiresDepartureAccommodation) ...[
+            if (_selectedSchedule != null &&
+                _requiresDepartureAccommodation) ...[
               Card(
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Step 2: Select departure accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const Text('Step 2: Select departure accommodation',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: kSlate800)),
                       const SizedBox(height: 12),
-                      ...((_selectedSchedule!['accommodations'] as List<dynamic>? ?? []).map((acc) {
+                      ...((_selectedSchedule!['accommodations']
+                                  as List<dynamic>? ??
+                              [])
+                          .map((acc) {
                         final accId = acc['id'] as int?;
                         final isSelected = _selectedAccommodationId == accId;
                         final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
@@ -10732,31 +13958,46 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                           onTap: () => setState(() {
                             _selectedAccommodationId = accId;
                             _selectedAccommodationPrice = price;
-                            _selectedAccommodationName = acc['name']?.toString() ?? '';
+                            _selectedAccommodationName =
+                                acc['name']?.toString() ?? '';
                           }),
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
+                              color: isSelected
+                                  ? kGreen.withValues(alpha: 0.06)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                              border: Border.all(
+                                  color: isSelected ? kGreen : kSlate200,
+                                  width: isSelected ? 2 : 1),
                             ),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(acc['name'] ?? 'Accommodation', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                      Text(acc['name'] ?? 'Accommodation',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: kSlate800)),
                                       if (acc['description'] != null) ...[
                                         const SizedBox(height: 4),
-                                        Text(acc['description'], style: const TextStyle(color: kSlate600, fontSize: 12)),
+                                        Text(acc['description'],
+                                            style: const TextStyle(
+                                                color: kSlate600,
+                                                fontSize: 12)),
                                       ],
                                     ],
                                   ),
                                 ),
-                                Text('+₱${price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: kPink)),
+                                Text('+₱${price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: kPink)),
                               ],
                             ),
                           ),
@@ -10772,21 +14013,34 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             if (_isReturnTrip && _retDate.isNotEmpty) ...[
               Card(
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Available return schedules for $_retDate', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      Text('Available return schedules for $_retDate',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: kSlate800)),
                       const SizedBox(height: 12),
                       if (_loadingReturnSchedules)
-                        const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: kGreen)))
+                        const Center(
+                            child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child:
+                                    CircularProgressIndicator(color: kGreen)))
                       else if (_returnSchedules.isEmpty)
                         Container(
                           padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(color: kSlate50, borderRadius: BorderRadius.circular(10)),
-                          child: const Text('No return schedules available on this date for this route.', style: TextStyle(color: kSlate500, fontSize: 13)),
+                          decoration: BoxDecoration(
+                              color: kSlate50,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: const Text(
+                              'No return schedules available on this date for this route.',
+                              style: TextStyle(color: kSlate500, fontSize: 13)),
                         )
                       else
                         ...(_returnSchedules.map((s) {
@@ -10795,7 +14049,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                           return GestureDetector(
                             onTap: () => setState(() {
                               _selectedReturnScheduleId = sid;
-                              _selectedReturnSchedule = Map<String, dynamic>.from(s);
+                              _selectedReturnSchedule =
+                                  Map<String, dynamic>.from(s);
                               _selectedReturnAccommodationId = null;
                               _selectedReturnAccommodationPrice = 0.0;
                               _selectedReturnAccommodationName = '';
@@ -10804,23 +14059,40 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
+                                color: isSelected
+                                    ? kGreen.withValues(alpha: 0.06)
+                                    : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                                border: Border.all(
+                                    color: isSelected ? kGreen : kSlate200,
+                                    width: isSelected ? 2 : 1),
                               ),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(s['service'] ?? s['service_name'] ?? 'Schedule', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                        Text(
+                                            s['service'] ??
+                                                s['service_name'] ??
+                                                'Schedule',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: kSlate800)),
                                         const SizedBox(height: 4),
-                                        Text('${s['departure'] ?? s['formatted_departure'] ?? '—'} → ${s['arrival'] ?? s['formatted_arrival'] ?? '—'}', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                                        Text(
+                                            '${s['departure'] ?? s['formatted_departure'] ?? '—'} → ${s['arrival'] ?? s['formatted_arrival'] ?? '—'}',
+                                            style: const TextStyle(
+                                                color: kSlate600,
+                                                fontSize: 13)),
                                       ],
                                     ),
                                   ),
-                                  if (isSelected) const Icon(Icons.check_circle, color: kGreen),
+                                  if (isSelected)
+                                    const Icon(Icons.check_circle,
+                                        color: kGreen),
                                 ],
                               ),
                             ),
@@ -10833,50 +14105,75 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               const SizedBox(height: 16),
             ],
 
-            if (_selectedReturnSchedule != null && _requiresReturnAccommodation) ...[
+            if (_selectedReturnSchedule != null &&
+                _requiresReturnAccommodation) ...[
               Card(
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Step 3: Select return accommodation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const Text('Step 3: Select return accommodation',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: kSlate800)),
                       const SizedBox(height: 12),
-                      ...((_selectedReturnSchedule!['accommodations'] as List<dynamic>? ?? []).map((acc) {
+                      ...((_selectedReturnSchedule!['accommodations']
+                                  as List<dynamic>? ??
+                              [])
+                          .map((acc) {
                         final accId = acc['id'] as int?;
-                        final isSelected = _selectedReturnAccommodationId == accId;
+                        final isSelected =
+                            _selectedReturnAccommodationId == accId;
                         final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
                         return GestureDetector(
                           onTap: () => setState(() {
                             _selectedReturnAccommodationId = accId;
                             _selectedReturnAccommodationPrice = price;
-                            _selectedReturnAccommodationName = acc['name']?.toString() ?? '';
+                            _selectedReturnAccommodationName =
+                                acc['name']?.toString() ?? '';
                           }),
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
+                              color: isSelected
+                                  ? kGreen.withValues(alpha: 0.06)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
+                              border: Border.all(
+                                  color: isSelected ? kGreen : kSlate200,
+                                  width: isSelected ? 2 : 1),
                             ),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(acc['name'] ?? 'Accommodation', style: const TextStyle(fontWeight: FontWeight.bold, color: kSlate800)),
+                                      Text(acc['name'] ?? 'Accommodation',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: kSlate800)),
                                       if (acc['description'] != null) ...[
                                         const SizedBox(height: 4),
-                                        Text(acc['description'], style: const TextStyle(color: kSlate600, fontSize: 12)),
+                                        Text(acc['description'],
+                                            style: const TextStyle(
+                                                color: kSlate600,
+                                                fontSize: 12)),
                                       ],
                                     ],
                                   ),
                                 ),
-                                Text('+₱${price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: kPink)),
+                                Text('+₱${price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: kPink)),
                               ],
                             ),
                           ),
@@ -10892,21 +14189,37 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             if (_selectedSchedule != null) ...[
               Card(
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Price summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                      const Text('Price summary',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: kSlate800)),
                       const SizedBox(height: 12),
-                      _SummaryRow('Original booking total', '₱${_oldTotalPrice.toStringAsFixed(2)}'),
-                      _SummaryRow('New total estimate', '₱${_newTotalPrice.toStringAsFixed(2)}'),
-                      if (_priceDiff > 0) _SummaryRow('Price difference', '₱${_priceDiff.toStringAsFixed(2)}'),
-                      if (_priceDiff == 0) const _SummaryRow('Price difference', 'No extra payment required'),
+                      _SummaryRow('Original booking total',
+                          '₱${_oldTotalPrice.toStringAsFixed(2)}'),
+                      _SummaryRow('New total estimate',
+                          '₱${_newTotalPrice.toStringAsFixed(2)}'),
+                      if (_priceDiff > 0)
+                        _SummaryRow('Price difference',
+                            '₱${_priceDiff.toStringAsFixed(2)}'),
+                      if (_priceDiff == 0)
+                        const _SummaryRow(
+                            'Price difference', 'No extra payment required'),
                       const SizedBox(height: 12),
                       if (_priceDiff > 0) ...[
-                        const Text('Upload proof of payment for the price difference', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),
+                        const Text(
+                            'Upload proof of payment for the price difference',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: kSlate800)),
                         const SizedBox(height: 10),
                         Row(
                           children: [
@@ -10914,14 +14227,18 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               child: OutlinedButton.icon(
                                 onPressed: _pickPriceProof,
                                 icon: const Icon(Icons.upload_file),
-                                label: Text(_priceProofFile == null ? 'Upload proof' : 'Change proof'),
+                                label: Text(_priceProofFile == null
+                                    ? 'Upload proof'
+                                    : 'Change proof'),
                               ),
                             ),
                           ],
                         ),
                         if (_priceProofFile != null) ...[
                           const SizedBox(height: 8),
-                          Text('Selected file: ${_priceProofFile!.name}', style: const TextStyle(color: kSlate600, fontSize: 12)),
+                          Text('Selected file: ${_priceProofFile!.name}',
+                              style: const TextStyle(
+                                  color: kSlate600, fontSize: 12)),
                         ],
                       ],
                     ],
@@ -10932,7 +14249,8 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
             ],
 
             // ── Submit Reschedule Button ──
-            if (_selectedScheduleId != null && (!_isReturnTrip || _selectedReturnScheduleId != null))
+            if (_selectedScheduleId != null &&
+                (!_isReturnTrip || _selectedReturnScheduleId != null))
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -10941,11 +14259,18 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kGreen,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isSubmitting
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                      : const Text('Submit Reschedule Request', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5))
+                      : const Text('Submit Reschedule Request',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
               ),
           ],
