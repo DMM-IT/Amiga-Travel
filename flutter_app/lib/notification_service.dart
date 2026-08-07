@@ -23,7 +23,7 @@ class NotificationService {
     // Initialize local notifications for foreground
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidInit);
-    await _localNotifications.initialize(settings: initSettings);
+    await _localNotifications.initialize(initSettings);
 
     // Create a high importance channel
     const channel = AndroidNotificationChannel(
@@ -71,10 +71,10 @@ class NotificationService {
         }
 
         _localNotifications.show(
-          id: notification.hashCode,
-          title: notification.title,
-          body: notification.body,
-          notificationDetails: NotificationDetails(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
             android: AndroidNotificationDetails(
               channel.id,
               channel.name,
