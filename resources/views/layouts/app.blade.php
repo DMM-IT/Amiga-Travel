@@ -119,14 +119,14 @@
                 class="bg-[#008000] text-white sticky top-0 z-50 relative transition-all duration-300 ease-in-out">
             <div class="relative z-10 max-w-full mx-auto px-3 sm:px-4 lg:px-5">
                 <div :class="scrolled ? 'h-20' : 'h-28 sm:h-32'" 
-                     class="flex items-center justify-between transition-all duration-300 ease-in-out">
+                     class="h-28 sm:h-32 flex items-center justify-between transition-all duration-300 ease-in-out">
                     <div class="flex items-center gap-6 lg:gap-10">
                         <div class="flex items-center gap-2 shrink-0">
                             <a href="{{ url('/') }}" class="flex items-center gap-2">
                                   <img src="{{ asset('images/amiga_logo_white_outline.png') }}" 
                                       alt="{{ data_get($headerData, 'company_name', 'Amiga Gracia') }}" 
                                       :class="scrolled ? 'h-16' : 'h-24 sm:h-28'"
-                                      class="w-auto object-contain transition-all duration-300 ease-in-out">
+                                      class="h-24 sm:h-28 w-auto object-contain transition-all duration-300 ease-in-out">
                             </a>
                         </div>
                         <nav :class="scrolled ? 'translate-y-0' : '-translate-y-4 sm:-translate-y-5'" 
