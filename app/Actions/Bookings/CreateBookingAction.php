@@ -150,6 +150,7 @@ class CreateBookingAction
                 $data['vehicle_price'] ?? 0,
                 $returnSchedule,
                 $returnScheduleAccommodation,
+                $data['return_selected_transport_class_id'] ?? null,
             );
 
             $totalPrice = $subtotal;
@@ -348,6 +349,7 @@ class CreateBookingAction
         float $vehiclePrice = 0,
         ?Schedule $returnSchedule = null,
         ?ScheduleAccommodation $returnScheduleAccommodation = null,
+        ?int $returnSelectedTransportClassId = null,
     ): float {
         $schedulePrice                = (float) $schedule->price;
         $scheduleAccommodationPrice   = $scheduleAccommodation  ? (float) $scheduleAccommodation->price : 0;
@@ -365,7 +367,12 @@ class CreateBookingAction
             $returnSchedulePrice,
             $returnScheduleAccomPrice,
             $discounts,
+            $hasVehicle
         ) {
+            if ($hasVehicle && ($passenger['type'] ?? '') === 'driver') {
+                return 0.0; // Driver travels free
+            }
+
             $fare = ($schedulePrice + $scheduleAccommodationPrice) + ($returnSchedulePrice + $returnScheduleAccomPrice);
 
             if (! empty($passenger['discount_id'])) {
@@ -378,13 +385,28 @@ class CreateBookingAction
             return $fare;
         });
 
-        $transportClassTotal = 0;
+        $payingPaxCount = collect($passengers)->filter(function($p) use ($hasVehicle) {
+            return !($hasVehicle && ($p['type'] ?? '') === 'driver');
+        })->count();
+
+        $departureTransportClassTotal = 0;
         if ($selectedTransportClassId) {
             $transportClass = TransportClass::find($selectedTransportClassId);
             if ($transportClass) {
-                $transportClassTotal = (float) $transportClass->effective_price;
+                $departureTransportClassTotal = (float) $transportClass->effective_price;
             }
         }
+
+        $returnTransportClassTotal = 0;
+        if ($tripType === 'round_trip' && $returnSelectedTransportClassId) {
+            $returnTransportClass = TransportClass::find($returnSelectedTransportClassId);
+            if ($returnTransportClass) {
+                $returnTransportClassTotal = (float) $returnTransportClass->effective_price;
+            }
+        }
+
+        // Transport class price applies per paying passenger
+        $transportClassTotal = ($departureTransportClassTotal + $returnTransportClassTotal) * max(0, $payingPaxCount);
 
         $accommodationsTotal = 0;
         if (! empty($accommodationIds)) {
@@ -394,9 +416,7 @@ class CreateBookingAction
         $vehicleTotal = $hasVehicle ? (float) ($vehiclePrice ?? 0) : 0;
 
         $settings       = PaymentSetting::current();
-        $isFerry        = $schedule->route->mode === 'ferry';
-        $paxCount       = count($passengers);
-        $multiplier     = $paxCount + ($isFerry ? $paxCount : 0);
+        $multiplier     = max(1, count($passengers));
 
         $serviceFee     = $multiplier * (float) ($settings->web_admin_fee ?? 0);
         $hotelFee       = $accommodationsTotal > 0 ? (float) ($settings->fee_per_accommodation ?? 0) : 0;

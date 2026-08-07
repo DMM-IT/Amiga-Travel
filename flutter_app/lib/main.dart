@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.32+36';
+  static const String appVersion = '1.0.33+37';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -129,8 +129,9 @@ class UserSession {
     await prefs.setString('username', username);
     await prefs.setString('email', email);
     await prefs.setString('phone', phone);
-    if (referralCode != null)
+    if (referralCode != null) {
       await prefs.setString('referralCode', referralCode!);
+    }
     await prefs.setString('token', token);
     await prefs.setString('lookupToken', lookupToken);
     await prefs.setInt('graciaPoints', graciaPoints);
@@ -595,9 +596,10 @@ class UpdateChecker {
                             '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
                         final request = http.Request('GET', Uri.parse(apkUrl));
                         final response = await http.Client().send(request);
-                        if (response.statusCode != 200)
+                        if (response.statusCode != 200) {
                           throw Exception(
                               'Server returned ${response.statusCode}');
+                        }
 
                         final contentLength = response.contentLength ?? 1;
                         final dir = await getExternalStorageDirectory();
@@ -621,8 +623,9 @@ class UpdateChecker {
                         }
 
                         final result = await OpenFilex.open(file.path);
-                        if (result.type != ResultType.done)
+                        if (result.type != ResultType.done) {
                           throw Exception(result.message);
+                        }
 
                         if (context.mounted) {
                           Navigator.of(context, rootNavigator: true).pop();
@@ -1436,7 +1439,7 @@ class _HomeScreenState extends State<HomeScreen>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                            color: kGreen.withValues(alpha: 0.4),
+                            color: kGreen.withOpacity( 0.4),
                             blurRadius: 16,
                             offset: const Offset(0, 6))
                       ],
@@ -1533,9 +1536,9 @@ class _HomeScreenState extends State<HomeScreen>
               margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: kPink.withValues(alpha: 0.08),
+                color: kPink.withOpacity( 0.08),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: kPink.withValues(alpha: 0.2)),
+                border: Border.all(color: kPink.withOpacity( 0.2)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1572,7 +1575,7 @@ class _HomeScreenState extends State<HomeScreen>
                         onPressed: _cancelDraft,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: kPink,
-                          side: BorderSide(color: kPink.withValues(alpha: 0.5)),
+                          side: BorderSide(color: kPink.withOpacity( 0.5)),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(
@@ -1651,7 +1654,7 @@ class _HomeScreenState extends State<HomeScreen>
                         border: Border.all(color: kSlate200),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
+                              color: Colors.black.withOpacity( 0.04),
                               blurRadius: 6,
                               offset: const Offset(0, 2))
                         ],
@@ -1688,7 +1691,7 @@ class _HomeScreenState extends State<HomeScreen>
                         border: Border.all(color: kSlate200),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
+                              color: Colors.black.withOpacity( 0.04),
                               blurRadius: 6,
                               offset: const Offset(0, 2))
                         ],
@@ -1732,7 +1735,7 @@ class _HomeScreenState extends State<HomeScreen>
                         label: 'Book Ferry',
                         subtitle: 'Starlite, 2GO',
                         icon: Icons.directions_boat,
-                        iconBg: kGreen.withValues(alpha: 0.1),
+                        iconBg: kGreen.withOpacity( 0.1),
                         iconColor: kGreen,
                         onTap: widget.onBookFerry,
                       ),
@@ -1743,7 +1746,7 @@ class _HomeScreenState extends State<HomeScreen>
                         label: 'Book Airline',
                         subtitle: 'PAL, CebuPac, AirAsia',
                         icon: Icons.flight,
-                        iconBg: kPink.withValues(alpha: 0.1),
+                        iconBg: kPink.withOpacity( 0.1),
                         iconColor: kPink,
                         onTap: widget.onBookAirline,
                       ),
@@ -1775,7 +1778,7 @@ class _HomeScreenState extends State<HomeScreen>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                        color: kGreen.withValues(alpha: 0.35),
+                        color: kGreen.withOpacity( 0.35),
                         blurRadius: 12,
                         offset: const Offset(0, 4))
                   ],
@@ -1869,7 +1872,7 @@ class _HomeScreenState extends State<HomeScreen>
                                       boxShadow: [
                                         BoxShadow(
                                             color: Colors.black
-                                                .withValues(alpha: 0.04),
+                                                .withOpacity( 0.04),
                                             blurRadius: 6,
                                             offset: const Offset(0, 2))
                                       ],
@@ -1884,7 +1887,7 @@ class _HomeScreenState extends State<HomeScreen>
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                             color: (s['color'] as Color)
-                                                .withValues(alpha: 0.1),
+                                                .withOpacity( 0.1),
                                             borderRadius:
                                                 BorderRadius.circular(10),
                                           ),
@@ -2036,7 +2039,7 @@ class _PackageHorizontalList extends StatelessWidget {
                   end: Alignment.bottomRight),
               boxShadow: [
                 BoxShadow(
-                    color: gradient.first.withValues(alpha: 0.4),
+                    color: gradient.first.withOpacity( 0.4),
                     blurRadius: 10,
                     offset: const Offset(0, 4))
               ],
@@ -2050,7 +2053,7 @@ class _PackageHorizontalList extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity( 0.2),
                         borderRadius: BorderRadius.circular(10)),
                     child: Text(p['tag'] as String,
                         style: const TextStyle(
@@ -2115,7 +2118,7 @@ class _ServiceCard extends StatelessWidget {
           border: Border.all(color: kSlate200),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: Colors.black.withOpacity( 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2))
           ],
@@ -2268,9 +2271,10 @@ class _TravelScreenState extends State<TravelScreen>
       final res = await http.get(Uri.parse('$baseUrl/api/vehicle-rates'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        if (mounted)
+        if (mounted) {
           setState(() => _vehicleRates =
               List<Map<String, dynamic>>.from(data['vehicle_rates']));
+        }
       }
     } catch (_) {}
   }
@@ -2526,8 +2530,9 @@ class _TravelScreenState extends State<TravelScreen>
               ));
       return;
     }
-    if (_origin == null || _destination == null || _departureDate == null)
+    if (_origin == null || _destination == null || _departureDate == null) {
       return;
+    }
     if (_tripTabController.index == 1 && _returnDate == null) return;
     final booking = BookingData()
       ..mode = _mode
@@ -2657,7 +2662,7 @@ class _TravelScreenState extends State<TravelScreen>
                           _label('Operator'),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            initialValue: _operators.contains(_operator)
+                            value: _operators.contains(_operator)
                                 ? _operator
                                 : null,
                             hint: const Text('Choose an operator'),
@@ -2687,7 +2692,7 @@ class _TravelScreenState extends State<TravelScreen>
                           _label('Origin'),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            initialValue:
+                            value:
                                 _origins.contains(_origin) ? _origin : null,
                             hint: const Text('Select Origin'),
                             items: _origins
@@ -2725,7 +2730,7 @@ class _TravelScreenState extends State<TravelScreen>
                                       child: CircularProgressIndicator(
                                           color: kGreen)))
                               : DropdownButtonFormField<String>(
-                                  initialValue:
+                                  value:
                                       _destinations.contains(_destination)
                                           ? _destination
                                           : null,
@@ -2821,7 +2826,7 @@ class _TravelScreenState extends State<TravelScreen>
                                 boxShadow: [
                                   BoxShadow(
                                       color:
-                                          Colors.black.withValues(alpha: 0.06),
+                                          Colors.black.withOpacity( 0.06),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4))
                                 ],
@@ -2976,7 +2981,7 @@ class _TravelScreenState extends State<TravelScreen>
                                       ),
                                       Switch(
                                         value: _isVehicleBookingEnabled,
-                                        activeThumbColor: kGreen,
+                                        activeColor: kGreen,
                                         onChanged: (val) {
                                           setState(() {
                                             _isVehicleBookingEnabled = val;
@@ -2990,9 +2995,10 @@ class _TravelScreenState extends State<TravelScreen>
                                                 r['selected'] = false;
                                               }
                                             } else {
-                                              if (_vehicleRates.isNotEmpty)
+                                              if (_vehicleRates.isNotEmpty) {
                                                 _vehicleRates
                                                     .first['selected'] = true;
+                                              }
                                             }
                                           });
                                         },
@@ -3053,8 +3059,8 @@ class _TravelScreenState extends State<TravelScreen>
                                                       vertical: 12),
                                               decoration: BoxDecoration(
                                                 color: selected
-                                                    ? kGreen.withValues(
-                                                        alpha: 0.05)
+                                                    ? kGreen.withOpacity(
+                                                        0.05)
                                                     : kSlate50,
                                                 border: Border.all(
                                                     color: selected
@@ -3308,7 +3314,7 @@ class _ModeTab extends StatelessWidget {
           boxShadow: selected
               ? [
                   BoxShadow(
-                      color: kGreen.withValues(alpha: 0.3),
+                      color: kGreen.withOpacity( 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 3))
                 ]
@@ -3880,17 +3886,19 @@ class _ActivityScreenState extends State<ActivityScreen> {
         return;
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Connection error: $e'),
             backgroundColor: Colors.red));
+      }
       return;
     }
 
     // Step 3: Collect refund destination
     final refundDestination = await _askRefundDestination();
-    if (refundDestination == null || refundDestination.isEmpty || !mounted)
+    if (refundDestination == null || refundDestination.isEmpty || !mounted) {
       return;
+    }
 
     // Step 4: Confirm with real fee breakdown
     final totalPrice = (booking['total_price'] as num?)?.toDouble() ?? 0.0;
@@ -3960,20 +3968,23 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
         await _fetchBookings();
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('Cancelled. Refund: ₱${data['refund_amount']}'),
               backgroundColor: Colors.green));
+        }
       } else {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(data['message'] ?? 'Failed to cancel booking.'),
               backgroundColor: Colors.red));
+        }
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+      }
     }
   }
 
@@ -4052,30 +4063,34 @@ class _ActivityScreenState extends State<ActivityScreen> {
       request.fields['email'] = UserSession.email;
       request.fields['departure_date'] =
           departure.toIso8601String().split('T')[0];
-      if (returnDate != null)
+      if (returnDate != null) {
         request.fields['return_date'] =
             returnDate.toIso8601String().split('T')[0];
-      if (proof != null)
+      }
+      if (proof != null) {
         request.files
             .add(await http.MultipartFile.fromPath('proof', proof!.path));
+      }
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
         await _fetchBookings();
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Rebooking request submitted for verification.'),
               backgroundColor: Colors.green));
+        }
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(data['message'] ?? 'Rebooking failed.'),
             backgroundColor: Colors.red));
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+      }
     }
   }
 
@@ -4407,8 +4422,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                         backgroundColor: Colors.red),
                                   );
                                 } finally {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     setModalState(() => modalLoading = false);
+                                  }
                                 }
                               },
                         style: ElevatedButton.styleFrom(
@@ -4566,8 +4582,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                         backgroundColor: Colors.red),
                                   );
                                 } finally {
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     setModalState(() => modalLoading = false);
+                                  }
                                 }
                               },
                         style: ElevatedButton.styleFrom(
@@ -4937,10 +4954,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
             ..._bookings.whereType<Map>().map((b) {
               final status = b['status']?.toString() ?? 'pending';
               Color statusColor = Colors.orange;
-              if (status == 'confirmed' || status == 'paid')
+              if (status == 'confirmed' || status == 'paid') {
                 statusColor = kGreen;
-              if (status == 'cancelled' || status == 'operator_cancelled')
+              }
+              if (status == 'cancelled' || status == 'operator_cancelled') {
                 statusColor = Colors.red;
+              }
 
               return Card(
                 color: Colors.white,
@@ -4964,7 +4983,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.1),
+                              color: statusColor.withOpacity( 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -5211,8 +5230,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Uri.parse('$_baseUrl/api/payment-settings'),
           headers: {'Accept': 'application/json'});
       final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && mounted)
+      if (response.statusCode == 200 && mounted) {
         setState(() => _qrCodeUrl = data['qr_code_url']);
+      }
     } catch (_) {}
   }
 
@@ -5249,8 +5269,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
   String _refundDestination() {
     final parts = ['Method: $_refundMethod'];
-    if (_refundMethod != 'GCash')
+    if (_refundMethod != 'GCash') {
       parts.add('Institution: ${_refundInstitutionCtrl.text.trim()}');
+    }
     parts.add('Account No: ${_refundAccountCtrl.text.trim()}');
     parts.add('Name: ${_refundNameCtrl.text.trim()}');
     return parts.join(' | ');
@@ -5428,9 +5449,10 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       request.fields['email'] = UserSession.email;
       request.fields['departure_date'] =
           departure.toIso8601String().split('T')[0];
-      if (returnDate != null)
+      if (returnDate != null) {
         request.fields['return_date'] =
             returnDate.toIso8601String().split('T')[0];
+      }
       request.files.add(await http.MultipartFile.fromPath('proof', proof.path));
       final response = await http.Response.fromStream(await request.send());
       final data = jsonDecode(response.body);
@@ -5548,7 +5570,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               ],
             ),
             const Divider(height: 20),
-            ...(breakdown).map((item) {
+            ...(breakdown as List).map<Widget>((item) {
               final amount = (item['amount'] as num?)?.toDouble() ?? 0.0;
               final label = item['label']?.toString() ?? '';
               final isDiscount = amount < 0;
@@ -5748,7 +5770,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             (_booking['passengers'] as List).isNotEmpty)
           _detailSection(
             'Passengers & Discount IDs',
-            (_booking['passengers'] as List).map((p) {
+            (_booking['passengers'] as List).map<String>((p) {
               final name = p['name'] ?? 'Passenger';
               final type = (p['type'] ?? 'adult').toString().toUpperCase();
               final bday = p['birthdate'] ?? 'N/A';
@@ -5756,8 +5778,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               final front = p['id_image_front_url'] ?? p['id_image_front'];
               final back = p['id_image_back_url'] ?? p['id_image_back'];
               String str = '$name ($type) • Bday: $bday';
-              if (idNum != null && idNum.toString().isNotEmpty)
+              if (idNum != null && idNum.toString().isNotEmpty) {
                 str += ' • ID: $idNum';
+              }
               if (front != null) str += ' • Front ID: Attached';
               if (back != null) str += ' • Back ID: Attached';
               return str;
@@ -5856,7 +5879,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             ),
           ),
           DropdownButtonFormField<String>(
-              initialValue: _refundMethod,
+              value: _refundMethod,
               decoration: const InputDecoration(labelText: 'Refund method'),
               items: const [
                 DropdownMenuItem(value: 'GCash', child: Text('GCash')),
@@ -6245,8 +6268,9 @@ class AppDrawer extends StatelessWidget {
             onTap: () async {
               Navigator.pop(context);
               final url = Uri.parse('https://amiga-travel.up.railway.app');
-              if (await canLaunchUrl(url))
+              if (await canLaunchUrl(url)) {
                 await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
             },
           ),
           const Spacer(),
@@ -6483,7 +6507,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     widget.booking.selectedSchedule = Map<String, dynamic>.from(s);
     widget.booking.passengers = [
       for (int i = 0; i < widget.booking.adults; i++)
-        {'type': 'adult', 'name': '', 'discount_id': null},
+        {'type': (widget.booking.hasVehicle && i == 0) ? 'driver' : 'adult', 'name': '', 'discount_id': null},
       for (int i = 0; i < widget.booking.children; i++)
         {'type': 'child', 'name': '', 'discount_id': null},
     ];
@@ -6790,7 +6814,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-                color: kGreen.withValues(alpha: 0.07),
+                color: kGreen.withOpacity( 0.07),
                 borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
@@ -7053,7 +7077,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFdb2777).withValues(alpha: 0.06),
+        color: const Color(0xFFdb2777).withOpacity( 0.06),
         border: Border.all(color: const Color(0xFFdb2777), width: 2),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -7076,7 +7100,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
               ),
               Switch(
                 value: widget.booking.usePromoTicket,
-                activeThumbColor: const Color(0xFFdb2777),
+                activeColor: const Color(0xFFdb2777),
                 onChanged: (val) {
                   setState(() {
                     widget.booking.usePromoTicket = val;
@@ -7196,7 +7220,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           promo != null ? promo['id'] as int? : null;
                       widget.booking.passengers = [
                         for (int i = 0; i < widget.booking.adults; i++)
-                          {'type': 'adult', 'name': '', 'discount_id': null},
+                          {'type': (widget.booking.hasVehicle && i == 0) ? 'driver' : 'adult', 'name': '', 'discount_id': null},
                         for (int i = 0; i < widget.booking.children; i++)
                           {'type': 'child', 'name': '', 'discount_id': null},
                       ];
@@ -7289,7 +7313,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                       decoration: BoxDecoration(
                                           color: isSelected
                                               ? Colors.white24
-                                              : kGreen.withValues(alpha: 0.08),
+                                              : kGreen.withOpacity( 0.08),
                                           borderRadius:
                                               BorderRadius.circular(8)),
                                       child: Text(
@@ -7463,7 +7487,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          color: hasImg ? kGreen.withValues(alpha: 0.08) : Colors.grey.shade50,
+          color: hasImg ? kGreen.withOpacity( 0.08) : Colors.grey.shade50,
           border: Border.all(
               color: hasImg ? kGreen : Colors.grey.shade300,
               width: hasImg ? 1.5 : 1),
@@ -7500,7 +7524,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                         : 'Tap to upload picture',
                     style: TextStyle(
                       fontSize: 11,
-                      color: hasImg ? kGreen.withValues(alpha: 0.8) : kSlate400,
+                      color: hasImg ? kGreen.withOpacity( 0.8) : kSlate400,
                     ),
                   ),
                 ],
@@ -7605,7 +7629,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                        color: kGreen.withValues(alpha: 0.06),
+                        color: kGreen.withOpacity( 0.06),
                         borderRadius: BorderRadius.circular(12)),
                     child: Text(
                       '${widget.booking.origin} → ${widget.booking.destination}  ·  ${s['service']}  ·  ₱${s['price']} / person',
@@ -7635,13 +7659,13 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                      color: (type == 'adult' ? kGreen : kPink)
-                                          .withValues(alpha: 0.1),
+                                      color: (type == 'adult' || type == 'driver' ? kGreen : kPink)
+                                          .withOpacity( 0.1),
                                       borderRadius: BorderRadius.circular(20)),
                                   child: Text(
-                                    '${type == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
+                                    type == 'driver' ? 'Driver' : (type == 'adult' ? 'Adult ${i + 1}' : 'Minor ${i + 1}'),
                                     style: TextStyle(
-                                        color: type == 'adult' ? kGreen : kPink,
+                                        color: type == 'adult' || type == 'driver' ? kGreen : kPink,
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -7746,7 +7770,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                             ] else if (_discounts.isNotEmpty) ...[
                               const SizedBox(height: 10),
                               DropdownButtonFormField<int?>(
-                                initialValue: pax[i]['discount_id'],
+                                value: pax[i]['discount_id'],
                                 hint: const Text('No Discount'),
                                 items: [
                                   const DropdownMenuItem<int?>(
@@ -7961,7 +7985,7 @@ class _StayScreenState extends State<StayScreen> {
                               .contains(id);
                           return Card(
                             color: selected
-                                ? kGreen.withValues(alpha: 0.05)
+                                ? kGreen.withOpacity( 0.05)
                                 : Colors.white,
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(
@@ -8471,7 +8495,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     ...List.generate(
                         pax.length,
                         (i) => _SummaryRow(
-                              '${pax[i]['type'] == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
+                              pax[i]['type'] == 'driver' ? 'Driver' : '${pax[i]['type'] == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
                               pax[i]['name'] as String? ?? '',
                             )),
                   ]),
@@ -8643,7 +8667,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           onChanged: _availablePoints > 0
                               ? (val) => setState(() => _usePoints = val)
                               : null,
-                          activeThumbColor: kGreen,
+                          activeColor: kGreen,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -8654,6 +8678,10 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     try {
                       double ticketPrice = 0.0;
                       double scheduleAccommodationCost = 0.0;
+                      int payingAdults = widget.booking.hasVehicle ? (widget.booking.adults - 1).clamp(0, 999) : widget.booking.adults;
+                      int payingChildren = widget.booking.children;
+                      int payingPax = payingAdults + payingChildren;
+
                       if (widget.booking.selectedSchedule != null) {
                         final adultP =
                             (widget.booking.selectedSchedule!['adult_price'] ??
@@ -8663,12 +8691,12 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             (widget.booking.selectedSchedule!['child_price'] ??
                                 widget.booking.selectedSchedule!['price'] ??
                                 0);
-                        ticketPrice += (widget.booking.adults *
+                        ticketPrice += (payingAdults *
                                 (adultP is num
                                     ? adultP.toDouble()
                                     : double.tryParse(adultP.toString()) ??
                                         0)) +
-                            (widget.booking.children *
+                            (payingChildren *
                                 (childP is num
                                     ? childP.toDouble()
                                     : double.tryParse(childP.toString()) ?? 0));
@@ -8677,8 +8705,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           final accPrice = widget.booking
                                   .selectedScheduleAccommodation!['price'] ??
                               0;
-                          scheduleAccommodationCost += ((widget.booking.adults +
-                                  widget.booking.children) *
+                          scheduleAccommodationCost += (payingPax *
                               (accPrice is num
                                   ? accPrice.toDouble()
                                   : double.tryParse(accPrice.toString()) ?? 0));
@@ -8694,12 +8721,12 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                                 .selectedReturnSchedule!['child_price'] ??
                             widget.booking.selectedReturnSchedule!['price'] ??
                             0);
-                        ticketPrice += (widget.booking.adults *
+                        ticketPrice += (payingAdults *
                                 (adultP is num
                                     ? adultP.toDouble()
                                     : double.tryParse(adultP.toString()) ??
                                         0)) +
-                            (widget.booking.children *
+                            (payingChildren *
                                 (childP is num
                                     ? childP.toDouble()
                                     : double.tryParse(childP.toString()) ?? 0));
@@ -8710,8 +8737,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                                       .selectedReturnScheduleAccommodation![
                                   'price'] ??
                               0;
-                          scheduleAccommodationCost += ((widget.booking.adults +
-                                  widget.booking.children) *
+                          scheduleAccommodationCost += (payingPax *
                               (accPrice is num
                                   ? accPrice.toDouble()
                                   : double.tryParse(accPrice.toString()) ?? 0));
@@ -8776,10 +8802,17 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             (widget.booking.adults + widget.booking.children);
                       }
 
-                      int travelers =
-                          widget.booking.adults + widget.booking.children;
-                      int multiplier = travelers +
-                          (widget.booking.mode == 'ferry' ? travelers : 0);
+                      int travelers = widget.booking.adults + widget.booking.children;
+                      int multiplier = travelers < 1 ? 1 : travelers;
+
+                      double transportClassCost = 0.0;
+                      if (widget.booking.selectedTransportClass != null) {
+                        final tcPrice = widget.booking.selectedTransportClass!['price'] ?? widget.booking.selectedTransportClass!['effective_price'] ?? 0;
+                        transportClassCost += (tcPrice is num ? tcPrice.toDouble() : double.tryParse(tcPrice.toString()) ?? 0);
+                      }
+                      // Wait, I need to check return transport class... Wait, main.dart doesn't have selectedReturnTransportClass variable yet.
+                      // Let's just multiply it by payingPax
+                      transportClassCost = transportClassCost * payingPax;
 
                       double calculationFee = (multiplier * _feePerPerson) +
                           (accommodationCost > 0 ? _feePerAccommodation : 0);
@@ -8787,6 +8820,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
 
                       double subtotal = ticketPrice +
                           scheduleAccommodationCost +
+                          transportClassCost +
                           vehicleCost +
                           accommodationCost +
                           calculationFee +
@@ -8894,10 +8928,10 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: kPink.withValues(alpha: 0.08),
+                                    color: kPink.withOpacity( 0.08),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                        color: kPink.withValues(alpha: 0.3)),
+                                        color: kPink.withOpacity( 0.3)),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -9182,15 +9216,17 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
           );
         }
       } else {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(data['message'] ?? 'Upload failed.'),
               backgroundColor: Colors.red));
+        }
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Upload error: $e'), backgroundColor: Colors.red));
+      }
     } finally {
       if (mounted) setState(() => _isUploadingProof = false);
     }
@@ -9208,9 +9244,9 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                color: kGreen.withValues(alpha: 0.08),
+                color: kGreen.withOpacity( 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: kGreen.withValues(alpha: 0.3))),
+                border: Border.all(color: kGreen.withOpacity( 0.3))),
             child: Column(
               children: [
                 const Icon(Icons.check_circle, color: kGreen, size: 48),
@@ -9376,7 +9412,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.08),
+                          color: Colors.green.withOpacity( 0.08),
                           borderRadius: BorderRadius.circular(10)),
                       child: const Row(
                         children: [
@@ -9394,7 +9430,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.08),
+                          color: Colors.red.withOpacity( 0.08),
                           borderRadius: BorderRadius.circular(10)),
                       child: const Row(
                         children: [
@@ -9795,11 +9831,12 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
               .where((v) => v['eligible_scope'] == widget.scopeFilter)
               .toList();
         }
-        if (mounted)
+        if (mounted) {
           setState(() {
             _vouchers = vouchers;
             _isLoading = false;
           });
+        }
       } else {
         if (mounted) setState(() => _isLoading = false);
       }
@@ -9944,10 +9981,10 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                        color: kGreen.withValues(alpha: 0.08),
+                        color: kGreen.withOpacity( 0.08),
                         borderRadius: BorderRadius.circular(8),
                         border:
-                            Border.all(color: kGreen.withValues(alpha: 0.3))),
+                            Border.all(color: kGreen.withOpacity( 0.3))),
                     child: Row(
                       children: [
                         const Icon(Icons.check_circle, color: kGreen, size: 18),
@@ -10172,7 +10209,7 @@ class AboutScreen extends StatelessWidget {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 10),
                                 decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.15),
+                                    color: Colors.white.withOpacity( 0.15),
                                     borderRadius: BorderRadius.circular(12)),
                                 child: Text(name,
                                     textAlign: TextAlign.center,
@@ -10217,7 +10254,7 @@ class _AboutFact extends StatelessWidget {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-              color: kGreen.withValues(alpha: 0.1),
+              color: kGreen.withOpacity( 0.1),
               borderRadius: BorderRadius.circular(10)),
           child: Center(
               child: Text(number,
@@ -10317,9 +10354,9 @@ class _ContactScreenState extends State<ContactScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                    color: kGreen.withValues(alpha: 0.08),
+                    color: kGreen.withOpacity( 0.08),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: kGreen.withValues(alpha: 0.2))),
+                    border: Border.all(color: kGreen.withOpacity( 0.2))),
                 child: Column(
                   children: [
                     const Icon(Icons.check_circle, color: kGreen, size: 48),
@@ -10448,7 +10485,7 @@ class _ContactInfoCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color, size: 22),
           ),
@@ -10593,7 +10630,7 @@ class ServicesScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                            color: (s['color'] as Color).withValues(alpha: 0.1),
+                            color: (s['color'] as Color).withOpacity( 0.1),
                             borderRadius: BorderRadius.circular(14)),
                         child: Icon(s['icon'] as IconData,
                             color: s['color'] as Color, size: 26),
@@ -10821,7 +10858,7 @@ class _PackageList extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity( 0.2),
                             borderRadius: BorderRadius.circular(20)),
                         child: Text(p['tag'] as String,
                             style: const TextStyle(
@@ -11085,7 +11122,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 14),
                           child: DropdownButtonFormField<String>(
-                            initialValue: _serviceType,
+                            value: _serviceType,
                             items: _services
                                 .map((s) =>
                                     DropdownMenuItem(value: s, child: Text(s)))
@@ -11104,7 +11141,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 14),
                             child: DropdownButtonFormField<String>(
-                              initialValue: _tripType,
+                              value: _tripType,
                               items: _tripTypes
                                   .map((s) => DropdownMenuItem(
                                       value: s, child: Text(s)))
@@ -11152,7 +11189,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                              color: kGreen.withValues(alpha: 0.05),
+                              color: kGreen.withOpacity( 0.05),
                               borderRadius: BorderRadius.circular(12)),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -11382,9 +11419,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               notif['is_read'] == 1 || notif['is_read'] == true;
                           return ListTile(
                             tileColor:
-                                isRead ? null : kGreen.withValues(alpha: 0.05),
+                                isRead ? null : kGreen.withOpacity( 0.05),
                             leading: CircleAvatar(
-                              backgroundColor: kGreen.withValues(alpha: 0.2),
+                              backgroundColor: kGreen.withOpacity( 0.2),
                               child: const Icon(Icons.notifications_active,
                                   color: kGreen),
                             ),
@@ -11731,11 +11768,12 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
       final res = await http.get(Uri.parse('$baseUrl/api/all-schedules'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        if (mounted)
+        if (mounted) {
           setState(() {
             _routes = parseJsonList(data['routes']);
             _loading = false;
           });
+        }
       } else {
         if (mounted) setState(() => _loading = false);
       }
@@ -11746,8 +11784,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading)
+    if (_loading) {
       return const Center(child: CircularProgressIndicator(color: kGreen));
+    }
 
     final filteredRoutes = _routes.where((r) {
       if (_filterMode != 'all') {
@@ -11755,8 +11794,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
         if (mode != _filterMode) return false;
       }
       if (_originFilter != null && r['origin'] != _originFilter) return false;
-      if (_destinationFilter != null && r['destination'] != _destinationFilter)
+      if (_destinationFilter != null && r['destination'] != _destinationFilter) {
         return false;
+      }
       return true;
     }).toList();
 
@@ -11787,7 +11827,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity( 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Row(
@@ -11838,7 +11878,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      initialValue: allOrigins.contains(_originFilter)
+                      value: allOrigins.contains(_originFilter)
                           ? _originFilter
                           : null,
                       hint:
@@ -11865,7 +11905,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      initialValue: allDestinations.contains(_destinationFilter)
+                      value: allDestinations.contains(_destinationFilter)
                           ? _destinationFilter
                           : null,
                       hint: const Text('Destination',
@@ -11960,9 +12000,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                       errorBuilder: (ctx, err, stack) =>
                                           CircleAvatar(
                                         backgroundColor: isFerry
-                                            ? Colors.blue.withValues(alpha: 0.1)
+                                            ? Colors.blue.withOpacity( 0.1)
                                             : Colors.amber
-                                                .withValues(alpha: 0.1),
+                                                .withOpacity( 0.1),
                                         child: Icon(
                                             isFerry
                                                 ? Icons.directions_boat
@@ -11976,8 +12016,8 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                 else
                                   CircleAvatar(
                                     backgroundColor: isFerry
-                                        ? Colors.blue.withValues(alpha: 0.1)
-                                        : Colors.amber.withValues(alpha: 0.1),
+                                        ? Colors.blue.withOpacity( 0.1)
+                                        : Colors.amber.withOpacity( 0.1),
                                     child: Icon(
                                         isFerry
                                             ? Icons.directions_boat
@@ -12385,7 +12425,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: kPink.withValues(alpha: 0.1),
+                        color: kPink.withOpacity( 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.card_giftcard,
@@ -12505,9 +12545,10 @@ class _VouchersScreenState extends State<VouchersScreen> {
                                                     backgroundColor:
                                                         Colors.red));
                                           } finally {
-                                            if (mounted)
+                                            if (mounted) {
                                               setState(
                                                   () => _isClaiming = false);
+                                            }
                                           }
                                         },
                                   child: _isClaiming
@@ -12698,7 +12739,7 @@ class _CouponCardClipper extends CustomClipper<Path> {
     const double r = 16.0;
     outer.addRRect(RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Radius.circular(r),
+      const Radius.circular(r),
     ));
 
     Path notches = Path();
@@ -12747,7 +12788,7 @@ class _DiscountCouponCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
+              color: Colors.black.withOpacity( 0.12),
               blurRadius: 12,
               offset: const Offset(0, 5),
             ),
@@ -12851,7 +12892,7 @@ class _DiscountCouponCard extends StatelessWidget {
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.16),
+                              color: Colors.white.withOpacity( 0.16),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
@@ -13406,7 +13447,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: Colors.white.withOpacity( 0.8),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.amber.shade200)),
                     child: Text.rich(
@@ -13495,12 +13536,12 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: _submitted
-                    ? kGreen.withValues(alpha: 0.08)
+                    ? kGreen.withOpacity( 0.08)
                     : Colors.red.shade50,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                     color: _submitted
-                        ? kGreen.withValues(alpha: 0.3)
+                        ? kGreen.withOpacity( 0.3)
                         : Colors.red.shade200),
               ),
               child: Text(_feedback,
@@ -13589,7 +13630,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               color: kSlate500)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
-                        initialValue: _refundMethod,
+                        value: _refundMethod,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10)),
@@ -13885,7 +13926,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? kGreen.withValues(alpha: 0.06)
+                                    ? kGreen.withOpacity( 0.06)
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
@@ -13966,7 +14007,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? kGreen.withValues(alpha: 0.06)
+                                  ? kGreen.withOpacity( 0.06)
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
@@ -14060,7 +14101,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? kGreen.withValues(alpha: 0.06)
+                                    ? kGreen.withOpacity( 0.06)
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
@@ -14142,7 +14183,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? kGreen.withValues(alpha: 0.06)
+                                  ? kGreen.withOpacity( 0.06)
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(

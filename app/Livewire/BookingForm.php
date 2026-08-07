@@ -2560,9 +2560,7 @@ public function selectedSchedule(): ?array
 
         $baseTransportClassTotal = $departureTransportClassTotal + $returnTransportClassTotal;
         $payingPassengers = collect($this->passengers)->where('type', '!=', 'driver')->count();
-        // If the system currently treats transport class as a flat fee per booking, we just zero it if no paying passengers exist.
-        // If the system treats it as per-passenger, it should ideally be multiplied, but keeping existing logic safe:
-        $transportClassTotal = $payingPassengers > 0 ? $baseTransportClassTotal : 0;
+        $transportClassTotal = $baseTransportClassTotal * $payingPassengers;
 
         $vehicleTotal = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
 
