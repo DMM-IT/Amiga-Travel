@@ -1853,7 +1853,7 @@
                             </ul>
                             <p class="mb-2">Refunds are subject to the following surcharge:</p>
                             <ul class="list-disc pl-5 space-y-1 mb-2">
-                                <li>Before vessel departure: &#8369;600.00 plus the applicable Web Admin Fee and Transaction Fee per ticket.</li>
+                                <li>Before vessel departure:15% Surcharge plus the applicable Web Admin Fee and Transaction Fee per ticket.</li>
                             </ul>
                             <p class="mb-2">No partial refunds are available for tickets purchased under room rates. Refunds are released only after surrendering all tickets issued for the relevant room.</p>
                             <p class="mb-2">Unused and unscanned eTickets may be revalidated during the ticket-validity period. Revalidation means changing ticket details other than the passenger name or age, and the trip origin or destination. Revalidation is processed only through corporate ticketing outlets. Passengers must present the eTicket Itinerary Receipt and a valid ID.</p>
