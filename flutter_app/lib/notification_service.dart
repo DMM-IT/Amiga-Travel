@@ -89,12 +89,11 @@ class NotificationService {
       }
     });
 
+    // Only subscribe to user-specific topics (handled on login/register).
+    // all_users subscription is removed per user request.
     try {
-      await FirebaseMessaging.instance.subscribeToTopic('all_users');
-      debugPrint('Subscribed to FCM topic all_users');
-    } catch (error) {
-      debugPrint('Failed to subscribe to all_users topic: $error');
-    }
+      await FirebaseMessaging.instance.unsubscribeFromTopic('all_users');
+    } catch (_) {}
   }
 
   /// Subscribe to a user-specific FCM topic so booking notifications

@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.28+32';
+  static const String appVersion = '1.0.29+33';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -417,13 +417,19 @@ List<dynamic> parseJsonList(dynamic raw) {
   return [];
 }
 
-List<dynamic> parseAndFilterSchedules(dynamic raw) {
+List<dynamic> parseAndFilterSchedules(dynamic raw, [String? selectedDate]) {
   final list = parseJsonList(raw);
   final now = DateTime.now();
   return list.where((s) {
     if (s['departure_time'] == null) return true;
     try {
-      final dt = DateTime.parse(s['departure_time'].toString()).toLocal();
+      String timeStr = s['departure_time'].toString();
+      DateTime dt;
+      if (timeStr.length == 8 && selectedDate != null && selectedDate.isNotEmpty) {
+        dt = DateTime.parse('$selectedDate $timeStr').toLocal();
+      } else {
+        dt = DateTime.parse(timeStr).toLocal();
+      }
       return dt.isAfter(now);
     } catch (_) {
       return true;
@@ -4044,7 +4050,26 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: () async {
-                            await Navigator.push(context, MaterialPageRoute(builder: (_) => BookingDetailsScreen(booking: Map<String, dynamic>.from(b))));
+                            final transaction = b['transaction'];
+                            if (transaction != null &&
+                                transaction['payment_status'] == 'unpaid' &&
+                                transaction['proof_of_payment'] == null) {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PaymentProofScreen(
+                                    bookingId: b['id'],
+                                    transactionNumber: transaction['transaction_number'],
+                                    totalPrice: (b['total_price'] as num).toDouble(),
+                                    paymentDeadlineAt: transaction['payment_deadline_at'] != null
+                                        ? DateTime.tryParse(transaction['payment_deadline_at'])
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              await Navigator.push(context, MaterialPageRoute(builder: (_) => BookingDetailsScreen(booking: Map<String, dynamic>.from(b))));
+                            }
                             _fetchBookings();
                           },
                           icon: const Icon(Icons.open_in_new, size: 18),
@@ -4103,6 +4128,12 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   void initState() {
     super.initState();
     _booking = Map<String, dynamic>.from(widget.booking);
+    if (_booking['price_breakdown'] is String) {
+      try { _booking['price_breakdown'] = jsonDecode(_booking['price_breakdown']); } catch (_) { _booking['price_breakdown'] = []; }
+    }
+    if (_booking['passengers'] is String) {
+      try { _booking['passengers'] = jsonDecode(_booking['passengers']); } catch (_) { _booking['passengers'] = []; }
+    }
     _fetchPaymentSettings();
     _cancellationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
@@ -4842,19 +4873,20 @@ class AppDrawer extends StatelessWidget {
               style: const TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.person_outline, color: kGreen),
-            title: const Text('My Profile'),
-            trailing: UserSession.isLoggedIn && UserSession.phone.trim().isEmpty
-                ? const _NotificationDot()
-                : null,
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())).then((_) {
-                onProfileUpdated();
-              });
-            },
-          ),
+          if (UserSession.isLoggedIn)
+            ListTile(
+              leading: const Icon(Icons.person_outline, color: kGreen),
+              title: const Text('My Profile'),
+              trailing: UserSession.isLoggedIn && UserSession.phone.trim().isEmpty
+                  ? const _NotificationDot()
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())).then((_) {
+                  onProfileUpdated();
+                });
+              },
+            ),
           ListTile(
             leading: const Icon(Icons.info_outline, color: kGreen),
             title: const Text('About'),
@@ -5025,7 +5057,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        _schedules = parseAndFilterSchedules(data['schedules']);
+        _schedules = parseAndFilterSchedules(data['schedules'], widget.booking.departureDate);
       } else {
         setState(() => _error = data['message'] ?? 'Failed to load schedules.');
         return;
@@ -5045,7 +5077,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
         );
         final returnData = jsonDecode(returnRes.body);
         if (returnRes.statusCode == 200 && returnData['status'] == 'success') {
-          _returnSchedules = parseAndFilterSchedules(returnData['schedules']);
+          _returnSchedules = parseAndFilterSchedules(returnData['schedules'], widget.booking.returnDate);
         } else {
           setState(() => _error = returnData['message'] ?? 'Failed to load returning schedules.');
           return;
@@ -6295,14 +6327,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
   bool _loadingPaymentSettings = true;
   double _feePerPerson = 0.0;
   double _feePerAccommodation = 0.0;
-
-  // Proof upload state (shown after booking is created)
-  int? _bookingId;
-  String? _transactionNumber;
-  double? _totalPrice;
-  XFile? _proofImage;
-  bool _isUploadingProof = false;
-  bool _proofUploaded = false;
+  double _transactionFee = 0.0;
 
   // Points
   bool _usePoints = false;
@@ -6419,6 +6444,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             _qrCodeUrl = data['qr_code_url'];
             _feePerPerson = (data['web_admin_fee'] as num?)?.toDouble() ?? 0.0;
             _feePerAccommodation = (data['fee_per_accommodation'] as num?)?.toDouble() ?? 0.0;
+            _transactionFee = (data['transaction_fee'] as num?)?.toDouble() ?? 0.0;
           });
         }
       }
@@ -6500,12 +6526,16 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       if (res.statusCode == 200 && data['status'] == 'success') {
         BookingData.clearPrefs();
         BookingData.activeSession = null;
-        // Store booking details — show payment/QR screen instead of navigating away
-        setState(() {
-          _bookingId = data['booking_id'] as int?;
-          _transactionNumber = data['transaction_number'];
-          _totalPrice = (data['total_price'] as num).toDouble();
-        });
+        
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (_) => PaymentProofScreen(
+            bookingId: data['booking_id'],
+            transactionNumber: data['transaction_number'],
+            totalPrice: (data['total_price'] as num).toDouble(),
+            qrCodeUrl: _qrCodeUrl,
+          ),
+        ));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'Booking failed.'), backgroundColor: Colors.red),
@@ -6516,256 +6546,12 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
     } finally {
-      setState(() => _isSubmitting = false);
-    }
-  }
-
-  Future<void> _pickProofImage() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (picked != null) setState(() => _proofImage = picked);
-  }
-
-  Future<void> _uploadProof() async {
-    if (_proofImage == null || _bookingId == null) return;
-    setState(() => _isUploadingProof = true);
-    try {
-      final baseUrl = UserSession.getBaseUrl();
-      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/$_bookingId/proof'));
-      request.headers['Accept'] = 'application/json';
-      request.fields['email'] = UserSession.email;
-      request.files.add(await http.MultipartFile.fromPath('proof', _proofImage!.path));
-      final streamed = await request.send();
-      final res = await http.Response.fromStream(streamed);
-      final data = jsonDecode(res.body);
-      if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _proofUploaded = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Proof of payment uploaded! We will verify it shortly.'), backgroundColor: Colors.green),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Upload failed.'), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload error: $e'), backgroundColor: Colors.red),
-      );
-    } finally {
-      setState(() => _isUploadingProof = false);
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // ── STEP B: Booking created — show payment + proof upload ──
-    if (_bookingId != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Payment'), automaticallyImplyLeading: false),
-        body: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            // Success banner
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: kGreen.withOpacity(0.3))),
-              child: Column(
-                children: [
-                  const Icon(Icons.check_circle, color: kGreen, size: 48),
-                  const SizedBox(height: 8),
-                  const Text('Booking Confirmed!', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: kGreen)),
-                  const SizedBox(height: 4),
-                  Text('Transaction #: $_transactionNumber', style: const TextStyle(color: kSlate600, fontSize: 13)),
-                  const SizedBox(height: 4),
-                  Text('Total: ₱${_totalPrice?.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kPink)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // QR Code section
-            Card(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Payment QR Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
-                    const SizedBox(height: 4),
-                    const Text('Scan the QR code below to pay via GCash, Maya, or bank transfer.', style: TextStyle(fontSize: 12, color: kSlate500)),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: _loadingPaymentSettings
-                          ? const CircularProgressIndicator(color: kGreen)
-                          : _qrCodeUrl != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    _qrCodeUrl!,
-                                    width: 220,
-                                    height: 220,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) => Container(
-                                      width: 220, height: 220,
-                                      decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
-                                      child: const Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.qr_code, size: 64, color: kSlate400),
-                                          SizedBox(height: 8),
-                                          Text('QR Code unavailable', style: TextStyle(color: kSlate400, fontSize: 12)),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  width: 220, height: 220,
-                                  decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.qr_code, size: 64, color: kSlate400),
-                                      SizedBox(height: 8),
-                                      Text('No QR code set', style: TextStyle(color: kSlate400, fontSize: 12)),
-                                      SizedBox(height: 4),
-                                      Text('Please contact the admin.', style: TextStyle(color: kSlate400, fontSize: 11)),
-                                    ],
-                                  ),
-                                ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Proof of payment upload section
-            Card(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Attach Proof of Payment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
-                    const SizedBox(height: 4),
-                    const Text('Upload a screenshot or photo of your payment receipt.', style: TextStyle(fontSize: 12, color: kSlate500)),
-                    const SizedBox(height: 16),
-
-                    if (_proofUploaded)
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.green),
-                            SizedBox(width: 10),
-                            Expanded(child: Text('Proof uploaded! Our team will verify your payment within 24 hours.', style: TextStyle(color: Colors.green, fontSize: 13))),
-                          ],
-                        ),
-                      )
-                    else ...[
-                      // Image preview
-                      if (_proofImage != null) ...[
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(File(_proofImage!.path), height: 180, width: double.infinity, fit: BoxFit.cover),
-                        ),
-                        const SizedBox(height: 12),
-                      ] else
-                        GestureDetector(
-                          onTap: _pickProofImage,
-                          child: Container(
-                            height: 120,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: kSlate50,
-                              border: Border.all(color: kSlate200, width: 2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_photo_alternate_outlined, size: 40, color: kSlate400),
-                                SizedBox(height: 8),
-                                Text('Tap to select image', style: TextStyle(color: kSlate400, fontSize: 13)),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          if (_proofImage != null) ...[
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _pickProofImage,
-                                icon: const Icon(Icons.image, size: 16),
-                                label: const Text('Change Image'),
-                                style: OutlinedButton.styleFrom(foregroundColor: kSlate600, side: const BorderSide(color: kSlate200)),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                          ],
-                          Expanded(
-                            flex: 2,
-                            child: ElevatedButton.icon(
-                              onPressed: (_proofImage == null || _isUploadingProof) ? null : _uploadProof,
-                              icon: _isUploadingProof
-                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                  : const Icon(Icons.upload, size: 16),
-                              label: Text(_isUploadingProof ? 'Uploading...' : 'Upload Proof'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: kGreen,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Done button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => BookingSuccessScreen(
-                      transactionNumber: _transactionNumber!,
-                      totalPrice: _totalPrice!,
-                    ),
-                  ),
-                  (route) => route.isFirst,
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kPink,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 4,
-                ),
-                child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     // ── STEP A: Review form before submitting ──
     final s = widget.booking.selectedSchedule!;
     final pax = widget.booking.passengers;
@@ -6986,7 +6772,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     int travelers = widget.booking.adults + widget.booking.children;
                     double calculationFee = (travelers * _feePerPerson) + (accommodationCost > 0 ? _feePerAccommodation : 0);
                     
-                    double subtotal = ticketPrice + vehicleCost + accommodationCost + calculationFee + extraBaggageCost - passengerDiscount;
+                    double subtotal = ticketPrice + vehicleCost + accommodationCost + calculationFee + extraBaggageCost + _transactionFee - passengerDiscount;
                     if (subtotal < 0) subtotal = 0.0;
 
                     // Voucher and points are blocked when promo ticket is active
@@ -7002,7 +6788,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                     
                     final finalTotal = (totalBeforePoints - pointsDiscount) > 0 ? (totalBeforePoints - pointsDiscount) : 0.0;
-                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost).clamp(0.0, double.infinity);
+                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost - _transactionFee).clamp(0.0, double.infinity);
                     
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -7015,6 +6801,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           if (extraBaggageCost > 0) _SummaryRow('Extra Baggage (${widget.booking.extraBaggageKg} kg)', '₱${extraBaggageCost.toStringAsFixed(2)}'),
                           if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') _SummaryRow('Extra Baggage (${widget.booking.extraBaggageType ?? 'Specified'})', 'Settled at Terminal'),
                           if (calculationFee > 0) _SummaryRow('Web Admin Fee', '₱${calculationFee.toStringAsFixed(2)}'),
+                          if (_transactionFee > 0) _SummaryRow('Transaction Fee', '₱${_transactionFee.toStringAsFixed(2)}'),
                           const Divider(height: 16),
                           _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
                           if (discount > 0) _SummaryRow('Voucher Discount', '-₱${discount.toStringAsFixed(2)}'),
@@ -7157,6 +6944,400 @@ class _SummaryRow extends StatelessWidget {
 // ==========================================
 // BOOKING SUCCESS SCREEN
 // ==========================================
+class PaymentProofScreen extends StatefulWidget {
+  final int bookingId;
+  final String transactionNumber;
+  final double totalPrice;
+  final DateTime? paymentDeadlineAt;
+  final String? qrCodeUrl;
+
+  const PaymentProofScreen({
+    super.key,
+    required this.bookingId,
+    required this.transactionNumber,
+    required this.totalPrice,
+    this.paymentDeadlineAt,
+    this.qrCodeUrl,
+  });
+
+  @override
+  State<PaymentProofScreen> createState() => _PaymentProofScreenState();
+}
+
+class _PaymentProofScreenState extends State<PaymentProofScreen> {
+  String? _qrCodeUrl;
+  bool _loadingPaymentSettings = true;
+  XFile? _proofImage;
+  bool _isUploadingProof = false;
+  bool _proofUploaded = false;
+  bool _isExpired = false;
+  Timer? _countdownTimer;
+  String _countdownText = '--:--:--';
+
+  @override
+  void initState() {
+    super.initState();
+    _qrCodeUrl = widget.qrCodeUrl;
+    if (_qrCodeUrl == null) {
+      _fetchPaymentSettings();
+    } else {
+      _loadingPaymentSettings = false;
+    }
+    if (widget.paymentDeadlineAt != null) {
+      _startCountdown();
+    }
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _fetchPaymentSettings() async {
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.get(Uri.parse('$baseUrl/api/payment-settings'), headers: {'Accept': 'application/json'});
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['status'] == 'success') {
+          if (mounted) setState(() => _qrCodeUrl = data['qr_code_url']);
+        }
+      }
+    } catch (_) {}
+    finally {
+      if (mounted) setState(() => _loadingPaymentSettings = false);
+    }
+  }
+
+  void _startCountdown() {
+    _updateCountdown();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateCountdown();
+    });
+  }
+
+  void _updateCountdown() {
+    if (widget.paymentDeadlineAt == null) return;
+    final now = DateTime.now();
+    final diff = widget.paymentDeadlineAt!.difference(now);
+    if (diff.isNegative) {
+      _countdownTimer?.cancel();
+      if (mounted) {
+        setState(() {
+          _isExpired = true;
+          _countdownText = '00:00:00';
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          final h = diff.inHours.toString().padLeft(2, '0');
+          final m = (diff.inMinutes % 60).toString().padLeft(2, '0');
+          final s = (diff.inSeconds % 60).toString().padLeft(2, '0');
+          _countdownText = '$h:$m:$s';
+        });
+      }
+    }
+  }
+
+  Future<void> _pickProofImage() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      if (image != null && mounted) {
+        setState(() => _proofImage = image);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+      }
+    }
+  }
+
+  Future<void> _uploadProof() async {
+    if (_proofImage == null) return;
+    setState(() => _isUploadingProof = true);
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final url = Uri.parse('$baseUrl/api/bookings/${widget.bookingId}/proof');
+      final request = http.MultipartRequest('POST', url);
+      if (UserSession.token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer ${UserSession.token}';
+      }
+      request.headers['Accept'] = 'application/json';
+      request.fields['email'] = UserSession.email;
+      request.files.add(await http.MultipartFile.fromPath('proof', _proofImage!.path));
+      final streamed = await request.send();
+      final res = await http.Response.fromStream(streamed);
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        if (mounted) {
+          setState(() { _proofUploaded = true; _countdownTimer?.cancel(); });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Proof of payment uploaded! We will verify it shortly.'), backgroundColor: Colors.green),
+          );
+        }
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Upload failed.'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload error: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _isUploadingProof = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Payment'), automaticallyImplyLeading: false),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Success banner
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: kGreen.withOpacity(0.3))),
+            child: Column(
+              children: [
+                const Icon(Icons.check_circle, color: kGreen, size: 48),
+                const SizedBox(height: 8),
+                const Text('Booking Confirmed!', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: kGreen)),
+                const SizedBox(height: 4),
+                Text('Transaction #: ${widget.transactionNumber}', style: const TextStyle(color: kSlate600, fontSize: 13)),
+                const SizedBox(height: 4),
+                Text('Total: ₱${widget.totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kPink)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          
+          if (widget.paymentDeadlineAt != null && !_proofUploaded)
+             Card(
+              color: _isExpired ? Colors.red.shade50 : Colors.orange.shade50,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  children: [
+                    Text(
+                      _isExpired ? 'Payment Window Expired' : 'Time Remaining to Pay',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: _isExpired ? Colors.red.shade800 : Colors.orange.shade900),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _countdownText,
+                      style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: _isExpired ? Colors.red : Colors.orange.shade800, letterSpacing: 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+          const SizedBox(height: 20),
+
+          // QR Code section
+          Card(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Payment QR Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                  const SizedBox(height: 4),
+                  const Text('Scan the QR code below to pay via GCash, Maya, or bank transfer.', style: TextStyle(fontSize: 12, color: kSlate500)),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: _loadingPaymentSettings
+                        ? const CircularProgressIndicator(color: kGreen)
+                        : _qrCodeUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  _qrCodeUrl!,
+                                  width: 220,
+                                  height: 220,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 220, height: 220,
+                                    decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                                    child: const Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.qr_code, size: 64, color: kSlate400),
+                                        SizedBox(height: 8),
+                                        Text('QR Code unavailable', style: TextStyle(color: kSlate400, fontSize: 12)),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              )
+                            : Container(
+                                width: 220, height: 220,
+                                decoration: BoxDecoration(color: kSlate100, borderRadius: BorderRadius.circular(12)),
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.qr_code, size: 64, color: kSlate400),
+                                    SizedBox(height: 8),
+                                    Text('No QR code set', style: TextStyle(color: kSlate400, fontSize: 12)),
+                                    SizedBox(height: 4),
+                                    Text('Please contact the admin.', style: TextStyle(color: kSlate400, fontSize: 11)),
+                                  ],
+                                ),
+                              ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Proof of payment upload section
+          Card(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Attach Proof of Payment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                  const SizedBox(height: 4),
+                  const Text('Upload a screenshot or photo of your payment receipt.', style: TextStyle(fontSize: 12, color: kSlate500)),
+                  const SizedBox(height: 16),
+
+                  if (_proofUploaded)
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: Colors.green.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Proof uploaded! Our team will verify your payment within 24 hours.', style: TextStyle(color: Colors.green, fontSize: 13))),
+                        ],
+                      ),
+                    )
+                  else if (_isExpired)
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.cancel, color: Colors.red),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Payment time expired. Your booking has been cancelled.', style: TextStyle(color: Colors.red, fontSize: 13))),
+                        ],
+                      ),
+                    )
+                  else ...[
+                    // Image preview
+                    if (_proofImage != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.file(File(_proofImage!.path), height: 180, width: double.infinity, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(height: 12),
+                    ] else
+                      GestureDetector(
+                        onTap: _pickProofImage,
+                        child: Container(
+                          height: 120,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: kSlate50,
+                            border: Border.all(color: kSlate200, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate_outlined, size: 40, color: kSlate400),
+                              SizedBox(height: 8),
+                              Text('Tap to select image', style: TextStyle(color: kSlate400, fontSize: 13)),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        if (_proofImage != null) ...[
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _pickProofImage,
+                              icon: const Icon(Icons.image, size: 16),
+                              label: const Text('Change Image'),
+                              style: OutlinedButton.styleFrom(foregroundColor: kSlate600, side: const BorderSide(color: kSlate200)),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            onPressed: (_proofImage == null || _isUploadingProof || _isExpired) ? null : _uploadProof,
+                            icon: _isUploadingProof
+                                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                : const Icon(Icons.upload, size: 16),
+                            label: Text(_isUploadingProof ? 'Uploading...' : 'Upload Proof'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kGreen,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Done button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: () {
+                if (_proofUploaded || _isExpired) {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                } else {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BookingSuccessScreen(
+                          transactionNumber: widget.transactionNumber,
+                          totalPrice: widget.totalPrice,
+                        ),
+                      ),
+                      (route) => route.isFirst,
+                    );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kPink,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 4,
+              ),
+              child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class BookingSuccessScreen extends StatelessWidget {
   final String transactionNumber;
   final double totalPrice;
@@ -9830,7 +10011,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
       );
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _availableSchedules = parseAndFilterSchedules(data['schedules']));
+        setState(() => _availableSchedules = parseAndFilterSchedules(data['schedules'], date));
       }
     } catch (_) {}
     finally { if (mounted) setState(() => _loadingSchedules = false); }

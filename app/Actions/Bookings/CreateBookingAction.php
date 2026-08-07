@@ -272,8 +272,9 @@ class CreateBookingAction
 
             // --- Create Transaction record ---
             Transaction::create([
-                'booking_id'     => $booking->id,
-                'payment_status' => 'unpaid',
+                'booking_id'          => $booking->id,
+                'payment_status'      => 'unpaid',
+                'payment_deadline_at' => now()->addHour(),
             ]);
 
             // --- Redeem Voucher ---
