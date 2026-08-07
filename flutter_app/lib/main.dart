@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.31+35';
+  static const String appVersion = '1.0.32+36';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -1293,14 +1293,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(colors: [kGreen, Color(0xFF0e2709)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: kGreen.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6))],
+                      boxShadow: [BoxShadow(color: kGreen.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 6))],
                     ),
                     child: Stack(
                       children: [
-                        Positioned(
+                        const Positioned(
                           right: -10,
                           bottom: -10,
-                          child: Opacity(opacity: 0.08, child: const Icon(Icons.travel_explore, size: 180, color: Colors.white)),
+                          child: Opacity(opacity: 0.08, child: Icon(Icons.travel_explore, size: 180, color: Colors.white)),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(22.0),
@@ -1360,9 +1360,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: kPink.withOpacity(0.08),
+                color: kPink.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: kPink.withOpacity(0.2)),
+                border: Border.all(color: kPink.withValues(alpha: 0.2)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1389,7 +1389,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         onPressed: _cancelDraft,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: kPink,
-                          side: BorderSide(color: kPink.withOpacity(0.5)),
+                          side: BorderSide(color: kPink.withValues(alpha: 0.5)),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                         ),
@@ -1454,7 +1454,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: kSlate200),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
                       ),
                       child: const Column(
                         children: [
@@ -1479,7 +1479,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: kSlate200),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
                       ),
                       child: const Column(
                         children: [
@@ -1512,7 +1512,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         label: 'Book Ferry',
                         subtitle: 'Starlite, 2GO',
                         icon: Icons.directions_boat,
-                        iconBg: kGreen.withOpacity(0.1),
+                        iconBg: kGreen.withValues(alpha: 0.1),
                         iconColor: kGreen,
                         onTap: widget.onBookFerry,
                       ),
@@ -1523,7 +1523,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         label: 'Book Airline',
                         subtitle: 'PAL, CebuPac, AirAsia',
                         icon: Icons.flight,
-                        iconBg: kPink.withOpacity(0.1),
+                        iconBg: kPink.withValues(alpha: 0.1),
                         iconColor: kPink,
                         onTap: widget.onBookAirline,
                       ),
@@ -1547,13 +1547,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(colors: [kGreen, Color(0xFF14400e)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: kGreen.withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 4))],
+                  boxShadow: [BoxShadow(color: kGreen.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 4))],
                 ),
-                child: Row(
+                child: const Row(
                   children: [
-                    const Icon(Icons.send_and_archive, color: Colors.white, size: 32),
-                    const SizedBox(width: 14),
-                    const Expanded(
+                    Icon(Icons.send_and_archive, color: Colors.white, size: 32),
+                    SizedBox(width: 14),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1562,7 +1562,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right, color: Colors.white70),
+                    Icon(Icons.chevron_right, color: Colors.white70),
                   ],
                 ),
               ),
@@ -1611,7 +1611,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(color: kSlate200),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -1620,7 +1620,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: (s['color'] as Color).withOpacity(0.1),
+                                          color: (s['color'] as Color).withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(10),
                                         ),
                                         child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 20),
@@ -1730,7 +1730,7 @@ class _PackageHorizontalList extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-              boxShadow: [BoxShadow(color: gradient.first.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [BoxShadow(color: gradient.first.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))],
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -1739,7 +1739,7 @@ class _PackageHorizontalList extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
                     child: Text(p['tag'] as String, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                   ),
                   const Spacer(),
@@ -1785,7 +1785,7 @@ class _ServiceCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: kSlate200),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Column(
           children: [
@@ -2030,7 +2030,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
     try {
       final baseUrl = UserSession.getBaseUrl();
       final operatorQuery = _operator != null ? '&operator=${Uri.encodeComponent(_operator!)}' : '';
-      final tripType = 'round_trip';
+      const tripType = 'round_trip';
       final res = await http.get(Uri.parse('$baseUrl/api/destinations?origin=${Uri.encodeComponent(_origin!)}&mode=$_mode&trip_type=$tripType$operatorQuery'));
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
@@ -2229,7 +2229,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _label('Operator'),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            value: _operators.contains(_operator) ? _operator : null,
+                            initialValue: _operators.contains(_operator) ? _operator : null,
                             hint: const Text('Choose an operator'),
                             items: _operators.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                             onChanged: (val) {
@@ -2253,7 +2253,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _label('Origin'),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            value: _origins.contains(_origin) ? _origin : null,
+                            initialValue: _origins.contains(_origin) ? _origin : null,
                             hint: const Text('Select Origin'),
                             items: _origins.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                             onChanged: _operator == null ? null : (v) {
@@ -2272,7 +2272,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                           _loadingDestinations
                               ? const SizedBox(height: 52, child: Center(child: CircularProgressIndicator(color: kGreen)))
                               : DropdownButtonFormField<String>(
-                                  value: _destinations.contains(_destination) ? _destination : null,
+                                  initialValue: _destinations.contains(_destination) ? _destination : null,
                                   hint: const Text('Select Destination'),
                                   items: _destinations.toSet().map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                                   onChanged: _origin == null ? null : (v) {
@@ -2328,7 +2328,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: kSlate200),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4))],
+                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 4))],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2429,7 +2429,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                       ),
                                       Switch(
                                         value: _isVehicleBookingEnabled,
-                                        activeColor: kGreen,
+                                        activeThumbColor: kGreen,
                                         onChanged: (val) {
                                           setState(() {
                                             _isVehicleBookingEnabled = val;
@@ -2483,7 +2483,7 @@ class _TravelScreenState extends State<TravelScreen> with SingleTickerProviderSt
                                               margin: const EdgeInsets.only(bottom: 8),
                                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                               decoration: BoxDecoration(
-                                                color: selected ? kGreen.withOpacity(0.05) : kSlate50,
+                                                color: selected ? kGreen.withValues(alpha: 0.05) : kSlate50,
                                                 border: Border.all(color: selected ? kGreen : kSlate200, width: selected ? 2 : 1),
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
@@ -2637,7 +2637,7 @@ class _ModeTab extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? kGreen : kSlate100,
           borderRadius: BorderRadius.circular(30),
-          boxShadow: selected ? [BoxShadow(color: kGreen.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))] : [],
+          boxShadow: selected ? [BoxShadow(color: kGreen.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))] : [],
         ),
         child: Row(
           children: [
@@ -3205,7 +3205,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
     XFile? proof;
     final picker = ImagePicker();
-    final fee = ((booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3;
+    final fee = (booking['calculated_rebooking_fee'] as num?)?.toDouble() ?? (((booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
     final shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -3957,7 +3957,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               ),
             )
           else
-            ..._bookings.map((b) {
+            ..._bookings.whereType<Map>().map((b) {
               final status = b['status']?.toString() ?? 'pending';
               Color statusColor = Colors.orange;
               if (status == 'confirmed' || status == 'paid') statusColor = kGreen;
@@ -3982,7 +3982,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.1),
+                              color: statusColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -4051,7 +4051,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: () async {
-                            final transaction = b['transaction'];
+                            final transaction = b['transaction'] is Map ? b['transaction'] : null;
                             if (transaction != null &&
                                 transaction['payment_status'] == 'unpaid' &&
                                 transaction['proof_of_payment'] == null) {
@@ -4116,7 +4116,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   double? _refundAmount;
 
   String get _baseUrl => UserSession.getBaseUrl();
-  String get _paymentStatus => (_booking['transaction']?['payment_status'] ?? 'unpaid').toString();
+  String get _paymentStatus => (_booking['transaction'] is Map ? (_booking['transaction']['payment_status'] ?? 'unpaid') : 'unpaid').toString();
   bool get _canManage => _booking['status'] == 'pending' && _paymentStatus != 'paid' && _paymentStatus != 'cancelled';
   bool get _isRoundTrip => _booking['return_date'] != null;
 
@@ -4295,7 +4295,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     }
     final proof = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (proof == null) return;
-    final fee = ((_booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3;
+    final fee = (_booking['calculated_rebooking_fee'] as num?)?.toDouble() ?? (((_booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -4633,7 +4633,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               ),
             ),
           ),
-          DropdownButtonFormField<String>(value: _refundMethod, decoration: const InputDecoration(labelText: 'Refund method'), items: const [DropdownMenuItem(value: 'GCash', child: Text('GCash')), DropdownMenuItem(value: 'Online Wallet', child: Text('Online Wallet')), DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account'))], onChanged: (value) => setState(() => _refundMethod = value ?? 'GCash')),
+          DropdownButtonFormField<String>(initialValue: _refundMethod, decoration: const InputDecoration(labelText: 'Refund method'), items: const [DropdownMenuItem(value: 'GCash', child: Text('GCash')), DropdownMenuItem(value: 'Online Wallet', child: Text('Online Wallet')), DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account'))], onChanged: (value) => setState(() => _refundMethod = value ?? 'GCash')),
           if (_refundMethod != 'GCash') TextField(controller: _refundInstitutionCtrl, decoration: const InputDecoration(labelText: 'Bank or wallet provider')),
           TextField(controller: _refundAccountCtrl, decoration: InputDecoration(labelText: _refundMethod == 'GCash' ? 'GCash number' : 'Account number')),
           TextField(controller: _refundNameCtrl, decoration: const InputDecoration(labelText: 'Account name')),
@@ -4748,9 +4748,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
-                      const Text('Profile Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                      Text('Profile Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -4804,11 +4804,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.card_giftcard, color: kPink, size: 20),
-                        const SizedBox(width: 8),
-                        const Text('My Referral Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                        Icon(Icons.card_giftcard, color: kPink, size: 20),
+                        SizedBox(width: 8),
+                        Text('My Referral Code', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -5341,11 +5341,11 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       appBar: AppBar(title: const Text('Select Schedule')),
       body: Column(
         children: [
-          _StepProgress(currentStep: 2, steps: _steps),
+          const _StepProgress(currentStep: 2, steps: _steps),
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(color: kGreen.withOpacity(0.07), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
                 Icon(widget.booking.mode == 'ferry' ? Icons.directions_boat : Icons.flight, color: kGreen, size: 20),
@@ -5503,7 +5503,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFdb2777).withOpacity(0.06),
+        color: const Color(0xFFdb2777).withValues(alpha: 0.06),
         border: Border.all(color: const Color(0xFFdb2777), width: 2),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -5521,7 +5521,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
               ),
               Switch(
                 value: widget.booking.usePromoTicket,
-                activeColor: const Color(0xFFdb2777),
+                activeThumbColor: const Color(0xFFdb2777),
                 onChanged: (val) {
                   setState(() {
                     widget.booking.usePromoTicket = val;
@@ -5554,20 +5554,20 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(color: const Color(0xFFFFF7ED), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFFED7AA))),
-        child: Column(
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
                 Icon(Icons.luggage, color: Color(0xFFEA580C), size: 18),
                 SizedBox(width: 8),
                 Text('Baggage Rules & Reminders', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF9A3412))),
               ],
             ),
-            const SizedBox(height: 8),
-            const Text('• Standard ticket includes 1 hand carry bag (up to 7kg).', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
-            const SizedBox(height: 4),
-            const Text('• Ensure valuables are kept with you at all times.', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
+            SizedBox(height: 8),
+            Text('• Standard ticket includes 1 hand carry bag (up to 7kg).', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
+            SizedBox(height: 4),
+            Text('• Ensure valuables are kept with you at all times.', style: TextStyle(fontSize: 12, color: Color(0xFF9A3412))),
           ],
         ),
       ),
@@ -5688,7 +5688,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                   Flexible(
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                                      decoration: BoxDecoration(color: isSelected ? Colors.white24 : kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
                                       child: Text(
                                         s['operator'] ?? 'Operator',
                                         style: TextStyle(color: isSelected ? Colors.white : kGreen, fontWeight: FontWeight.bold, fontSize: 11),
@@ -5702,7 +5702,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       Text(s['service'] ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isSelected ? Colors.white : kSlate800), maxLines: 2, overflow: TextOverflow.ellipsis),
                       if (s['vehicle_name'] != null && s['vehicle_name'].toString().trim().isNotEmpty) ...[
                         const SizedBox(height: 2),
@@ -5710,7 +5710,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                       ],
                       const Spacer(),
                       Text('${s['departure']} → ${s['arrival']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isSelected ? Colors.white : kSlate800)),
-                      Text('Duration: ${s['duration'] ?? 'N/A'}', style: TextStyle(fontSize: 12, color: isSelected ? Colors.white70 : kSlate500)),
+                      Text('Duration: ${s['duration'] ?? 'N/A'}', style: TextStyle(fontSize: 11, color: isSelected ? Colors.white70 : kSlate500)),
                       
                       if (isReturn && widget.booking.selectedReturnScheduleAccommodation != null && isSelected) ...[
                         const SizedBox(height: 4),
@@ -5817,7 +5817,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          color: hasImg ? kGreen.withOpacity(0.08) : Colors.grey.shade50,
+          color: hasImg ? kGreen.withValues(alpha: 0.08) : Colors.grey.shade50,
           border: Border.all(color: hasImg ? kGreen : Colors.grey.shade300, width: hasImg ? 1.5 : 1),
           borderRadius: BorderRadius.circular(10),
         ),
@@ -5846,7 +5846,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                     hasImg ? 'Image attached • Tap to change' : 'Tap to upload picture',
                     style: TextStyle(
                       fontSize: 11,
-                      color: hasImg ? kGreen.withOpacity(0.8) : kSlate400,
+                      color: hasImg ? kGreen.withValues(alpha: 0.8) : kSlate400,
                     ),
                   ),
                 ],
@@ -5932,7 +5932,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
       appBar: AppBar(title: const Text('Passenger & Discount')),
       body: Column(
         children: [
-          _StepProgress(currentStep: 3, steps: _steps),
+          const _StepProgress(currentStep: 3, steps: _steps),
           Expanded(
             child: Form(
               key: _formKey,
@@ -5942,7 +5942,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   // Schedule summary
                   Container(
                     padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(color: kGreen.withOpacity(0.06), borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12)),
                     child: Text(
                       '${widget.booking.origin} → ${widget.booking.destination}  ·  ${s['service']}  ·  ₱${s['price']} / person',
                       style: const TextStyle(fontWeight: FontWeight.bold, color: kGreen, fontSize: 13),
@@ -5965,7 +5965,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(color: (type == 'adult' ? kGreen : kPink).withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                                  decoration: BoxDecoration(color: (type == 'adult' ? kGreen : kPink).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
                                   child: Text(
                                     '${type == 'adult' ? 'Adult' : 'Minor'} ${i + 1}',
                                     style: TextStyle(color: type == 'adult' ? kGreen : kPink, fontSize: 11, fontWeight: FontWeight.bold),
@@ -6051,7 +6051,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                             ] else if (_discounts.isNotEmpty) ...[
                               const SizedBox(height: 10),
                               DropdownButtonFormField<int?>(
-                                value: pax[i]['discount_id'],
+                                initialValue: pax[i]['discount_id'],
                                 hint: const Text('No Discount'),
                                 items: [
                                   const DropdownMenuItem<int?>(value: null, child: Text('No Discount')),
@@ -6204,7 +6204,7 @@ class _StayScreenState extends State<StayScreen> {
       appBar: AppBar(title: const Text('Hotels')),
       body: Column(
         children: [
-          _StepProgress(currentStep: 4, steps: _steps),
+          const _StepProgress(currentStep: 4, steps: _steps),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: kGreen))
@@ -6232,7 +6232,7 @@ class _StayScreenState extends State<StayScreen> {
                           final id = a['id'] as int;
                           final selected = widget.booking.selectedAccommodationIds.contains(id);
                           return Card(
-                            color: selected ? kGreen.withOpacity(0.05) : Colors.white,
+                            color: selected ? kGreen.withValues(alpha: 0.05) : Colors.white,
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -6487,6 +6487,23 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
     if (phone.isNotEmpty) {
       UserSession.phone = phone;
       await UserSession.save();
+      
+      if (UserSession.isLoggedIn && UserSession.token.isNotEmpty) {
+        try {
+          await http.post(
+            Uri.parse('${UserSession.getBaseUrl()}/api/profile/update'),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${UserSession.token}',
+            },
+            body: jsonEncode({
+              'name': UserSession.username,
+              'phone': UserSession.phone,
+            }),
+          );
+        } catch (_) {}
+      }
     }
 
     setState(() => _isSubmitting = true);
@@ -6589,7 +6606,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       appBar: AppBar(title: const Text('Review & Submit')),
       body: Column(
         children: [
-          _StepProgress(currentStep: 5, steps: _steps),
+          const _StepProgress(currentStep: 5, steps: _steps),
           Expanded(
             child: Form(
               key: _formKey,
@@ -6731,7 +6748,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           subtitle: _fetchingPoints ? const Text('Loading...', style: TextStyle(fontSize: 12)) : Text('Available: ${_availablePoints.toInt()} pts', style: const TextStyle(fontSize: 12, color: kSlate500)),
                           value: _usePoints,
                           onChanged: _availablePoints > 0 ? (val) => setState(() => _usePoints = val) : null,
-                          activeColor: kGreen,
+                          activeThumbColor: kGreen,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -6800,9 +6817,12 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                     
                     int travelers = widget.booking.adults + widget.booking.children;
-                    double calculationFee = (travelers * _feePerPerson) + (accommodationCost > 0 ? _feePerAccommodation : 0);
+                    int multiplier = travelers + (widget.booking.mode == 'ferry' ? travelers : 0);
                     
-                    double subtotal = ticketPrice + scheduleAccommodationCost + vehicleCost + accommodationCost + calculationFee + extraBaggageCost + _transactionFee - passengerDiscount;
+                    double calculationFee = (multiplier * _feePerPerson) + (accommodationCost > 0 ? _feePerAccommodation : 0);
+                    double transactionFeeTotal = multiplier * _transactionFee;
+                    
+                    double subtotal = ticketPrice + scheduleAccommodationCost + vehicleCost + accommodationCost + calculationFee + extraBaggageCost + transactionFeeTotal - passengerDiscount;
                     if (subtotal < 0) subtotal = 0.0;
 
                     // Voucher and points are blocked when promo ticket is active
@@ -6818,7 +6838,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                     }
                     
                     final finalTotal = (totalBeforePoints - pointsDiscount) > 0 ? (totalBeforePoints - pointsDiscount) : 0.0;
-                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost - scheduleAccommodationCost - _transactionFee).clamp(0.0, double.infinity);
+                    final eligiblePointsTotal = (finalTotal - calculationFee - accommodationCost - scheduleAccommodationCost - transactionFeeTotal).clamp(0.0, double.infinity);
                     
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -6832,7 +6852,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                           if (extraBaggageCost > 0) _SummaryRow('Extra Baggage (${widget.booking.extraBaggageKg} kg)', '₱${extraBaggageCost.toStringAsFixed(2)}'),
                           if (widget.booking.hasExtraBaggage && widget.booking.mode == 'ferry') _SummaryRow('Extra Baggage (${widget.booking.extraBaggageType ?? 'Specified'})', 'Settled at Terminal'),
                           if (calculationFee > 0) _SummaryRow('Web Admin Fee', '₱${calculationFee.toStringAsFixed(2)}'),
-                          if (_transactionFee > 0) _SummaryRow('Transaction Fee', '₱${_transactionFee.toStringAsFixed(2)}'),
+                          if (transactionFeeTotal > 0) _SummaryRow('Transaction Fee', '₱${transactionFeeTotal.toStringAsFixed(2)}'),
                           const Divider(height: 16),
                           _SummaryRow('Subtotal', '₱${subtotal.toStringAsFixed(2)}'),
                           if (discount > 0) _SummaryRow('Voucher Discount', '-₱${discount.toStringAsFixed(2)}'),
@@ -6855,9 +6875,9 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: kPink.withOpacity(0.08),
+                                  color: kPink.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: kPink.withOpacity(0.3)),
+                                  border: Border.all(color: kPink.withValues(alpha: 0.3)),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -7129,7 +7149,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
           // Success banner
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: kGreen.withOpacity(0.3))),
+            decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: kGreen.withValues(alpha: 0.3))),
             child: Column(
               children: [
                 const Icon(Icons.check_circle, color: kGreen, size: 48),
@@ -7244,7 +7264,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                   if (_proofUploaded)
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: Colors.green.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
                       child: const Row(
                         children: [
                           Icon(Icons.check_circle, color: Colors.green),
@@ -7256,7 +7276,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                   else if (_isExpired)
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
                       child: const Row(
                         children: [
                           Icon(Icons.cancel, color: Colors.red),
@@ -7476,11 +7496,11 @@ class _VoucherSectionState extends State<_VoucherSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text('Discount Coupon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kSlate800)),
                     Text('Apply your discount coupon here', style: TextStyle(color: kSlate500, fontSize: 12)),
                   ],
@@ -7532,9 +7552,9 @@ class _VoucherSectionState extends State<_VoucherSection> {
                 });
                 widget.onVoucherChanged();
               },
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Icon(Icons.close, size: 14, color: kSlate500),
                   SizedBox(width: 4),
                   Text('Remove coupon', style: TextStyle(color: kSlate500, fontSize: 12)),
@@ -7710,7 +7730,7 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: kGreen.withOpacity(0.3))),
+                    decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: kGreen.withValues(alpha: 0.3))),
                     child: Row(
                       children: [
                         const Icon(Icons.check_circle, color: kGreen, size: 18),
@@ -7832,29 +7852,29 @@ class AboutScreen extends StatelessWidget {
             Card(
               color: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
+              child: const Padding(
+                padding: EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Backed by Experience, Driven by Excellence', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
-                    const SizedBox(height: 12),
-                    const Text(
+                    Text('Backed by Experience, Driven by Excellence', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSlate800)),
+                    SizedBox(height: 12),
+                    Text(
                       'Amiga Gracia was established in July 2017. Its humble beginning was born from the dedication of its founder, Mrs. MGA-Ting, whose extensive experience with 2GO laid the foundation for the company\'s first-class standard of service.',
                       style: TextStyle(color: kSlate600, fontSize: 13, height: 1.6),
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
+                    SizedBox(height: 12),
+                    Text(
                       'What started in the municipality of Roxas, Oriental Mindoro has expanded. Following the challenges of the pandemic, our main office relocated to the thriving City of Calapan, positioned to serve travelers better than ever.',
                       style: TextStyle(color: kSlate600, fontSize: 13, height: 1.6),
                     ),
-                    const SizedBox(height: 20),
-                    const Text('Quick Facts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 20),
+                    Text('Quick Facts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: kSlate800)),
+                    SizedBox(height: 12),
                     _AboutFact(number: '01', title: 'Established', desc: 'July 2017 in Oriental Mindoro'),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     _AboutFact(number: '02', title: 'Key Partnerships', desc: '2GO, Starlite Ferries, Supercat'),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     _AboutFact(number: '03', title: 'Specialty', desc: 'Ferry bookings, Educational tours, Apprenticeship programs'),
                   ],
                 ),
@@ -7878,7 +7898,7 @@ class AboutScreen extends StatelessWidget {
                       child: Container(
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
                         child: Text(name, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5)),
                       ),
                     )).toList(),
@@ -7907,7 +7927,7 @@ class _AboutFact extends StatelessWidget {
       children: [
         Container(
           width: 38, height: 38,
-          decoration: BoxDecoration(color: kGreen.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
           child: Center(child: Text(number, style: const TextStyle(color: kGreen, fontWeight: FontWeight.bold, fontSize: 12))),
         ),
         const SizedBox(width: 12),
@@ -7957,20 +7977,20 @@ class _ContactScreenState extends State<ContactScreen> {
         child: Column(
           children: [
             // Info cards
-            _ContactInfoCard(icon: Icons.phone, color: kPink, title: 'Phone Numbers', lines: ['Mobile: 0930-928-4278', 'Landline: (043) 738-2989']),
+            const _ContactInfoCard(icon: Icons.phone, color: kPink, title: 'Phone Numbers', lines: ['Mobile: 0930-928-4278', 'Landline: (043) 738-2989']),
             const SizedBox(height: 12),
-            _ContactInfoCard(icon: Icons.email, color: kGreen, title: 'Email Addresses', lines: ['agt.salesmarketing1103@gmail.com', 'amigagracia.travelservices@gmail.com']),
+            const _ContactInfoCard(icon: Icons.email, color: kGreen, title: 'Email Addresses', lines: ['agt.salesmarketing1103@gmail.com', 'amigagracia.travelservices@gmail.com']),
             const SizedBox(height: 12),
-            _ContactInfoCard(icon: Icons.location_on, color: Color(0xFF1565C0), title: 'Office Location', lines: ['Roxas Drive, Libis, Calapan City,', 'Oriental Mindoro, 5200']),
+            const _ContactInfoCard(icon: Icons.location_on, color: Color(0xFF1565C0), title: 'Office Location', lines: ['Roxas Drive, Libis, Calapan City,', 'Oriental Mindoro, 5200']),
             const SizedBox(height: 12),
-            _ContactInfoCard(icon: Icons.facebook, color: Color(0xFF7B1FA2), title: 'Social Media', lines: ['Facebook: Amiga Gracia']),
+            const _ContactInfoCard(icon: Icons.facebook, color: Color(0xFF7B1FA2), title: 'Social Media', lines: ['Facebook: Amiga Gracia']),
             const SizedBox(height: 20),
 
             // Form
             if (_submitted)
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: kGreen.withOpacity(0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: kGreen.withOpacity(0.2))),
+                decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: kGreen.withValues(alpha: 0.2))),
                 child: Column(
                   children: [
                     const Icon(Icons.check_circle, color: kGreen, size: 48),
@@ -8044,7 +8064,7 @@ class _ContactInfoCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
@@ -8164,7 +8184,7 @@ class ServicesScreen extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: (s['color'] as Color).withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
+                    decoration: BoxDecoration(color: (s['color'] as Color).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
                     child: Icon(s['icon'] as IconData, color: s['color'] as Color, size: 26),
                   ),
                   const SizedBox(width: 14),
@@ -8251,7 +8271,7 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
       'exclusions': raw['exclusions'] ?? '',
       'remarks': raw['remarks'] ?? '',
       'raw': raw,
-      'gradient': [Color(0xFF1565C0), Color(0xFF42A5F5)],
+      'gradient': [const Color(0xFF1565C0), const Color(0xFF42A5F5)],
     };
   }
 
@@ -8310,7 +8330,7 @@ class _TourPackagesScreenState extends State<TourPackagesScreen> with SingleTick
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.landscape, size: 80, color: kSlate200),
+          const Icon(Icons.landscape, size: 80, color: kSlate200),
           const SizedBox(height: 16),
           Text(message, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: kSlate400)),
           const SizedBox(height: 8),
@@ -8353,7 +8373,7 @@ class _PackageList extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
                         child: Text(p['tag'] as String, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
                       const Spacer(),
@@ -8546,7 +8566,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 14),
                           child: DropdownButtonFormField<String>(
-                            value: _serviceType,
+                            initialValue: _serviceType,
                             items: _services.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                             onChanged: (v) => setState(() => _serviceType = v!),
                             decoration: InputDecoration(labelText: 'Service Type', prefixIcon: const Icon(Icons.category, color: kGreen), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
@@ -8556,7 +8576,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 14),
                             child: DropdownButtonFormField<String>(
-                              value: _tripType,
+                              initialValue: _tripType,
                               items: _tripTypes.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                               onChanged: (v) => setState(() => _tripType = v!),
                               decoration: InputDecoration(labelText: 'Trip Type', prefixIcon: const Icon(Icons.swap_horiz, color: kGreen), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
@@ -8583,7 +8603,7 @@ class _RequestBookingScreenState extends State<RequestBookingScreen> {
                         ),
                         Container(
                           padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(color: kGreen.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(color: kGreen.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -8767,10 +8787,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           final notif = _notifications[i];
                           final bool isRead = notif['is_read'] == 1 || notif['is_read'] == true;
                           return ListTile(
-                            tileColor: isRead ? null : kGreen.withOpacity(0.05),
+                            tileColor: isRead ? null : kGreen.withValues(alpha: 0.05),
                             leading: CircleAvatar(
-                              backgroundColor: kGreen.withOpacity(0.2),
-                              child: Icon(Icons.notifications_active, color: kGreen),
+                              backgroundColor: kGreen.withValues(alpha: 0.2),
+                              child: const Icon(Icons.notifications_active, color: kGreen),
                             ),
                             title: Text(notif['title'] ?? '', style: TextStyle(fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
                             subtitle: Text(notif['body'] ?? ''),
@@ -8862,15 +8882,15 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
     if (!UserSession.isLoggedIn) {
       return Scaffold(
         appBar: AppBar(title: const Text('Gracia Points')),
-        body: Center(
+        body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.star_rounded, size: 80, color: kSlate300),
-              const SizedBox(height: 16),
-              const Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text('Sign in to view and use your Gracia Points.', style: TextStyle(color: kSlate500)),
+              Icon(Icons.star_rounded, size: 80, color: kSlate300),
+              SizedBox(height: 16),
+              Text('Gracia Points', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              Text('Sign in to view and use your Gracia Points.', style: TextStyle(color: kSlate500)),
             ],
           ),
         ),
@@ -9086,7 +9106,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Row(
@@ -9127,7 +9147,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: allOrigins.contains(_originFilter) ? _originFilter : null,
+                      initialValue: allOrigins.contains(_originFilter) ? _originFilter : null,
                       hint: const Text('Origin', style: TextStyle(fontSize: 13)),
                       isExpanded: true,
                       decoration: InputDecoration(
@@ -9143,7 +9163,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: allDestinations.contains(_destinationFilter) ? _destinationFilter : null,
+                      initialValue: allDestinations.contains(_destinationFilter) ? _destinationFilter : null,
                       hint: const Text('Destination', style: TextStyle(fontSize: 13)),
                       isExpanded: true,
                       decoration: InputDecoration(
@@ -9190,16 +9210,16 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                     return Card(
                       elevation: 3,
                       margin: const EdgeInsets.only(bottom: 24),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: kSlate200)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: kSlate200)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
                             padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: kSlate50,
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                              border: const Border(bottom: BorderSide(color: kSlate200)),
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                              border: Border(bottom: BorderSide(color: kSlate200)),
                             ),
                             child: Row(
                               children: [
@@ -9213,14 +9233,14 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                       width: 84,
                                       fit: BoxFit.contain,
                                       errorBuilder: (ctx, err, stack) => CircleAvatar(
-                                        backgroundColor: isFerry ? Colors.blue.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+                                        backgroundColor: isFerry ? Colors.blue.withValues(alpha: 0.1) : Colors.amber.withValues(alpha: 0.1),
                                         child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
                                       ),
                                     ),
                                   )
                                 else
                                   CircleAvatar(
-                                    backgroundColor: isFerry ? Colors.blue.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+                                    backgroundColor: isFerry ? Colors.blue.withValues(alpha: 0.1) : Colors.amber.withValues(alpha: 0.1),
                                     child: Icon(isFerry ? Icons.directions_boat : Icons.flight, color: isFerry ? Colors.blue : Colors.amber),
                                   ),
                                 const SizedBox(width: 12),
@@ -9497,7 +9517,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: kPink.withOpacity(0.1),
+                        color: kPink.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.card_giftcard, size: 56, color: kPink),
@@ -9715,7 +9735,7 @@ class _CouponCardClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path outer = Path();
-    final double r = 16.0;
+    const double r = 16.0;
     outer.addRRect(RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, size.width, size.height),
       Radius.circular(r),
@@ -9767,7 +9787,7 @@ class _DiscountCouponCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 12,
               offset: const Offset(0, 5),
             ),
@@ -9869,7 +9889,7 @@ class _DiscountCouponCard extends StatelessWidget {
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.16),
+                              color: Colors.white.withValues(alpha: 0.16),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
@@ -10340,7 +10360,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.amber.shade200)),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.amber.shade200)),
                     child: Text.rich(
                       TextSpan(children: [
                         const TextSpan(text: 'Operator Statement: ', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF78350F))),
@@ -10397,9 +10417,9 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: _submitted ? kGreen.withOpacity(0.08) : Colors.red.shade50,
+                color: _submitted ? kGreen.withValues(alpha: 0.08) : Colors.red.shade50,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _submitted ? kGreen.withOpacity(0.3) : Colors.red.shade200),
+                border: Border.all(color: _submitted ? kGreen.withValues(alpha: 0.3) : Colors.red.shade200),
               ),
               child: Text(_feedback, style: TextStyle(fontWeight: FontWeight.w600, color: _submitted ? kGreen : Colors.red.shade800)),
             ),
@@ -10460,7 +10480,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                       const Text('Refund Method', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: kSlate500)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
-                        value: _refundMethod,
+                        initialValue: _refundMethod,
                         decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                         items: const [
                           DropdownMenuItem(value: 'GCash', child: Text('GCash')),
@@ -10664,7 +10684,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                                color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
                               ),
@@ -10718,7 +10738,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                              color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
                             ),
@@ -10784,7 +10804,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                                color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
                               ),
@@ -10838,7 +10858,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: isSelected ? kGreen.withOpacity(0.06) : Colors.white,
+                              color: isSelected ? kGreen.withValues(alpha: 0.06) : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: isSelected ? kGreen : kSlate200, width: isSelected ? 2 : 1),
                             ),
@@ -10883,7 +10903,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                       _SummaryRow('Original booking total', '₱${_oldTotalPrice.toStringAsFixed(2)}'),
                       _SummaryRow('New total estimate', '₱${_newTotalPrice.toStringAsFixed(2)}'),
                       if (_priceDiff > 0) _SummaryRow('Price difference', '₱${_priceDiff.toStringAsFixed(2)}'),
-                      if (_priceDiff == 0) _SummaryRow('Price difference', 'No extra payment required'),
+                      if (_priceDiff == 0) const _SummaryRow('Price difference', 'No extra payment required'),
                       const SizedBox(height: 12),
                       if (_priceDiff > 0) ...[
                         const Text('Upload proof of payment for the price difference', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: kSlate800)),

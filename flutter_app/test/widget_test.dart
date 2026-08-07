@@ -12,7 +12,7 @@ import 'package:amiga_gracia/main.dart';
 
 void main() {
   testWidgets('app builds', (WidgetTester tester) async {
-    await tester.pumpWidget(MyApp(isFirstLaunch: true));
+    await tester.pumpWidget(const MyApp(isFirstLaunch: true));
 
     expect(find.byType(MaterialApp), findsOneWidget);
   });

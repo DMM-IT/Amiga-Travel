@@ -77,6 +77,7 @@ class PaymentSetting extends Model
     public static function bust(): void
     {
         Cache::forget('payment_settings:current');
+        Cache::forget('api:payment_settings');
     }
 }
 

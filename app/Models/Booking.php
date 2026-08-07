@@ -382,8 +382,11 @@ class Booking extends Model
     {
         $settings       = \App\Models\PaymentSetting::current();
         $passengerCount = max(1, $this->passengers()->count());
-        $nonRefundable  = (floatval($settings->web_admin_fee) * $passengerCount)
-                        + floatval($settings->transaction_fee);
+        $isFerry        = $this->getMode() === 'ferry';
+        $multiplier     = $passengerCount + ($isFerry ? $passengerCount : 0);
+
+        $nonRefundable  = (floatval($settings->web_admin_fee) * $multiplier)
+                        + (floatval($settings->transaction_fee) * $multiplier);
 
         return max(0, floatval($this->total_price) - $nonRefundable);
     }
@@ -496,7 +499,9 @@ class Booking extends Model
 
         $settings = \App\Models\PaymentSetting::current();
         $passengerCount = max(1, $this->passengers()->count());
-        $revalidationFee = floatval($settings->revalidation_fee ?? 0) * $passengerCount;
+        $isFerry        = $this->getMode() === 'ferry';
+        $multiplier     = $passengerCount + ($isFerry ? $passengerCount : 0);
+        $revalidationFee = floatval($settings->revalidation_fee ?? 0) * $multiplier;
         
         $originalFare = $this->getTicketBase();
         $surchargePct = 0;
@@ -662,15 +667,33 @@ class Booking extends Model
             ];
         }
 
+        if ($this->points_discount > 0) {
+            $breakdown[] = [
+                'label' => 'Gracia Points Applied',
+                'amount' => - (float) $this->points_discount,
+                'class' => 'text-green-600'
+            ];
+        }
+
         $sumSoFar = array_sum(array_column($breakdown, 'amount'));
         $fees = (float) $this->total_price - $sumSoFar;
         
         if ($fees > 0.01) {
             $settings = \App\Models\PaymentSetting::current();
-            $transactionFee = (float) $settings->transaction_fee;
-            $hotelFee = $this->accommodations->count() > 0 ? (float) $settings->fee_per_accommodation : 0;
             
-            if ($fees >= $transactionFee) {
+            // Replicate CreateBookingAction multiplier logic for display
+            $isFerry    = optional($this->schedule)->route?->mode === 'ferry';
+            $paxCount   = $this->passengers->count();
+            // If mode isn't loaded, fallback to checking service name or just assume ferry multiplier
+            if (!$this->relationLoaded('schedule') || !isset($isFerry)) {
+                $isFerry = stripos($this->schedule_service ?? '', 'airline') === false;
+            }
+            $multiplier = $paxCount + ($isFerry ? $paxCount : 0);
+            
+            $transactionFee = $multiplier * (float) $settings->transaction_fee;
+            $hotelFee       = $this->accommodations->count() > 0 ? (float) $settings->fee_per_accommodation : 0;
+            
+            if ($fees >= $transactionFee && $transactionFee > 0) {
                 $breakdown[] = ['label' => 'Transaction Fee', 'amount' => $transactionFee, 'class' => 'text-slate-500'];
                 $fees -= $transactionFee;
             }

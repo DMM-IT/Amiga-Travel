@@ -53,7 +53,7 @@ $renderWebsitePage = function (string $page, string $view) {
         'pageContent' => $settingsData['content'] ?? [],
         'heroImages' => collect($settingsData['hero_images'] ?? []),
         'bookingCards' => collect($settingsData['booking_cards'] ?? $settingsData['content']['booking_cards'] ?? []),
-        'activeRoutes' => (function () {
+        'activeRoutes' => \Illuminate\Support\Facades\Cache::remember('web:activeRoutes', now()->addMinutes(15), function () {
             try {
                 return \App\Models\FerryRoute::query()
                     ->active()
@@ -82,8 +82,8 @@ $renderWebsitePage = function (string $page, string $view) {
             } catch (\Throwable $e) {
                 return [];
             }
-        })(),
-        'vehicleRates' => (function () {
+        }),
+        'vehicleRates' => \Illuminate\Support\Facades\Cache::remember('web:vehicleRates', now()->addMinutes(30), function () {
             try {
                 return \App\Models\VehicleRate::query()->where('is_active', true)->orderBy('sort_order')->get()->map(fn ($r) => [
                     'id' => $r->id,
@@ -91,8 +91,8 @@ $renderWebsitePage = function (string $page, string $view) {
                     'price' => (float) $r->price,
                 ])->all();
             } catch (\Throwable $e) { return []; }
-        })(),
-        'vehicleBrands' => (function () {
+        }),
+        'vehicleBrands' => \Illuminate\Support\Facades\Cache::remember('web:vehicleBrands', now()->addMinutes(30), function () {
             try {
                 return \App\Models\VehicleBrand::query()->where('is_active', true)->orderBy('sort_order')->with('models')->get()->map(fn ($b) => [
                     'id' => $b->id,
@@ -104,7 +104,7 @@ $renderWebsitePage = function (string $page, string $view) {
                     ])->values()->all(),
                 ])->all();
             } catch (\Throwable $e) { return []; }
-        })(),
+        }),
     ]);
 };
 
@@ -171,24 +171,26 @@ Route::get('/schedules', function (\Illuminate\Http\Request $request) {
     $startDate = $request->query('start_date', \Carbon\Carbon::today()->format('Y-m-d'));
     $endDate = $request->query('end_date', \Carbon\Carbon::today()->addDays(6)->format('Y-m-d'));
 
-    $routes = App\Models\FerryRoute::with([
-        'schedules' => function ($query) use ($startDate, $endDate) {
-        $query->active()
-              ->where('departure_time', '>=',
-                  // When viewing today, exclude schedules whose departure has already passed (to the second)
-                  \Carbon\Carbon::parse($startDate)->isToday()
-                      ? \Carbon\Carbon::now()
-                      : \Carbon\Carbon::parse($startDate)->startOfDay()
-              )
-              ->where('departure_time', '<=', \Carbon\Carbon::parse($endDate)->endOfDay())
-              ->orderBy('departure_time');
-        },
-        'schedules.scheduleAccommodations',
-        'schedules.transportClasses',
-    ])->where('is_active', true)->orderBy('origin')->orderBy('destination')->get();
-    
-    // Filter out routes that have no schedules in this date range
-    $routes = $routes->filter(fn ($route) => $route->schedules->isNotEmpty());
+    $routes = \Illuminate\Support\Facades\Cache::remember('web:schedules:' . $startDate . ':' . $endDate, now()->addMinutes(5), function () use ($startDate, $endDate) {
+        $routesData = App\Models\FerryRoute::with([
+            'schedules' => function ($query) use ($startDate, $endDate) {
+            $query->active()
+                  ->where('departure_time', '>=',
+                      // When viewing today, exclude schedules whose departure has already passed (to the second)
+                      \Carbon\Carbon::parse($startDate)->isToday()
+                          ? \Carbon\Carbon::now()
+                          : \Carbon\Carbon::parse($startDate)->startOfDay()
+                  )
+                  ->where('departure_time', '<=', \Carbon\Carbon::parse($endDate)->endOfDay())
+                  ->orderBy('departure_time');
+            },
+            'schedules.scheduleAccommodations',
+            'schedules.transportClasses',
+        ])->where('is_active', true)->orderBy('origin')->orderBy('destination')->get();
+        
+        return $routesData->filter(fn ($route) => $route->schedules->isNotEmpty());
+    });
+
 
     class_exists(\App\Models\WebsiteSetting::class);
     $settingsData = \Illuminate\Support\Facades\Cache::remember('website_settings:page:schedules', now()->addHour(), function () {
@@ -290,5 +292,5 @@ Route::get('/db-test', function () {
             'port' => config('database.connections.mysql.port'),
         ], 500);
     }
-});
+})->middleware(['auth:admin,web', 'admin']);
 

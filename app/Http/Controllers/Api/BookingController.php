@@ -124,8 +124,9 @@ class BookingController extends Controller
         }
 
         $bookings = \App\Models\Booking::where('client_email', '=', $request->input('email'), 'and')
-            ->with(['passengers.discount', 'accommodations', 'transaction', 'schedule'])
+            ->with(['passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses'])
             ->orderBy('created_at', 'desc')
+            ->limit(50)
             ->get();
 
         $bookings = $bookings->map(function (Booking $booking) {
@@ -141,6 +142,7 @@ class BookingController extends Controller
                 ['booking' => $booking->id]
             );
             $data['price_breakdown'] = $booking->getPriceBreakdown();
+            $data['calculated_rebooking_fee'] = $booking->getRebookingFeeAmount();
 
             return $data;
         });
@@ -311,7 +313,7 @@ class BookingController extends Controller
             ->with('transaction')
             ->firstOrFail();
 
-        if (! $booking->canRebook() || ! in_array($booking->status, ['pending', 'unpaid'], true)) {
+        if (! $booking->canRebook() || ! in_array($booking->status, ['pending', 'confirmed'], true)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'This booking can no longer be rebooked.',

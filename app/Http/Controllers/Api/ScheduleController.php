@@ -141,11 +141,13 @@ class ScheduleController extends Controller
         $operator    = $request->input('operator', null);
 
         // Fetch the active earning rule (no need to cache a model instance to avoid unserialize errors)
-        $activeRule = \App\Models\GraciaEarningRule::where('is_active', true)
-            ->where(function ($q) { $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()); })
-            ->where(function ($q) { $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()); })
-            ->latest('id')
-            ->first();
+        $activeRule = \Illuminate\Support\Facades\Cache::remember('gracia:active_rule', now()->addMinutes(30), function () {
+            return \App\Models\GraciaEarningRule::where('is_active', true)
+                ->where(function ($q) { $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()); })
+                ->where(function ($q) { $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()); })
+                ->latest('id')
+                ->first();
+        });
 
         // Cache schedule search results per route/date/mode/operator.
         // 5-minute TTL is safe: schedules don't change mid-day but we need

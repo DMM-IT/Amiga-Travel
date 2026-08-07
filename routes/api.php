@@ -78,8 +78,8 @@ Route::middleware('throttle:60,1')->group(function () {
 // Ownership is verified via client_email on all mutating endpoints.
 // ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['throttle:20,1', 'sensitive.actions'])->group(function () {
-    Route::post('/bookings',              [BookingController::class, 'store']);
     Route::get('/bookings',               [BookingController::class, 'index']);
+    Route::post('/bookings',              [BookingController::class, 'store'])->middleware('throttle:5,1');
     Route::post('/bookings/{id}/proof',   [BookingController::class, 'uploadProof']);
     Route::post('/bookings/{id}/cancel',  [BookingController::class, 'cancel']);
     Route::post('/bookings/{id}/rebook',  [BookingController::class, 'rebook']);

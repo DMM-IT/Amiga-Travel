@@ -2406,10 +2406,11 @@ public function selectedSchedule(): ?array
                 : 0;
 
             $settings = PaymentSetting::current();
-            $serviceFee = (count($this->passengers) * floatval($settings->web_admin_fee));
+            $multiplier = count($this->passengers) + ($this->mode === 'ferry' ? count($this->passengers) : 0);
+            $serviceFee = ($multiplier * floatval($settings->web_admin_fee));
             // Accommodation fee: only charged if accommodation is actually selected AND has a price
             $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
-            $transactionFee = floatval($settings->transaction_fee);
+            $transactionFee = floatval($settings->transaction_fee) * $multiplier;
 
             return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $transactionFee;
         }
@@ -2432,10 +2433,11 @@ public function selectedSchedule(): ?array
                 : 0;
 
             $settings = PaymentSetting::current();
-            $serviceFee = (count($this->passengers) * floatval($settings->web_admin_fee));
+            $multiplier = count($this->passengers) + ($this->mode === 'ferry' ? count($this->passengers) : 0);
+            $serviceFee = ($multiplier * floatval($settings->web_admin_fee));
             // Accommodation fee: only charged if accommodation is actually selected AND has a price
             $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
-            $transactionFee = floatval($settings->transaction_fee);
+            $transactionFee = floatval($settings->transaction_fee) * $multiplier;
 
             return $transportTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $transactionFee;
         }
@@ -2504,14 +2506,15 @@ public function selectedSchedule(): ?array
 
         $settings = PaymentSetting::current();
 
-        // Service fee: charged per traveler
+        // Service fee: charged per ticket + transport class
         $payingTravelers = count($this->passengers);
-        $serviceFee = ($payingTravelers * floatval($settings->web_admin_fee));
+        $multiplier = $payingTravelers + ($this->mode === 'ferry' ? $payingTravelers : 0);
+        $serviceFee = ($multiplier * floatval($settings->web_admin_fee));
         
         // Accommodation fee: only charged if hotel is actually selected AND has a price
         $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
         
-        $transactionFee = floatval($settings->transaction_fee);
+        $transactionFee = floatval($settings->transaction_fee) * $multiplier;
 
         return $transportTotal + $transportClassTotal + $vehicleTotal + $hotelTotal + $serviceFee + $accommodationFee + $transactionFee + $this->getExtraBaggageTotalPrice();
     }
@@ -2602,12 +2605,13 @@ public function selectedSchedule(): ?array
         $breakdown['extra_baggage'] = $this->getExtraBaggageTotalPrice();
 
         // Fees
-        $breakdown['fee_per_traveler'] = $passengerCount * floatval($settings->web_admin_fee);
+        $multiplier = $passengerCount + ($this->mode === 'ferry' ? $passengerCount : 0);
+        $breakdown['fee_per_traveler'] = $multiplier * floatval($settings->web_admin_fee);
         
         // Accommodation fee: only charged if hotel is actually selected AND has a price
         $breakdown['fee_per_accommodation'] = $breakdown['hotel'] > 0 ? floatval($settings->fee_per_accommodation) : 0;
 
-        $breakdown['transaction_fee'] = floatval($settings->transaction_fee);
+        $breakdown['transaction_fee'] = floatval($settings->transaction_fee) * $multiplier;
 
         // Calculate total (sum of all items)
         $breakdown['total'] = 
