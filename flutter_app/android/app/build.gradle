@@ -27,7 +27,7 @@ if (flutterVersionName == null) {
 android {
     namespace = "com.amiga.travel.flutter_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         coreLibraryDesugaringEnabled true

@@ -2,13 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:intl/intl.dart';
 
 import 'main.dart';
 
 class ReplacementBookingScreen extends StatefulWidget {
   final dynamic booking;
-  const ReplacementBookingScreen({Key? key, required this.booking}) : super(key: key);
+  const ReplacementBookingScreen({super.key, required this.booking});
 
   @override
   State<ReplacementBookingScreen> createState() => _ReplacementBookingScreenState();
@@ -161,7 +160,7 @@ class _ReplacementBookingScreenState extends State<ReplacementBookingScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                     if (_schedules.isEmpty)
                       const Padding(padding: EdgeInsets.symmetric(vertical: 32), child: Center(child: Text('No available schedules found.'))),
                   ],

@@ -173,6 +173,16 @@ class ScheduleController extends Controller
             }
         );
 
+        if (\Carbon\Carbon::parse($date)->isToday()) {
+            $now = now();
+            $schedules = collect($schedules)->filter(function ($schedule) use ($now) {
+                if (isset($schedule['departure_time_iso'])) {
+                    return \Carbon\Carbon::parse($schedule['departure_time_iso'])->isAfter($now);
+                }
+                return true;
+            })->values()->all();
+        }
+
         return response()->json([
             'status'    => 'success',
             'schedules' => $this->ensureSequentialArray($schedules),
