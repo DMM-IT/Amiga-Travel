@@ -48,7 +48,7 @@ class ManageWebsiteSettings extends Page implements HasForms
             $setting->content = [
                 'title' => 'Frequently Asked Questions',
                 'description' => 'Find answers to common questions about bookings, policies, and our services.',
-                'faqs' => [
+                'faqs_list' => [
                     ['question' => 'How can I book a ticket?', 'answer' => 'You can book a ticket online through our Schedules page or by visiting our branch offices.'],
                     ['question' => 'What is your refund policy?', 'answer' => 'Refund policies depend on the transport operator. Generally, cancellations made within 24 hours of departure are non-refundable.'],
                     ['question' => 'Do you offer custom tours?', 'answer' => 'Yes! We specialize in custom tours and educational packages. Contact us for a personalized quote.'],
@@ -104,29 +104,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                 Section::make('Services Cards')->collapsible()
                     ->description('Edit the service card content only')
                     ->schema([
-                        Repeater::make('content.travel_service_cards')
-                            ->label('Travel & Booking Services Cards')
-                            ->schema([
-                                TextInput::make('title')
-                                    ->label('Card Title')
-                                    ->required()
-                                    ->maxLength(120),
-                                Textarea::make('description')
-                                    ->label('Card Description')
-                                    ->rows(3)
-                                    ->maxLength(255),
-                                TextInput::make('note')
-                                    ->label('Note Text')
-                                    ->maxLength(80),
-                                TextInput::make('link')
-                                    ->label('Card Link')
-                                    ->maxLength(255),
-                                TextInput::make('color')
-                                    ->label('Color Class')
-                                    ->helperText('Add a Tailwind text color class such as text-pink-600 or text-emerald-700'),
-                            ])
-                            ->columns(1),
-
                         Repeater::make('content.service_cards')
                             ->label('Specialized Service Cards')
                             ->schema([
@@ -156,21 +133,111 @@ class ManageWebsiteSettings extends Page implements HasForms
             ];
         }
 
-        return [
-            Section::make('Page Content')->collapsible()
-                ->schema([
-                    TextInput::make('content.badge')->label('Page Badge')->maxLength(100),
-                    TextInput::make('content.title')->label('Page Title')->maxLength(255),
-                    Textarea::make('content.description')->label('Page Description')->rows(4)->maxLength(500),
-                    Repeater::make('content.items')
-                        ->label('Items')
-                        ->schema([
-                            TextInput::make('title')->label('Item Title')->maxLength(120),
-                            Textarea::make('description')->label('Item Description')->rows(2)->maxLength(255),
-                        ])
-                        ->columns(1),
-                ]),
-        ];
+        if ($this->currentPage === 'contact_us') {
+            return [
+                Section::make('Contact Info Cards')->collapsible()
+                    ->schema([
+                        Textarea::make('content.phones')->label('Phone Numbers')->rows(3),
+                        Textarea::make('content.emails')->label('Email Addresses')->rows(3),
+                        Textarea::make('content.location_address')->label('Office Location')->rows(3),
+                        Repeater::make('content.social_links')
+                            ->label('Social Media Links')
+                            ->schema([
+                                TextInput::make('name')->label('Platform & Name (e.g. Facebook: Amiga Gracia)')->required(),
+                                TextInput::make('url')->label('URL')->url()->required(),
+                            ])->columns(1),
+                    ])
+            ];
+        }
+
+        if ($this->currentPage === 'faqs') {
+            return [
+                Section::make('FAQs Cards')->collapsible()
+                    ->schema([
+                        Repeater::make('content.faqs_list')
+                            ->label('Frequently Asked Questions')
+                            ->schema([
+                                TextInput::make('question')->required()->maxLength(255),
+                                Textarea::make('answer')->required()->rows(3),
+                            ])->columns(1)
+                    ])
+            ];
+        }
+
+
+        if ($this->currentPage === 'about') {
+            return [
+                Section::make('About Us History')->collapsible()
+                    ->schema([
+                        TextInput::make('content.history_title')
+                            ->label('History Title')
+                            ->default('Backed by Experience, Driven by Excellence')
+                            ->maxLength(255),
+                        \Filament\Forms\Components\RichEditor::make('content.history_content')
+                            ->label('History Content')
+                            ->default('<p>Amiga Gracia was established in <strong>July 2017</strong>...</p>')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'strike',
+                                'link',
+                                'undo',
+                                'redo',
+                            ]),
+                    ]),
+                Section::make('About Us Cards')->collapsible()
+                    ->schema([
+                        Repeater::make('content.quick_facts')
+                            ->label('Quick Facts Cards')
+                            ->schema([
+                                TextInput::make('title')->required()->maxLength(120),
+                                Textarea::make('desc')->label('Description')->required()->rows(2),
+                                TextInput::make('color')->label('Color Theme')
+                                    ->helperText('Options: emerald, green, blue, pink, purple')->default('emerald'),
+                            ])->columns(1),
+                        TextInput::make('content.awards_title')
+                            ->label('Awards Title')
+                            ->default('Awards & Recognitions')
+                            ->maxLength(255),
+                        Textarea::make('content.awards_description')
+                            ->label('Awards Description')
+                            ->default('We take pride in our service excellence and recognitions.')
+                            ->rows(2)
+                            ->maxLength(500),
+                        Repeater::make('content.awards')
+                            ->label('Awards Cards')
+                            ->schema([
+                                TextInput::make('title')->required()->maxLength(120),
+                                Textarea::make('description')->rows(3),
+                                TextInput::make('button_text')->maxLength(50)->default('View Award'),
+                                FileUpload::make('image')->image()->directory('website-settings/awards'),
+                            ])->columns(1),
+
+                    ])
+            ];
+        }
+
+        if ($this->currentPage === 'download') {
+            return [
+                Section::make('App Features & Steps')->collapsible()
+                    ->schema([
+                        Repeater::make('content.download_features')
+                            ->label('App Features Cards')
+                            ->schema([
+                                TextInput::make('title')->required()->maxLength(120),
+                                Textarea::make('description')->required()->rows(2),
+                            ])->columns(1),
+                        Repeater::make('content.download_steps')
+                            ->label('Installation Steps Cards')
+                            ->schema([
+                                TextInput::make('title')->required()->maxLength(120),
+                                Textarea::make('description')->required()->rows(2),
+                            ])->columns(1),
+                    ])
+            ];
+        }
+
+        return [];
     }
 
     public function form(Form $form): Form
@@ -233,37 +300,11 @@ class ManageWebsiteSettings extends Page implements HasForms
                 ->schema([
                     Tabs::make('Page Settings')
                         ->tabs([
-                            Tabs\Tab::make('Welcome Hero')
-                                ->schema([
-                                    Section::make('Welcome Banner Text')->collapsible()
-                                        ->description('Update the heading and subheading on the main green hero banner')
-                                        ->schema([
-                                            TextInput::make('content.welcome_title')
-                                                ->label('Welcome Title')
-                                                ->placeholder('Welcome to Amiga Gracia')
-                                                ->maxLength(255),
-                                            Textarea::make('content.welcome_subtitle')
-                                                ->label('Welcome Subtitle')
-                                                ->rows(3)
-                                                ->placeholder('Your journey deserves more than a destination - it deserves an exceptional experience')
-                                                ->maxLength(500),
-                                        ]),
-                                ])
-                                ->visible(fn () => $this->currentPage === 'home'),
-
                             Tabs\Tab::make('Promotion Carousel')
                                 ->schema([
-                                    Section::make('Promotion Carousel & Header')->collapsible()
-                                        ->description('Upload images for the promotion carousel and customize the Featured Promotions header')
+                                    Section::make('Promotion Carousel')->collapsible()
+                                        ->description('Upload images for the promotion carousel')
                                         ->schema([
-                                            TextInput::make('content.promo_gallery_title')
-                                                ->label('Featured Promotions Title')
-                                                ->default('Featured Promotions')
-                                                ->maxLength(255),
-                                            TextInput::make('content.promo_gallery_subtitle')
-                                                ->label('Featured Promotions Subtitle')
-                                                ->default('Browse three highlighted offers from our latest deals.')
-                                                ->maxLength(255),
                                             FileUpload::make('hero_images')
                                                 ->label('Carousel Images')
                                                 ->multiple()
@@ -281,17 +322,8 @@ class ManageWebsiteSettings extends Page implements HasForms
                             Tabs\Tab::make('Request Bookings')
                                 ->schema([
                                     Section::make('Travel Booking Options')->collapsible()
-                                        ->description('Customize the Request Travel Bookings header and the booking category cards')
+                                        ->description('Customize the booking category cards')
                                         ->schema([
-                                            TextInput::make('content.booking_section_title')
-                                                ->label('Section Title')
-                                                ->default('Request Travel Bookings')
-                                                ->maxLength(255),
-                                            Textarea::make('content.booking_section_description')
-                                                ->label('Section Description')
-                                                ->rows(2)
-                                                ->default('Kay Amiga, Hassle Free Ka! Select a booking category to start your transaction request.')
-                                                ->maxLength(500),
                                             Repeater::make('booking_cards')
                                                 ->label('Booking Cards')
                                                 ->addable(false)
@@ -308,28 +340,32 @@ class ManageWebsiteSettings extends Page implements HasForms
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
-                            Tabs\Tab::make('Cancel Modal')
+                            Tabs\Tab::make('Suggested Trips')
                                 ->schema([
-                                    Section::make('Cancel Booking Suggestion Modal')->collapsible()
-                                        ->description('Customize the text for the cancellation reminder popup')
+                                    Section::make('Suggested Trips Section')->collapsible()
+                                        ->description('Manage suggested trips displayed on the home page')
                                         ->schema([
-                                            TextInput::make('content.cancel_modal_title')
-                                                ->label('Modal Title')
-                                                ->default('Want to cancel your booking?')
+                                            TextInput::make('content.suggested_trips_title')
+                                                ->label('Section Title')
+                                                ->default('Suggested Trips')
                                                 ->maxLength(255),
-                                            Textarea::make('content.cancel_modal_desc')
-                                                ->label('Modal Description')
-                                                ->rows(3)
+                                            Textarea::make('content.suggested_trips_description')
+                                                ->label('Section Description')
+                                                ->default('Explore these suggested trips.')
+                                                ->rows(2)
                                                 ->maxLength(500),
-                                            TextInput::make('content.cancel_modal_btn_cancel')
-                                                ->label('Cancel Button Text')
-                                                ->default('Maybe later')
-                                                ->maxLength(100),
-                                            TextInput::make('content.cancel_modal_btn_confirm')
-                                                ->label('Confirm Button Text')
-                                                ->default('Start cancellation')
-                                                ->maxLength(100),
-                                        ]),
+                                            Repeater::make('content.suggested_trips')
+                                                ->label('Suggested Trips Cards')
+                                                ->schema([
+                                                    TextInput::make('title')->required()->maxLength(120),
+                                                    TextInput::make('subtitle')->maxLength(120),
+                                                    Textarea::make('description')->rows(3),
+                                                    TextInput::make('price')->maxLength(50),
+                                                    TextInput::make('button_text')->maxLength(50),
+                                                    TextInput::make('button_link')->url(),
+                                                    FileUpload::make('image')->image()->directory('website-settings/tours'),
+                                                ])->columns(1),
+                                        ])
                                 ])
                                 ->visible(fn () => $this->currentPage === 'home'),
 
@@ -354,7 +390,6 @@ class ManageWebsiteSettings extends Page implements HasForms
                                     Section::make('Page Settings')->collapsible()
                                         ->schema([
                                             Toggle::make('is_active')->label('Active')->default(true),
-                                            TextInput::make('content.page_subtitle')->label('Page subtitle')->maxLength(120),
                                         ]),
                                 ]),
                         ])

@@ -44,7 +44,7 @@ class BookingController extends Controller
             'driver_birthday'                           => 'required_if:has_vehicle,true|nullable|date',
             'passengers'                                => 'required|array|min:1',
             'passengers.*.name'                         => 'required|string|max:255',
-            'passengers.*.type'                         => 'required|string|in:adult,child',
+            'passengers.*.type'                         => 'required|string|in:adult,child,driver',
             'passengers.*.discount_id'                  => 'nullable|integer|exists:discounts,id',
             'passengers.*.school_name'                  => 'nullable|string|max:255',
             'passengers.*.id_number'                    => 'nullable|string|max:255',

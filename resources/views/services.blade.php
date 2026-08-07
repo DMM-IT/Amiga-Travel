@@ -22,7 +22,7 @@
             ];
             
             // New Travel & Booking Services Cards
-            $travelServiceCards = $pageContent['travel_service_cards'] ?? [
+            $travelServiceCards = [
                 [
                     'title' => '2GO Booking',
                     'description' => 'Book premier overnight ship accommodation and fast cargo transits with 2GO. Ideal for family retreats, business logistics, and leisure trips.',
@@ -72,6 +72,7 @@
                     'title' => 'Custom Travel Arrangements',
                     'description' => 'Tailored travel packages for corporate retreats, family reunions, and large groups. We handle flight connections, hotel accommodation blocks, and group transport.',
                     'note' => 'Tailored For Groups',
+                    'image' => 'images/amiga-logo-transparent.png',
                     'button_text' => 'Learn more',
                     'link' => '/contact-us',
                     'color' => 'text-teal-700',

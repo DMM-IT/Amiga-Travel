@@ -294,7 +294,14 @@
                  origin: '',
                  destination: '',
                  departure_date: '',
-                 return_date: ''
+                 return_date: '',
+                 vehicle_category: '',
+                 vehicle_brand: '',
+                 vehicle_model: '',
+                 vehicle_plate: '',
+                 driver_first_name: '',
+                 driver_last_name: '',
+                 driver_birthday: ''
              },
              init() {
                  this.$watch('trip_type', (val) => {
@@ -429,6 +436,38 @@
                       this.errors.return_date = 'Please select a return date';
                       hasError = true;
                   }
+                  if (this.mode === 'ferry' && this.operator && this.operator.toLowerCase().includes('starlite') && this.has_vehicle) {
+                      if (this.vehicle_booking_method === 'category' && !this.selected_vehicle_rate_id) {
+                          this.errors.vehicle_category = 'Please select a category';
+                          hasError = true;
+                      }
+                      if (this.vehicle_booking_method === 'brand_model') {
+                          if (!this.selected_brand_id) {
+                              this.errors.vehicle_brand = 'Please select a brand';
+                              hasError = true;
+                          }
+                          if (!this.selected_model_id && this.availableVehicleModels.length > 0) {
+                              this.errors.vehicle_model = 'Please select a model';
+                              hasError = true;
+                          }
+                      }
+                      if (!this.vehicle_plate_number || !this.vehicle_plate_number.trim()) {
+                          this.errors.vehicle_plate = 'Plate number is required';
+                          hasError = true;
+                      }
+                      if (!this.driver_first_name || !this.driver_first_name.trim()) {
+                          this.errors.driver_first_name = 'First name is required';
+                          hasError = true;
+                      }
+                      if (!this.driver_last_name || !this.driver_last_name.trim()) {
+                          this.errors.driver_last_name = 'Last name is required';
+                          hasError = true;
+                      }
+                      if (!this.driver_birthday) {
+                          this.errors.driver_birthday = 'Birthday is required';
+                          hasError = true;
+                      }
+                  }
                   if (hasError) {
                       setTimeout(() => {
                           this.errors.operator = '';
@@ -436,6 +475,13 @@
                           this.errors.destination = '';
                           this.errors.departure_date = '';
                           this.errors.return_date = '';
+                          this.errors.vehicle_category = '';
+                          this.errors.vehicle_brand = '';
+                          this.errors.vehicle_model = '';
+                          this.errors.vehicle_plate = '';
+                          this.errors.driver_first_name = '';
+                          this.errors.driver_last_name = '';
+                          this.errors.driver_birthday = '';
                       }, 4000);
                       return;
                   }
@@ -465,6 +511,9 @@
                          if (this.selected_model_id) params.append('selected_model_id', this.selected_model_id);
                      }
                      if (this.vehicle_plate_number) params.append('vehicle_plate_number', this.vehicle_plate_number);
+                     if (this.driver_first_name) params.append('driver_first_name', this.driver_first_name);
+                     if (this.driver_middle_name) params.append('driver_middle_name', this.driver_middle_name);
+                     if (this.driver_last_name) params.append('driver_last_name', this.driver_last_name);
                      const driverFullName = [this.driver_first_name, this.driver_middle_name, this.driver_last_name].filter(Boolean).join(' ');
                      if (driverFullName) params.append('driver_name', driverFullName);
                      if (this.driver_birthday) params.append('driver_birthday', this.driver_birthday);
@@ -987,12 +1036,17 @@
                                 <div>
                                     <span class="text-xs font-semibold text-slate-700 block mb-1.5">Category *</span>
                                     <select x-model="selected_vehicle_rate_id" 
-                                            class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20">
+                                            @change="errors.vehicle_category = ''"
+                                            :class="errors.vehicle_category ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300 focus:border-[#db2777] focus:ring-[#db2777]/20'"
+                                            class="w-full h-9 px-3 rounded-lg border bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-1">
                                         <option value="">Select category</option>
                                         <template x-for="rate in vehicleRatesList" :key="rate.id">
                                             <option :value="rate.id" x-text="rate.name"></option>
                                         </template>
                                     </select>
+                                    <div x-show="errors.vehicle_category" x-transition class="mt-1">
+                                        <span class="text-[10px] text-rose-500" x-text="errors.vehicle_category"></span>
+                                    </div>
                                 </div>
                             </template>
                             <template x-if="vehicle_booking_method === 'brand_model'">
@@ -1000,24 +1054,33 @@
                                     <div>
                                         <span class="text-xs font-semibold text-slate-700 block mb-1.5">Brand *</span>
                                         <select x-model="selected_brand_id" 
-                                                @change="selected_model_id = ''"
-                                                class="w-full h-9 px-2 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20">
+                                                @change="selected_model_id = ''; errors.vehicle_brand = '';"
+                                                :class="errors.vehicle_brand ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300 focus:border-[#db2777] focus:ring-[#db2777]/20'"
+                                                class="w-full h-9 px-2 rounded-lg border bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-1">
                                             <option value="">Brand</option>
                                             <template x-for="brand in vehicleBrandsList" :key="brand.id">
                                                 <option :value="brand.id" x-text="brand.name"></option>
                                             </template>
                                         </select>
+                                        <div x-show="errors.vehicle_brand" x-transition class="mt-1">
+                                            <span class="text-[10px] text-rose-500" x-text="errors.vehicle_brand"></span>
+                                        </div>
                                     </div>
                                     <div>
                                         <span class="text-xs font-semibold text-slate-700 block mb-1.5">Model *</span>
                                         <select x-model="selected_model_id" 
+                                                @change="errors.vehicle_model = ''"
                                                 :disabled="!selected_brand_id"
-                                                class="w-full h-9 px-2 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20 disabled:opacity-50">
+                                                :class="errors.vehicle_model ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300 focus:border-[#db2777] focus:ring-[#db2777]/20'"
+                                                class="w-full h-9 px-2 rounded-lg border bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-1 disabled:opacity-50">
                                             <option value="">Model</option>
                                             <template x-for="model in availableVehicleModels" :key="model.id">
                                                 <option :value="model.id" x-text="model.name"></option>
                                             </template>
                                         </select>
+                                        <div x-show="errors.vehicle_model" x-transition class="mt-1">
+                                            <span class="text-[10px] text-rose-500" x-text="errors.vehicle_model"></span>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -1028,8 +1091,13 @@
                             <span class="text-xs font-semibold text-slate-700 block mb-1.5">Plate Number *</span>
                             <input type="text" 
                                    x-model="vehicle_plate_number" 
+                                   @input="errors.vehicle_plate = ''"
                                    placeholder="e.g., ABC 1234" 
-                                   class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                                   :class="errors.vehicle_plate ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300 focus:border-[#db2777] focus:ring-[#db2777]/20'"
+                                   class="w-full h-9 px-3 rounded-lg border bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-1" />
+                            <div x-show="errors.vehicle_plate" x-transition class="mt-1">
+                                <span class="text-[10px] text-rose-500" x-text="errors.vehicle_plate"></span>
+                            </div>
                         </div>
 
                         <!-- Col 4: Cargo Rate -->
@@ -1049,8 +1117,13 @@
                                 <span class="text-[10px] font-medium text-slate-500 block mb-1">First Name <span class="text-rose-500">*</span></span>
                                 <input type="text"
                                        x-model="driver_first_name"
+                                       @input="errors.driver_first_name = ''"
                                        placeholder="e.g., Juan"
-                                       class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                                       :class="errors.driver_first_name ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300 focus:border-[#db2777] focus:ring-[#db2777]/20'"
+                                       class="w-full h-9 px-3 rounded-lg border bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-1" />
+                                <div x-show="errors.driver_first_name" x-transition class="mt-1">
+                                    <span class="text-[10px] text-rose-500" x-text="errors.driver_first_name"></span>
+                                </div>
                             </div>
                             <div>
                                 <span class="text-[10px] font-medium text-slate-500 block mb-1">Middle Name <span class="text-slate-400">(optional)</span></span>
@@ -1063,8 +1136,13 @@
                                 <span class="text-[10px] font-medium text-slate-500 block mb-1">Last Name <span class="text-rose-500">*</span></span>
                                 <input type="text"
                                        x-model="driver_last_name"
+                                       @input="errors.driver_last_name = ''"
                                        placeholder="e.g., Cruz"
-                                       class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                                       :class="errors.driver_last_name ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300 focus:border-[#db2777] focus:ring-[#db2777]/20'"
+                                       class="w-full h-9 px-3 rounded-lg border bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-1" />
+                                <div x-show="errors.driver_last_name" x-transition class="mt-1">
+                                    <span class="text-[10px] text-rose-500" x-text="errors.driver_last_name"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1072,7 +1150,12 @@
                         <span class="text-xs font-semibold text-slate-700 block mb-1.5">Driver birthday</span>
                         <input type="date"
                                x-model="driver_birthday"
-                               class="w-full h-9 px-3 rounded-lg border border-slate-300 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:border-[#db2777] focus:outline-none focus:ring-1 focus:ring-[#db2777]/20" />
+                               @change="errors.driver_birthday = ''"
+                               :class="errors.driver_birthday ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300 focus:border-[#db2777] focus:ring-[#db2777]/20'"
+                               class="w-full h-9 px-3 rounded-lg border bg-slate-50 text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-1" />
+                        <div x-show="errors.driver_birthday" x-transition class="mt-1">
+                            <span class="text-[10px] text-rose-500" x-text="errors.driver_birthday"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1530,6 +1613,138 @@
             </a>
         @endforeach
     </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 pb-12 amiga-animate-on-scroll amiga-transition relative ws-sbtn-container">
+    @if(auth('admin')->check()) <button type="button" @click.prevent="$dispatch('open-editor', { section: 'suggested_trips' })" class="ws-sbtn absolute top-0 right-2 z-20"></button> @endif
+    @php
+        $suggestedTrips = data_get($pageContent, 'suggested_trips', []);
+    @endphp
+
+    @if(!empty($suggestedTrips))
+        <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl mb-16">
+            <div class="max-w-3xl mx-auto text-center mb-8">
+                <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'suggested_trips_title') ? ucfirst(data_get($pageContent, 'suggested_trips_title')) : 'Suggested Trips' }}</p>
+                <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'suggested_trips_title') ?? 'Suggested Trips' }}</h2>
+                <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+                    {{ data_get($pageContent, 'suggested_trips_description') ?? 'Explore these suggested trips.' }}
+                </p>
+            </div>
+            <div x-data="{
+                    selectedCard: null,
+                    openModal(card) { this.selectedCard = card; },
+                    closeModal() { this.selectedCard = null; }
+                }"
+                class="w-full"
+            >
+                @if(count($suggestedTrips) > 3)
+                    <div class="pause-on-hover flex overflow-hidden gap-6 w-full py-4 -my-4 px-4 -mx-4">
+                        <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max">
+                            @foreach($suggestedTrips as $card)
+                                @php
+                                    $rawCardImage = data_get($card, 'image');
+                                    $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                    $cardTitle = data_get($card, 'title', 'Trip');
+                                    $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                    $cardDetail = data_get($card, 'detail', '');
+                                    $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                @endphp
+                                <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                    <div class="aspect-[4/3] overflow-hidden">
+                                        <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                    </div>
+                                    <div class="p-6 flex flex-col gap-4 flex-grow">
+                                        <div>
+                                            <h3 class="text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                        </div>
+                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                        <div class="mt-auto pt-4">
+                                            <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 group-hover:bg-green-800 min-h-[36px] min-w-[100px]">
+                                                {{ $cardButtonText ?: 'View Trip' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                        <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max" aria-hidden="true">
+                            @foreach($suggestedTrips as $card)
+                                @php
+                                    $rawCardImage = data_get($card, 'image');
+                                    $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                    $cardTitle = data_get($card, 'title', 'Trip');
+                                    $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                    $cardDetail = data_get($card, 'detail', '');
+                                    $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                @endphp
+                                <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                    <div class="aspect-[4/3] overflow-hidden">
+                                        <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                    </div>
+                                    <div class="p-6 flex flex-col gap-4 flex-grow">
+                                        <div>
+                                            <h3 class="text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                        </div>
+                                        <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                        <div class="mt-auto pt-4">
+                                            <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 group-hover:bg-green-800 min-h-[36px] min-w-[100px]">
+                                                {{ $cardButtonText ?: 'View Trip' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach($suggestedTrips as $card)
+                            @php
+                                $rawCardImage = data_get($card, 'image');
+                                $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
+                                $cardTitle = data_get($card, 'title', 'Trip');
+                                $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                $cardDetail = data_get($card, 'detail', '');
+                                $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                            @endphp
+                            <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                <div class="aspect-[4/3] overflow-hidden">
+                                    <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+                                </div>
+                                <div class="p-6 flex flex-col gap-4 flex-grow">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-slate-900">{{ $cardTitle }}</h3>
+                                    </div>
+                                    <p class="text-sm text-slate-600 leading-relaxed">{{ $cardDescription }}</p>
+                                    <div class="mt-auto pt-4">
+                                        <span class="inline-flex items-center justify-center rounded-full bg-[#216417] px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 group-hover:bg-green-800 min-h-[36px] min-w-[100px]">
+                                            {{ $cardButtonText ?: 'View Trip' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </button>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div x-show="selectedCard" x-cloak x-transition.opacity class="fixed inset-0 z-50 bg-slate-900/70 flex items-center justify-center p-4">
+                    <div class="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+                        <button type="button" @click="closeModal()" class="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-slate-700 hover:bg-white">
+                            <span class="sr-only">Close</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10 3.636 5.05a1 1 0 011.414-1.414L10 8.586z" clip-rule="evenodd"/></svg>
+                        </button>
+                        <img x-bind:src="selectedCard?.image" x-bind:alt="selectedCard?.title" class="w-full max-h-80 object-cover" />
+                        <div class="p-8">
+                            <span class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#ee018d] mb-4" x-text="selectedCard?.note"></span>
+                            <h2 class="text-2xl font-bold text-slate-900 mb-3" x-text="selectedCard?.title"></h2>
+                            <p class="text-sm text-slate-500 mb-4" x-text="selectedCard?.description"></p>
+                            <p class="text-sm text-slate-600 leading-relaxed" x-text="selectedCard?.detail"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 </div>
 

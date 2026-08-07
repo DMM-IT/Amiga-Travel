@@ -110,6 +110,9 @@ class TourResource extends Resource
                                 Forms\Components\Toggle::make('is_active')
                                     ->label('Active')
                                     ->default(true),
+                                Forms\Components\Toggle::make('is_international')
+                                    ->label('International Package')
+                                    ->default(false),
                             ]),
                         Forms\Components\Tabs\Tab::make('Duration & Itinerary')
                             ->schema([

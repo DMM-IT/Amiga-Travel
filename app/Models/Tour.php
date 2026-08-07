@@ -13,14 +13,14 @@ class Tour extends Model
         'duration_days', 'price_per_pax', 'airline', 'origin',
         'destination', 'mode', 'hotel', 'inclusions', 'exclusions',
         'highlights', 'day1', 'day2', 'day3', 'day4', 'day5', 'day6',
-        'meals', 'hand_carry', 'check_in_baggage', 'tour_guide',
-        'travel_insurance', 'remarks', 'image', 'is_active', 'sort_order',
+        'travel_insurance', 'remarks', 'image', 'is_active', 'sort_order', 'is_international',
     ];
 
     protected $casts = [
         'duration_days' => 'integer',
         'price_per_pax' => 'decimal:2',
         'is_active' => 'boolean',
+        'is_international' => 'boolean',
         'sort_order' => 'integer',
     ];
 

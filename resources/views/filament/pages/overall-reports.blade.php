@@ -3,8 +3,12 @@
 
     {{-- ═══ Header: Period Selector + Custom Dates + Export ═══ --}}
     <div class="rounded-[28px] border border-slate-800 bg-slate-950 p-4">
-        <div class="flex items-center gap-3 justify-between" style="flex-wrap: nowrap;">
-            <div class="flex-1 min-w-0 inline-flex items-center gap-2 overflow-x-auto rounded-full px-2 py-1"
+        <div class="flex items-center justify-between gap-4">
+            {{-- Left invisible spacer to balance right buttons --}}
+            <div class="hidden lg:block lg:flex-1"></div>
+
+            {{-- Center Pill --}}
+            <div class="flex-none inline-flex items-center gap-2 overflow-x-auto rounded-full px-2 py-1 max-w-full"
                  style="white-space: nowrap; background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.24);">
                 @foreach(['today' => 'Today', 'week' => 'This Week', 'month' => 'This Month', 'year' => 'This Year', 'all' => 'All Time', 'custom' => 'Custom'] as $value => $label)
                     <button
@@ -21,7 +25,7 @@
                 @endforeach
             </div>
 
-            <div class="flex flex-none items-center gap-4 min-w-max" style="flex-shrink: 0;">
+            <div class="flex items-center gap-4 lg:flex-1 lg:justify-end flex-shrink-0">
                 <a href="{{ route('bookings.export.pdf') }}" class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition"
                    style="background: #334155; border: 1px solid #475569; color: #cbd5e1;">
                     <x-heroicon-m-arrow-down-tray class="h-4 w-4" />

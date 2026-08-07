@@ -69,6 +69,17 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('images/amiga-logo-transparent.png'))
             ->colors([
                 'primary' => Color::Amber,
+                'danger' => Color::Rose,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
+                'purple' => Color::Purple,
+                'indigo' => Color::Indigo,
+                'fuchsia' => Color::Fuchsia,
+                'teal' => Color::Teal,
+                'cyan' => Color::Cyan,
+                'lime' => Color::Lime,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

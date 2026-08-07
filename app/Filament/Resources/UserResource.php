@@ -84,13 +84,29 @@ class UserResource extends Resource
                     ->same('password')
                     ->dehydrated(false)
                     ->required(fn (?object $livewire): bool => $livewire instanceof Pages\CreateUser),
+                TextInput::make('role')
+                    ->label('Role')
+                    ->required()
+                    ->placeholder('e.g. Admin, Staff, Finance, User')
+                    ->reactive()
+                    ->afterStateUpdated(function (\Filament\Forms\Set $set, $state) {
+                        $normalized = strtolower(trim($state));
+                        if (in_array($normalized, ['admin', 'administrator'])) {
+                            $set('is_admin', true);
+                            $set('is_staff', true);
+                        } elseif ($normalized === 'user') {
+                            $set('is_admin', false);
+                            $set('is_staff', false);
+                        } else {
+                            // Any custom role implies staff access so they can log in
+                            $set('is_admin', false);
+                            $set('is_staff', true);
+                        }
+                    }),
                 Hidden::make('is_staff')
                     ->default(true),
-                Toggle::make('is_admin')
-                    ->label('Administrator account')
-                    ->default(false)
-                    ->helperText('Administrator accounts bypass permission checks and can access every feature.')
-                    ->reactive(),
+                Hidden::make('is_admin')
+                    ->default(false),
                 Placeholder::make('admin_permission_note')
                     ->content('Administrators have access to every feature.')
                     ->visible(fn (Get $get): bool => (bool) $get('is_admin')), 
@@ -139,9 +155,25 @@ class UserResource extends Resource
                 TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
-                BooleanColumn::make('is_staff')
-                    ->label('Staff')
-                    ->sortable(),
+                TextColumn::make('role')
+                    ->label('Role')
+                    ->getStateUsing(function ($record) {
+                        if ($record->role) return ucfirst($record->role);
+                        if ($record->is_admin) return 'Admin';
+                        if ($record->is_staff) return 'Staff';
+                        return 'User';
+                    })
+                    ->badge()
+                    ->color(function (string $state): string {
+                        $colors = ['primary', 'warning', 'info', 'purple', 'indigo', 'fuchsia', 'teal', 'cyan', 'lime'];
+                        $stateLower = strtolower($state);
+                        if ($stateLower === 'admin') return 'danger';
+                        if ($stateLower === 'staff') return 'success';
+                        if ($stateLower === 'user') return 'gray';
+                        
+                        $index = hexdec(substr(md5($stateLower), 0, 8)) % count($colors);
+                        return $colors[$index];
+                    }),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),

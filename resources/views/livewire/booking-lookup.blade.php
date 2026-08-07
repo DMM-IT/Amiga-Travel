@@ -423,8 +423,18 @@
                                                     <span>-₱{{ number_format($refundBreakdown['surcharge_amount'], 2) }}</span>
                                                 </div>
                                                 <div class="flex justify-between">
-                                                    <span>Non-Refundable Fees:</span>
+                                                    <span class="font-semibold text-slate-800">Non-Refundable Fees</span>
                                                     <span>-₱{{ number_format($refundBreakdown['non_refundable_fees'], 2) }}</span>
+                                                </div>
+                                                <div class="pl-4 space-y-1 text-xs text-amber-800/80">
+                                                    <div class="flex justify-between">
+                                                        <span>Web Admin Fee</span>
+                                                        <span>₱{{ number_format($refundBreakdown['web_admin_fee'], 2) }}</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span>Transaction Fee</span>
+                                                        <span>₱{{ number_format($refundBreakdown['transaction_fee'], 2) }}</span>
+                                                    </div>
                                                 </div>
                                                 <div class="flex justify-between pt-1 mt-1 border-t border-amber-200/50 font-bold text-base">
                                                     <span>Total Refundable:</span>
@@ -557,14 +567,6 @@
                                                                             <p class="mt-1 text-xs text-slate-500">{{ $sch->ferryRoute->operator ?? 'Operator' }}</p>
                                                                             <p class="mt-1 text-xs text-slate-600 font-medium">{{ $sch->ferryRoute->origin ?? '' }} &rarr; {{ $sch->ferryRoute->destination ?? '' }}</p>
                                                                         </div>
-                                                                        <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                                                            <span class="text-xs text-slate-500">Base Fare</span>
-                                                                            @if($booking->getMode() === 'airline')
-                                                                                <span class="text-sm font-bold text-blue-600">Included in Class</span>
-                                                                            @else
-                                                                                <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
-                                                                            @endif
-                                                                        </div>
                                                                     </div>
                                                                 @endforeach
                                                             </div>
@@ -610,8 +612,8 @@
                                                                     @endif
                                                                 </div>
                                                                 <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                                                    <span class="text-xs text-slate-500">Price per passenger</span>
-                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format($acc->price, 2) }}</span>
+                                                                    <span class="text-xs text-slate-500">Total per person</span>
+                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format(($rebooking_dep_schedule_price ?? 0) + $acc->price, 2) }}</span>
                                                                 </div>
                                                             </div>
                                                         @endforeach
@@ -662,14 +664,6 @@
                                                                             <p class="mt-1 text-xs text-slate-500">{{ $sch->ferryRoute->operator ?? 'Operator' }}</p>
                                                                             <p class="mt-1 text-xs text-slate-600 font-medium">{{ $sch->ferryRoute->origin ?? '' }} &rarr; {{ $sch->ferryRoute->destination ?? '' }}</p>
                                                                         </div>
-                                                                        <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                                                            <span class="text-xs text-slate-500">Base Fare</span>
-                                                                            @if($booking->getMode() === 'airline')
-                                                                                <span class="text-sm font-bold text-blue-600">Included in Class</span>
-                                                                            @else
-                                                                                <span class="text-sm font-bold text-blue-600">₱{{ number_format($sch->price, 2) }}</span>
-                                                                            @endif
-                                                                        </div>
                                                                     </div>
                                                                 @endforeach
                                                             </div>
@@ -709,8 +703,8 @@
                                                                     @endif
                                                                 </div>
                                                                 <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                                                    <span class="text-xs text-slate-500">Price per passenger</span>
-                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format($acc->price, 2) }}</span>
+                                                                    <span class="text-xs text-slate-500">Total per person</span>
+                                                                    <span class="text-sm font-bold text-blue-600">₱{{ number_format(($rebooking_ret_schedule_price ?? 0) + $acc->price, 2) }}</span>
                                                                 </div>
                                                             </div>
                                                         @endforeach
@@ -761,7 +755,13 @@
                                                     <div class="space-y-3 text-sm">
                                                         <div class="flex justify-between text-slate-600">
                                                             <span>Original Booking Base Fare (Before)</span>
-                                                            <span class="font-medium">₱{{ number_format($booking->getTicketBase(), 2) }}</span>
+                                                            @php
+                                                                $paxCount = $booking->passengers()->count() ?: 1;
+                                                                $origDep  = (float)($booking->schedule_price ?? 0) + (float)($booking->schedule_accommodation_price ?? 0);
+                                                                $origRet  = (float)($booking->return_schedule_price ?? 0) + (float)($booking->return_schedule_accommodation_price ?? 0);
+                                                                $displayOrigFare = ($origDep + $origRet) * $paxCount;
+                                                            @endphp
+                                                            <span class="font-medium">₱{{ number_format($displayOrigFare, 2) }}</span>
                                                         </div>
                                                         <div class="flex justify-between text-slate-900 font-semibold">
                                                             <span>New Schedule Total</span>

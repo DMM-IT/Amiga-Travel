@@ -104,8 +104,8 @@
                 </div>
                 <div x-data="{
                         selectedCard: null,
-                        openModal(card) { this.selectedCard = card; document.body.classList.add('overflow-hidden'); },
-                        closeModal() { this.selectedCard = null; document.body.classList.remove('overflow-hidden'); }
+                        openModal(card) { this.selectedCard = card; },
+                        closeModal() { this.selectedCard = null; }
                     }"
                     class="w-full"
                 >
@@ -234,38 +234,38 @@
         @endif
 
         @php
-            $suggestedTrips = data_get($pageContent, 'suggested_trips', []);
+            $awards = data_get($pageContent, 'awards', []);
         @endphp
 
-        @if(!empty($suggestedTrips))
+        @if(!empty($awards))
             <div class="bg-white/85 backdrop-blur-md rounded-[2rem] p-8 shadow-xl mb-16">
                 <div class="max-w-3xl mx-auto text-center mb-8">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'suggested_trips_title') ? ucfirst(data_get($pageContent, 'suggested_trips_title')) : 'Suggested Trips' }}</p>
-                    <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'suggested_trips_title') ?? 'Suggested Trips' }}</h2>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">{{ data_get($pageContent, 'awards_title') ? ucfirst(data_get($pageContent, 'awards_title')) : 'Awards & Recognitions' }}</p>
+                    <h2 class="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">{{ data_get($pageContent, 'awards_title') ?? 'Awards & Recognitions' }}</h2>
                     <p class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
-                        {{ data_get($pageContent, 'suggested_trips_description') ?? 'Explore these suggested trips.' }}
+                        {{ data_get($pageContent, 'awards_description') ?? 'We take pride in our service excellence and recognitions.' }}
                     </p>
                 </div>
                 <div x-data="{
                         selectedCard: null,
-                        openModal(card) { this.selectedCard = card; document.body.classList.add('overflow-hidden'); },
-                        closeModal() { this.selectedCard = null; document.body.classList.remove('overflow-hidden'); }
+                        openModal(card) { this.selectedCard = card; },
+                        closeModal() { this.selectedCard = null; }
                     }"
                     class="w-full"
                 >
-                    @if(count($suggestedTrips) > 3)
+                    @if(count($awards) > 3)
                         <div class="pause-on-hover flex overflow-hidden gap-6 w-full py-4 -my-4 px-4 -mx-4">
                             <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max">
-                                @foreach($suggestedTrips as $card)
+                                @foreach($awards as $card)
                                     @php
                                         $rawCardImage = data_get($card, 'image');
                                         $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
-                                        $cardTitle = data_get($card, 'title', 'Trip');
-                                        $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                        $cardTitle = data_get($card, 'title', 'Award');
+                                        $cardDescription = data_get($card, 'description', '');
                                         $cardDetail = data_get($card, 'detail', '');
-                                        $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                        $cardButtonText = data_get($card, 'button_text', 'View Award');
                                     @endphp
-                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Award" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
                                         <div class="aspect-[4/3] overflow-hidden">
                                             <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
                                         </div>
@@ -284,16 +284,16 @@
                                 @endforeach
                             </div>
                             <div class="flex flex-nowrap gap-6 animate-infinite-scroll min-w-max" aria-hidden="true">
-                                @foreach($suggestedTrips as $card)
+                                @foreach($awards as $card)
                                     @php
                                         $rawCardImage = data_get($card, 'image');
                                         $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
-                                        $cardTitle = data_get($card, 'title', 'Trip');
-                                        $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                        $cardTitle = data_get($card, 'title', 'Award');
+                                        $cardDescription = data_get($card, 'description', '');
                                         $cardDetail = data_get($card, 'detail', '');
-                                        $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                        $cardButtonText = data_get($card, 'button_text', 'View Award');
                                     @endphp
-                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                    <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Award" })' class="w-[320px] shrink-0 group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
                                         <div class="aspect-[4/3] overflow-hidden">
                                             <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
                                         </div>
@@ -314,16 +314,16 @@
                         </div>
                     @else
                         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            @foreach($suggestedTrips as $card)
+                            @foreach($awards as $card)
                                 @php
                                     $rawCardImage = data_get($card, 'image');
                                     $cardImage = $rawCardImage ? storage_asset_path($rawCardImage) : 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80';
-                                    $cardTitle = data_get($card, 'title', 'Trip');
-                                    $cardDescription = data_get($card, 'description', 'Discover a wonderful trip.');
+                                    $cardTitle = data_get($card, 'title', 'Award');
+                                    $cardDescription = data_get($card, 'description', '');
                                     $cardDetail = data_get($card, 'detail', '');
-                                    $cardButtonText = data_get($card, 'button_text', 'View Trip');
+                                    $cardButtonText = data_get($card, 'button_text', 'View Award');
                                 @endphp
-                                <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Suggested Trip" })' class="group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
+                                <button type="button" @click='openModal({ title: @json($cardTitle), description: @json($cardDescription), detail: @json($cardDetail), image: @json($cardImage), note: "Award" })' class="group flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-lg text-left">
                                     <div class="aspect-[4/3] overflow-hidden">
                                         <img src="{{ $cardImage }}" alt="{{ $cardTitle }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
                                     </div>
@@ -388,6 +388,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- Call to Action -->
         <div class="text-center amiga-animate-on-scroll amiga-transition">

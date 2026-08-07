@@ -13,77 +13,25 @@
             </p>
 
         @php
-            $tourPackages = $pageContent['tour_packages'] ?? [
-                'domestic' => [
-                    [
-                        'image' => 'https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?auto=format&fit=crop&w=600&q=80',
-                        'alt' => 'El Nido',
-                        'label' => 'Best Seller',
-                        'title' => 'El Nido Adventure',
-                        'subtitle' => '3 Days & 2 Nights · Inclusions: Flight + Hotel + Island Tour',
-                        'description' => 'Discover limestone cliffs, crystal clear lagoons, and pristine beaches of Bacuit Bay. Includes a guided Island Tour A.',
-                        'price' => '₱18,499',
-                        'button_text' => 'Book Now',
-                        'button_link' => url('/book/new'),
-                    ],
-                    [
-                        'image' => 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
-                        'alt' => 'Boracay',
-                        'label' => 'Popular',
-                        'title' => 'Boracay Island Escape',
-                        'subtitle' => '3 Days & 2 Nights · Inclusions: Flight + Hotel + Transfers',
-                        'description' => 'Relax on the world-famous white sand beach. Enjoy sunset paraw sailing, vibrant island nightlife, and local water sports.',
-                        'price' => '₱7,499',
-                        'button_text' => 'Book Now',
-                        'button_link' => url('/book/new'),
-                    ],
-                    [
-                        'image' => 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80',
-                        'alt' => 'Siargao',
-                        'label' => 'Trending',
-                        'title' => 'Siargao Surf & Island Tour',
-                        'subtitle' => '4 Days & 3 Nights · Inclusions: Hotel + Island Hopping + Surf Lesson',
-                        'description' => 'Discover the surfing capital. Tour Guyam, Daku, and Naked island, followed by a professional beginner surf lesson at Cloud 9.',
-                        'price' => '₱9,299',
-                        'button_text' => 'Book Now',
-                        'button_link' => url('/book/new'),
-                    ],
-                ],
-                'international' => [
-                    [
-                        'image' => 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=600&q=80',
-                        'alt' => 'Bangkok',
-                        'label' => 'Fly to Bangkok',
-                        'title' => 'Bangkok & Pattaya Highlights',
-                        'subtitle' => '4 Days & 3 Nights · Inclusions: Flight + 4★ Hotel + City Tour',
-                        'description' => 'Experience majestic Buddhist temples, vibrant street food markets, and the beach resorts of Pattaya. Includes Grand Palace tour.',
-                        'price' => '₱22,999',
-                        'button_text' => 'Book Now',
-                        'button_link' => url('/book/new'),
-                    ],
-                    [
-                        'image' => 'https://images.unsplash.com/photo-1538669715516-b2a59a7ef249?auto=format&fit=crop&w=600&q=80',
-                        'alt' => 'Seoul',
-                        'label' => 'K-Culture Tour',
-                        'title' => 'Seoul & Nami Island Experience',
-                        'subtitle' => '5 Days & 4 Nights · Inclusions: Flight + Hotel + Visa Assist',
-                        'description' => 'Explore Gyeongbokgung Palace in traditional Hanbok clothing. Cruise to scenic Nami Island and shop in Myeongdong district.',
-                        'price' => '₱24,999',
-                        'button_text' => 'Book Now',
-                        'button_link' => url('/book/new'),
-                    ],
-                    [
-                        'image' => 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80',
-                        'alt' => 'Kyoto',
-                        'label' => 'Cherry Blossom',
-                        'title' => 'Tokyo, Kyoto & Osaka Classic',
-                        'subtitle' => '6 Days & 5 Nights · Inclusions: Flight + Bullet Train + Hotel',
-                        'description' => 'Witness the futuristic Tokyo streets, take the Shinkansen bullet train to historic Kyoto shrines, and enjoy street food in Dotonbori, Osaka.',
-                        'price' => '₱38,999',
-                        'button_text' => 'Book Now',
-                        'button_link' => url('/book/new'),
-                    ],
-                ],
+            $tours = \App\Models\Tour::where('is_active', true)->ordered()->get();
+            $formatTour = function($tour) {
+                return [
+                    'id' => $tour->id,
+                    'image' => $tour->image,
+                    'alt' => $tour->tour_name,
+                    'label' => $tour->promo,
+                    'title' => $tour->tour_name,
+                    'subtitle' => $tour->duration . ' · ' . $tour->destination,
+                    'description' => $tour->highlights ?: $tour->remarks,
+                    'price' => '₱' . number_format($tour->price_per_pax, 0),
+                    'button_text' => 'View Details',
+                    'button_link' => route('tours.show', $tour->id),
+                ];
+            };
+            
+            $tourPackages = [
+                'domestic' => $tours->where('is_international', false)->map($formatTour)->toArray(),
+                'international' => $tours->where('is_international', true)->map($formatTour)->toArray(),
             ];
             $supportedDestinations = $pageContent['supported_destinations'] ?? [
                 [

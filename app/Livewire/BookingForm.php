@@ -1156,7 +1156,8 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        if (in_array($propertyName, ['has_vehicle', 'selected_vehicle_rate_id', 'vehicle_type', 'vehicle_plate_number', 'vehicle_price'], true)) {
+        if (in_array($propertyName, ['has_vehicle', 'selected_vehicle_rate_id', 'vehicle_type', 'vehicle_plate_number', 'vehicle_price', 'driver_first_name', 'driver_middle_name', 'driver_last_name', 'driver_birthday'], true)) {
+            $this->syncPassengerEntries();
             $this->saveDraft();
 
             return;
@@ -1324,13 +1325,37 @@ public function selectedSchedule(): ?array
     {
         $existingByType = collect($this->passengers)->groupBy('type');
 
+        $driverCount = ($this->operator === 'Starlite' && $this->has_vehicle) ? 1 : 0;
+        $adultCount = max(0, $this->adults - $driverCount);
+
         $rebuilt = [];
 
-        foreach (['adult' => $this->adults, 'child' => $this->children + $this->infants] as $type => $count) {
-            $existing = $existingByType->get($type, collect())->values();
+        $types = [];
+        if ($driverCount > 0) {
+            $types['driver'] = $driverCount;
+        }
+        if ($adultCount > 0) {
+            $types['adult'] = $adultCount;
+        }
+        if ($this->children + $this->infants > 0) {
+            $types['child'] = $this->children + $this->infants;
+        }
 
+        // Helper to grab existing from either driver or adult if they toggle has_vehicle
+        $getExisting = function($t, $index) use ($existingByType) {
+            $pool = $existingByType->get($t, collect())->values();
+            if ($pool->has($index)) return $pool->get($index);
+            // Fallback for switching between adult and driver
+            if ($t === 'driver') return $existingByType->get('adult', collect())->values()->get(0);
+            if ($t === 'adult' && $index === 0) return $existingByType->get('driver', collect())->values()->get(0);
+            return null;
+        };
+
+        foreach ($types as $type => $count) {
             for ($i = 0; $i < $count; $i++) {
-                $passenger = $existing->get($i, [
+                $existing = $getExisting($type, $i) ?? [];
+                
+                $passenger = array_merge([
                     'type' => $type,
                     'name' => '',
                     'first_name' => '',
@@ -1339,7 +1364,14 @@ public function selectedSchedule(): ?array
                     'discount_id' => null,
                     'use_promo' => false,
                     'promo_cleared_discount' => false,
-                ]);
+                ], $existing);
+
+                if ($type === 'driver') {
+                    $passenger['first_name'] = $this->driver_first_name ?? '';
+                    $passenger['middle_name'] = $this->driver_middle_name ?? '';
+                    $passenger['last_name'] = $this->driver_last_name ?? '';
+                    $passenger['birthdate'] = $this->driver_birthday ?? '';
+                }
 
                 $nameParts = $this->passengerNameParts($passenger);
 
@@ -1357,6 +1389,7 @@ public function selectedSchedule(): ?array
         }
 
         $this->passengers = $rebuilt;
+        $this->syncFullPassengerNames();
     }
 
     protected function passengerNameParts(array $passenger): array
@@ -1638,13 +1671,14 @@ public function selectedSchedule(): ?array
             ]);
         }
 
-        $lockKey = 'booking_submit_lock_' . session()->getId();
-        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 10);
+        $lockKey = 'booking_submit_lock_' . $this->getId();
+        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 60);
 
         if (! $lock->get()) {
             return; // Silently ignore duplicate clicks while processing
         }
 
+        $success = false;
         try {
             $this->isSubmittingBooking = true;
             $transaction = $this->processBookingInternal();
@@ -1655,6 +1689,7 @@ public function selectedSchedule(): ?array
                 ]);
             }
             $this->isSubmittingBooking = false;
+            $success = true;
             $this->redirect(route('payment.show', $transaction), navigate: false);
             return null;
         } catch (ValidationException $e) {
@@ -1672,7 +1707,9 @@ public function selectedSchedule(): ?array
                 'step' => 'Booking failed to save. Please review and try again. Error: ' . $e->getMessage(),
             ]);
         } finally {
-            $lock->release();
+            if (! $success) {
+                $lock->release();
+            }
         }
     }
 
@@ -1697,13 +1734,14 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        $lockKey = 'booking_submit_lock_' . session()->getId();
-        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 10);
+        $lockKey = 'booking_submit_lock_' . $this->getId();
+        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 60);
 
         if (! $lock->get()) {
             return; // Silently ignore duplicate clicks while processing
         }
 
+        $success = false;
         try {
             $this->isSubmittingBooking = true;
             $transaction = $this->processBookingInternal();
@@ -1714,8 +1752,13 @@ public function selectedSchedule(): ?array
                 ]);
             }
             $this->isSubmittingBooking = false;
+            $success = true;
             $this->redirect(route('payment.show', $transaction), navigate: false);
             return null;
+        } catch (ValidationException $e) {
+            $this->isSubmittingBooking = false;
+            $this->dispatch('validation-error');
+            throw $e;
         } catch (\Throwable $e) {
             Log::error('confirmTermsAndContinue fatal', [
                 'error' => $e->getMessage(),
@@ -1727,7 +1770,9 @@ public function selectedSchedule(): ?array
                 'step' => 'Booking failed to save: ' . $e->getMessage(),
             ]);
         } finally {
-            $lock->release();
+            if (! $success) {
+                $lock->release();
+            }
         }
     }
 
@@ -2028,13 +2073,14 @@ public function selectedSchedule(): ?array
             return;
         }
 
-        $lockKey = 'booking_submit_lock_' . session()->getId();
-        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 10);
+        $lockKey = 'booking_submit_lock_' . $this->getId();
+        $lock = \Illuminate\Support\Facades\Cache::lock($lockKey, 60);
 
         if (! $lock->get()) {
             return; // Silently ignore duplicate clicks while processing
         }
 
+        $success = false;
         try {
             $this->isSubmittingBooking = true;
             $transaction = $this->processBookingInternal();
@@ -2045,6 +2091,7 @@ public function selectedSchedule(): ?array
                 ]);
             }
             $this->isSubmittingBooking = false;
+            $success = true;
             $this->redirect(route('payment.show', $transaction), navigate: false);
             return null;
         } catch (ValidationException $e) {
@@ -2062,7 +2109,9 @@ public function selectedSchedule(): ?array
                 'step' => 'Booking failed to save: ' . $e->getMessage(),
             ]);
         } finally {
-            $lock->release();
+            if (! $success) {
+                $lock->release();
+            }
         }
     }
 
@@ -2245,6 +2294,10 @@ public function selectedSchedule(): ?array
             'vehicle_type' => $this->vehicleRateCatalog->isNotEmpty() ? 'nullable|string|max:255' : 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_plate_number' => 'required_if:has_vehicle,true|nullable|string|max:255',
             'vehicle_price' => 'required_if:has_vehicle,true|nullable|numeric|min:0',
+            'driver_first_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_middle_name' => 'nullable|string|max:255',
+            'driver_last_name' => 'required_if:has_vehicle,true|nullable|string|max:255',
+            'driver_birthday' => 'required_if:has_vehicle,true|nullable|date|before:today',
             'extra_baggage_weight' => 'nullable|numeric|min:0|max:100',
             ],
             2 => [
@@ -2392,6 +2445,11 @@ public function selectedSchedule(): ?array
         return 'AGT-' . now()->format('Ymd') . '-' . rand(1000, 9999);
     }
 
+    protected function getFeeMultiplier(): int
+    {
+        return max(1, count($this->passengers));
+    }
+
     public function calculateTotalPrice(): float
     {
         // If booking a prefilled package from CSV API or a tour with package_price
@@ -2406,7 +2464,7 @@ public function selectedSchedule(): ?array
                 : 0;
 
             $settings = PaymentSetting::current();
-            $multiplier = count($this->passengers) + ($this->mode === 'ferry' ? count($this->passengers) : 0);
+            $multiplier = $this->getFeeMultiplier();
             $serviceFee = ($multiplier * floatval($settings->web_admin_fee));
             // Accommodation fee: only charged if accommodation is actually selected AND has a price
             $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
@@ -2433,7 +2491,7 @@ public function selectedSchedule(): ?array
                 : 0;
 
             $settings = PaymentSetting::current();
-            $multiplier = count($this->passengers) + ($this->mode === 'ferry' ? count($this->passengers) : 0);
+            $multiplier = $this->getFeeMultiplier();
             $serviceFee = ($multiplier * floatval($settings->web_admin_fee));
             // Accommodation fee: only charged if accommodation is actually selected AND has a price
             $accommodationFee = $hotelTotal > 0 ? floatval($settings->fee_per_accommodation) : 0;
@@ -2470,6 +2528,10 @@ public function selectedSchedule(): ?array
                 return $departureFare + $returnFare;
             }
 
+            if ($passenger['type'] === 'driver') {
+                return 0; // Driver ticket is free
+            }
+
             $departureFare = $baseSchedulePrice + $scheduleAccommodationPrice_;
             $fare = $departureFare + $returnFare;
 
@@ -2496,7 +2558,11 @@ public function selectedSchedule(): ?array
             $returnTransportClassTotal = floatval($rstc->additional_price ?? $rstc->transportClass->price ?? 0);
         }
 
-        $transportClassTotal = $departureTransportClassTotal + $returnTransportClassTotal;
+        $baseTransportClassTotal = $departureTransportClassTotal + $returnTransportClassTotal;
+        $payingPassengers = collect($this->passengers)->where('type', '!=', 'driver')->count();
+        // If the system currently treats transport class as a flat fee per booking, we just zero it if no paying passengers exist.
+        // If the system treats it as per-passenger, it should ideally be multiplied, but keeping existing logic safe:
+        $transportClassTotal = $payingPassengers > 0 ? $baseTransportClassTotal : 0;
 
         $vehicleTotal = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
 
@@ -2507,8 +2573,7 @@ public function selectedSchedule(): ?array
         $settings = PaymentSetting::current();
 
         // Service fee: charged per ticket + transport class
-        $payingTravelers = count($this->passengers);
-        $multiplier = $payingTravelers + ($this->mode === 'ferry' ? $payingTravelers : 0);
+        $multiplier = $this->getFeeMultiplier();
         $serviceFee = ($multiplier * floatval($settings->web_admin_fee));
         
         // Accommodation fee: only charged if hotel is actually selected AND has a price
@@ -2556,6 +2621,10 @@ public function selectedSchedule(): ?array
         $totalReturnAccommodation = 0;
 
         foreach ($this->passengers as $passenger) {
+            if ($passenger['type'] === 'driver') {
+                continue; // Driver ticket and accommodation are free
+            }
+
             $depTicket = $departureTicketPrice;
             $retTicket = $returnTicketPrice;
             
@@ -2591,7 +2660,14 @@ public function selectedSchedule(): ?array
             $returnTransportClassTotal = floatval($rstc->additional_price ?? $rstc->transportClass->price ?? 0);
         }
 
-        $breakdown['transport_class'] = $departureTransportClassTotal + $returnTransportClassTotal;
+        $baseTransportClassTotal = $departureTransportClassTotal + $returnTransportClassTotal;
+        $payingPassengers = collect($this->passengers)->where('type', '!=', 'driver')->count();
+        $breakdown['transport_class'] = 0; // Combined into tickets below
+        
+        if ($payingPassengers > 0) {
+            $breakdown['departure_ticket'] += $departureTransportClassTotal;
+            $breakdown['return_ticket'] += $returnTransportClassTotal;
+        }
 
         // Vehicle (per booking, not per person)
         $breakdown['vehicle'] = $this->has_vehicle ? floatval($this->vehicle_price ?? 0) : 0;
@@ -2605,7 +2681,7 @@ public function selectedSchedule(): ?array
         $breakdown['extra_baggage'] = $this->getExtraBaggageTotalPrice();
 
         // Fees
-        $multiplier = $passengerCount + ($this->mode === 'ferry' ? $passengerCount : 0);
+        $multiplier = $this->getFeeMultiplier();
         $breakdown['fee_per_traveler'] = $multiplier * floatval($settings->web_admin_fee);
         
         // Accommodation fee: only charged if hotel is actually selected AND has a price

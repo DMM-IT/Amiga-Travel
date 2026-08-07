@@ -23,11 +23,8 @@ class WebsiteSetting extends Model
         'home' => 'Home',
         'about' => 'About',
         'services' => 'Services',
-        'tour_package' => 'Tour Package',
-        'schedules' => 'Schedules',
         'contact_us' => 'Contact Us',
         'faqs' => 'FAQs',
-        'download' => 'Download',
     ];
 
     const BOOKING_CARD_NAMES = [

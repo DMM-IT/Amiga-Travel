@@ -473,17 +473,24 @@ class BookingLookup extends Component
 
     public function selectRebookingDepartureAccommodation(string $accId, float $price): void
     {
-        if ($this->booking && $this->booking->getMode() === 'airline') {
-            $passengerCount = max(1, $this->booking->passengers()->count());
-            $originalBasePricePerPax = $this->booking->getTicketBase() / $passengerCount;
-            
-            // The $price coming in is already marked up by 1.5 for airlines.
-            // We need to divide by 1.5 to get the raw base price.
-            $unmarkedPrice = $price / 1.5;
-            $newBasePricePerPax = ($this->rebooking_dep_schedule_price ?? 0) + $unmarkedPrice;
-            
-            if ($newBasePricePerPax > $originalBasePricePerPax) {
-                $this->feedback = "Airlines do not allow selecting a ticket with a higher base price than your original ticket.";
+        $passengerCount = max(1, $this->booking->passengers()->count());
+        $mode = $this->booking ? $this->booking->getMode() : 'ferry';
+
+        if ($mode === 'airline') {
+            // For airlines, the displayed price is already (schedule + class) * 1.5 markup.
+            // Divide by 1.5 to get the comparable base.
+            $newPerPax = $price / 1.5;
+            $originalPerPax = ($this->booking->schedule_price ?? 0) + ($this->booking->schedule_accommodation_price ?? 0);
+            if ($newPerPax < $originalPerPax) {
+                $this->feedback = "You cannot select a lower class than your original booking. Please select an equal or higher class.";
+                return;
+            }
+        } else {
+            // For ferries, price = schedule_price + accommodation_price per pax (combined in UI).
+            $newPerPax = ($this->rebooking_dep_schedule_price ?? 0) + $price;
+            $originalPerPax = ($this->booking->schedule_price ?? 0) + ($this->booking->schedule_accommodation_price ?? 0);
+            if ($newPerPax < $originalPerPax) {
+                $this->feedback = "You cannot rebook to a lower class than your original booking. Please select an equal or higher class.";
                 return;
             }
         }
@@ -508,17 +515,21 @@ class BookingLookup extends Component
 
     public function selectRebookingReturnAccommodation(string $accId, float $price): void
     {
-        if ($this->booking && $this->booking->getMode() === 'airline') {
-            $passengerCount = max(1, $this->booking->passengers()->count());
-            $originalBasePricePerPax = $this->booking->getTicketBase() / $passengerCount;
-            
-            // The $price coming in is already marked up by 1.5 for airlines.
-            // We need to divide by 1.5 to get the raw base price.
-            $unmarkedPrice = $price / 1.5;
-            $newBasePricePerPax = ($this->rebooking_ret_schedule_price ?? 0) + $unmarkedPrice;
-            
-            if ($newBasePricePerPax > $originalBasePricePerPax) {
-                $this->feedback = "Airlines do not allow selecting a ticket with a higher base price than your original ticket.";
+        $passengerCount = max(1, $this->booking->passengers()->count());
+        $mode = $this->booking ? $this->booking->getMode() : 'ferry';
+
+        if ($mode === 'airline') {
+            $newPerPax = $price / 1.5;
+            $originalPerPax = ($this->booking->return_schedule_price ?? 0) + ($this->booking->return_schedule_accommodation_price ?? 0);
+            if ($newPerPax < $originalPerPax) {
+                $this->feedback = "You cannot select a lower class than your original return booking. Please select an equal or higher class.";
+                return;
+            }
+        } else {
+            $newPerPax = ($this->rebooking_ret_schedule_price ?? 0) + $price;
+            $originalPerPax = ($this->booking->return_schedule_price ?? 0) + ($this->booking->return_schedule_accommodation_price ?? 0);
+            if ($newPerPax < $originalPerPax) {
+                $this->feedback = "You cannot rebook to a lower class than your original return booking. Please select an equal or higher class.";
                 return;
             }
         }
@@ -623,25 +634,38 @@ class BookingLookup extends Component
         if (!$this->booking) return;
 
         $passengerCount = $this->booking->passengers()->count() ?: 1;
+        $mode = $this->booking->getMode();
+        $isAirline = $mode === 'airline';
 
+        // ── Original per-pax fare (raw ticket + class/accommodation, no platform fees) ──
+        $origDepPerPax = (float)($this->booking->schedule_price ?? 0)
+                       + (float)($this->booking->schedule_accommodation_price ?? 0);
+        $origRetPerPax = (float)($this->booking->return_schedule_price ?? 0)
+                       + (float)($this->booking->return_schedule_accommodation_price ?? 0);
+        $originalFare  = ($origDepPerPax + $origRetPerPax) * $passengerCount;
+
+        // ── New total ──
         $newTotal = 0.0;
-        
-        $depPrice = $this->rebooking_dep_schedule_price ?? 0;
-        if (str_starts_with((string) $this->rebooking_dep_accommodation_id, 'tc_')) {
-            $depPrice += $this->rebooking_dep_accommodation_price ?? 0; // per pax
-        } else {
-            $depPrice += $this->rebooking_dep_accommodation_price ?? 0;
-        }
-        $newTotal += $depPrice * $passengerCount;
 
-        if ($this->rebooking_is_round_trip) {
-            $retPrice = $this->rebooking_ret_schedule_price ?? 0;
-            if (str_starts_with((string) $this->rebooking_ret_accommodation_id, 'tc_')) {
-                $retPrice += $this->rebooking_ret_accommodation_price ?? 0;
-            } else {
-                $retPrice += $this->rebooking_ret_accommodation_price ?? 0;
+        if ($isAirline) {
+            // For airlines the stored acc price is already (schedule + class) * 1.5.
+            // Divide by 1.5 to get the comparable base then sum.
+            $depPerPax = ($this->rebooking_dep_accommodation_price ?? 0) / 1.5;
+            $newTotal  += $depPerPax * $passengerCount;
+            if ($this->rebooking_is_round_trip) {
+                $retPerPax = ($this->rebooking_ret_accommodation_price ?? 0) / 1.5;
+                $newTotal += $retPerPax * $passengerCount;
             }
-            $newTotal += $retPrice * $passengerCount;
+        } else {
+            // Ferry: schedule price is stored separately; acc price is per pax
+            $depPerPax = ($this->rebooking_dep_schedule_price ?? 0)
+                       + ($this->rebooking_dep_accommodation_price ?? 0);
+            $newTotal += $depPerPax * $passengerCount;
+            if ($this->rebooking_is_round_trip) {
+                $retPerPax = ($this->rebooking_ret_schedule_price ?? 0)
+                           + ($this->rebooking_ret_accommodation_price ?? 0);
+                $newTotal += $retPerPax * $passengerCount;
+            }
         }
 
         if ($this->booking->has_vehicle) {
@@ -650,42 +674,28 @@ class BookingLookup extends Component
         $this->rebooking_new_total = $newTotal;
 
         $settings = \App\Models\PaymentSetting::current();
-        $mode = $this->booking->getMode();
         $isAfterDeparture = $this->booking->isAfterDeparture();
-        
-        $originalFare = $this->booking->getTicketBase(); // ticket base excludes non-refundable fees!
-        // Actually, $this->booking->total_price contains fees. Wait, earlier in BookingReschedule, originalFare was calculated by summing up the schedule prices directly.
-        // Let's use the ticket base for surcharge calculation!
-        
-        // 1. Revalidation Fee
-        $this->rebooking_revalidation_fee = (floatval($settings->revalidation_fee) * $passengerCount);
 
-        // 2. Surcharge
+        // 1. Revalidation Fee
+        $this->rebooking_revalidation_fee = floatval($settings->revalidation_fee) * $passengerCount;
+
+        // 2. Surcharge applied on the original fare base
         $surchargePct = 0;
-        if ($mode === 'airline') {
-            $surchargePct = (float) $settings->rebook_airline_before_departure_surcharge_pct;
+        if ($isAirline) {
+            $surchargePct = (float)$settings->rebook_airline_before_departure_surcharge_pct;
+        } elseif ($isAfterDeparture) {
+            $surchargePct = (float)$settings->rebook_ferry_after_departure_surcharge_pct;
         } else {
-            if ($isAfterDeparture) {
-                $surchargePct = (float) $settings->rebook_ferry_after_departure_surcharge_pct;
-            } else {
-                $surchargePct = (float) $settings->rebook_ferry_before_departure_surcharge_pct;
-            }
+            $surchargePct = (float)$settings->rebook_ferry_before_departure_surcharge_pct;
         }
         $this->rebooking_surcharge = $originalFare * ($surchargePct / 100);
 
-        // 3. Rate Diff
-        if ($newTotal < $originalFare) {
-            $this->feedback = "You cannot rebook to a ticket that is cheaper than your original booking.";
-            $this->rebooking_rate_diff = 0;
-            $this->rebooking_price_diff = 0;
-            $this->rebooking_total_to_pay = 0;
-            return;
-        }
-
-        $this->rebooking_rate_diff = max(0, $newTotal - $originalFare);
-
-        $this->rebooking_price_diff = $this->rebooking_rate_diff; // So the UI knows if there is rate diff
-        $this->rebooking_total_to_pay = $this->rebooking_surcharge + $this->rebooking_revalidation_fee + $this->rebooking_rate_diff;
+        // 3. Rate Difference (only charged if upgrading; downgrade is already blocked at selection)
+        $this->rebooking_rate_diff  = max(0, $newTotal - $originalFare);
+        $this->rebooking_price_diff = $this->rebooking_rate_diff;
+        $this->rebooking_total_to_pay = $this->rebooking_surcharge
+                                      + $this->rebooking_revalidation_fee
+                                      + $this->rebooking_rate_diff;
     }
 
 

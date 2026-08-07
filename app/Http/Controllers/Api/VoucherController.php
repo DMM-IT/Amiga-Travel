@@ -110,7 +110,7 @@ class VoucherController extends Controller
             'trip_type' => 'required|string|in:one_way,round_trip',
             'client_email' => 'required|email',
             'passengers' => 'required|array|min:1',
-            'passengers.*.type' => 'required|string|in:adult,child',
+            'passengers.*.type' => 'required|string|in:adult,child,driver',
             'passengers.*.discount_id' => 'nullable|integer|exists:discounts,id',
             'selected_transport_class_id' => 'nullable|integer|exists:transport_classes,id',
             'selected_schedule_accommodation_id' => 'nullable|integer|exists:schedule_accommodations,id',

@@ -1051,7 +1051,7 @@
                             <p class="text-black font-bold">Each traveler can have their own discount, if eligible. Name is required, discount is optional.</p>
 
                             @php
-                                $typeLabels = ['adult' => 'Adult', 'child' => 'Child'];
+                                $typeLabels = ['adult' => 'Adult', 'child' => 'Child', 'driver' => 'Driver'];
                                 $countByType = [];
                                 $availableDiscounts = $discounts->reject(function ($discount) {
                                     return str_contains(strtolower($discount->name), 'infant');
@@ -1065,7 +1065,11 @@
                                 <div wire:key="passenger-{{ $index }}" class="flex flex-col lg:flex-row gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" data-error="passengers">
                                     <div class="flex-shrink-0 lg:w-32 lg:pt-8">
                                         <div class="rounded-full bg-[#db2777] px-4 py-2 text-center text-xs uppercase tracking-wider font-bold text-white shadow-sm inline-block w-full">
-                                            {{ $typeLabels[$passenger['type']] }} {{ $countByType[$passenger['type']] }}
+                                            @if($passenger['type'] === 'driver')
+                                                {{ $typeLabels[$passenger['type']] }}
+                                            @else
+                                                {{ $typeLabels[$passenger['type']] }} {{ $countByType[$passenger['type']] }}
+                                            @endif
                                         </div>
                                     </div>
                                     
@@ -1075,14 +1079,14 @@
                                         <span class="text-slate-900 font-bold text-sm">Name</span>
                                         <div class="mt-3 grid gap-2 sm:grid-cols-3">
                                             <div>
-                                                <input type="text" wire:model.blur="passengers.{{ $index }}.first_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="First" />
+                                                <input type="text" wire:model.blur="passengers.{{ $index }}.first_name" {{ $passenger['type'] === 'driver' ? 'readonly' : '' }} class="{{ $passenger['type'] === 'driver' ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : '' }} block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="First" />
                                                 @error('passengers.' . $index . '.first_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
                                             </div>
                                             <div>
-                                                <input type="text" wire:model.blur="passengers.{{ $index }}.middle_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Middle" />
+                                                <input type="text" wire:model.blur="passengers.{{ $index }}.middle_name" {{ $passenger['type'] === 'driver' ? 'readonly' : '' }} class="{{ $passenger['type'] === 'driver' ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : '' }} block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Middle" />
                                             </div>
                                             <div>
-                                                <input type="text" wire:model.blur="passengers.{{ $index }}.last_name" class="block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Last" />
+                                                <input type="text" wire:model.blur="passengers.{{ $index }}.last_name" {{ $passenger['type'] === 'driver' ? 'readonly' : '' }} class="{{ $passenger['type'] === 'driver' ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : '' }} block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" placeholder="Last" />
                                                 @error('passengers.' . $index . '.last_name')<p class="mt-2 text-xs text-rose-600">Required</p>@enderror
                                             </div>
                                         </div>
@@ -1090,7 +1094,7 @@
 
                                     <label class="block min-w-0">
                                         <span class="text-slate-900 font-bold text-sm">Date of birth</span>
-                                        <input type="date" wire:model.blur="passengers.{{ $index }}.birthdate" class="mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
+                                        <input type="date" wire:model.blur="passengers.{{ $index }}.birthdate" {{ $passenger['type'] === 'driver' ? 'readonly' : '' }} class="{{ $passenger['type'] === 'driver' ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : '' }} mt-3 block w-full rounded-xl border border-slate-300 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all" />
                                         @error('passengers.' . $index . '.birthdate')<p class="mt-2 text-sm text-rose-600">{{ $message }}</p>@enderror
                                     </label>
 
@@ -1139,10 +1143,16 @@
                                     {{-- Discount select &mdash; hidden when promo is active for this passenger --}}
                                     @php
                                         $passengerHasPromoForDiscount = ($mode === 'airline') && ! empty($passenger['use_promo']);
+                                        $isDriver = $passenger['type'] === 'driver';
                                     @endphp
                                     <label class="block min-w-0 {{ $passengerHasPromoForDiscount ? 'opacity-40 pointer-events-none select-none' : '' }}">
                                         <span class="text-slate-900 font-bold text-sm">Discount</span>
-                                        @if($passengerHasPromoForDiscount)
+                                        @if($isDriver)
+                                            <div class="mt-3 rounded-xl border border-[#00a859] bg-[#00a859]/10 px-4 py-3 text-sm text-[#216417] font-bold flex items-center gap-2 shadow-sm">
+                                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                Driver &mdash; Free Ticket
+                                            </div>
+                                        @elseif($passengerHasPromoForDiscount)
                                             <p class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-400">No discount &mdash; promo fare applied</p>
                                         @else
                                             <select wire:model.number="passengers.{{ $index }}.discount_id" wire:change="$refresh" class="mt-3 block w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 shadow-sm focus:border-[#db2777] focus:outline-none focus:ring-2 focus:ring-[#db2777]/20 transition-all">
@@ -1488,14 +1498,14 @@
                                 {{-- Tickets --}}
                                 @if ($breakdown['departure_ticket'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
-                                        <span class="text-slate-700 font-medium">Departure Ticket ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
+                                        <span class="text-slate-700 font-medium">Departure Ticket & Class ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
                                         <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['departure_ticket'], 2) }}</span>
                                     </div>
                                 @endif
 
                                 @if ($trip_type === 'round_trip' && $breakdown['return_ticket'] > 0)
                                     <div class="flex justify-between items-center rounded-lg bg-white p-4 border border-slate-200">
-                                        <span class="text-slate-700 font-medium">Return Ticket ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
+                                        <span class="text-slate-700 font-medium">Return Ticket & Class ({{ $adults }} adult{{ $adults !== 1 ? 's' : '' }}{{ $children > 0 ? ', ' . $children . ' child' . ($children !== 1 ? 'ren' : '') : '' }})</span>
                                         <span class="text-slate-900 font-bold">&#8369;{{ number_format($breakdown['return_ticket'], 2) }}</span>
                                     </div>
                                 @endif

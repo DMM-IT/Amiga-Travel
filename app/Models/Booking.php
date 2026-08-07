@@ -382,8 +382,7 @@ class Booking extends Model
     {
         $settings       = \App\Models\PaymentSetting::current();
         $passengerCount = max(1, $this->passengers()->count());
-        $isFerry        = $this->getMode() === 'ferry';
-        $multiplier     = $passengerCount + ($isFerry ? $passengerCount : 0);
+        $multiplier     = $passengerCount;
 
         $nonRefundable  = (floatval($settings->web_admin_fee) * $multiplier)
                         + (floatval($settings->transaction_fee) * $multiplier);
@@ -418,12 +417,21 @@ class Booking extends Model
 
     public function getRefundBreakdown(bool $isWithinGracePeriod = false): array
     {
+        $settings       = \App\Models\PaymentSetting::current();
+        $passengerCount = max(1, $this->passengers()->count());
+        $multiplier     = $passengerCount;
+        $webAdminFeeTotal    = floatval($settings->web_admin_fee) * $multiplier;
+        $transactionFeeTotal = floatval($settings->transaction_fee) * $multiplier;
+        $nonRefundableFees   = $webAdminFeeTotal + $transactionFeeTotal;
+
         if ($isWithinGracePeriod) {
             return [
                 'base_ticket' => (float) $this->total_price,
                 'surcharge_pct' => 0,
                 'surcharge_amount' => 0,
                 'non_refundable_fees' => 0,
+                'web_admin_fee' => 0,
+                'transaction_fee' => 0,
                 'refundable_amount' => (float) $this->total_price,
                 'deduction_amount' => 0,
             ];
@@ -432,14 +440,18 @@ class Booking extends Model
         $mode = $this->getMode();
         $afterDepart = $this->isAfterDeparture();
         
+        $ticketBase = $this->getTicketBase();
+
         if ($mode === 'airline' && $afterDepart) {
             return [
-                'base_ticket' => $this->getTicketBase(),
+                'base_ticket' => $ticketBase,
                 // NOTE: We force surcharge to 100% here so the UI breakdown accurately reflects 
                 // that the entire ticket base is forfeited (since it is non-refundable).
                 'surcharge_pct' => 100,
-                'surcharge_amount' => $this->getTicketBase(),
-                'non_refundable_fees' => (float) $this->total_price - $this->getTicketBase(),
+                'surcharge_amount' => $ticketBase,
+                'non_refundable_fees' => $nonRefundableFees,
+                'web_admin_fee' => $webAdminFeeTotal,
+                'transaction_fee' => $transactionFeeTotal,
                 'refundable_amount' => 0,
                 'deduction_amount' => (float) $this->total_price,
             ];
@@ -447,22 +459,22 @@ class Booking extends Model
 
         if ($mode !== 'airline' && $afterDepart && ! $this->isStarlite()) {
             return [
-                'base_ticket' => $this->getTicketBase(),
+                'base_ticket' => $ticketBase,
                 // NOTE: We force surcharge to 100% here so the UI breakdown accurately reflects 
                 // that the entire ticket base is forfeited (since it is non-refundable).
                 'surcharge_pct' => 100,
-                'surcharge_amount' => $this->getTicketBase(),
-                'non_refundable_fees' => (float) $this->total_price - $this->getTicketBase(),
+                'surcharge_amount' => $ticketBase,
+                'non_refundable_fees' => $nonRefundableFees,
+                'web_admin_fee' => $webAdminFeeTotal,
+                'transaction_fee' => $transactionFeeTotal,
                 'refundable_amount' => 0,
                 'deduction_amount' => (float) $this->total_price,
             ];
         }
 
-        $ticketBase = $this->getTicketBase();
         $surchargePct = $this->getRefundSurchargePercentage();
         $surcharge  = $ticketBase * ($surchargePct / 100);
         
-        $nonRefundableFees = max(0, (float) $this->total_price - $ticketBase);
         $refundable = max(0, round($ticketBase - $surcharge, 2));
 
         return [
@@ -470,6 +482,8 @@ class Booking extends Model
             'surcharge_pct' => $surchargePct,
             'surcharge_amount' => $surcharge,
             'non_refundable_fees' => $nonRefundableFees,
+            'web_admin_fee' => $webAdminFeeTotal,
+            'transaction_fee' => $transactionFeeTotal,
             'refundable_amount' => $refundable,
             'deduction_amount' => (float) $this->total_price - $refundable,
         ];
@@ -594,9 +608,18 @@ class Booking extends Model
             }
         }
         
+        foreach ($this->transportClasses as $index => $tc) {
+            $price = (float) $tc->pivot->price;
+            if ($index === 0) {
+                $depTicketTotal += $price;
+            } elseif ($index === 1) {
+                $retTicketTotal += $price;
+            }
+        }
+        
         if ($depTicketTotal > 0) {
             $breakdown[] = [
-                'label' => 'Departure Tickets (' . $passengers->count() . 'x)',
+                'label' => 'Departure Tickets & Class (' . $passengers->count() . 'x)',
                 'amount' => $depTicketTotal,
                 'class' => ''
             ];
@@ -612,7 +635,7 @@ class Booking extends Model
         
         if ($retTicketTotal > 0) {
             $breakdown[] = [
-                'label' => 'Return Tickets (' . $passengers->count() . 'x)',
+                'label' => 'Return Tickets & Class (' . $passengers->count() . 'x)',
                 'amount' => $retTicketTotal,
                 'class' => ''
             ];
@@ -634,14 +657,7 @@ class Booking extends Model
             ];
         }
 
-        foreach ($this->transportClasses as $tc) {
-            $label = str_ends_with(strtolower($tc->name), 'class') ? $tc->name : $tc->name . ' Class';
-            $breakdown[] = [
-                'label' => $label,
-                'amount' => (float) $tc->pivot->price,
-                'class' => ''
-            ];
-        }
+        // Transport classes are now combined into the tickets above
 
         if ($this->has_vehicle && $this->vehicle_price > 0) {
             $breakdown[] = [

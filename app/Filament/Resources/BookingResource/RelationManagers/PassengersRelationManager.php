@@ -26,6 +26,7 @@ class PassengersRelationManager extends RelationManager
                     ->options([
                         'adult' => 'Adult',
                         'child' => 'Child',
+                        'driver' => 'Driver',
                     ])
                     ->required(),
             ])
