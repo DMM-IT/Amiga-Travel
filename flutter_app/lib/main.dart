@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.36+40';
+  static const String appVersion = '1.0.37+41';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -5764,7 +5764,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         const SizedBox(height: 12),
         _detailSection('Trip', <String>[
           '${_booking['origin']} → ${_booking['destination']}',
-          'Departure: ${_booking['departure_date']?.toString().split('T')[0] ?? '—'}',
+          'Departure: ${(_booking['departure_date'] ?? '-').toString().split('T')[0]}',
           if (_booking['return_date'] != null)
             'Return: ${_booking['return_date'].toString().split('T')[0]}',
           (_booking['schedule_summary'] ??
@@ -6595,25 +6595,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                             widget.booking.selectedScheduleAccommodationId =
                                 null;
                             widget.booking.selectedScheduleAccommodation = null;
-                            Navigator.pop(context);
-                            if (widget.booking.tripType != 'round_trip' ||
-                                (widget.booking.selectedSchedule != null &&
-                                    widget.booking.selectedReturnSchedule !=
-                                        null)) {
-                              widget.booking.savedStep = 2;
-                              widget.booking.saveToPrefs(2);
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => DiscountScreen(
-                                          booking: widget.booking))).then((_) {
-                                if (mounted) {
-                                  widget.booking.savedStep = 1;
-                                  widget.booking.saveToPrefs(1);
-                                }
-                              });
-                            }
                           }
+                          Navigator.pop(context);
+                          setState(() {});
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
@@ -7485,24 +7469,12 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                           style: TextStyle(
                               fontSize: 11,
                               color: isSelected ? Colors.white70 : kSlate500)),
-                      if (isReturn &&
-                          widget.booking.selectedReturnScheduleAccommodation !=
-                              null &&
+                      if (!isReturn &&
+                          widget.booking.selectedTransportClass != null &&
                           isSelected) ...[
                         const SizedBox(height: 4),
                         Text(
-                            'Accommodation: ${widget.booking.selectedReturnScheduleAccommodation?['name']}',
-                            style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold)),
-                      ] else if (!isReturn &&
-                          widget.booking.selectedScheduleAccommodation !=
-                              null &&
-                          isSelected) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                            'Accommodation: ${widget.booking.selectedScheduleAccommodation?['name']}',
+                            '${widget.booking.selectedTransportClass?['name']}',
                             style: const TextStyle(
                                 fontSize: 11,
                                 color: Colors.white,
