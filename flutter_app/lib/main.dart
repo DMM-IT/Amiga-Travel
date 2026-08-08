@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.34+38';
+  static const String appVersion = '1.0.36+40';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -608,10 +608,15 @@ class UpdateChecker {
                         final sink = file.openWrite();
 
                         int bytes = 0;
+                        double lastProgress = 0.0;
                         await response.stream.listen((List<int> chunk) {
                           bytes += chunk.length;
-                          setState(() => progress = bytes / contentLength);
                           sink.add(chunk);
+                          double currentProgress = bytes / contentLength;
+                          if (currentProgress - lastProgress >= 0.01 || currentProgress >= 1.0) {
+                            lastProgress = currentProgress;
+                            setState(() => progress = currentProgress);
+                          }
                         }).asFuture();
                         await sink.close();
 
@@ -5690,8 +5695,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     final secondsLeft = expiry == null
         ? 0
         : expiry.difference(DateTime.now()).inSeconds.clamp(0, 300);
-    final transaction =
-        Map<String, dynamic>.from(_booking['transaction'] ?? {});
+    final tx = _booking['transaction'];
+    final transaction = Map<String, dynamic>.from(tx is Map ? tx : {});
+
     return Scaffold(
       appBar: AppBar(title: const Text('Booking details')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
@@ -5756,7 +5762,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             ),
           ),
         const SizedBox(height: 12),
-        _detailSection('Trip', [
+        _detailSection('Trip', <String>[
           '${_booking['origin']} → ${_booking['destination']}',
           'Departure: ${_booking['departure_date']?.toString().split('T')[0] ?? '—'}',
           if (_booking['return_date'] != null)
@@ -5768,10 +5774,12 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         ]),
         _priceBreakdownCard(),
         if (_booking['passengers'] != null &&
+            _booking['passengers'] is List &&
             (_booking['passengers'] as List).isNotEmpty)
           _detailSection(
             'Passengers & Discount IDs',
             (_booking['passengers'] as List).map<String>((p) {
+              if (p is! Map) return 'Invalid passenger entry';
               final name = p['name'] ?? 'Passenger';
               final type = (p['type'] ?? 'adult').toString().toUpperCase();
               final bday = p['birthdate'] ?? 'N/A';
@@ -5794,31 +5802,31 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               label: const Text('Upload payment proof')),
         ],
         if (_booking['rebooking_status'] == 'pending')
-          _detailSection('Rebooking', [
+          _detailSection('Rebooking', <String>[
             'Request pending verification',
             'New dates will appear after approval.'
           ]),
         if (transaction['confirmation_url'] != null)
           OutlinedButton.icon(
               onPressed: () =>
-                  launchUrl(Uri.parse(transaction['confirmation_url'])),
+                  launchUrl(Uri.parse(transaction['confirmation_url'].toString())),
               icon: const Icon(Icons.confirmation_num),
               label: const Text('Payment Acknowledgement')),
         if (_booking['confirmation_url'] != null)
           OutlinedButton.icon(
               onPressed: () =>
-                  launchUrl(Uri.parse(_booking['confirmation_url'])),
+                  launchUrl(Uri.parse(_booking['confirmation_url'].toString())),
               icon: const Icon(Icons.link),
               label: const Text('Payment Acknowledgement')),
         if (_booking['confirmation_pdf_url'] != null)
           OutlinedButton.icon(
               onPressed: () =>
-                  launchUrl(Uri.parse(_booking['confirmation_pdf_url'])),
+                  launchUrl(Uri.parse(_booking['confirmation_pdf_url'].toString())),
               icon: const Icon(Icons.picture_as_pdf),
               label: const Text('Payment Acknowledgement (PDF)')),
         if (_booking['ticket_url'] != null)
           FilledButton.icon(
-            onPressed: () => launchUrl(Uri.parse(_booking['ticket_url'])),
+            onPressed: () => launchUrl(Uri.parse(_booking['ticket_url'].toString())),
             icon: const Icon(Icons.download),
             label: const Text('Download Ticket'),
             style: FilledButton.styleFrom(
