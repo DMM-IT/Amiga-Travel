@@ -41,6 +41,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Register model observers
         Booking::observe(BookingObserver::class);
+        
+        if (config('app.env') === 'production' || request()->server('HTTP_X_FORWARDED_PROTO') === 'https') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
 
         // Cache header & footer settings — fetched on every single page load.
         // TTL: 1 hour. Cleared automatically when admin saves website settings.

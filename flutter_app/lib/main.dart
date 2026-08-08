@@ -5049,7 +5049,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           const SizedBox(width: 6),
                           Text(
                               (b['rebooking_departure_date'] ?? b['preferred_replacement_date'] ?? b['departure_date']) != null
-                                  ? (b['rebooking_departure_date'] ?? b['preferred_replacement_date'] ?? b['departure_date']).toString().split('T')[0]
+                                  ? (DateTime.tryParse((b['rebooking_departure_date'] ?? b['preferred_replacement_date'] ?? b['departure_date']).toString())?.toLocal().toString().split(' ')[0] ?? '')
                                   : '',
                               style: const TextStyle(
                                   fontSize: 12, color: kSlate600)),
@@ -5057,7 +5057,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             const Text('  |  Return: ',
                                 style:
                                     TextStyle(fontSize: 12, color: kSlate400)),
-                            Text((b['rebooking_return_date'] ?? b['return_date']).toString().split('T')[0],
+                            Text((DateTime.tryParse((b['rebooking_return_date'] ?? b['return_date']).toString())?.toLocal().toString().split(' ')[0] ?? ''),
                                 style: const TextStyle(
                                     fontSize: 12, color: kSlate600)),
                           ],
@@ -5106,7 +5106,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                             ),
                           Text(
                             b['created_at'] != null
-                                ? 'Booked: ${b['created_at'].toString().split('T')[0]}'
+                                ? 'Booked: ${DateTime.tryParse(b['created_at'].toString())?.toLocal().toString().split(' ')[0] ?? ''}'
                                 : '',
                             style:
                                 const TextStyle(fontSize: 11, color: kSlate400),
@@ -5824,6 +5824,21 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             }).toList(),
           ),
         if (_paymentStatus == 'unpaid' || _paymentStatus == 'pending') ...[
+          if (_qrCodeUrl != null) ...[
+            Center(
+              child: Image.network(
+                _qrCodeUrl!,
+                height: 250,
+                fit: BoxFit.contain,
+                errorBuilder: (c, o, s) => const SizedBox(
+                    height: 250,
+                    child: Center(
+                        child: Text('Unable to load QR code',
+                            style: TextStyle(color: Colors.red)))),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           OutlinedButton.icon(
               onPressed: _busy ? null : _uploadPaymentProof,
               icon: const Icon(Icons.upload_file),
@@ -6368,13 +6383,14 @@ class AppDrawer extends StatelessWidget {
 class _StepProgress extends StatelessWidget {
   final int currentStep;
   final List<String> steps;
+  final String mode;
 
-  const _StepProgress({required this.currentStep, required this.steps});
+  const _StepProgress({required this.currentStep, required this.steps, this.mode = 'ferry'});
 
   IconData _getStepIcon(String stepName) {
     switch (stepName.toLowerCase()) {
       case 'route':
-        return Icons.directions_boat;
+        return mode == 'airline' ? Icons.flight : Icons.directions_boat;
       case 'schedule':
         return Icons.calendar_month;
       case 'discount':
@@ -6844,7 +6860,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       appBar: AppBar(title: const Text('Select Schedule')),
       body: Column(
         children: [
-          const _StepProgress(currentStep: 2, steps: _steps),
+          _StepProgress(currentStep: 2, steps: _steps, mode: widget.booking.mode),
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -7956,7 +7972,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
       appBar: AppBar(title: const Text('Passenger & Discount')),
       body: Column(
         children: [
-          const _StepProgress(currentStep: 3, steps: _steps),
+          _StepProgress(currentStep: 3, steps: _steps, mode: widget.booking.mode),
           Expanded(
             child: Form(
               key: _formKey,
@@ -8026,6 +8042,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
                             TextFormField(
                               controller: _birthdateControllers[i],
                               readOnly: true,
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? 'Birthdate is required'
+                                  : null,
                               onTap: () async {
                                 final d = await showDatePicker(
                                   context: context,
@@ -8073,9 +8092,6 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10)),
                               ),
-                              validator: (v) => (v == null || v.trim().isEmpty)
-                                  ? 'Birthdate is required'
-                                  : null,
                             ),
                             if (widget.booking.usePromoTicket &&
                                 widget.booking.promotionalTicketId != null) ...[
@@ -8285,7 +8301,7 @@ class _StayScreenState extends State<StayScreen> {
       appBar: AppBar(title: const Text('Hotels')),
       body: Column(
         children: [
-          const _StepProgress(currentStep: 4, steps: _steps),
+          _StepProgress(currentStep: 4, steps: _steps, mode: widget.booking.mode),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: kGreen))
@@ -8791,7 +8807,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
       appBar: AppBar(title: const Text('Review & Submit')),
       body: Column(
         children: [
-          const _StepProgress(currentStep: 5, steps: _steps),
+          _StepProgress(currentStep: 5, steps: _steps, mode: widget.booking.mode),
           Expanded(
             child: Form(
               key: _formKey,

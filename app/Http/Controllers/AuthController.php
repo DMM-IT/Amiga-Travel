@@ -107,6 +107,12 @@ class AuthController extends Controller
                 ->withErrors(['email' => $errorMessage]);
         }
 
+        $user = Auth::user();
+        if (empty($user->referral_code)) {
+            $user->referral_code = strtoupper(Str::random(8));
+            $user->save();
+        }
+
         $request->session()->regenerate();
 
         $this->logUserLogin(
@@ -212,6 +218,11 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        if (empty($user->referral_code)) {
+            $user->referral_code = strtoupper(Str::random(8));
+            $user->save();
+        }
 
         // Issue a fresh Sanctum token (scoped, revocable)
         // Delete previous tokens to avoid accumulation (one active session per user)
