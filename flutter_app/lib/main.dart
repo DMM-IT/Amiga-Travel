@@ -71,7 +71,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.46+50';
+  static const String appVersion = '1.0.47+51';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -972,6 +972,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _fetchGlobalData();
+    NotificationService.requestPermission();
   }
 
   Future<void> _fetchGlobalData() async {

@@ -11,19 +11,23 @@ import 'package:permission_handler/permission_handler.dart';
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
+  static Future<void> requestPermission() async {
+    if (kIsWeb) return;
+    final permissionStatus = await Permission.notification.request();
+    debugPrint('Notification permission status: $permissionStatus');
+  }
+
   static Future<void> initialize() async {
     if (kIsWeb) return;
 
     await Firebase.initializeApp();
     
-    // Request permissions
-    final permissionStatus = await Permission.notification.request();
-    debugPrint('Notification permission status: $permissionStatus');
-
     // Initialize local notifications for foreground
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidInit);
     await _localNotifications.initialize(initSettings);
+
+    // Create a high importance channel
 
     // Create a high importance channel
     const channel = AndroidNotificationChannel(
