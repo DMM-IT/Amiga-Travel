@@ -70,7 +70,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.42+46';
+  static const String appVersion = '1.0.43+47';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -7170,74 +7170,192 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     final accommodations = schedule['accommodations'] as List<dynamic>? ?? [];
 
     if (isAirline && classes.isNotEmpty) {
-      return _buildClassesDropdown(classes, isReturn: isReturn);
+      return _buildClassesSelection(classes, isReturn: isReturn);
     } else if (!isAirline && accommodations.isNotEmpty) {
-      return _buildAccommodationsDropdown(accommodations, isReturn: isReturn);
+      return _buildAccommodationsSelection(accommodations, isReturn: isReturn);
     }
     return const SizedBox.shrink();
   }
 
-  Widget _buildClassesDropdown(List<dynamic> classes, {required bool isReturn}) {
+  Widget _buildClassesSelection(List<dynamic> classes, {required bool isReturn}) {
     final val = isReturn ? widget.booking.selectedReturnAirlineClassId : widget.booking.selectedAirlineClassId;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: DropdownButtonFormField<int>(
-        value: val,
-        decoration: const InputDecoration(labelText: 'Transport Class', border: OutlineInputBorder()),
-        items: classes.map<DropdownMenuItem<int>>((c) {
-          return DropdownMenuItem<int>(
-            value: c['id'],
-            child: Text('${c['name']} (₱${c['price']})'),
-          );
-        }).toList(),
-        onChanged: (v) {
-          if (v == null) return;
-          final cls = classes.firstWhere((element) => element['id'] == v);
-          setState(() {
-            if (isReturn) {
-              widget.booking.selectedReturnAirlineClassId = v;
-              widget.booking.selectedReturnAirlineClassName = cls['name'];
-              widget.booking.selectedReturnAirlineClassPrice = _parseDouble(cls['price']);
-            } else {
-              widget.booking.selectedAirlineClassId = v;
-              widget.booking.selectedAirlineClassName = cls['name'];
-              widget.booking.selectedAirlineClassPrice = _parseDouble(cls['price']);
-            }
-          });
-        },
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text('Select travel class for this trip:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.4,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: classes.length,
+            itemBuilder: (context, index) {
+              final c = classes[index];
+              final isSelected = c['id'] == val;
+              final seats = c['tickets_available'] ?? 50;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isReturn) {
+                      widget.booking.selectedReturnAirlineClassId = c['id'];
+                      widget.booking.selectedReturnAirlineClassName = c['name'];
+                      widget.booking.selectedReturnAirlineClassPrice = _parseDouble(c['price']);
+                    } else {
+                      widget.booking.selectedAirlineClassId = c['id'];
+                      widget.booking.selectedAirlineClassName = c['name'];
+                      widget.booking.selectedAirlineClassPrice = _parseDouble(c['price']);
+                    }
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? kPink.withOpacity(0.05) : Colors.white,
+                    border: Border.all(color: isSelected ? kPink : Colors.grey.shade300, width: isSelected ? 2 : 1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              c['name'] ?? '',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10b981).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '$seats seats left',
+                              style: const TextStyle(color: Color(0xFF047857), fontSize: 9, fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '₱${_parseDouble(c['price']).toStringAsFixed(2)}',
+                        style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildAccommodationsDropdown(List<dynamic> accommodations, {required bool isReturn}) {
+  Widget _buildAccommodationsSelection(List<dynamic> accommodations, {required bool isReturn}) {
     final val = isReturn ? widget.booking.selectedReturnFerryAccommodationId : widget.booking.selectedFerryAccommodationId;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: DropdownButtonFormField<int>(
-        value: val,
-        decoration: const InputDecoration(labelText: 'Ferry Accommodation', border: OutlineInputBorder()),
-        items: accommodations.map<DropdownMenuItem<int>>((c) {
-          return DropdownMenuItem<int>(
-            value: c['id'],
-            child: Text('${c['name']} (₱${c['price']})'),
-          );
-        }).toList(),
-        onChanged: (v) {
-          if (v == null) return;
-          final acc = accommodations.firstWhere((element) => element['id'] == v);
-          setState(() {
-            if (isReturn) {
-              widget.booking.selectedReturnFerryAccommodationId = v;
-              widget.booking.selectedReturnFerryAccommodationName = acc['name'];
-              widget.booking.selectedReturnFerryAccommodationPrice = _parseDouble(acc['price']);
-            } else {
-              widget.booking.selectedFerryAccommodationId = v;
-              widget.booking.selectedFerryAccommodationName = acc['name'];
-              widget.booking.selectedFerryAccommodationPrice = _parseDouble(acc['price']);
-            }
-          });
-        },
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text('Select travel class for this trip:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.4,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: accommodations.length,
+            itemBuilder: (context, index) {
+              final c = accommodations[index];
+              final isSelected = c['id'] == val;
+              final seats = c['tickets_available'] ?? 50;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isReturn) {
+                      widget.booking.selectedReturnFerryAccommodationId = c['id'];
+                      widget.booking.selectedReturnFerryAccommodationName = c['name'];
+                      widget.booking.selectedReturnFerryAccommodationPrice = _parseDouble(c['price']);
+                    } else {
+                      widget.booking.selectedFerryAccommodationId = c['id'];
+                      widget.booking.selectedFerryAccommodationName = c['name'];
+                      widget.booking.selectedFerryAccommodationPrice = _parseDouble(c['price']);
+                    }
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? kPink.withOpacity(0.05) : Colors.white,
+                    border: Border.all(color: isSelected ? kPink : Colors.grey.shade300, width: isSelected ? 2 : 1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              c['name'] ?? '',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10b981).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '$seats seats left',
+                              style: const TextStyle(color: Color(0xFF047857), fontSize: 9, fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '₱${_parseDouble(c['price']).toStringAsFixed(2)}',
+                        style: const TextStyle(color: kPink, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -14644,8 +14762,32 @@ class _RefundScreenState extends State<RefundScreen> {
     }
   }
 
+  Widget _buildBreakdownRow(String label, String amount, {bool isSub = false, bool isBold = false, bool isNegative = false, Color? color}) {
+    return Padding(
+      padding: EdgeInsets.only(left: isSub ? 16.0 : 0, top: 2, bottom: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: isSub ? Colors.grey.shade600 : (color ?? Colors.grey.shade800),
+            fontSize: isSub ? 12 : 14,
+          )),
+          Text('${isNegative ? '-' : ''}₱$amount', style: TextStyle(
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: color ?? Colors.grey.shade800,
+            fontSize: isSub ? 12 : 14,
+          )),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final baseTicketPrice = (_refundAmount ?? 0) + (_cancellationFee ?? 0);
+    final nonRefundableFees = (_transactionFee ?? 0) + (_webAdminFee ?? 0);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Request Refund')),
       body: _isLoading 
@@ -14663,55 +14805,44 @@ class _RefundScreenState extends State<RefundScreen> {
             : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  const Text('Cancellation details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
-                  Card(
-                    color: Colors.red.shade50,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.red.shade200)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            const Text('Cancellation Fee', style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text('?${_cancellationFee?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
-                          ]),
-                          const Divider(),
-                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            const Text('Estimated Refund', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text('?${_refundAmount?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16))
-                          ]),
-                          if ((_transactionFee ?? 0) > 0) ...[
-                            const Divider(),
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                              const Text('Transaction Fee'),
-                              Text('?${_transactionFee?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey))
-                            ]),
-                          ],
-                          if ((_webAdminFee ?? 0) > 0) ...[
-                            const Divider(),
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                              const Text('Web Admin Fee'),
-                              Text('?${_webAdminFee?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey))
-                            ]),
-                          ],
-                          if ((_surchargeAmount ?? 0) > 0) ...[
-                            const Divider(),
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                              Text('Surcharge (${_surchargePct ?? 0}%)'),
-                              Text('?${_surchargeAmount?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey))
-                            ]),
-                          ],
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      border: Border.all(color: const Color(0xFFFDE68A)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Refund Available', style: TextStyle(color: Color(0xFF92400E), fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(height: 4),
+                        const Text('The 100% refund window has expired. See the breakdown of your refund below.', style: TextStyle(color: Color(0xFF92400E), fontSize: 12)),
+                        const SizedBox(height: 16),
+                        _buildBreakdownRow('Base Ticket Price:', baseTicketPrice.toStringAsFixed(2)),
+                        if ((_surchargeAmount ?? 0) > 0)
+                          _buildBreakdownRow('Surcharge (${_surchargePct ?? 0}%):', _surchargeAmount!.toStringAsFixed(2), isNegative: true),
+                        if (nonRefundableFees > 0) ...[
+                          _buildBreakdownRow('Non-Refundable Fees', nonRefundableFees.toStringAsFixed(2), isNegative: true, isBold: true),
+                          if ((_webAdminFee ?? 0) > 0)
+                            _buildBreakdownRow('Web Admin Fee', _webAdminFee!.toStringAsFixed(2), isSub: true),
+                          if ((_transactionFee ?? 0) > 0)
+                            _buildBreakdownRow('Transaction Fee', _transactionFee!.toStringAsFixed(2), isSub: true),
                         ],
-                      )
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          child: Divider(color: Color(0xFFFDE68A)),
+                        ),
+                        _buildBreakdownRow('Total Refundable:', _refundAmount?.toStringAsFixed(2) ?? '0.00', isBold: true, color: const Color(0xFF047857)),
+                      ],
                     )
                   ),
                   const SizedBox(height: 24),
-                  const Text('Where should we send your refund?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
+                  const Text('Refund Method', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                  const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     value: _refundMethod,
-                    decoration: const InputDecoration(labelText: 'Refund Method', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(border: OutlineInputBorder()),
                     items: const [
                       DropdownMenuItem(value: 'GCash', child: Text('GCash')),
                       DropdownMenuItem(value: 'Online Wallet', child: Text('Online Wallet (Maya, etc)')),
@@ -14719,23 +14850,42 @@ class _RefundScreenState extends State<RefundScreen> {
                     ],
                     onChanged: (v) => setState(() => _refundMethod = v ?? 'GCash'),
                   ),
-                  const SizedBox(height: 12),
-                  if (_refundMethod != 'GCash')
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: TextField(controller: _institutionCtrl, decoration: const InputDecoration(labelText: 'Bank/Wallet Name', border: OutlineInputBorder())),
-                    ),
-                  TextField(controller: _accountCtrl, decoration: const InputDecoration(labelText: 'Account Number', border: OutlineInputBorder()), keyboardType: TextInputType.number),
-                  const SizedBox(height: 12),
-                  TextField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Account Name', border: OutlineInputBorder())),
+                  const SizedBox(height: 16),
+                  if (_refundMethod != 'GCash') ...[
+                    const Text('Bank/Wallet Name', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                    const SizedBox(height: 8),
+                    TextField(controller: _institutionCtrl, decoration: const InputDecoration(border: OutlineInputBorder())),
+                    const SizedBox(height: 16),
+                  ],
+                  Text(_refundMethod == 'GCash' ? 'GCash Number' : 'Account Number', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                  const SizedBox(height: 8),
+                  TextField(controller: _accountCtrl, decoration: const InputDecoration(hintText: 'e.g. 0917xxxxxxx', border: OutlineInputBorder()), keyboardType: TextInputType.number),
+                  const SizedBox(height: 16),
+                  const Text('Account Name', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                  const SizedBox(height: 8),
+                  TextField(controller: _nameCtrl, decoration: const InputDecoration(hintText: 'Full name on the account', border: OutlineInputBorder())),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: FilledButton(
-                      onPressed: _isSubmitting ? null : _submitRefund,
-                      child: _isSubmitting ? const CircularProgressIndicator(color: Colors.white) : const Text('Submit Refund Request', style: TextStyle(fontSize: 16)),
-                    )
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      FilledButton(
+                        style: FilledButton.styleFrom(backgroundColor: const Color(0xFFdb2777), padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+                        onPressed: _isSubmitting ? null : _submitRefund,
+                        child: _isSubmitting ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Confirm Cancellation'),
+                      ),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel Request', style: TextStyle(color: Colors.blueGrey)),
+                      ),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.blue), padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+                        onPressed: () => Navigator.pop(context), // Typically would go to Rebook
+                        child: const Text('Switch to Rebook', style: TextStyle(color: Colors.blue)),
+                      ),
+                    ],
                   )
                 ],
               )
@@ -14926,7 +15076,6 @@ class _RebookScreenState extends State<RebookScreen> {
             subtitle: Text(_retDate == null ? 'Not selected' : _retDate!.toIso8601String().split('T')[0]),
             trailing: const Icon(Icons.calendar_today),
             onTap: () async {
-              if (_depDate == null) return;
               final d = await showDatePicker(context: context, initialDate: _depDate!.add(const Duration(days: 1)), firstDate: _depDate!, lastDate: DateTime.now().add(const Duration(days: 365)));
               if (d != null) setState(() => _retDate = d);
             },
@@ -14942,69 +15091,227 @@ class _RebookScreenState extends State<RebookScreen> {
 
   Widget _buildScheduleStep(bool isReturn) {
     final schs = isReturn ? _retSchedules : _depSchedules;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(isReturn ? 'Select New Return Schedule' : 'Select New Departure Schedule', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 16),
-        ...schs.map((s) {
-          final isSel = (isReturn ? _selRetSchId : _selDepSchId) == s['id'];
-          final isAirline = widget.booking['mode'] == 'airline';
-          final subList = isAirline ? (s['transport_classes'] as List? ?? []) : (s['accommodations'] as List? ?? []);
-          return Card(
-            color: isSel ? Colors.blue.shade50 : null,
-            child: ExpansionTile(
-              title: Text('${s['departure']} - ${s['arrival']}'),
-              subtitle: Text('${widget.booking['origin'] ?? ''} to ${widget.booking['destination'] ?? ''}'),
-              children: subList.map((tc) {
-                final isAccSel = isSel && (isReturn ? _selRetAccId : _selDepAccId) == tc['id'];
-                return RadioListTile(
-                  title: Text(tc['name']),
-                  subtitle: Text('?${tc['price']}'),
-                  value: true,
-                  groupValue: isAccSel,
-                  onChanged: (v) {
-                    setState(() {
-                      if (isReturn) {
-                        _selRetSchId = s['id'];
-                        _selRetAccId = tc['id'];
-                      } else {
-                        _selDepSchId = s['id'];
-                        _selDepAccId = tc['id'];
-                      }
-                    });
-                  },
-                );
-              }).toList(),
+    final selSchId = isReturn ? _selRetSchId : _selDepSchId;
+    final selAccId = isReturn ? _selRetAccId : _selDepAccId;
+    final isAirline = widget.booking['mode'] == 'airline';
+
+    if (selSchId == null) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() {
+                  if (isReturn) {
+                    _step = 1;
+                  } else {
+                    _step = 0;
+                  }
+                }),
+              ),
+              Expanded(
+                child: Text(isReturn ? 'Select New Return Schedule' : 'Select New Departure Schedule',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...schs.map((s) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (isReturn) {
+                    _selRetSchId = s['id'];
+                    _selRetAccId = null;
+                  } else {
+                    _selDepSchId = s['id'];
+                    _selDepAccId = null;
+                  }
+                });
+              },
+              child: Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
+                        child: Icon(isAirline ? Icons.flight : Icons.directions_boat, color: Colors.blue),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${s['departure']}  -  ${s['arrival']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            const SizedBox(height: 4),
+                            Text('${s['service_name'] ?? ''}', style: const TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ],
+      );
+    } else {
+      final selectedSch = schs.firstWhere((s) => s['id'] == selSchId);
+      final subList = isAirline ? (selectedSch['transport_classes'] as List? ?? []) : (selectedSch['accommodations'] as List? ?? []);
+
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() {
+                  if (isReturn) {
+                    _selRetSchId = null;
+                  } else {
+                    _selDepSchId = null;
+                  }
+                }),
+              ),
+              Expanded(
+                child: Text('Select ${isAirline ? 'Travel Class' : 'Accommodation'}',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
             ),
-          );
-        }).toList(),
-        const SizedBox(height: 24),
-        FilledButton(
-          onPressed: (isReturn ? _selRetSchId : _selDepSchId) != null
-            ? () {
-                if (isReturn) _calcBreakdown();
-                else if (_isRoundTrip) _fetchRetSchedules();
-                else _calcBreakdown();
-              }
-            : null,
-          child: const Text('Next'),
-        )
-      ],
-    );
+            itemCount: subList.length,
+            itemBuilder: (context, index) {
+              final tc = subList[index];
+              final isAccSel = selAccId == tc['id'];
+              
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isReturn) {
+                      _selRetAccId = tc['id'];
+                    } else {
+                      _selDepAccId = tc['id'];
+                    }
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isAccSel ? const Color(0xFFdb2777).withOpacity(0.05) : Colors.white,
+                    border: Border.all(color: isAccSel ? const Color(0xFFdb2777) : Colors.grey.shade300, width: isAccSel ? 2 : 1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        tc['name'] ?? '',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '₱${_parseDouble(tc['price']).toStringAsFixed(2)}',
+                        style: const TextStyle(color: Color(0xFFdb2777), fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: selAccId != null
+                ? () {
+                    if (isReturn) _calcBreakdown();
+                    else if (_isRoundTrip) _fetchRetSchedules();
+                    else _calcBreakdown();
+                  }
+                : null,
+            child: const Text('Next'),
+          )
+        ],
+      );
+    }
   }
 
   Widget _buildBreakdownStep() {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text('Rebooking Breakdown', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => setState(() => _step = _isRoundTrip ? 2 : 1),
+            ),
+            const Expanded(
+              child: Text('Rebooking Breakdown', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
-        ListTile(title: const Text('Rate Difference'), trailing: Text('?${_breakdown!['rate_diff']}')),
-        ListTile(title: const Text('Surcharge'), trailing: Text('?${_breakdown!['surcharge']}')),
-        ListTile(title: const Text('Revalidation Fee'), trailing: Text('?${_breakdown!['revalidation_fee']}')),
-        const Divider(),
-        ListTile(title: const Text('Total to Pay', style: TextStyle(fontWeight: FontWeight.bold)), trailing: Text('?${_breakdown!['total_to_pay']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue))),
+        Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Summary of Fees', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 16),
+                _buildBreakdownRow('Rate Difference', _breakdown!['rate_diff']?.toString() ?? '0.00'),
+                const SizedBox(height: 8),
+                _buildBreakdownRow('Surcharge', _breakdown!['surcharge']?.toString() ?? '0.00'),
+                const SizedBox(height: 8),
+                _buildBreakdownRow('Revalidation Fee', _breakdown!['revalidation_fee']?.toString() ?? '0.00'),
+                if (_breakdown!['transaction_fee'] != null) ...[
+                  const SizedBox(height: 8),
+                  _buildBreakdownRow('Transaction Fee', _breakdown!['transaction_fee']?.toString() ?? '0.00'),
+                ],
+                if (_breakdown!['web_admin_fee'] != null) ...[
+                  const SizedBox(height: 8),
+                  _buildBreakdownRow('Web Admin Fee', _breakdown!['web_admin_fee']?.toString() ?? '0.00'),
+                ],
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total to Pay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('₱${_breakdown!['total_to_pay']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFFdb2777))),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 24),
         if (_qrUrl != null) Center(child: Image.network(_qrUrl!, height: 150)),
         const SizedBox(height: 24),
@@ -15016,6 +15323,16 @@ class _RebookScreenState extends State<RebookScreen> {
           icon: const Icon(Icons.upload),
           label: const Text('Upload Payment Proof'),
         )
+      ],
+    );
+  }
+
+  Widget _buildBreakdownRow(String label, String amount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: Colors.grey.shade700)),
+        Text('₱$amount', style: const TextStyle(fontWeight: FontWeight.w500)),
       ],
     );
   }
