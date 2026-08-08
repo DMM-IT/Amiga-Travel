@@ -191,6 +191,10 @@ class TransactionResource extends Resource
                             ->label('Schedule price (per passenger)')
                             ->money('PHP')
                             ->placeholder('—'),
+                        TextEntry::make('booking.baggage_details')
+                            ->label('Extra baggage')
+                            ->visible(fn (?Transaction $record): bool => (bool) $record?->booking?->has_extra_baggage)
+                            ->state(fn (Transaction $record): string => "{$record->booking->extra_baggage_weight} kg — ₱" . number_format((float) $record->booking->extra_baggage_price, 2)),
                         TextEntry::make('booking.total_price')
                             ->label('Total amount')
                             ->money('PHP'),

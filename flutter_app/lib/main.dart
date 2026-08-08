@@ -64,7 +64,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.33+37';
+  static const String appVersion = '1.0.34+38';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -5761,9 +5761,10 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           'Departure: ${_booking['departure_date']?.toString().split('T')[0] ?? '—'}',
           if (_booking['return_date'] != null)
             'Return: ${_booking['return_date'].toString().split('T')[0]}',
-          _booking['schedule_summary'] ??
-              _booking['schedule_service'] ??
-              'Schedule not recorded',
+          (_booking['schedule_summary'] ??
+                  _booking['schedule_service'] ??
+                  'Schedule not recorded')
+              .toString(),
         ]),
         _priceBreakdownCard(),
         if (_booking['passengers'] != null &&
@@ -6943,6 +6944,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                         'promotional_ticket'],
                                     isReturn: true),
                               const SizedBox(height: 20),
+                              _buildBaggageSelection(),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16.0),
@@ -7025,6 +7027,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 _buildPromoTicketBanner(widget.booking
                                     .selectedSchedule!['promotional_ticket']),
                               if (widget.booking.selectedSchedule != null) ...[
+                                _buildBaggageSelection(),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0, vertical: 12.0),
@@ -7127,6 +7130,120 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             style: const TextStyle(fontSize: 12, color: kSlate600),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBaggageSelection() {
+    if (widget.booking.mode != 'airline') return const SizedBox.shrink();
+    if (widget.booking.selectedSchedule == null) return const SizedBox.shrink();
+
+    final serviceName =
+        widget.booking.selectedSchedule!['service']?.toString().toLowerCase() ??
+            '';
+
+    String matchedOperator = 'ceb_pac';
+    if (serviceName.contains('pal') || serviceName.contains('philippine')) {
+      matchedOperator = 'pal';
+    } else if (serviceName.contains('cebu') ||
+        serviceName.contains('pacific') ||
+        serviceName.contains('ceb_pac')) {
+      matchedOperator = 'ceb_pac';
+    } else if (serviceName.contains('airasia')) {
+      matchedOperator = 'airasia';
+    } else if (serviceName.contains('sunlight')) {
+      matchedOperator = 'sunlight';
+    }
+
+    final operatorRules = _baggageRules[matchedOperator];
+    if (operatorRules == null ||
+        operatorRules['options'] == null ||
+        (operatorRules['options'] as List).isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final options = operatorRules['options'] as List;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.business_center, color: kGreen, size: 18),
+                SizedBox(width: 8),
+                Text('Extra Baggage (Optional)',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: kSlate800)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+                'Select extra baggage weight. The price will be applied per passenger.',
+                style: TextStyle(fontSize: 12, color: kSlate500)),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<int?>(
+              value: widget.booking.hasExtraBaggage
+                  ? widget.booking.extraBaggageKg
+                  : null,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              hint: const Text('No extra baggage'),
+              isExpanded: true,
+              items: [
+                const DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text('No extra baggage (7kg Hand Carry Only)',
+                      style: TextStyle(fontSize: 14)),
+                ),
+                ...options.map((opt) {
+                  int kg = int.tryParse(opt['weight']
+                          .toString()
+                          .replaceAll(RegExp(r'[^0-9]'), '')) ??
+                      0;
+                  return DropdownMenuItem<int?>(
+                    value: kg,
+                    child: Text('${opt['weight']} (+ ₱${opt['price']})',
+                        style: const TextStyle(fontSize: 14)),
+                  );
+                }).toList(),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  if (val == null) {
+                    widget.booking.hasExtraBaggage = false;
+                    widget.booking.extraBaggageKg = null;
+                    widget.booking.extraBaggagePrice = 0.0;
+                  } else {
+                    widget.booking.hasExtraBaggage = true;
+                    widget.booking.extraBaggageKg = val;
+                    final selectedOpt = options.firstWhere((o) {
+                      int k = int.tryParse(o['weight']
+                              .toString()
+                              .replaceAll(RegExp(r'[^0-9]'), '')) ??
+                          0;
+                      return k == val;
+                    });
+                    widget.booking.extraBaggagePrice =
+                        double.tryParse(selectedOpt['price'].toString()) ?? 0.0;
+                  }
+                });
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -117,6 +117,9 @@ class ViewBooking extends ViewRecord
                         TextInput::make('total_price')
                             ->label('Total price')
                             ->prefix('₱'),
+                        TextInput::make('baggage_details')
+                            ->label('Extra baggage')
+                            ->visible(fn (): bool => (bool) $this->record->has_extra_baggage),
                         TextInput::make('transaction_payment_status')
                             ->label('Payment status'),
                         TextInput::make('payment_reference')
@@ -402,6 +405,7 @@ class ViewBooking extends ViewRecord
 
         return [
             ...$data,
+            'baggage_details' => $this->record->has_extra_baggage ? "{$this->record->extra_baggage_weight} kg — ₱" . number_format((float) $this->record->extra_baggage_price, 2) : 'None',
             'transaction_payment_status' => $this->record->transaction?->payment_status,
             'payment_reference' => $this->record->transaction?->payment_reference ?? '—',
             'verification_timer' => $this->record->verificationTimerLabel(),

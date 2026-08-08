@@ -31,12 +31,24 @@ class VoucherController extends Controller
         } else {
             $vouchersQuery->where('is_hidden', false);
         }
+        $userRedeemedVoucherIds = [];
+        if (auth('api')->check()) {
+            $user = auth('api')->user();
+            $userRedeemedVoucherIds = \App\Models\VoucherRedemption::where('user_id', $user->id)
+                ->orWhere('normalized_email', strtolower(trim($user->email)))
+                ->pluck('voucher_id')
+                ->toArray();
+        }
 
         $vouchers = $vouchersQuery->orderBy('created_at', 'desc')->get();
 
         // Filter out vouchers that have reached their total_usage_limit
-        // redemptions_count is loaded via withCount — no extra queries.
-        $vouchers = $vouchers->filter(function ($voucher) {
+        // Or if the voucher is one_use_per_customer and the user already redeemed it
+        $vouchers = $vouchers->filter(function ($voucher) use ($userRedeemedVoucherIds) {
+            if ($voucher->one_use_per_customer && in_array($voucher->id, $userRedeemedVoucherIds)) {
+                return false;
+            }
+
             if ($voucher->total_usage_limit !== null) {
                 return $voucher->redemptions_count < $voucher->total_usage_limit;
             }
