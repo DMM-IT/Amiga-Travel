@@ -13,6 +13,17 @@ class NotificationService {
 
   static Future<void> requestPermission() async {
     if (kIsWeb) return;
+    
+    // First, try Firebase native permission request (this handles token generation properly)
+    final messaging = FirebaseMessaging.instance;
+    final settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    debugPrint('Firebase permission status: ${settings.authorizationStatus}');
+
+    // Fallback to permission handler just in case
     final permissionStatus = await Permission.notification.request();
     debugPrint('Notification permission status: $permissionStatus');
   }
