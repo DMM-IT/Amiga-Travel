@@ -34,6 +34,12 @@ void main() async {
 // ==========================================
 const kGreen = Color(0xFF216417);
 const kPink = Color(0xFFEE018D);
+
+double _parseDouble(dynamic val) {
+  if (val == null) return 0.0;
+  if (val is num) return val.toDouble();
+  return double.tryParse(val.toString()) ?? 0.0;
+}
 const kBgLight = Color(0xFFF8FAFC);
 const kSlate800 = Color(0xFF1E293B);
 const kSlate700 = Color(0xFF334155);
@@ -64,7 +70,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.37+41';
+  static const String appVersion = '1.0.39+43';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -3881,8 +3887,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
       );
       final startData = jsonDecode(startRes.body);
       if (startRes.statusCode == 200 && startData['status'] == 'success') {
-        cancellationFee = (startData['cancellation_fee'] as num?)?.toDouble();
-        refundAmount = (startData['refund_amount'] as num?)?.toDouble();
+        cancellationFee = (_parseDouble(startData['cancellation_fee']) == 0.0 ? null : _parseDouble(startData['cancellation_fee']));
+        refundAmount = (_parseDouble(startData['refund_amount']) == 0.0 ? null : _parseDouble(startData['refund_amount']));
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content:
@@ -3906,7 +3912,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
     }
 
     // Step 4: Confirm with real fee breakdown
-    final totalPrice = (booking['total_price'] as num?)?.toDouble() ?? 0.0;
+    final totalPrice = _parseDouble(booking['total_price']);
     final proceedConfirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -4019,8 +4025,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
     XFile? proof;
     final picker = ImagePicker();
-    final fee = (booking['calculated_rebooking_fee'] as num?)?.toDouble() ??
-        (((booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
+    final fee = (_parseDouble(booking['calculated_rebooking_fee']) == 0.0 ? null : _parseDouble(booking['calculated_rebooking_fee'])) ??
+        (((_parseDouble(booking['total_price']) == 0.0 ? null : _parseDouble(booking['total_price'])) ?? 0) * 0.3);
     final shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -5112,7 +5118,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                     transactionNumber:
                                         b['transaction_number'] ?? 'N/A',
                                     totalPrice: b['total_price'] is num
-                                        ? (b['total_price'] as num).toDouble()
+                                        ? _parseDouble(b['total_price'])
                                         : double.tryParse(
                                                 b['total_price'].toString()) ??
                                             0.0,
@@ -5261,8 +5267,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             error: true);
         return;
       }
-      _cancellationFee = (data['cancellation_fee'] as num?)?.toDouble();
-      _refundAmount = (data['refund_amount'] as num?)?.toDouble();
+      _cancellationFee = (_parseDouble(data['cancellation_fee']) == 0.0 ? null : _parseDouble(data['cancellation_fee']));
+      _refundAmount = (_parseDouble(data['refund_amount']) == 0.0 ? null : _parseDouble(data['refund_amount']));
       _cancellationStarted = true;
       setState(() {});
     } catch (e) {
@@ -5290,7 +5296,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       _showMessage('Complete the refund details first.', error: true);
       return;
     }
-    final totalPrice = (_booking['total_price'] as num?)?.toDouble() ?? 0.0;
+    final totalPrice = _parseDouble(_booking['total_price']);
     final displayFee = _cancellationFee ?? (totalPrice * 0.5);
     final displayRefund = _refundAmount ?? (totalPrice * 0.5);
     final confirm = await showDialog<bool>(
@@ -5408,8 +5414,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     final proof = await ImagePicker()
         .pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (proof == null) return;
-    final fee = (_booking['calculated_rebooking_fee'] as num?)?.toDouble() ??
-        (((_booking['total_price'] as num?)?.toDouble() ?? 0) * 0.3);
+    final fee = (_parseDouble(_booking['calculated_rebooking_fee']) == 0.0 ? null : _parseDouble(_booking['calculated_rebooking_fee'])) ??
+        (((_parseDouble(_booking['total_price']) == 0.0 ? null : _parseDouble(_booking['total_price'])) ?? 0) * 0.3);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -5502,7 +5508,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   Widget _priceBreakdownCard() {
     final breakdown = _booking['price_breakdown'];
     if (breakdown == null || (breakdown as List).isEmpty) {
-      final total = (_booking['total_price'] as num?)?.toDouble() ?? 0.0;
+      final total = _parseDouble(_booking['total_price']);
       return Card(
         margin: const EdgeInsets.only(bottom: 12),
         child: Padding(
@@ -5532,7 +5538,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       );
     }
 
-    final total = (_booking['total_price'] as num?)?.toDouble() ?? 0.0;
+    final total = _parseDouble(_booking['total_price']);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -5576,7 +5582,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             ),
             const Divider(height: 20),
             ...(breakdown as List).map<Widget>((item) {
-              final amount = (item['amount'] as num?)?.toDouble() ?? 0.0;
+              final amount = _parseDouble(item['amount']);
               final label = item['label']?.toString() ?? '';
               final isDiscount = amount < 0;
               final isSubtle =
@@ -8396,11 +8402,11 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
         if (data['status'] == 'success') {
           setState(() {
             _qrCodeUrl = data['qr_code_url'];
-            _feePerPerson = (data['web_admin_fee'] as num?)?.toDouble() ?? 0.0;
+            _feePerPerson = _parseDouble(data['web_admin_fee']);
             _feePerAccommodation =
-                (data['fee_per_accommodation'] as num?)?.toDouble() ?? 0.0;
+                _parseDouble(data['fee_per_accommodation']);
             _transactionFee =
-                (data['transaction_fee'] as num?)?.toDouble() ?? 0.0;
+                _parseDouble(data['transaction_fee']);
           });
         }
       }
@@ -8517,7 +8523,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
           builder: (_) => PaymentProofScreen(
             bookingId: data['booking_id'],
             transactionNumber: data['transaction_number'],
-            totalPrice: (data['total_price'] as num).toDouble(),
+            totalPrice: _parseDouble(data['total_price']),
             qrCodeUrl: _qrCodeUrl,
             paymentDeadlineAt: data['payment_deadline_at'] != null
                 ? DateTime.tryParse(data['payment_deadline_at'])
@@ -8929,10 +8935,7 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                       // Voucher and points are blocked when promo ticket is active
                       final discount =
                           (!isPromo && widget.booking.voucherData != null)
-                              ? ((widget.booking.voucherData!['discount_amount']
-                                          as num?) ??
-                                      0)
-                                  .toDouble()
+                              ? _parseDouble(widget.booking.voucherData!['discount_amount'])
                               : 0.0;
                       double totalBeforePoints = subtotal - discount;
                       if (totalBeforePoints < 0) totalBeforePoints = 0.0;
@@ -10088,7 +10091,7 @@ class _VoucherPickerScreenState extends State<VoucherPickerScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Applied: $currentCode — Saves ₱${(widget.booking.voucherData!['discount_amount'] as num).toStringAsFixed(2)}',
+                            'Applied: $currentCode — Saves ₱${_parseDouble(widget.booking.voucherData!['discount_amount']).toStringAsFixed(2)}',
                             style: const TextStyle(
                                 color: kGreen,
                                 fontWeight: FontWeight.bold,
@@ -13248,26 +13251,26 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
   }
 
   double get _oldTotalPrice =>
-      (widget.booking['total_price'] as num?)?.toDouble() ?? 0.0;
+      _parseDouble(widget.booking['total_price']);
 
   double get _selectedDepartureCost {
     if (_selectedSchedule == null) return 0.0;
     final schedulePrice =
-        (_selectedSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+        _parseDouble(_selectedSchedule!['price']);
     return (schedulePrice + _selectedAccommodationPrice) * _passengerCount;
   }
 
   double get _selectedReturnCost {
     if (_selectedReturnSchedule == null) return 0.0;
     final schedulePrice =
-        (_selectedReturnSchedule!['price'] as num?)?.toDouble() ?? 0.0;
+        _parseDouble(_selectedReturnSchedule!['price']);
     return (schedulePrice + _selectedReturnAccommodationPrice) *
         _passengerCount;
   }
 
   double get _newTotalPrice {
     final vehiclePrice = (widget.booking['has_vehicle'] as bool? ?? false)
-        ? (widget.booking['vehicle_price'] as num?)?.toDouble() ?? 0.0
+        ? _parseDouble(widget.booking['vehicle_price'])
         : 0.0;
     return _selectedDepartureCost + _selectedReturnCost + vehiclePrice;
   }
@@ -14091,7 +14094,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                           .map((acc) {
                         final accId = acc['id'] as int?;
                         final isSelected = _selectedAccommodationId == accId;
-                        final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
+                        final price = _parseDouble(acc['price']);
                         return GestureDetector(
                           onTap: () => setState(() {
                             _selectedAccommodationId = accId;
@@ -14267,7 +14270,7 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
                         final accId = acc['id'] as int?;
                         final isSelected =
                             _selectedReturnAccommodationId == accId;
-                        final price = (acc['price'] as num?)?.toDouble() ?? 0.0;
+                        final price = _parseDouble(acc['price']);
                         return GestureDetector(
                           onTap: () => setState(() {
                             _selectedReturnAccommodationId = accId;
