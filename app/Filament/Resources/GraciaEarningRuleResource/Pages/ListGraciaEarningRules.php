@@ -33,10 +33,11 @@ class ListGraciaEarningRules extends ListRecords
                 ])
                 ->mountUsing(function (\Filament\Forms\Form $form) {
                     $setting = \App\Models\WebsiteSetting::getOrCreateByPage('referrals');
+                    $content = is_array($setting->content) ? $setting->content : [];
                     $form->fill([
-                        'referrer_points' => $setting->content['referrer_points'] ?? 10,
-                        'referee_points' => $setting->content['referee_points'] ?? 10,
-                        'welcome_bonus' => $setting->content['welcome_bonus'] ?? 50,
+                        'referrer_points' => $content['referrer_points'] ?? 10,
+                        'referee_points' => $content['referee_points'] ?? 10,
+                        'welcome_bonus' => $content['welcome_bonus'] ?? 50,
                     ]);
                 })
                 ->action(function (array $data): void {
