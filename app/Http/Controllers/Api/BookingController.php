@@ -238,11 +238,17 @@ class BookingController extends Controller
                 ], 400);
             }
 
+            $breakdown = $booking->getRefundBreakdown($isWithinFiveMinutes);
+
             return response()->json([
                 'status'           => 'success',
                 'message'          => 'Cancellation started.',
-                'cancellation_fee' => $booking->getCancellationFeeAmount($isWithinFiveMinutes),
-                'refund_amount'    => $booking->getRefundAmount($isWithinFiveMinutes),
+                'cancellation_fee' => $breakdown['deduction_amount'],
+                'refund_amount'    => $breakdown['refundable_amount'],
+                'transaction_fee'  => $breakdown['transaction_fee'],
+                'web_admin_fee'    => $breakdown['web_admin_fee'],
+                'surcharge_amount' => $breakdown['surcharge_amount'],
+                'surcharge_pct'    => $breakdown['surcharge_pct'],
             ]);
         }
 
@@ -391,9 +397,9 @@ class BookingController extends Controller
         $request->validate([
             'email' => 'required|email',
             'dep_schedule_id' => 'required|exists:schedules,id',
-            'dep_accommodation_id' => 'nullable|exists:transport_classes,id',
+            'dep_accommodation_id' => 'nullable|integer',
             'ret_schedule_id' => 'nullable|exists:schedules,id',
-            'ret_accommodation_id' => 'nullable|exists:transport_classes,id',
+            'ret_accommodation_id' => 'nullable|integer',
             'is_round_trip' => 'required|boolean'
         ]);
 
@@ -423,16 +429,26 @@ class BookingController extends Controller
         
         $depSchedule = \App\Models\Schedule::find($request->input('dep_schedule_id'));
         $depAccPrice = 0;
-        if ($request->input('dep_accommodation_id')) {
-            $tc = $depSchedule->transportClasses()->where('transport_classes.id', $request->input('dep_accommodation_id'))->first();
-            $depAccPrice = $tc ? $tc->pivot->price : 0;
+        if ($request->input('dep_accommodation_id') && $depSchedule) {
+            if ($isAirline) {
+                $tc = $depSchedule->transportClasses()->where('transport_classes.id', $request->input('dep_accommodation_id'))->first();
+                $depAccPrice = $tc ? $tc->pivot->price : 0;
+            } else {
+                $acc = $depSchedule->scheduleAccommodations()->where('schedule_accommodations.id', $request->input('dep_accommodation_id'))->first();
+                $depAccPrice = $acc ? $acc->price : 0;
+            }
         }
 
         $retSchedule = $request->input('ret_schedule_id') ? \App\Models\Schedule::find($request->input('ret_schedule_id')) : null;
         $retAccPrice = 0;
         if ($request->input('ret_accommodation_id') && $retSchedule) {
-            $tc = $retSchedule->transportClasses()->where('transport_classes.id', $request->input('ret_accommodation_id'))->first();
-            $retAccPrice = $tc ? $tc->pivot->price : 0;
+            if ($isAirline) {
+                $tc = $retSchedule->transportClasses()->where('transport_classes.id', $request->input('ret_accommodation_id'))->first();
+                $retAccPrice = $tc ? $tc->pivot->price : 0;
+            } else {
+                $acc = $retSchedule->scheduleAccommodations()->where('schedule_accommodations.id', $request->input('ret_accommodation_id'))->first();
+                $retAccPrice = $acc ? $acc->price : 0;
+            }
         }
 
         if ($isAirline) {

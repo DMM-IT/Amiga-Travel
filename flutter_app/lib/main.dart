@@ -70,7 +70,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.41+45';
+  static const String appVersion = '1.0.42+46';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -7187,7 +7187,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
         items: classes.map<DropdownMenuItem<int>>((c) {
           return DropdownMenuItem<int>(
             value: c['id'],
-            child: Text('${c['name']} (₱${c['pivot']['price']})'),
+            child: Text('${c['name']} (₱${c['price']})'),
           );
         }).toList(),
         onChanged: (v) {
@@ -7197,11 +7197,11 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             if (isReturn) {
               widget.booking.selectedReturnAirlineClassId = v;
               widget.booking.selectedReturnAirlineClassName = cls['name'];
-              widget.booking.selectedReturnAirlineClassPrice = _parseDouble(cls['pivot']['price']);
+              widget.booking.selectedReturnAirlineClassPrice = _parseDouble(cls['price']);
             } else {
               widget.booking.selectedAirlineClassId = v;
               widget.booking.selectedAirlineClassName = cls['name'];
-              widget.booking.selectedAirlineClassPrice = _parseDouble(cls['pivot']['price']);
+              widget.booking.selectedAirlineClassPrice = _parseDouble(cls['price']);
             }
           });
         },
@@ -7219,7 +7219,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
         items: accommodations.map<DropdownMenuItem<int>>((c) {
           return DropdownMenuItem<int>(
             value: c['id'],
-            child: Text('${c['name']} (₱${c['pivot']['price']})'),
+            child: Text('${c['name']} (₱${c['price']})'),
           );
         }).toList(),
         onChanged: (v) {
@@ -7229,11 +7229,11 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
             if (isReturn) {
               widget.booking.selectedReturnFerryAccommodationId = v;
               widget.booking.selectedReturnFerryAccommodationName = acc['name'];
-              widget.booking.selectedReturnFerryAccommodationPrice = _parseDouble(acc['pivot']['price']);
+              widget.booking.selectedReturnFerryAccommodationPrice = _parseDouble(acc['price']);
             } else {
               widget.booking.selectedFerryAccommodationId = v;
               widget.booking.selectedFerryAccommodationName = acc['name'];
-              widget.booking.selectedFerryAccommodationPrice = _parseDouble(acc['pivot']['price']);
+              widget.booking.selectedFerryAccommodationPrice = _parseDouble(acc['price']);
             }
           });
         },
@@ -14546,6 +14546,10 @@ class _RefundScreenState extends State<RefundScreen> {
   String _success = '';
   double? _cancellationFee;
   double? _refundAmount;
+  double? _transactionFee;
+  double? _webAdminFee;
+  double? _surchargeAmount;
+  int? _surchargePct;
 
   String _refundMethod = 'GCash';
   final _institutionCtrl = TextEditingController();
@@ -14582,6 +14586,10 @@ class _RefundScreenState extends State<RefundScreen> {
         setState(() {
           _cancellationFee = _parseDouble(data['cancellation_fee']);
           _refundAmount = _parseDouble(data['refund_amount']);
+          _transactionFee = _parseDouble(data['transaction_fee']);
+          _webAdminFee = _parseDouble(data['web_admin_fee']);
+          _surchargeAmount = _parseDouble(data['surcharge_amount']);
+          _surchargePct = data['surcharge_pct'] != null ? int.tryParse(data['surcharge_pct'].toString()) : 0;
           _isLoading = false;
         });
       } else {
@@ -14673,6 +14681,27 @@ class _RefundScreenState extends State<RefundScreen> {
                             const Text('Estimated Refund', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             Text('?${_refundAmount?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16))
                           ]),
+                          if ((_transactionFee ?? 0) > 0) ...[
+                            const Divider(),
+                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                              const Text('Transaction Fee'),
+                              Text('?${_transactionFee?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey))
+                            ]),
+                          ],
+                          if ((_webAdminFee ?? 0) > 0) ...[
+                            const Divider(),
+                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                              const Text('Web Admin Fee'),
+                              Text('?${_webAdminFee?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey))
+                            ]),
+                          ],
+                          if ((_surchargeAmount ?? 0) > 0) ...[
+                            const Divider(),
+                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                              Text('Surcharge (${_surchargePct ?? 0}%)'),
+                              Text('?${_surchargeAmount?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey))
+                            ]),
+                          ],
                         ],
                       )
                     )
@@ -14925,13 +14954,13 @@ class _RebookScreenState extends State<RebookScreen> {
           return Card(
             color: isSel ? Colors.blue.shade50 : null,
             child: ExpansionTile(
-              title: Text('${s['departure_time']} - ${s['arrival_time']}'),
-              subtitle: Text('${s['route']?['origin'] ?? ''} to ${s['route']?['destination'] ?? ''}'),
+              title: Text('${s['departure']} - ${s['arrival']}'),
+              subtitle: Text('${widget.booking['origin'] ?? ''} to ${widget.booking['destination'] ?? ''}'),
               children: subList.map((tc) {
                 final isAccSel = isSel && (isReturn ? _selRetAccId : _selDepAccId) == tc['id'];
                 return RadioListTile(
                   title: Text(tc['name']),
-                  subtitle: Text('?${tc['pivot']?['price']}'),
+                  subtitle: Text('?${tc['price']}'),
                   value: true,
                   groupValue: isAccSel,
                   onChanged: (v) {
