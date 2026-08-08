@@ -432,7 +432,7 @@ class BookingController extends Controller
         if ($request->input('dep_accommodation_id') && $depSchedule) {
             if ($isAirline) {
                 $tc = $depSchedule->transportClasses()->where('transport_classes.id', $request->input('dep_accommodation_id'))->first();
-                $depAccPrice = $tc ? $tc->pivot->price : 0;
+                $depAccPrice = $tc ? ((float)($tc->pivot->additional_price ?? ($tc->is_on_sale && $tc->sale_price ? $tc->sale_price : $tc->price))) : 0;
             } else {
                 $acc = $depSchedule->scheduleAccommodations()->where('schedule_accommodations.id', $request->input('dep_accommodation_id'))->first();
                 $depAccPrice = $acc ? $acc->price : 0;
@@ -444,7 +444,7 @@ class BookingController extends Controller
         if ($request->input('ret_accommodation_id') && $retSchedule) {
             if ($isAirline) {
                 $tc = $retSchedule->transportClasses()->where('transport_classes.id', $request->input('ret_accommodation_id'))->first();
-                $retAccPrice = $tc ? $tc->pivot->price : 0;
+                $retAccPrice = $tc ? ((float)($tc->pivot->additional_price ?? ($tc->is_on_sale && $tc->sale_price ? $tc->sale_price : $tc->price))) : 0;
             } else {
                 $acc = $retSchedule->scheduleAccommodations()->where('schedule_accommodations.id', $request->input('ret_accommodation_id'))->first();
                 $retAccPrice = $acc ? $acc->price : 0;
@@ -452,10 +452,10 @@ class BookingController extends Controller
         }
 
         if ($isAirline) {
-            $depPerPax = $depAccPrice / 1.5;
+            $depPerPax = $depAccPrice;
             $newTotal += $depPerPax * $passengerCount;
             if ($request->input('is_round_trip')) {
-                $retPerPax = $retAccPrice / 1.5;
+                $retPerPax = $retAccPrice;
                 $newTotal += $retPerPax * $passengerCount;
             }
         } else {
@@ -492,6 +492,8 @@ class BookingController extends Controller
         return response()->json([
             'status' => 'success',
             'breakdown' => [
+                'original_ticket_price' => (float) $originalFare,
+                'new_ticket_price' => (float) $newTotal,
                 'rate_diff' => (float) $rate_diff,
                 'surcharge' => (float) $surcharge,
                 'revalidation_fee' => (float) $revalidation_fee,

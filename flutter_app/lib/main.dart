@@ -70,7 +70,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.43+47';
+  static const String appVersion = '1.0.44+48';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -7380,7 +7380,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       matchedOperator = 'sunlight';
     }
 
-    final operatorRules = _baggageRules[matchedOperator];
+    final operatorRules = (_baggageRules['local'] != null ? _baggageRules['local'][matchedOperator] : null)
+        ?? (_baggageRules['international'] != null ? _baggageRules['international'][matchedOperator] : null)
+        ?? _baggageRules[matchedOperator];
     if (operatorRules == null ||
         operatorRules['options'] == null ||
         (operatorRules['options'] as List).isEmpty) {
@@ -15139,19 +15141,30 @@ class _RebookScreenState extends State<RebookScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-                        child: Icon(isAirline ? Icons.flight : Icons.directions_boat, color: Colors.blue),
-                      ),
+                      Builder(builder: (context) {
+                        final logoUrl = getOperatorLogoUrl(s['operator'] ?? '');
+                        return Container(
+                          width: 50,
+                          height: 50,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
+                          child: logoUrl.isNotEmpty 
+                              ? Image.network(logoUrl, fit: BoxFit.contain)
+                              : Icon(isAirline ? Icons.flight : Icons.directions_boat, color: Colors.blue),
+                        );
+                      }),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${s['departure']}  -  ${s['arrival']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            const SizedBox(height: 4),
-                            Text('${s['service_name'] ?? ''}', style: const TextStyle(color: Colors.grey)),
+                            Text('${s['departure']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(height: 2),
+                            Text('To: ${s['arrival']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black54)),
+                            if ((s['service_name'] ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text('${s['service_name']}', style: const TextStyle(color: Colors.grey)),
+                            ],
                           ],
                         ),
                       ),
@@ -15215,6 +15228,7 @@ class _RebookScreenState extends State<RebookScreen> {
                   });
                 },
                 child: Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isAccSel ? const Color(0xFFdb2777).withOpacity(0.05) : Colors.white,
@@ -15222,7 +15236,7 @@ class _RebookScreenState extends State<RebookScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
@@ -15230,11 +15244,13 @@ class _RebookScreenState extends State<RebookScreen> {
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '₱${_parseDouble(tc['price']).toStringAsFixed(2)}',
                         style: const TextStyle(color: Color(0xFFdb2777), fontWeight: FontWeight.bold, fontSize: 16),
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
@@ -15284,6 +15300,14 @@ class _RebookScreenState extends State<RebookScreen> {
               children: [
                 const Text('Summary of Fees', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 16),
+                if (_breakdown!['original_ticket_price'] != null) ...[
+                  _buildBreakdownRow('Original Ticket Price', _breakdown!['original_ticket_price']?.toString() ?? '0.00'),
+                  const SizedBox(height: 8),
+                ],
+                if (_breakdown!['new_ticket_price'] != null) ...[
+                  _buildBreakdownRow('New Ticket Price', _breakdown!['new_ticket_price']?.toString() ?? '0.00'),
+                  const SizedBox(height: 8),
+                ],
                 _buildBreakdownRow('Rate Difference', _breakdown!['rate_diff']?.toString() ?? '0.00'),
                 const SizedBox(height: 8),
                 _buildBreakdownRow('Surcharge', _breakdown!['surcharge']?.toString() ?? '0.00'),
