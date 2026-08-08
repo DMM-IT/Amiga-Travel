@@ -25,6 +25,7 @@ class WebsiteSetting extends Model
         'services' => 'Services',
         'contact_us' => 'Contact Us',
         'faqs' => 'FAQs',
+        'referrals' => 'Referrals',
     ];
 
     const BOOKING_CARD_NAMES = [
