@@ -45,6 +45,7 @@ class BookingController extends Controller
             'passengers'                                => 'required|array|min:1',
             'passengers.*.name'                         => 'required|string|max:255',
             'passengers.*.type'                         => 'required|string|in:adult,child,driver',
+            'passengers.*.birthdate'                    => 'nullable|date',
             'passengers.*.discount_id'                  => 'nullable|integer|exists:discounts,id',
             'passengers.*.school_name'                  => 'nullable|string|max:255',
             'passengers.*.id_number'                    => 'nullable|string|max:255',
@@ -141,6 +142,7 @@ class BookingController extends Controller
                 now()->addDays(7),
                 ['booking' => $booking->id]
             );
+            $data['mode'] = $booking->getMode();
             $data['price_breakdown'] = $booking->getPriceBreakdown();
             $data['calculated_rebooking_fee'] = $booking->getRebookingFeeAmount();
 
@@ -432,7 +434,12 @@ class BookingController extends Controller
         if ($request->input('dep_accommodation_id') && $depSchedule) {
             if ($isAirline) {
                 $tc = $depSchedule->transportClasses()->where('transport_classes.id', $request->input('dep_accommodation_id'))->first();
-                $depAccPrice = $tc ? ((float)($tc->pivot->additional_price ?? ($tc->is_on_sale && $tc->sale_price ? $tc->sale_price : $tc->price))) : 0;
+                if ($tc) {
+                    $pivotPrice = (float)($tc->pivot->additional_price ?? 0);
+                    $depAccPrice = $pivotPrice > 0 ? $pivotPrice : ((float)($tc->is_on_sale && $tc->sale_price ? $tc->sale_price : $tc->price));
+                } else {
+                    $depAccPrice = 0;
+                }
             } else {
                 $acc = $depSchedule->scheduleAccommodations()->where('schedule_accommodations.id', $request->input('dep_accommodation_id'))->first();
                 $depAccPrice = $acc ? $acc->price : 0;
@@ -444,7 +451,12 @@ class BookingController extends Controller
         if ($request->input('ret_accommodation_id') && $retSchedule) {
             if ($isAirline) {
                 $tc = $retSchedule->transportClasses()->where('transport_classes.id', $request->input('ret_accommodation_id'))->first();
-                $retAccPrice = $tc ? ((float)($tc->pivot->additional_price ?? ($tc->is_on_sale && $tc->sale_price ? $tc->sale_price : $tc->price))) : 0;
+                if ($tc) {
+                    $pivotPrice = (float)($tc->pivot->additional_price ?? 0);
+                    $retAccPrice = $pivotPrice > 0 ? $pivotPrice : ((float)($tc->is_on_sale && $tc->sale_price ? $tc->sale_price : $tc->price));
+                } else {
+                    $retAccPrice = 0;
+                }
             } else {
                 $acc = $retSchedule->scheduleAccommodations()->where('schedule_accommodations.id', $request->input('ret_accommodation_id'))->first();
                 $retAccPrice = $acc ? $acc->price : 0;

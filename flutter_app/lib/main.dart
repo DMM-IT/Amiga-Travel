@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
@@ -70,7 +71,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.44+48';
+  static const String appVersion = '1.0.45+49';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -965,6 +966,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   String? _travelMode;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Key _activityKey = UniqueKey();
 
   @override
   void initState() {
@@ -1036,6 +1038,7 @@ class _MainScreenState extends State<MainScreen> {
       UserSession.email = 'user@amigagracia.com';
       UserSession.token = '';
       UserSession.lookupToken = '';
+      _activityKey = UniqueKey();
       _selectedIndex = 0; // Immediately navigate away from Transaction tab
     });
   }
@@ -1165,7 +1168,7 @@ class _MainScreenState extends State<MainScreen> {
           TravelScreen(initialMode: _travelMode),
           VouchersScreen(
               onUseVoucher: () => setState(() => _selectedIndex = 2)),
-          ActivityScreen(onLoginSuccess: () => setState(() {})),
+          ActivityScreen(key: _activityKey, onLoginSuccess: () => setState(() {})),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -4157,7 +4160,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
       final response = await http.post(
         Uri.parse('${UserSession.getBaseUrl()}/api/register/request-otp'),
         headers: {'Accept': 'application/json'},
-        body: {'name': name, 'email': email, 'password': password},
+        body: {
+          'name': name,
+          'email': email,
+          'password': password,
+          'referral_code': _referralCtrl.text.trim(),
+        },
       );
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -5040,16 +5048,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               color: kSlate400, size: 14),
                           const SizedBox(width: 6),
                           Text(
-                              b['departure_date'] != null
-                                  ? b['departure_date'].toString().split('T')[0]
+                              (b['rebooking_departure_date'] ?? b['preferred_replacement_date'] ?? b['departure_date']) != null
+                                  ? (b['rebooking_departure_date'] ?? b['preferred_replacement_date'] ?? b['departure_date']).toString().split('T')[0]
                                   : '',
                               style: const TextStyle(
                                   fontSize: 12, color: kSlate600)),
-                          if (b['return_date'] != null) ...[
+                          if ((b['rebooking_return_date'] ?? b['return_date']) != null) ...[
                             const Text('  |  Return: ',
                                 style:
                                     TextStyle(fontSize: 12, color: kSlate400)),
-                            Text(b['return_date'].toString().split('T')[0],
+                            Text((b['rebooking_return_date'] ?? b['return_date']).toString().split('T')[0],
                                 style: const TextStyle(
                                     fontSize: 12, color: kSlate600)),
                           ],
@@ -5058,7 +5066,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.directions_boat,
+                          Icon(b['mode'] == 'airline' ? Icons.flight : Icons.directions_boat,
                               color: kSlate400, size: 14),
                           const SizedBox(width: 6),
                           Text(
@@ -5784,9 +5792,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         const SizedBox(height: 12),
         _detailSection('Trip', <String>[
           '${_booking['origin']} → ${_booking['destination']}',
-          'Departure: ${(_booking['departure_date'] ?? '-').toString().split('T')[0]}',
-          if (_booking['return_date'] != null)
-            'Return: ${_booking['return_date'].toString().split('T')[0]}',
+          'Departure: ${(_booking['rebooking_departure_date'] ?? _booking['preferred_replacement_date'] ?? _booking['departure_date'] ?? '-').toString().split('T')[0]}',
+          if ((_booking['rebooking_return_date'] ?? _booking['return_date']) != null)
+            'Return: ${(_booking['rebooking_return_date'] ?? _booking['return_date']).toString().split('T')[0]}',
           (_booking['schedule_summary'] ??
                   _booking['schedule_service'] ??
                   'Schedule not recorded')
@@ -11937,6 +11945,61 @@ class _GraciaPointsScreenState extends State<GraciaPointsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // Share & Earn
+                      if (UserSession.referralCode != null && UserSession.referralCode!.isNotEmpty)
+                        Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              children: [
+                                const Text('SHARE & EARN',
+                                    style: TextStyle(
+                                        color: Colors.blueGrey,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.2)),
+                                const SizedBox(height: 8),
+                                const Text(
+                                    'Invite friends using your referral code and you both earn Gracia Coins!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 13, color: Colors.black87)),
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.blue.shade200),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        UserSession.referralCode!,
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 2),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.copy, color: Colors.blue),
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(text: UserSession.referralCode!));
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Referral code copied to clipboard!')),
+                                          );
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 16),
                       // Learn More
                       GestureDetector(
                         onTap: () {
@@ -15337,7 +15400,10 @@ class _RebookScreenState extends State<RebookScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        if (_qrUrl != null) Center(child: Image.network(_qrUrl!, height: 150)),
+        _qrUrl != null
+            ? Center(child: Image.network(_qrUrl!, height: 150))
+            : const Center(
+                child: Icon(Icons.qr_code, size: 100, color: kSlate300)),
         const SizedBox(height: 24),
         OutlinedButton.icon(
           onPressed: () async {

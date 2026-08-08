@@ -148,3 +148,15 @@ flutter build ios
   Make sure you ran `php artisan storage:link` on the backend and that the API IP address in `main.dart` is correct. Localhost (`127.0.0.1`) does not work on physical mobile devices.
 - **ADB Error on physical device:**
   If you get `INSTALL_FAILED_USER_RESTRICTED` on Xiaomi/Redmi devices when running `flutter run`, you must build the APK using `flutter build apk --debug`, copy it to your phone, and install it manually.
+
+---
+
+## 📅 Recent System Updates (Changelog)
+
+### v1.0.44+48 (Latest)
+- **Backend Rebooking Fix:** Fixed a critical bug in `BookingController` where airline rebooking returned ₱0 due to an incorrect database pivot column lookup (`additional_price` vs `price`). Also removed an invalid `1.5` markup division that caused price discrepancies.
+- **Flutter UI Enhancements:**
+  - Added `Original Ticket Price` and `New Ticket Price` rows directly into the Rebooking Breakdown modal for transparent fee reporting.
+  - Centered text inside the Accommodation selection grid for a cleaner layout.
+  - Upgraded the "Select New Departure Schedule" list UI to fetch and display dynamic Operator Logos (e.g., Cebu Pacific, 2GO) instead of generic icons, and improved text wrapping for multi-line schedule dates.
+- **Deployment & Stability:** Added database transaction safety (`DB::transaction`) to booking checkouts and created database indexes for core tables (`bookings`, `transactions`) to prevent N+1 and full-scan bottlenecks during heavy load.

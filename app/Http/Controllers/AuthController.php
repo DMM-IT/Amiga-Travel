@@ -99,9 +99,12 @@ class AuthController extends Controller
                 'Failed web login attempt.'
             );
 
+            $userExists = User::where('email', $credentials['email'])->exists();
+            $errorMessage = $userExists ? 'Incorrect password.' : 'Incorrect email address.';
+
             return back()
                 ->withInput($request->only('email', 'remember'))
-                ->withErrors(['email' => 'These credentials do not match our records.']);
+                ->withErrors(['email' => $errorMessage]);
         }
 
         $request->session()->regenerate();
@@ -200,8 +203,11 @@ class AuthController extends Controller
                 'Failed API login attempt.'
             );
 
+            $userExists = User::where('email', $credentials['email'])->exists();
+            $errorMessage = $userExists ? 'Incorrect password.' : 'Incorrect email address.';
+
             return response()->json([
-                'message' => 'These credentials do not match our records.'
+                'message' => $errorMessage
             ], 422);
         }
 
@@ -322,6 +328,7 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
+            'referral_code' => 'nullable|string',
         ]);
 
         $email = strtolower(trim($validated['email']));
@@ -332,6 +339,7 @@ class AuthController extends Controller
             'name'     => $validated['name'],
             'email'    => $email,
             'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'referral_code' => $validated['referral_code'] ?? null,
             'otp'      => $otp,
         ], now()->addMinutes(10));
 
@@ -387,13 +395,65 @@ class AuthController extends Controller
         Cache::forget('pending_register:' . $email);
 
         $legacyToken = Str::random(80);
+        
+        $referredBy = null;
+        if (!empty($pending['referral_code'])) {
+            $referrer = User::where('referral_code', $pending['referral_code'])->first();
+            if ($referrer) {
+                $referredBy = $referrer->id;
+            }
+        }
+
         $user = User::create([
             'name'              => $pending['name'],
             'email'             => $pending['email'],
             'password'          => $pending['password'],
             'api_token'         => $legacyToken,
             'email_verified_at' => now(),
+            'referral_code'     => strtoupper(Str::random(8)),
+            'referred_by'       => $referredBy,
         ]);
+
+        // Process Rewards
+        $settings = \App\Models\WebsiteSetting::where('page', 'referrals')->first();
+        $rewards = $settings ? $settings->content : [];
+        $referrerPoints = $rewards['referrer_points'] ?? 10;
+        $refereePoints = $rewards['referee_points'] ?? 10;
+        $welcomeBonus = $rewards['welcome_bonus'] ?? 50;
+
+        if ($referredBy) {
+            \App\Models\GraciaPointLedger::create([
+                'user_id' => $referredBy,
+                'points_earned' => $referrerPoints,
+                'points_used' => 0,
+                'description' => 'Referral Bonus (Referred: ' . $user->email . ')'
+            ]);
+            $referrer->graciaBalance()->firstOrCreate(['user_id' => $referrer->id])->increment('current_balance', $referrerPoints);
+            $referrer->graciaBalance()->firstOrCreate(['user_id' => $referrer->id])->increment('total_earned', $referrerPoints);
+
+            \App\Models\GraciaPointLedger::create([
+                'user_id' => $user->id,
+                'points_earned' => $refereePoints,
+                'points_used' => 0,
+                'description' => 'Referral Code Used'
+            ]);
+            $user->graciaBalance()->firstOrCreate(['user_id' => $user->id])->increment('current_balance', $refereePoints);
+            $user->graciaBalance()->firstOrCreate(['user_id' => $user->id])->increment('total_earned', $refereePoints);
+            
+            $user->update(['referral_redeemed' => true]);
+        }
+
+        if (User::count() <= 100) {
+            \App\Models\GraciaPointLedger::create([
+                'user_id' => $user->id,
+                'points_earned' => $welcomeBonus,
+                'points_used' => 0,
+                'description' => 'First 100 Users Welcome Bonus'
+            ]);
+            $user->graciaBalance()->firstOrCreate(['user_id' => $user->id])->increment('current_balance', $welcomeBonus);
+            $user->graciaBalance()->firstOrCreate(['user_id' => $user->id])->increment('total_earned', $welcomeBonus);
+            $user->update(['welcome_bonus_claimed' => true]);
+        }
 
         // Issue Sanctum token for OTP-verified registrations
         $sanctumToken = $user->createToken('api-access')->plainTextToken;
