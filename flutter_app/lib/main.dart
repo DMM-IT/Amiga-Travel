@@ -70,7 +70,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.39+43';
+  static const String appVersion = '1.0.40+44';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -252,6 +252,20 @@ class BookingData {
   Map<String, dynamic>? selectedReturnSchedule;
   int? selectedReturnScheduleAccommodationId;
   Map<String, dynamic>? selectedReturnScheduleAccommodation;
+
+  int? selectedFerryAccommodationId;
+  String? selectedFerryAccommodationName;
+  double? selectedFerryAccommodationPrice;
+  int? selectedReturnFerryAccommodationId;
+  String? selectedReturnFerryAccommodationName;
+  double? selectedReturnFerryAccommodationPrice;
+
+  int? selectedAirlineClassId;
+  String? selectedAirlineClassName;
+  double? selectedAirlineClassPrice;
+  int? selectedReturnAirlineClassId;
+  String? selectedReturnAirlineClassName;
+  double? selectedReturnAirlineClassPrice;
 
   // Vehicle (Ferry only)
   bool hasVehicle = false;
@@ -5841,11 +5855,25 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         const SizedBox(height: 12),
         if (_canManage && !_cancellationStarted) ...[
           OutlinedButton.icon(
-              onPressed: _busy ? null : _rebook,
+              onPressed: _busy ? null : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => RebookScreen(booking: _booking),
+                  ),
+                );
+              },
               icon: const Icon(Icons.calendar_month),
               label: const Text('Request rebooking')),
           OutlinedButton.icon(
-            onPressed: _busy ? null : _startCancellation,
+            onPressed: _busy ? null : () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RefundScreen(booking: _booking),
+                ),
+              );
+            },
             icon: Icon(isWithin5Mins
                 ? Icons.cancel_outlined
                 : Icons.monetization_on_outlined),
@@ -6532,9 +6560,9 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
     final accommodations = s['accommodations'] as List<dynamic>? ?? [];
 
     if (isAirline && classes.isNotEmpty) {
-      _showAirlineClassPicker(context, classes);
+      // _showAirlineClassPicker(context, classes);
     } else if (!isAirline && accommodations.isNotEmpty) {
-      _showFerryAccommodationPicker(context, accommodations);
+      // _showFerryAccommodationPicker(context, accommodations);
     } else {
       widget.booking.selectedTransportClassId = null;
       widget.booking.selectedTransportClass = null;
@@ -6941,6 +6969,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                     widget.booking.selectedReturnSchedule![
                                         'promotional_ticket'],
                                     isReturn: true),
+                              _buildTransportClassesSelection(isReturn: true),
                               const SizedBox(height: 20),
                               _buildBaggageSelection(),
                               Padding(
@@ -7025,6 +7054,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                                 _buildPromoTicketBanner(widget.booking
                                     .selectedSchedule!['promotional_ticket']),
                               if (widget.booking.selectedSchedule != null) ...[
+                                _buildTransportClassesSelection(isReturn: false),
                                 _buildBaggageSelection(),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
@@ -7131,13 +7161,92 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
       ),
     );
   }
+  Widget _buildTransportClassesSelection({required bool isReturn}) {
+    final schedule = isReturn ? widget.booking.selectedReturnSchedule : widget.booking.selectedSchedule;
+    if (schedule == null) return const SizedBox.shrink();
+
+    final isAirline = widget.booking.mode == 'airline';
+    final classes = schedule['transport_classes'] as List<dynamic>? ?? [];
+    final accommodations = schedule['accommodations'] as List<dynamic>? ?? [];
+
+    if (isAirline && classes.isNotEmpty) {
+      return _buildClassesDropdown(classes, isReturn: isReturn);
+    } else if (!isAirline && accommodations.isNotEmpty) {
+      return _buildAccommodationsDropdown(accommodations, isReturn: isReturn);
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildClassesDropdown(List<dynamic> classes, {required bool isReturn}) {
+    final val = isReturn ? widget.booking.selectedReturnAirlineClassId : widget.booking.selectedAirlineClassId;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: DropdownButtonFormField<int>(
+        value: val,
+        decoration: const InputDecoration(labelText: 'Transport Class', border: OutlineInputBorder()),
+        items: classes.map<DropdownMenuItem<int>>((c) {
+          return DropdownMenuItem<int>(
+            value: c['id'],
+            child: Text('${c['name']} (₱${c['pivot']['price']})'),
+          );
+        }).toList(),
+        onChanged: (v) {
+          if (v == null) return;
+          final cls = classes.firstWhere((element) => element['id'] == v);
+          setState(() {
+            if (isReturn) {
+              widget.booking.selectedReturnAirlineClassId = v;
+              widget.booking.selectedReturnAirlineClassName = cls['name'];
+              widget.booking.selectedReturnAirlineClassPrice = _parseDouble(cls['pivot']['price']);
+            } else {
+              widget.booking.selectedAirlineClassId = v;
+              widget.booking.selectedAirlineClassName = cls['name'];
+              widget.booking.selectedAirlineClassPrice = _parseDouble(cls['pivot']['price']);
+            }
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildAccommodationsDropdown(List<dynamic> accommodations, {required bool isReturn}) {
+    final val = isReturn ? widget.booking.selectedReturnFerryAccommodationId : widget.booking.selectedFerryAccommodationId;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: DropdownButtonFormField<int>(
+        value: val,
+        decoration: const InputDecoration(labelText: 'Ferry Accommodation', border: OutlineInputBorder()),
+        items: accommodations.map<DropdownMenuItem<int>>((c) {
+          return DropdownMenuItem<int>(
+            value: c['id'],
+            child: Text('${c['name']} (₱${c['pivot']['price']})'),
+          );
+        }).toList(),
+        onChanged: (v) {
+          if (v == null) return;
+          final acc = accommodations.firstWhere((element) => element['id'] == v);
+          setState(() {
+            if (isReturn) {
+              widget.booking.selectedReturnFerryAccommodationId = v;
+              widget.booking.selectedReturnFerryAccommodationName = acc['name'];
+              widget.booking.selectedReturnFerryAccommodationPrice = _parseDouble(acc['pivot']['price']);
+            } else {
+              widget.booking.selectedFerryAccommodationId = v;
+              widget.booking.selectedFerryAccommodationName = acc['name'];
+              widget.booking.selectedFerryAccommodationPrice = _parseDouble(acc['pivot']['price']);
+            }
+          });
+        },
+      ),
+    );
+  }
 
   Widget _buildBaggageSelection() {
     if (widget.booking.mode != 'airline') return const SizedBox.shrink();
     if (widget.booking.selectedSchedule == null) return const SizedBox.shrink();
 
     final serviceName =
-        widget.booking.selectedSchedule!['service']?.toString().toLowerCase() ??
+        widget.booking.selectedSchedule!['operator']?.toString().toLowerCase() ??
             '';
 
     String matchedOperator = 'ceb_pac';
@@ -7322,8 +7431,7 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                         final accommodations =
                             s['accommodations'] as List<dynamic>? ?? [];
                         if (accommodations.isNotEmpty) {
-                          _showFerryAccommodationPicker(context, accommodations,
-                              isReturn: true);
+                          // _showFerryAccommodationPicker(context, accommodations, isReturn: true);
                         }
                       }
                     } else {
@@ -7344,14 +7452,13 @@ class _ScheduleSelectScreenState extends State<ScheduleSelectScreen> {
                         final accommodations =
                             s['accommodations'] as List<dynamic>? ?? [];
                         if (accommodations.isNotEmpty) {
-                          _showFerryAccommodationPicker(context, accommodations,
-                              isReturn: false);
+                          // _showFerryAccommodationPicker(context, accommodations, isReturn: false);
                         }
                       } else {
                         final classes =
                             s['transport_classes'] as List<dynamic>? ?? [];
                         if (classes.isNotEmpty) {
-                          _showAirlineClassPicker(context, classes);
+                          // _showAirlineClassPicker(context, classes);
                         }
                       }
                     }
@@ -14418,6 +14525,505 @@ class _ServiceCancellationScreenState extends State<ServiceCancellationScreen> {
           const SizedBox(height: 32),
         ],
       ),
+    );
+  }
+}
+
+
+
+class RefundScreen extends StatefulWidget {
+  final Map<String, dynamic> booking;
+  const RefundScreen({super.key, required this.booking});
+
+  @override
+  State<RefundScreen> createState() => _RefundScreenState();
+}
+
+class _RefundScreenState extends State<RefundScreen> {
+  bool _isLoading = true;
+  bool _isSubmitting = false;
+  String _error = '';
+  String _success = '';
+  double? _cancellationFee;
+  double? _refundAmount;
+
+  String _refundMethod = 'GCash';
+  final _institutionCtrl = TextEditingController();
+  final _accountCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _startCancellation();
+  }
+
+  @override
+  void dispose() {
+    _institutionCtrl.dispose();
+    _accountCtrl.dispose();
+    _nameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _startCancellation() async {
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/bookings/${widget.booking['id']}/cancel'),
+        headers: {'Accept': 'application/json'},
+        body: {
+          'email': UserSession.email,
+          'action': 'start',
+        }
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _cancellationFee = _parseDouble(data['cancellation_fee']);
+          _refundAmount = _parseDouble(data['refund_amount']);
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = data['message'] ?? 'Unable to request refund at this time.';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Network error. Please try again.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _submitRefund() async {
+    if (_accountCtrl.text.trim().isEmpty || _nameCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill out all refund details')));
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    final parts = ['Method: $_refundMethod'];
+    if (_refundMethod != 'GCash' && _institutionCtrl.text.trim().isNotEmpty) {
+      parts.add('Institution: ${_institutionCtrl.text.trim()}');
+    }
+    parts.add('Account No: ${_accountCtrl.text.trim()}');
+    parts.add('Name: ${_nameCtrl.text.trim()}');
+    final dest = parts.join(' | ');
+
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/bookings/${widget.booking['id']}/cancel'),
+        headers: {'Accept': 'application/json'},
+        body: {
+          'email': UserSession.email,
+          'action': 'confirm',
+          'refund_destination': dest,
+        }
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        setState(() => _success = 'Refund requested successfully! You will receive an email confirmation shortly.');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Error submitting refund')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Please try again.')));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Request Refund')),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : _error.isNotEmpty 
+          ? Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(_error, style: const TextStyle(color: Colors.red, fontSize: 16), textAlign: TextAlign.center)))
+          : _success.isNotEmpty
+            ? Center(child: Padding(padding: const EdgeInsets.all(20), child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 64),
+                const SizedBox(height: 16),
+                Text(_success, style: const TextStyle(fontSize: 16), textAlign: TextAlign.center),
+                const SizedBox(height: 24),
+                FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Done'))
+              ])))
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  const Text('Cancellation details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Card(
+                    color: Colors.red.shade50,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.red.shade200)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            const Text('Cancellation Fee', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('?${_cancellationFee?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+                          ]),
+                          const Divider(),
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            const Text('Estimated Refund', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text('?${_refundAmount?.toStringAsFixed(2)}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16))
+                          ]),
+                        ],
+                      )
+                    )
+                  ),
+                  const SizedBox(height: 24),
+                  const Text('Where should we send your refund?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _refundMethod,
+                    decoration: const InputDecoration(labelText: 'Refund Method', border: OutlineInputBorder()),
+                    items: const [
+                      DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                      DropdownMenuItem(value: 'Online Wallet', child: Text('Online Wallet (Maya, etc)')),
+                      DropdownMenuItem(value: 'Bank Account', child: Text('Bank Account')),
+                    ],
+                    onChanged: (v) => setState(() => _refundMethod = v ?? 'GCash'),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_refundMethod != 'GCash')
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TextField(controller: _institutionCtrl, decoration: const InputDecoration(labelText: 'Bank/Wallet Name', border: OutlineInputBorder())),
+                    ),
+                  TextField(controller: _accountCtrl, decoration: const InputDecoration(labelText: 'Account Number', border: OutlineInputBorder()), keyboardType: TextInputType.number),
+                  const SizedBox(height: 12),
+                  TextField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Account Name', border: OutlineInputBorder())),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: FilledButton(
+                      onPressed: _isSubmitting ? null : _submitRefund,
+                      child: _isSubmitting ? const CircularProgressIndicator(color: Colors.white) : const Text('Submit Refund Request', style: TextStyle(fontSize: 16)),
+                    )
+                  )
+                ],
+              )
+    );
+  }
+}
+
+class RebookScreen extends StatefulWidget {
+  final Map<String, dynamic> booking;
+  const RebookScreen({super.key, required this.booking});
+
+  @override
+  State<RebookScreen> createState() => _RebookScreenState();
+}
+
+class _RebookScreenState extends State<RebookScreen> {
+  int _step = 0; // 0=dates, 1=dep_schedule, 2=ret_schedule, 3=breakdown, 4=proof
+  bool _isLoading = false;
+  String _error = '';
+
+  DateTime? _depDate;
+  DateTime? _retDate;
+
+  List<dynamic> _depSchedules = [];
+  List<dynamic> _retSchedules = [];
+
+  int? _selDepSchId;
+  int? _selDepAccId;
+  int? _selRetSchId;
+  int? _selRetAccId;
+
+  Map<String, dynamic>? _breakdown;
+  String? _qrUrl;
+  XFile? _proof;
+  
+  bool get _isRoundTrip => widget.booking['return_date'] != null;
+
+  Future<void> _fetchDepSchedules() async {
+    setState(() { _isLoading = true; _error = ''; });
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/schedules'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'origin': widget.booking['origin'] ?? '',
+          'destination': widget.booking['destination'] ?? '',
+          'date': _depDate!.toIso8601String().split('T')[0],
+          'mode': widget.booking['mode'],
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        setState(() {
+          _depSchedules = data['schedules'] ?? [];
+          _step = 1;
+        });
+      } else {
+        setState(() => _error = data['message'] ?? 'Failed to fetch schedules');
+      }
+    } catch (e) {
+      setState(() => _error = 'Network error');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _fetchRetSchedules() async {
+    setState(() { _isLoading = true; _error = ''; });
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/schedules'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'origin': widget.booking['destination'] ?? '',
+          'destination': widget.booking['origin'] ?? '',
+          'date': _retDate!.toIso8601String().split('T')[0],
+          'mode': widget.booking['mode'],
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        setState(() {
+          _retSchedules = data['schedules'] ?? [];
+          _step = 2;
+        });
+      } else {
+        setState(() => _error = data['message'] ?? 'Failed to fetch return schedules');
+      }
+    } catch (e) {
+      setState(() => _error = 'Network error');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _calcBreakdown() async {
+    setState(() { _isLoading = true; _error = ''; });
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final res = await http.post(
+        Uri.parse('$baseUrl/api/bookings/${widget.booking['id']}/rebook-calculation'),
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': UserSession.email,
+          'dep_schedule_id': _selDepSchId,
+          'dep_accommodation_id': _selDepAccId,
+          'ret_schedule_id': _selRetSchId,
+          'ret_accommodation_id': _selRetAccId,
+          'is_round_trip': _isRoundTrip,
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 200 && data['status'] == 'success') {
+        setState(() {
+          _breakdown = data['breakdown'];
+          _qrUrl = data['qr_code_url'];
+          _step = 3;
+        });
+      } else {
+        setState(() => _error = data['message'] ?? 'Failed to calculate rebooking cost');
+      }
+    } catch (e) {
+      setState(() => _error = 'Network error');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _submitRebook() async {
+    if (_proof == null) return;
+    setState(() { _isLoading = true; _error = ''; });
+    try {
+      final baseUrl = UserSession.getBaseUrl();
+      final req = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/bookings/${widget.booking['id']}/rebook'));
+      req.headers['Accept'] = 'application/json';
+      req.fields['email'] = UserSession.email;
+      req.fields['departure_date'] = _depDate!.toIso8601String().split('T')[0];
+      if (_isRoundTrip) req.fields['return_date'] = _retDate!.toIso8601String().split('T')[0];
+      req.fields['dep_schedule_id'] = _selDepSchId.toString();
+      if (_selDepAccId != null) req.fields['dep_accommodation_id'] = _selDepAccId.toString();
+      if (_selRetSchId != null) req.fields['ret_schedule_id'] = _selRetSchId.toString();
+      if (_selRetAccId != null) req.fields['ret_accommodation_id'] = _selRetAccId.toString();
+      req.fields['rate_diff'] = _breakdown!['rate_diff'].toString();
+      req.fields['surcharge'] = _breakdown!['surcharge'].toString();
+      req.fields['revalidation_fee'] = _breakdown!['revalidation_fee'].toString();
+      req.fields['total_paid'] = _breakdown!['total_to_pay'].toString();
+      
+      final bytes = await _proof!.readAsBytes();
+      req.files.add(http.MultipartFile.fromBytes('proof', bytes, filename: _proof!.name));
+      
+      final res = await req.send();
+      if (res.statusCode == 200) {
+        if (!mounted) return;
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rebooking requested successfully')));
+      } else {
+        final b = await res.stream.bytesToString();
+        final data = jsonDecode(b);
+        setState(() => _error = data['message'] ?? 'Error submitting');
+      }
+    } catch (e) {
+      setState(() => _error = 'Network error');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _buildDateStep() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text('Select New Travel Dates', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        ListTile(
+          title: const Text('New Departure Date'),
+          subtitle: Text(_depDate == null ? 'Not selected' : _depDate!.toIso8601String().split('T')[0]),
+          trailing: const Icon(Icons.calendar_today),
+          onTap: () async {
+            final d = await showDatePicker(context: context, initialDate: DateTime.now().add(const Duration(days: 1)), firstDate: DateTime.now().add(const Duration(days: 1)), lastDate: DateTime.now().add(const Duration(days: 365)));
+            if (d != null) setState(() { _depDate = d; _retDate = null; });
+          },
+        ),
+        if (_isRoundTrip)
+          ListTile(
+            title: const Text('New Return Date'),
+            subtitle: Text(_retDate == null ? 'Not selected' : _retDate!.toIso8601String().split('T')[0]),
+            trailing: const Icon(Icons.calendar_today),
+            onTap: () async {
+              if (_depDate == null) return;
+              final d = await showDatePicker(context: context, initialDate: _depDate!.add(const Duration(days: 1)), firstDate: _depDate!, lastDate: DateTime.now().add(const Duration(days: 365)));
+              if (d != null) setState(() => _retDate = d);
+            },
+          ),
+        const SizedBox(height: 24),
+        FilledButton(
+          onPressed: _depDate != null && (!_isRoundTrip || _retDate != null) ? _fetchDepSchedules : null,
+          child: const Text('Next'),
+        )
+      ],
+    );
+  }
+
+  Widget _buildScheduleStep(bool isReturn) {
+    final schs = isReturn ? _retSchedules : _depSchedules;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(isReturn ? 'Select New Return Schedule' : 'Select New Departure Schedule', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        ...schs.map((s) {
+          final isSel = (isReturn ? _selRetSchId : _selDepSchId) == s['id'];
+          final isAirline = widget.booking['mode'] == 'airline';
+          final subList = isAirline ? (s['transport_classes'] as List? ?? []) : (s['accommodations'] as List? ?? []);
+          return Card(
+            color: isSel ? Colors.blue.shade50 : null,
+            child: ExpansionTile(
+              title: Text('${s['departure_time']} - ${s['arrival_time']}'),
+              subtitle: Text('${s['route']?['origin'] ?? ''} to ${s['route']?['destination'] ?? ''}'),
+              children: subList.map((tc) {
+                final isAccSel = isSel && (isReturn ? _selRetAccId : _selDepAccId) == tc['id'];
+                return RadioListTile(
+                  title: Text(tc['name']),
+                  subtitle: Text('?${tc['pivot']?['price']}'),
+                  value: true,
+                  groupValue: isAccSel,
+                  onChanged: (v) {
+                    setState(() {
+                      if (isReturn) {
+                        _selRetSchId = s['id'];
+                        _selRetAccId = tc['id'];
+                      } else {
+                        _selDepSchId = s['id'];
+                        _selDepAccId = tc['id'];
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          );
+        }).toList(),
+        const SizedBox(height: 24),
+        FilledButton(
+          onPressed: (isReturn ? _selRetSchId : _selDepSchId) != null
+            ? () {
+                if (isReturn) _calcBreakdown();
+                else if (_isRoundTrip) _fetchRetSchedules();
+                else _calcBreakdown();
+              }
+            : null,
+          child: const Text('Next'),
+        )
+      ],
+    );
+  }
+
+  Widget _buildBreakdownStep() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text('Rebooking Breakdown', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        ListTile(title: const Text('Rate Difference'), trailing: Text('?${_breakdown!['rate_diff']}')),
+        ListTile(title: const Text('Surcharge'), trailing: Text('?${_breakdown!['surcharge']}')),
+        ListTile(title: const Text('Revalidation Fee'), trailing: Text('?${_breakdown!['revalidation_fee']}')),
+        const Divider(),
+        ListTile(title: const Text('Total to Pay', style: TextStyle(fontWeight: FontWeight.bold)), trailing: Text('?${_breakdown!['total_to_pay']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue))),
+        const SizedBox(height: 24),
+        if (_qrUrl != null) Center(child: Image.network(_qrUrl!, height: 150)),
+        const SizedBox(height: 24),
+        OutlinedButton.icon(
+          onPressed: () async {
+            final p = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 80);
+            if (p != null) setState(() { _proof = p; _step = 4; });
+          },
+          icon: const Icon(Icons.upload),
+          label: const Text('Upload Payment Proof'),
+        )
+      ],
+    );
+  }
+
+  Widget _buildProofStep() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text('Submit Rebooking', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        const Text('Payment proof uploaded successfully.'),
+        const SizedBox(height: 24),
+        FilledButton(
+          onPressed: _submitRebook,
+          child: const Text('Confirm Rebooking'),
+        )
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Rebook Booking')),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : _error.isNotEmpty 
+          ? Center(child: Padding(padding: const EdgeInsets.all(20), child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(_error, style: const TextStyle(color: Colors.red, fontSize: 16), textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              OutlinedButton(onPressed: () => setState(() { _error = ''; if (_step > 0) _step--; }), child: const Text('Back'))
+            ])))
+          : _step == 0 ? _buildDateStep()
+          : _step == 1 ? _buildScheduleStep(false)
+          : _step == 2 ? _buildScheduleStep(true)
+          : _step == 3 ? _buildBreakdownStep()
+          : _buildProofStep(),
     );
   }
 }
