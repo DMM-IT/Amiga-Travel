@@ -570,8 +570,8 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/BookingController.php": {
-    "mtime": 1786340999.1556919,
-    "ast_hash": "407e9be2ce28ea9e684eef5e0d37bbf0",
+    "mtime": 1786343835.5033116,
+    "ast_hash": "2b34dd4b8e1e35b58faf2ab557bce279",
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/DiscountController.php": {
@@ -690,8 +690,8 @@
     "semantic_hash": ""
   },
   "app/Mail/BookingConfirmation.php": {
-    "mtime": 1785931788.830536,
-    "ast_hash": "74c6ec54396d4bd5123d98e6e4be7379",
+    "mtime": 1786343837.588604,
+    "ast_hash": "eac32931312aa36cbed935a2effd33f5",
     "semantic_hash": ""
   },
   "app/Mail/BookingCreated.php": {
@@ -1625,8 +1625,8 @@
     "semantic_hash": ""
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1786341097.6058373,
-    "ast_hash": "d96db4ec931b1b07f254e850518ea12a",
+    "mtime": 1786345380.0935977,
+    "ast_hash": "62bd100c8bf974bd1939b218578d622b",
     "semantic_hash": ""
   },
   "flutter_app/lib/notification_service.dart": {
@@ -1640,12 +1640,12 @@
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786341111.1013777,
+    "mtime": 1786345393.6707115,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786341111.1002645,
+    "mtime": 1786345393.6707115,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": ""
   },
@@ -1665,7 +1665,7 @@
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1786341111.1035225,
+    "mtime": 1786345393.6707115,
     "ast_hash": "ef6d46c46887632256e21aec216ab062",
     "semantic_hash": ""
   },
@@ -1700,12 +1700,12 @@
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786341111.1060362,
+    "mtime": 1786345393.6707115,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786341111.1060362,
+    "mtime": 1786345393.6707115,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": ""
   },
@@ -2300,13 +2300,13 @@
     "semantic_hash": ""
   },
   "routes/console.php": {
-    "mtime": 1785853430.0823119,
-    "ast_hash": "359d1c98e4104654b81dc2d37b578e74",
+    "mtime": 1786344406.7186081,
+    "ast_hash": "bf9b475b746df16e26b736b9e521dbd0",
     "semantic_hash": ""
   },
   "routes/web.php": {
-    "mtime": 1786341734.9277482,
-    "ast_hash": "bf04041015d23f7dc8216a716de67e2a",
+    "mtime": 1786343833.2012568,
+    "ast_hash": "6ea299b0b6c18ad14e09d78616a81a73",
     "semantic_hash": ""
   },
   "scratch/add_should_queue.php": {
@@ -2775,8 +2775,8 @@
     "semantic_hash": ""
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1786341081.5015736,
-    "ast_hash": "3a405e486c295c9566114671dd3e4ce1",
+    "mtime": 1786343285.104465,
+    "ast_hash": "11f409531ae8514e777307acb937a5bd",
     "semantic_hash": ""
   },
   "flutter_app/submit_screen_dump.txt": {
@@ -3415,8 +3415,8 @@
     "semantic_hash": ""
   },
   "app/Observers/BookingObserver.php": {
-    "mtime": 1785866404.410175,
-    "ast_hash": "618567e3066e1e98836f289e9877626a",
+    "mtime": 1786344331.2545333,
+    "ast_hash": "f53f3a721c71a22ce5aca361ed08c430",
     "semantic_hash": ""
   },
   "database/migrations/2026_08_04_100000_add_payment_deadline_to_transactions_table.php": {
@@ -3637,6 +3637,16 @@
   "app/Http/Middleware/UpdateUserActivity.php": {
     "mtime": 1786342625.9963026,
     "ast_hash": "0adbc7ce14fb16bebd916af4ab5ee734",
+    "semantic_hash": ""
+  },
+  "app/Console/Commands/NotifyExpiringVouchers.php": {
+    "mtime": 1786344382.5859275,
+    "ast_hash": "6c44b734897b2c4051ccff0d2788b08c",
+    "semantic_hash": ""
+  },
+  "app/Console/Commands/SendPaymentReminders.php": {
+    "mtime": 1786344356.279491,
+    "ast_hash": "b36d2e5414549466cc25ccfbe74f2f07",
     "semantic_hash": ""
   }
 }
