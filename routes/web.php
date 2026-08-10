@@ -225,22 +225,34 @@ Route::get('/ticket/download/{transaction_number}', function ($transaction_numbe
         ->with(['passengers.discount', 'schedule.route', 'returnSchedule', 'transaction', 'accommodations', 'transportClasses'])
         ->firstOrFail();
 
+    if ($booking->transaction && !empty($booking->transaction->confirmation_pdf)) {
+        $pdfPath = is_string($booking->transaction->confirmation_pdf) 
+            ? $booking->transaction->confirmation_pdf 
+            : null;
+        
+        if ($pdfPath) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
+                return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($pdfPath), [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="Payment_Acknowledgement.pdf"',
+                ]);
+            }
+        }
+    }
+
     $receiptDir = storage_path('app/receipts');
     $path = $receiptDir . '/receipt-' . $booking->transaction_number . '.pdf';
 
-    // Generate on-demand if file doesn't exist (e.g. ephemeral Railway storage)
     if (! file_exists($path)) {
         try {
             if (! is_dir($receiptDir)) {
                 mkdir($receiptDir, 0755, true);
             }
-            \Spatie\LaravelPdf\Facades\Pdf::driver('dompdf')
-                ->view('pdf.receipt', ['booking' => $booking])
-                ->format('a4')
-                ->save($path);
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.receipt', ['booking' => $booking]);
+            $pdf->setPaper('a4');
+            $pdf->save($path);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('PDF generation failed: ' . $e->getMessage());
-            // Fallback: stream as inline HTML if PDF generation or directory creation fails
             return response()->view('pdf.receipt', ['booking' => $booking]);
         }
     }
