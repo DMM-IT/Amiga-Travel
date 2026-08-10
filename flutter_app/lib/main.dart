@@ -73,7 +73,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.49+54';
+  static const String appVersion = '1.0.49+55';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -5511,33 +5511,26 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             'Request pending verification',
             'New dates will appear after approval.'
           ]),
-        if (transaction['confirmation_url'] != null)
-          OutlinedButton.icon(
-              onPressed: () => launchUrl(
-                  Uri.parse(transaction['confirmation_url'].toString())),
-              icon: const Icon(Icons.confirmation_num),
-              label: const Text('Payment Acknowledgement')),
-        if (_booking['confirmation_url'] != null)
-          OutlinedButton.icon(
+        if (_booking['status'] != 'cancelled' && _booking['status'] != 'operator_cancelled' && !isExpired) ...[
+          if (_booking['ticket_url'] != null)
+            OutlinedButton.icon(
               onPressed: () =>
-                  launchUrl(Uri.parse(_booking['confirmation_url'].toString())),
-              icon: const Icon(Icons.link),
-              label: const Text('Payment Acknowledgement')),
-        if (_booking['confirmation_pdf_url'] != null)
-          OutlinedButton.icon(
-              onPressed: () => launchUrl(
-                  Uri.parse(_booking['confirmation_pdf_url'].toString())),
-              icon: const Icon(Icons.picture_as_pdf),
-              label: const Text('Payment Acknowledgement (PDF)')),
-        if (_booking['ticket_url'] != null)
-          FilledButton.icon(
-            onPressed: () =>
-                launchUrl(Uri.parse(_booking['ticket_url'].toString())),
-            icon: const Icon(Icons.download),
-            label: const Text('Download Ticket'),
-            style: FilledButton.styleFrom(
-                backgroundColor: kGreen, foregroundColor: Colors.white),
-          ),
+                  launchUrl(Uri.parse(_booking['ticket_url'].toString())),
+              icon: const Icon(Icons.receipt_long),
+              label: const Text('Payment Acknowledgement'),
+            ),
+          if (transaction['confirmation_url'] != null || _booking['confirmation_url'] != null || _booking['confirmation_pdf_url'] != null)
+            FilledButton.icon(
+              onPressed: () {
+                final url = transaction['confirmation_url'] ?? _booking['confirmation_url'] ?? _booking['confirmation_pdf_url'];
+                launchUrl(Uri.parse(url.toString()));
+              },
+              icon: const Icon(Icons.download),
+              label: const Text('Download Ticket'),
+              style: FilledButton.styleFrom(
+                  backgroundColor: kGreen, foregroundColor: Colors.white),
+            ),
+        ],
         const SizedBox(height: 12),
         if (_canManage && !_cancellationStarted) ...[
           OutlinedButton.icon(
