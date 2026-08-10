@@ -39,6 +39,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff.permission' => \App\Http\Middleware\EnsureStaffPermission::class,
             'sensitive.actions' => \App\Http\Middleware\ThrottleSensitiveActions::class,
         ]);
+        
+        $middleware->api(append: [
+            \App\Http\Middleware\UpdateUserActivity::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

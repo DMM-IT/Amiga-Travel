@@ -110,7 +110,7 @@ class ApkUserResource extends Resource
                     ->label('Status')
                     ->getStateUsing(function (Model $record) {
                         $latestLogin = $record->loginHistories()->latest()->first();
-                        if ($latestLogin && $latestLogin->created_at > now()->subMinutes(15)) {
+                        if ($latestLogin && $latestLogin->updated_at > now()->subMinutes(15)) {
                             return 'Online';
                         }
                         return 'Offline';
