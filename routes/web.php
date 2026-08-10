@@ -220,10 +220,8 @@ Route::get('/payment/{transaction}', function (Transaction $transaction) {
     ]);
 })->name('payment.show');
 
-Route::get('/ticket/download/{booking}', function (App\Models\Booking $booking) {
-    if (! request()->hasValidSignature()) {
-        abort(403);
-    }
+Route::get('/ticket/download/{transaction_number}', function ($transaction_number) {
+    $booking = \App\Models\Booking::where('transaction_number', $transaction_number)->firstOrFail();
 
     $path = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
 
@@ -233,7 +231,7 @@ Route::get('/ticket/download/{booking}', function (App\Models\Booking $booking) 
 
     return response()->file($path, [
         'Content-Type' => 'application/pdf',
-        'Content-Disposition' => 'attachment; filename="receipt-'. $booking->transaction_number .'.pdf"',
+        'Content-Disposition' => 'attachment; filename="Payment_Acknowledgement.pdf"',
     ]);
 })->name('ticket.download');
 

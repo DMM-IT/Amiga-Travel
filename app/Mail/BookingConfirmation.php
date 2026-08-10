@@ -45,7 +45,7 @@ class BookingConfirmation extends Mailable implements ShouldQueue
             ->save($autoReceiptPath);
 
         $mail->attach($autoReceiptPath, [
-            'as' => 'Booking_Receipt.pdf',
+            'as' => 'Payment_Acknowledgement.pdf',
             'mime' => 'application/pdf',
         ]);
 
