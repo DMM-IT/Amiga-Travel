@@ -137,11 +137,12 @@ class BookingController extends Controller
                 $data['confirmation_pdf_url'] = storage_asset_path($transaction->confirmation_pdf);
             }
             $data['confirmation_url'] = $transaction?->confirmation_url;
-            $data['ticket_url'] = URL::temporarySignedRoute(
+            $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
+            $data['ticket_url'] = file_exists($receiptPath) ? URL::temporarySignedRoute(
                 'ticket.download',
                 now()->addDays(7),
                 ['booking' => $booking->id]
-            );
+            ) : null;
             $data['mode'] = $booking->getMode();
             $data['price_breakdown'] = $booking->getPriceBreakdown();
             $data['calculated_rebooking_fee'] = $booking->getRebookingFeeAmount();
