@@ -6,6 +6,8 @@ use App\Actions\Bookings\CreateBookingAction;
 use App\Models\Booking;
 use App\Models\ScheduleAccommodation;
 use App\Models\ScheduleTransportClass;
+use App\Models\User;
+use App\Models\UserNotification;
 use Illuminate\Support\Facades\Log;
 
 class BookingObserver
@@ -20,27 +22,50 @@ class BookingObserver
     public function updated(Booking $booking): void
     {
         // Only react when the status column actually changed to a cancelled state
-        if (! $booking->wasChanged('status')) {
-            return;
+        if ($booking->wasChanged('status')) {
+            $newStatus = $booking->status;
+            $oldStatus = $booking->getOriginal('status');
+
+            $cancelledStatuses = [Booking::STATUS_CANCELLED, Booking::STATUS_OPERATOR_CANCELLED];
+
+            $becomingCancelled = in_array($newStatus, $cancelledStatuses, true);
+            $wasAlreadyCancelled = in_array($oldStatus, $cancelledStatuses, true);
+
+            // --- RESTORE tickets when a booking is cancelled ---
+            if ($becomingCancelled && ! $wasAlreadyCancelled) {
+                $this->restoreTickets($booking);
+            }
+
+            // --- DEDUCT tickets if a booking is somehow un-cancelled back to active ---
+            if (! in_array($newStatus, $cancelledStatuses, true) && $wasAlreadyCancelled) {
+                $this->deductTickets($booking);
+            }
+
+            // --- SEND NOTIFICATIONS ---
+            $user = User::where('email', $booking->client_email)->first();
+            if ($user) {
+                if ($newStatus === Booking::STATUS_CONFIRMED && $oldStatus !== Booking::STATUS_CONFIRMED) {
+                    UserNotification::notify($user->id, "Booking Confirmed", "Your booking {$booking->transaction_number} is confirmed! You can now view and download your tickets.", 'booking', 'check_circle');
+                } elseif ($newStatus === Booking::STATUS_CANCELLED && $oldStatus !== Booking::STATUS_CANCELLED) {
+                    UserNotification::notify($user->id, "Booking Cancelled", "Your booking {$booking->transaction_number} was automatically cancelled.", 'booking', 'cancel');
+                } elseif ($newStatus === Booking::STATUS_OPERATOR_CANCELLED && $oldStatus !== Booking::STATUS_OPERATOR_CANCELLED) {
+                    UserNotification::notify($user->id, "Booking Cancelled", "Your booking {$booking->transaction_number} has been cancelled by the operator.", 'booking', 'error');
+                }
+            }
         }
 
-        $newStatus = $booking->status;
-        $oldStatus = $booking->getOriginal('status');
-
-        $cancelledStatuses = [Booking::STATUS_CANCELLED, Booking::STATUS_OPERATOR_CANCELLED];
-
-        $becomingCancelled = in_array($newStatus, $cancelledStatuses, true);
-        $wasAlreadyCancelled = in_array($oldStatus, $cancelledStatuses, true);
-
-        // --- RESTORE tickets when a booking is cancelled ---
-        if ($becomingCancelled && ! $wasAlreadyCancelled) {
-            $this->restoreTickets($booking);
-        }
-
-        // --- DEDUCT tickets if a booking is somehow un-cancelled back to active ---
-        // This handles edge cases like admin restoring a cancelled booking.
-        if (! in_array($newStatus, $cancelledStatuses, true) && $wasAlreadyCancelled) {
-            $this->deductTickets($booking);
+        if ($booking->wasChanged('rebooking_status')) {
+            $newRebookingStatus = $booking->rebooking_status;
+            $user = User::where('email', $booking->client_email)->first();
+            if ($user && in_array($newRebookingStatus, ['approved', 'rejected'])) {
+                UserNotification::notify(
+                    $user->id,
+                    "Rebooking " . ucfirst($newRebookingStatus),
+                    "Your rebooking request for {$booking->transaction_number} has been {$newRebookingStatus}.",
+                    'rebooking',
+                    $newRebookingStatus === 'approved' ? 'check_circle' : 'cancel'
+                );
+            }
         }
     }
 
