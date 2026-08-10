@@ -73,7 +73,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.49+53';
+  static const String appVersion = '1.0.49+54';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -8200,16 +8200,20 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
             'driver_birthday': widget.booking.vehicleDriverBirthday,
           },
           'selected_transport_class_id':
-              widget.booking.selectedTransportClassId,
+              widget.booking.selectedAirlineClassId,
           'selected_schedule_accommodation_id':
-              widget.booking.selectedScheduleAccommodationId,
+              widget.booking.selectedFerryAccommodationId,
           if (widget.booking.tripType == 'round_trip' &&
               widget.booking.selectedReturnSchedule != null)
             'return_schedule_id': widget.booking.selectedReturnSchedule!['id'],
           if (widget.booking.tripType == 'round_trip' &&
-              widget.booking.selectedReturnScheduleAccommodationId != null)
+              widget.booking.selectedReturnFerryAccommodationId != null)
             'selected_return_schedule_accommodation_id':
-                widget.booking.selectedReturnScheduleAccommodationId,
+                widget.booking.selectedReturnFerryAccommodationId,
+          if (widget.booking.tripType == 'round_trip' &&
+              widget.booking.selectedReturnAirlineClassId != null)
+            'return_selected_transport_class_id':
+                widget.booking.selectedReturnAirlineClassId,
           if (widget.booking.voucherCode != null &&
               !(widget.booking.usePromoTicket &&
                   widget.booking.promotionalTicketId != null))
@@ -8301,11 +8305,11 @@ class _BookingSubmitScreenState extends State<BookingSubmitScreen> {
                             : 'Round Trip'),
                     _SummaryRow('Schedule',
                         '${s['service']}  ${s['departure']} – ${s['arrival']}'),
-                    _SummaryRow('Ticket & Class', '₱${(_parseDouble(s['price']) + (widget.booking.mode == 'ferry' ? (widget.booking.selectedFerryAccommodationPrice ?? 0) : (widget.booking.selectedAirlineClassPrice ?? 0))).toStringAsFixed(2)}'),
+                    _SummaryRow('Ticket Price', '₱${_parseDouble(s['price']).toStringAsFixed(2)}'),
                     if (widget.booking.mode == 'ferry' && widget.booking.selectedFerryAccommodationName != null)
-                      _SummaryRow('Travel Class', widget.booking.selectedFerryAccommodationName!),
+                      _SummaryRow('Travel Class', '${widget.booking.selectedFerryAccommodationName!} (₱${(widget.booking.selectedFerryAccommodationPrice ?? 0).toStringAsFixed(2)})'),
                     if (widget.booking.mode == 'airline' && widget.booking.selectedAirlineClassName != null)
-                      _SummaryRow('Travel Class', widget.booking.selectedAirlineClassName!),
+                      _SummaryRow('Travel Class', '${widget.booking.selectedAirlineClassName!} (₱${(widget.booking.selectedAirlineClassPrice ?? 0).toStringAsFixed(2)})'),
                     if (widget.booking.hasExtraBaggage &&
                         widget.booking.mode == 'airline')
                       _SummaryRow('Extra Baggage',
