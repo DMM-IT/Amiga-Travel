@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/ApkUserResource.php": {
-    "mtime": 1784900517.587708,
-    "ast_hash": "22908e2df1f192f65fcfe3d217d6f8c7",
+    "mtime": 1786342635.9336388,
+    "ast_hash": "4cd119bbf4539eef99fa11a1f7c28eda",
     "semantic_hash": ""
   },
   "app/Filament/Resources/ApkUserResource/Pages/ListApkUsers.php": {
@@ -570,8 +570,8 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/BookingController.php": {
-    "mtime": 1786273080.8759835,
-    "ast_hash": "ba887a59bb3a4e5d471c97c5d01a1ad7",
+    "mtime": 1786340999.1556919,
+    "ast_hash": "407e9be2ce28ea9e684eef5e0d37bbf0",
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/DiscountController.php": {
@@ -945,8 +945,8 @@
     "semantic_hash": ""
   },
   "bootstrap/app.php": {
-    "mtime": 1785552353.3505478,
-    "ast_hash": "f5269d8c58e4f0c5f73675a3ef720d2a",
+    "mtime": 1786342657.0055969,
+    "ast_hash": "a7f075159162532ffeffe426532adbed",
     "semantic_hash": ""
   },
   "bootstrap/providers.php": {
@@ -1625,8 +1625,8 @@
     "semantic_hash": ""
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1786335275.5190809,
-    "ast_hash": "a53dbf6e5631701020727c623e168362",
+    "mtime": 1786341097.6058373,
+    "ast_hash": "d96db4ec931b1b07f254e850518ea12a",
     "semantic_hash": ""
   },
   "flutter_app/lib/notification_service.dart": {
@@ -1640,12 +1640,12 @@
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786335285.018953,
+    "mtime": 1786341111.1013777,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786335285.0178056,
+    "mtime": 1786341111.1002645,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": ""
   },
@@ -1665,7 +1665,7 @@
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1786335285.0214696,
+    "mtime": 1786341111.1035225,
     "ast_hash": "ef6d46c46887632256e21aec216ab062",
     "semantic_hash": ""
   },
@@ -1700,12 +1700,12 @@
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786335285.0244753,
+    "mtime": 1786341111.1060362,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786335285.0234785,
+    "mtime": 1786341111.1060362,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": ""
   },
@@ -2305,7 +2305,7 @@
     "semantic_hash": ""
   },
   "routes/web.php": {
-    "mtime": 1786128529.420466,
+    "mtime": 1786341734.9277482,
     "ast_hash": "bf04041015d23f7dc8216a716de67e2a",
     "semantic_hash": ""
   },
@@ -2775,8 +2775,8 @@
     "semantic_hash": ""
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1786335266.2155209,
-    "ast_hash": "4fb690719d2dd2095dcba1fa8fb5c33f",
+    "mtime": 1786341081.5015736,
+    "ast_hash": "3a405e486c295c9566114671dd3e4ce1",
     "semantic_hash": ""
   },
   "flutter_app/submit_screen_dump.txt": {
@@ -3632,6 +3632,11 @@
   "scratch/search_results.txt": {
     "mtime": 1786275268.5827153,
     "ast_hash": "1a5149960d54e29a905915fb90de5f71",
+    "semantic_hash": ""
+  },
+  "app/Http/Middleware/UpdateUserActivity.php": {
+    "mtime": 1786342625.9963026,
+    "ast_hash": "0adbc7ce14fb16bebd916af4ab5ee734",
     "semantic_hash": ""
   }
 }

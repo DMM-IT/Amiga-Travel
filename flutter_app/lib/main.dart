@@ -73,7 +73,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.49+56';
+  static const String appVersion = '1.0.50+57';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -5511,7 +5511,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             'Request pending verification',
             'New dates will appear after approval.'
           ]),
-        if (_booking['status'] != 'cancelled' && _booking['status'] != 'operator_cancelled' && !isExpired) ...[
+        if (_booking['status'] != 'cancelled' && _booking['status'] != 'operator_cancelled') ...[
           if (_booking['ticket_url'] != null)
             OutlinedButton.icon(
               onPressed: () =>
