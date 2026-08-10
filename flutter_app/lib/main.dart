@@ -83,7 +83,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.54+61';
+  static const String appVersion = '1.0.55+62';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -1583,66 +1583,6 @@ class _HomeScreenState extends State<HomeScreen>
               }),
             ),
           const SizedBox(height: 8),
-
-          // Saved Session Banner
-          if (UserSession.isLoggedIn && _savedSession != null)
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: kPink.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: kPink.withOpacity(0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('You have a pending booking in progress.',
-                      style: TextStyle(
-                          color: kPink,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14)),
-                  const SizedBox(height: 4),
-                  const Text(
-                      'Return to complete your booking or cancel the draft to start a new one.',
-                      style: TextStyle(color: kSlate600, fontSize: 12)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: _resumeBooking,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kPink,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24)),
-                        ),
-                        child: const Text('Return to booking',
-                            style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold)),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton(
-                        onPressed: _cancelDraft,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: kPink,
-                          side: BorderSide(color: kPink.withOpacity(0.5)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24)),
-                        ),
-                        child: const Text('Cancel draft',
-                            style: TextStyle(fontSize: 12)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
 
           // Track Booking
           Padding(
