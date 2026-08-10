@@ -87,7 +87,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.50+57';
+  static const String appVersion = '1.0.51+58';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -631,7 +631,7 @@ class UpdateChecker {
                       });
                       try {
                         final apkUrl =
-                            '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk';
+                            '${UserSession.getBaseUrl()}/downloads/amiga-travel.apk?v=$latestVersion';
                         final request = http.Request('GET', Uri.parse(apkUrl));
                         final response = await http.Client().send(request);
                         if (response.statusCode != 200) {
