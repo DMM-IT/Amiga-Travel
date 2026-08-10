@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -67,7 +68,20 @@ class UserSession {
   static String lookupToken = '';
   static String? referralCode;
   static int graciaPoints = 0;
-  static int unreadNotificationsCount = 0;
+  static int _unreadNotificationsCount = 0;
+  static int get unreadNotificationsCount => _unreadNotificationsCount;
+  static set unreadNotificationsCount(int count) {
+    _unreadNotificationsCount = count;
+    if (count > 0) {
+      FlutterAppBadger.isAppBadgeSupported().then((supported) {
+        if (supported) {
+          FlutterAppBadger.updateBadgeCount(count);
+        }
+      });
+    } else {
+      FlutterAppBadger.removeBadge();
+    }
+  }
   static int pointsAwarded = 0;
   static int spendThreshold = 0;
   static String? autoApplyVoucherCode;
@@ -5952,34 +5966,7 @@ class AppDrawer extends StatelessWidget {
               style: const TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ),
-          if (UserSession.isLoggedIn) ...[
-            ListTile(
-              leading: const Icon(Icons.notifications_outlined, color: kGreen),
-              title: const Text('Notifications'),
-              trailing: UserSession.unreadNotificationsCount > 0
-                  ? Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                          color: Colors.red, shape: BoxShape.circle),
-                      child: Text(
-                        '${UserSession.unreadNotificationsCount}',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    )
-                  : null,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const NotificationsScreen())).then((_) {
-                  onProfileUpdated();
-                });
-              },
-            ),
+          if (UserSession.isLoggedIn)
             ListTile(
               leading: const Icon(Icons.person_outline, color: kGreen),
               title: const Text('My Profile'),
@@ -5997,7 +5984,6 @@ class AppDrawer extends StatelessWidget {
                 });
               },
             ),
-          ],
           ListTile(
             leading: const Icon(Icons.info_outline, color: kGreen),
             title: const Text('About'),
