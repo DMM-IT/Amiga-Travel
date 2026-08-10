@@ -234,7 +234,8 @@ Route::get('/ticket/download/{transaction_number}', function ($transaction_numbe
             if (! is_dir($receiptDir)) {
                 mkdir($receiptDir, 0755, true);
             }
-            \Spatie\LaravelPdf\Facades\Pdf::view('pdf.receipt', ['booking' => $booking])
+            \Spatie\LaravelPdf\Facades\Pdf::driver('dompdf')
+                ->view('pdf.receipt', ['booking' => $booking])
                 ->format('a4')
                 ->save($path);
         } catch (\Throwable $e) {
