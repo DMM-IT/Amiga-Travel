@@ -15,9 +15,9 @@ try {
         mkdir($receiptDir, 0755, true);
     }
     echo "Generating PDF...\n";
-    \Spatie\LaravelPdf\Facades\Pdf::view('pdf.receipt', ['booking' => $booking])
-        ->format('a4')
-        ->save($path);
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.receipt', ['booking' => $booking]);
+    $pdf->setPaper('a4');
+    $pdf->save($path);
     echo "PDF generated at: $path\n";
     echo "File exists: " . (file_exists($path) ? 'Yes' : 'No') . "\n";
 } catch (\Throwable $e) {
