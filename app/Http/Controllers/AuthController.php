@@ -146,9 +146,17 @@ class AuthController extends Controller
 
     protected function backfillBookingUserIds(User $user): void
     {
-        Booking::whereNull('user_id')
+        $bookings = Booking::whereNull('user_id')
             ->where('client_email', $user->email)
-            ->update(['user_id' => $user->id]);
+            ->get();
+
+        foreach ($bookings as $booking) {
+            $booking->update(['user_id' => $user->id]);
+
+            if ($booking->status === 'confirmed') {
+                app(\App\Services\GraciaPointsService::class)->awardPointsForBooking($booking);
+            }
+        }
     }
 
     public function showRegister(): View
