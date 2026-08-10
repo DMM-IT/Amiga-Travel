@@ -68,16 +68,12 @@ class UserSession {
   static String lookupToken = '';
   static String? referralCode;
   static int graciaPoints = 0;
-  static int _unreadNotificationsCount = 0;
-  static int get unreadNotificationsCount => _unreadNotificationsCount;
+  static final ValueNotifier<int> unreadNotificationsNotifier = ValueNotifier<int>(0);
+  static int get unreadNotificationsCount => unreadNotificationsNotifier.value;
   static set unreadNotificationsCount(int count) {
-    _unreadNotificationsCount = count;
+    unreadNotificationsNotifier.value = count;
     if (count > 0) {
-      FlutterAppBadger.isAppBadgeSupported().then((supported) {
-        if (supported) {
-          FlutterAppBadger.updateBadgeCount(count);
-        }
-      });
+      FlutterAppBadger.updateBadgeCount(count);
     } else {
       FlutterAppBadger.removeBadge();
     }
@@ -87,7 +83,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.51+58';
+  static const String appVersion = '1.0.52+59';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -525,6 +521,11 @@ class _GlobalUpdateWrapperState extends State<GlobalUpdateWrapper>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (mounted) {
+        UserSession.unreadNotificationsCount++;
+      }
+    });
   }
 
   @override
@@ -1122,32 +1123,37 @@ class _MainScreenState extends State<MainScreen> {
                               builder: (_) => const NotificationsScreen()))
                       .then((_) => setState(() {}));
                 },
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Icon(Icons.notifications_outlined,
-                        color: Colors.white, size: 24),
-                    if (UserSession.unreadNotificationsCount > 0)
-                      Positioned(
-                        right: -2,
-                        top: -2,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                              color: Colors.red, shape: BoxShape.circle),
-                          constraints:
-                              const BoxConstraints(minWidth: 14, minHeight: 14),
-                          child: Text(
-                            '${UserSession.unreadNotificationsCount}',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: UserSession.unreadNotificationsNotifier,
+                  builder: (context, count, child) {
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Icon(Icons.notifications_outlined,
+                            color: Colors.white, size: 24),
+                        if (count > 0)
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                  color: Colors.red, shape: BoxShape.circle),
+                              constraints:
+                                  const BoxConstraints(minWidth: 14, minHeight: 14),
+                              child: Text(
+                                '$count',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -9417,6 +9423,14 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
             height: 52,
             child: ElevatedButton(
               onPressed: () {
+                if (!_proofUploaded && !_isExpired) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            'Please upload proof of payment before proceeding. Or press back if you wish to do it later.')),
+                  );
+                  return;
+                }
                 if (_proofUploaded || _isExpired) {
                   Navigator.popUntil(context, (route) => route.isFirst);
                 } else {

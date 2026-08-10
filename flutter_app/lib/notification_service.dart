@@ -98,6 +98,7 @@ class NotificationService {
               styleInformation: bigPictureStyle,
               importance: Importance.max,
               priority: Priority.high,
+              number: 1, // Fallback for launcher badges
             ),
           ),
         );
