@@ -83,7 +83,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.52+59';
+  static const String appVersion = '1.0.53+60';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -5439,10 +5439,30 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         const SizedBox(height: 12),
         _detailSection('Trip', <String>[
           '${_booking['origin']} → ${_booking['destination']}',
-          'Departure: ${(_booking['rebooking_departure_date'] ?? _booking['preferred_replacement_date'] ?? _booking['departure_date'] ?? '-').toString().split('T')[0]}',
-          if ((_booking['rebooking_return_date'] ?? _booking['return_date']) !=
-              null)
-            'Return: ${(_booking['rebooking_return_date'] ?? _booking['return_date']).toString().split('T')[0]}',
+          () {
+            final rawDep = (_booking['rebooking_departure_date'] ?? _booking['preferred_replacement_date'] ?? _booking['departure_date'] ?? '').toString();
+            final depTime = _booking['departure_time']?.toString();
+            if (rawDep.isEmpty) return 'Departure: -';
+            final dt = DateTime.tryParse(rawDep)?.toLocal();
+            if (dt == null) return 'Departure: $rawDep';
+            final dateStr = '${dt.year}/${dt.month.toString().padLeft(2,'0')}/${dt.day.toString().padLeft(2,'0')}';
+            if (depTime != null && depTime.isNotEmpty) {
+              return 'Departure: $dateStr $depTime';
+            }
+            return 'Departure: $dateStr';
+          }(),
+          if ((_booking['rebooking_return_date'] ?? _booking['return_date']) != null)
+            () {
+              final rawRet = (_booking['rebooking_return_date'] ?? _booking['return_date']).toString();
+              final retTime = _booking['return_time']?.toString();
+              final dt = DateTime.tryParse(rawRet)?.toLocal();
+              if (dt == null) return 'Return: $rawRet';
+              final dateStr = '${dt.year}/${dt.month.toString().padLeft(2,'0')}/${dt.day.toString().padLeft(2,'0')}';
+              if (retTime != null && retTime.isNotEmpty) {
+                return 'Return: $dateStr $retTime';
+              }
+              return 'Return: $dateStr';
+            }(),
           (_booking['schedule_summary'] ??
                   _booking['schedule_service'] ??
                   'Schedule not recorded')
@@ -10008,7 +10028,7 @@ class AboutScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.2)),
                   SizedBox(height: 6),
-                  Text('Our Journey &\nMission',
+                  Text('Our Journey & Mission',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
