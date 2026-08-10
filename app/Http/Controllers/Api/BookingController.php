@@ -168,8 +168,19 @@ class BookingController extends Controller
 
     public function show(Request $request, $transaction_number)
     {
+        $isAuthenticated = $request->user('api') !== null || $request->bearerToken();
+        $email = $isAuthenticated ? $request->user('api')?->email : $request->input('email');
+
+        if (!$email && $request->input('lookup_token')) {
+            $email = Cache::get('booking_lookup_token:' . hash('sha256', $request->input('lookup_token')));
+        }
+
+        if (!$email) {
+            return response()->json(['status' => 'error', 'message' => 'Email verification required.'], 401);
+        }
+
         $booking = Booking::where('transaction_number', $transaction_number)
-            ->where('client_email', $request->user()->email)
+            ->where('client_email', strtolower($email))
             ->with(['passengers.discount', 'schedule.route', 'returnSchedule', 'transaction', 'accommodations', 'transportClasses', 'accommodations.transportClass'])
             ->first();
 
