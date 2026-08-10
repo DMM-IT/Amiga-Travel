@@ -554,6 +554,10 @@ class Booking extends Model
         ]);
 
         app(\App\Services\GraciaPointsService::class)->awardPointsForBooking($this, \App\Models\User::find($staffId));
+        
+        if ($this->transaction && $this->transaction->rebooking_fee > 0) {
+            app(\App\Services\GraciaPointsService::class)->awardPointsForRebookingFee($this, $this->transaction->rebooking_fee, \App\Models\User::find($staffId));
+        }
 
         if ($this->transaction) {
             $this->transaction->update([

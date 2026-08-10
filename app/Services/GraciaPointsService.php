@@ -27,7 +27,16 @@ class GraciaPointsService
     public function awardPointsForBooking(Booking $booking, ?User $admin = null): void
     {
         if ($booking->status !== 'confirmed') return;
-        if (!$booking->user_id) return;
+        
+        if (!$booking->user_id) {
+            $user = User::where('email', $booking->client_email)->first();
+            if ($user) {
+                $booking->user_id = $user->id;
+                $booking->save();
+            } else {
+                return;
+            }
+        }
         
         $idempotencyKey = "booking_{$booking->id}_verified";
 
@@ -41,7 +50,13 @@ class GraciaPointsService
                 return;
             }
 
-            $spendCentavos = (int) round($booking->total_price * 100);
+            $settings = \App\Models\PaymentSetting::current();
+            $multiplier = max(1, $booking->passengers()->count());
+            $webAdminFee = $multiplier * (float) ($settings->web_admin_fee ?? 0);
+            $transactionFee = $multiplier * (float) ($settings->transaction_fee ?? 0);
+            
+            $eligibleSpend = max(0, $booking->total_price - $webAdminFee - $transactionFee);
+            $spendCentavos = (int) round($eligibleSpend * 100);
             
             $balance = GraciaUserBalance::firstOrCreate(
                 ['user_id' => $booking->user_id],
@@ -203,6 +218,57 @@ class GraciaPointsService
 
             $balance->current_points += $refundedPoints;
             $balance->save();
+        });
+    }
+
+    public function awardPointsForRebookingFee(Booking $booking, float $rebookingFee, ?User $admin = null): void
+    {
+        if (!$booking->user_id) return;
+        if ($rebookingFee <= 0) return;
+
+        $idempotencyKey = "booking_{$booking->id}_rebooking_fee";
+
+        DB::transaction(function () use ($booking, $rebookingFee, $admin, $idempotencyKey) {
+            if (GraciaPointLedger::where('idempotency_key', $idempotencyKey)->exists()) {
+                return;
+            }
+
+            $rule = $this->getActiveRule();
+            if (!$rule || $rule->spend_threshold_centavos <= 0) {
+                return;
+            }
+
+            $spendCentavos = (int) round($rebookingFee * 100);
+
+            $balance = GraciaUserBalance::firstOrCreate(
+                ['user_id' => $booking->user_id],
+                ['current_points' => 0, 'unconverted_spend_centavos' => 0]
+            );
+
+            $totalEligibleCentavos = $balance->unconverted_spend_centavos + $spendCentavos;
+
+            $awardedMultiples = intdiv($totalEligibleCentavos, $rule->spend_threshold_centavos);
+            $pointsEarned = $awardedMultiples * $rule->points_awarded;
+
+            $remainderCentavos = $totalEligibleCentavos % $rule->spend_threshold_centavos;
+
+            if ($pointsEarned > 0 || $spendCentavos > 0) {
+                GraciaPointLedger::create([
+                    'user_id' => $booking->user_id,
+                    'booking_id' => $booking->id,
+                    'gracia_earning_rule_id' => $rule->id,
+                    'points' => $pointsEarned,
+                    'entry_type' => 'earned',
+                    'qualifying_spend_centavos' => $spendCentavos,
+                    'reason' => 'Points earned for rebooking fee on ' . $booking->transaction_number,
+                    'admin_id' => $admin?->id,
+                    'idempotency_key' => $idempotencyKey,
+                ]);
+
+                $balance->current_points += $pointsEarned;
+                $balance->unconverted_spend_centavos = $remainderCentavos;
+                $balance->save();
+            }
         });
     }
 

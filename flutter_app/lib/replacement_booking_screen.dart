@@ -77,16 +77,22 @@ class _ReplacementBookingScreenState extends State<ReplacementBookingScreen> {
           'dep_schedule_id': _selectedSchedule['id'],
         }),
       );
+      if (!mounted) return;
       Navigator.pop(context); // pop loading
       final data = jsonDecode(res.body);
       if (res.statusCode == 200 && data['status'] == 'success') {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message']), backgroundColor: kGreen));
+        if (!mounted) return;
         Navigator.pop(context, true); // pop back to details
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Error occurred'), backgroundColor: Colors.red));
       }
     } catch (e) {
+      if (!mounted) return;
       Navigator.pop(context);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error'), backgroundColor: Colors.red));
     }
   }
