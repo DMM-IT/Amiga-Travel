@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource.php": {
-    "mtime": 1786151486.5576136,
-    "ast_hash": "91301fe55c381e6218432f9976847392",
+    "mtime": 1786370515.544691,
+    "ast_hash": "80b4f760019e6667fbb5b617bcabdc2d",
     "semantic_hash": ""
   },
   "app/Filament/Resources/TransactionResource/Pages/ListTransactions.php": {
@@ -570,8 +570,8 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/BookingController.php": {
-    "mtime": 1786353380.7386408,
-    "ast_hash": "e79a10de7a79c0539b12a7946fd3d1aa",
+    "mtime": 1786370236.2437117,
+    "ast_hash": "5b99abe38a2316f4b724dfc1349d25f7",
     "semantic_hash": ""
   },
   "app/Http/Controllers/Api/DiscountController.php": {
@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/AuthController.php": {
-    "mtime": 1786355843.8087485,
-    "ast_hash": "0d8e6ecf39d0c6afa296486b38f418b9",
+    "mtime": 1786368260.282879,
+    "ast_hash": "38a05e270dbc7350dd12c5fd4f606f3b",
     "semantic_hash": ""
   },
   "app/Http/Controllers/BookingExportController.php": {
@@ -660,8 +660,8 @@
     "semantic_hash": ""
   },
   "app/Livewire/BookingLookup.php": {
-    "mtime": 1786128528.8966455,
-    "ast_hash": "75b2a0df8832c4ea07248db535b88b10",
+    "mtime": 1786363516.3388104,
+    "ast_hash": "2581ddc6c75a414d58762714e296a4ed",
     "semantic_hash": ""
   },
   "app/Livewire/BookingReschedule.php": {
@@ -745,8 +745,8 @@
     "semantic_hash": ""
   },
   "app/Models/Booking.php": {
-    "mtime": 1786350645.6779482,
-    "ast_hash": "550840355d68e4767b2f3aba3b645952",
+    "mtime": 1786363419.415476,
+    "ast_hash": "f62828d3f6da88bcc150771118f35461",
     "semantic_hash": ""
   },
   "app/Models/Discount.php": {
@@ -960,8 +960,8 @@
     "semantic_hash": ""
   },
   "composer.json": {
-    "mtime": 1786025105.124455,
-    "ast_hash": "66ef4167fc3542d0cb93a8a1879febc8",
+    "mtime": 1786370254.7572901,
+    "ast_hash": "eaad3b91f9590122aac0f01de9fc511e",
     "semantic_hash": ""
   },
   "config/airline_seating.php": {
@@ -1625,8 +1625,8 @@
     "semantic_hash": ""
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1786354317.3585093,
-    "ast_hash": "8ce08c17543c961b1c8c0ce27fdafdec",
+    "mtime": 1786364748.1680796,
+    "ast_hash": "28ee2e237a8d5c9a1dce4b6053e8e1f2",
     "semantic_hash": ""
   },
   "flutter_app/lib/notification_service.dart": {
@@ -1640,12 +1640,12 @@
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786354337.496019,
+    "mtime": 1786364772.6143334,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786354337.496019,
+    "mtime": 1786364772.6143334,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": ""
   },
@@ -1665,7 +1665,7 @@
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1786354337.496019,
+    "mtime": 1786364772.6143334,
     "ast_hash": "4e276be5c9e5338d1faa7e2fe5cf0cf0",
     "semantic_hash": ""
   },
@@ -1700,12 +1700,12 @@
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786354337.496019,
+    "mtime": 1786364772.6143334,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786354337.496019,
+    "mtime": 1786364772.6143334,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": ""
   },
@@ -1860,82 +1860,82 @@
     "semantic_hash": ""
   },
   "public/js/filament/filament/app.js": {
-    "mtime": 1785416949.911433,
+    "mtime": 1786370535.9342732,
     "ast_hash": "055af451d117e11009c5600efa7e0247",
     "semantic_hash": ""
   },
   "public/js/filament/filament/echo.js": {
-    "mtime": 1785416950.080518,
+    "mtime": 1786370536.1048336,
     "ast_hash": "9a7993fa9a704f0e97d5c701b08e6bce",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/color-picker.js": {
-    "mtime": 1785416948.8229527,
+    "mtime": 1786370534.8225324,
     "ast_hash": "4393c422493e0e6143a80d58647ff2b7",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/date-time-picker.js": {
-    "mtime": 1785416949.044966,
+    "mtime": 1786370535.0275714,
     "ast_hash": "81dde65996cea522022e7e01f12aa195",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/file-upload.js": {
-    "mtime": 1785416949.1160476,
+    "mtime": 1786370535.09987,
     "ast_hash": "e6b4d840b25668da2a477ea8b2cdf026",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/key-value.js": {
-    "mtime": 1785416949.140099,
+    "mtime": 1786370535.1022556,
     "ast_hash": "b23b4554a7073f7911cb39a35b88f4e9",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/markdown-editor.js": {
-    "mtime": 1785416949.533383,
+    "mtime": 1786370535.5716124,
     "ast_hash": "69b95c6980262efcf7a49aa01859a7c2",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/rich-editor.js": {
-    "mtime": 1785416949.581543,
+    "mtime": 1786370535.618934,
     "ast_hash": "3c0f7f9d1c1c13febc0e4d0a5c3698b5",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/select.js": {
-    "mtime": 1785416949.6916897,
+    "mtime": 1786370535.7298691,
     "ast_hash": "c51957de2de3f9c1553ddf8c40ffcbf1",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/tags-input.js": {
-    "mtime": 1785416949.7162752,
+    "mtime": 1786370535.7445269,
     "ast_hash": "0c2de9797b4b240e4c0f706863491e03",
     "semantic_hash": ""
   },
   "public/js/filament/forms/components/textarea.js": {
-    "mtime": 1785416949.7237535,
+    "mtime": 1786370535.7605562,
     "ast_hash": "abb98c0edb3e7228142c14a8422ef7c6",
     "semantic_hash": ""
   },
   "public/js/filament/notifications/notifications.js": {
-    "mtime": 1785416950.0965927,
+    "mtime": 1786370536.1363037,
     "ast_hash": "f873fe0caab22e4a8740d51d4f31a6da",
     "semantic_hash": ""
   },
   "public/js/filament/support/support.js": {
-    "mtime": 1785416950.2563946,
+    "mtime": 1786370536.2924147,
     "ast_hash": "7a114a87d2fcdefefc3e4f9012dbdbbb",
     "semantic_hash": ""
   },
   "public/js/filament/tables/components/table.js": {
-    "mtime": 1785416949.7430823,
+    "mtime": 1786370535.776462,
     "ast_hash": "414ff611c888683f502c4f14f7191def",
     "semantic_hash": ""
   },
   "public/js/filament/widgets/components/chart.js": {
-    "mtime": 1785416949.8173807,
+    "mtime": 1786370535.8552806,
     "ast_hash": "f214520fae0f668a51d73056581cd884",
     "semantic_hash": ""
   },
   "public/js/filament/widgets/components/stats-overview/stat/chart.js": {
-    "mtime": 1785416949.877577,
+    "mtime": 1786370535.90275,
     "ast_hash": "42945d911451ca2ed6a66f6380dcfce0",
     "semantic_hash": ""
   },
@@ -2255,8 +2255,8 @@
     "semantic_hash": ""
   },
   "resources/views/pdf/receipt.blade.php": {
-    "mtime": 1785931788.836728,
-    "ast_hash": "b868a34e257d98399428172bf895d468",
+    "mtime": 1786364290.0836775,
+    "ast_hash": "126b113f1b9a36cb0051fdf3f1502ac3",
     "semantic_hash": ""
   },
   "resources/views/register.blade.php": {
@@ -2295,8 +2295,8 @@
     "semantic_hash": ""
   },
   "routes/api.php": {
-    "mtime": 1786158365.1711545,
-    "ast_hash": "09d6092d8e4328bab877affd0d82960a",
+    "mtime": 1786364546.2025695,
+    "ast_hash": "cc402aec992dc1fc8377a97bb9dc092c",
     "semantic_hash": ""
   },
   "routes/console.php": {
@@ -2305,8 +2305,8 @@
     "semantic_hash": ""
   },
   "routes/web.php": {
-    "mtime": 1786353334.7729685,
-    "ast_hash": "0c46c24981d27f5cb461ac6ab1757d5b",
+    "mtime": 1786370292.3913395,
+    "ast_hash": "adbbab0aecdba674a6b2dd8c1044d472",
     "semantic_hash": ""
   },
   "scratch/add_should_queue.php": {
@@ -2490,8 +2490,8 @@
     "semantic_hash": ""
   },
   "tests/Feature/GraciaPointsServiceTest.php": {
-    "mtime": 1784791851.240008,
-    "ast_hash": "65a4f9b941cd37dada2fb3886aacabfe",
+    "mtime": 1786363649.709945,
+    "ast_hash": "f917d052165ca93be7da6f461a331574",
     "semantic_hash": ""
   },
   "tests/Feature/HomePageTest.php": {
@@ -2775,8 +2775,8 @@
     "semantic_hash": ""
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1786353524.8894944,
-    "ast_hash": "6bda2963bc6d2bffa5d339ff003f0c4f",
+    "mtime": 1786364726.7974935,
+    "ast_hash": "4e21f31c49d4360b4e911901149a9c08",
     "semantic_hash": ""
   },
   "flutter_app/submit_screen_dump.txt": {
@@ -3415,8 +3415,8 @@
     "semantic_hash": ""
   },
   "app/Observers/BookingObserver.php": {
-    "mtime": 1786344331.2545333,
-    "ast_hash": "f53f3a721c71a22ce5aca361ed08c430",
+    "mtime": 1786364485.9514256,
+    "ast_hash": "5902724efea602770fa2e168562fc0e2",
     "semantic_hash": ""
   },
   "database/migrations/2026_08_04_100000_add_payment_deadline_to_transactions_table.php": {
@@ -3647,6 +3647,16 @@
   "app/Console/Commands/SendPaymentReminders.php": {
     "mtime": 1786344356.279491,
     "ast_hash": "b36d2e5414549466cc25ccfbe74f2f07",
+    "semantic_hash": ""
+  },
+  "app/Console/Commands/RetroactiveGraciaPoints.php": {
+    "mtime": 1786368293.687988,
+    "ast_hash": "ae58bfcfeb02652696a7906166a9ac1a",
+    "semantic_hash": ""
+  },
+  "test_pdf.php": {
+    "mtime": 1786367513.2089274,
+    "ast_hash": "cc8959017d64264800008ea9550e15d7",
     "semantic_hash": ""
   }
 }

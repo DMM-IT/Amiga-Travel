@@ -1,16 +1,16 @@
 # Graph Report - Amiga-Travel  (2026-08-10)
 
 ## Corpus Check
-- 603 files · ~7,510,643 words
+- 603 files · ~7,510,685 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 11749 nodes · 34885 edges · 638 communities (555 shown, 83 thin omitted)
+- 11750 nodes · 34885 edges · 639 communities (556 shown, 83 thin omitted)
 - Extraction: 84% EXTRACTED · 16% INFERRED · 0% AMBIGUOUS · INFERRED: 5627 edges (avg confidence: 0.56)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `61f931b4`
+- Built from commit: `49728cf3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -453,7 +453,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (638 total, 83 thin omitted)
+## Communities (639 total, 83 thin omitted)
 
 ### Community 1 - ".saveDraft"
 Cohesion: 0.04
@@ -1772,11 +1772,11 @@ Nodes (48): a0h(), a26(), a3J(), a3q(), a3x(), abl(), abo(), ad4() (+40 more)
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `components/chart.js` connect `chart.js` to `.saveDraft`, `draw`, `select.js`, `_update`, `fromObject`, `constructor`, `Schedule`, `TransportClass`, `x`, `file-upload.js`, `AC`, `a`, `a5`, `Controller`, `gca`, `rW`, `HasFactory`, `.$1`, `BookingReschedule`?**
-  _High betweenness centrality (0.116) - this node is a cross-community bridge._
+  _High betweenness centrality (0.105) - this node is a cross-community bridge._
 - **Why does `ut()` connect `RC` to `aM_`, `$0`, `b`, `select.js`, `support.js`, `constructor`?**
-  _High betweenness centrality (0.058) - this node is a cross-community bridge._
+  _High betweenness centrality (0.062) - this node is a cross-community bridge._
 - **Why does `$c()` connect `select.js` to `x`, `markdown-editor.js`, `RC`, `gh3`, `support.js`?**
-  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+  _High betweenness centrality (0.055) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `components/chart.js` (e.g. with `dg()` and `Ms()`) actually correct?**
   _`components/chart.js` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 224 inferred relationships involving `a()` (e.g. with `loadEntrypoint()` and `_loadJSEntrypoint()`) actually correct?**
