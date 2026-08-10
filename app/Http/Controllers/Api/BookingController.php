@@ -161,6 +161,7 @@ class BookingController extends Controller
         $request->validate([
             'email' => 'required|email',
             'proof' => 'required|file|image|max:10240', // max 10MB file
+            'reference_number' => 'required|string',
         ]);
 
         $booking = Booking::whereKey($id)
@@ -182,6 +183,7 @@ class BookingController extends Controller
 
         $transaction->update([
             'proof_of_payment' => $path,
+            'payment_reference' => $request->input('reference_number'),
             'payment_status' => 'pending',
         ]);
 

@@ -73,7 +73,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.49+55';
+  static const String appVersion = '1.0.49+56';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -8935,6 +8935,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
   bool _isExpired = false;
   Timer? _countdownTimer;
   String _countdownText = '--:--:--';
+  final TextEditingController _refController = TextEditingController();
 
   @override
   void initState() {
@@ -8953,6 +8954,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _refController.dispose();
     super.dispose();
   }
 
@@ -9022,6 +9024,12 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
 
   Future<void> _uploadProof() async {
     if (_proofImage == null) return;
+    if (_refController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please enter the reference number.'),
+          backgroundColor: Colors.red));
+      return;
+    }
     setState(() => _isUploadingProof = true);
     try {
       final baseUrl = UserSession.getBaseUrl();
@@ -9032,6 +9040,7 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
       }
       request.headers['Accept'] = 'application/json';
       request.fields['email'] = UserSession.email;
+      request.fields['reference_number'] = _refController.text.trim();
       request.files
           .add(await http.MultipartFile.fromPath('proof', _proofImage!.path));
       final streamed = await request.send();
@@ -9315,6 +9324,28 @@ class _PaymentProofScreenState extends State<PaymentProofScreen> {
                         ),
                       ),
 
+                    const SizedBox(height: 16),
+                    const Text('Reference Number',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: kSlate800)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _refController,
+                      decoration: InputDecoration(
+                        hintText: 'e.g. 000123456789',
+                        hintStyle: const TextStyle(color: kSlate400, fontSize: 13),
+                        filled: true,
+                        fillColor: kSlate50,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: kSlate200)),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: kSlate200)),
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
