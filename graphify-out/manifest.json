@@ -1585,8 +1585,8 @@
     "semantic_hash": ""
   },
   "flutter_app/android/build.gradle": {
-    "mtime": 1786080696.322008,
-    "ast_hash": "ceed856313bbec81e6299ea69080774a",
+    "mtime": 1786345970.3738313,
+    "ast_hash": "f3057b67511077d80aac49499e33d8a6",
     "semantic_hash": ""
   },
   "flutter_app/android/settings.gradle": {
@@ -1625,8 +1625,8 @@
     "semantic_hash": ""
   },
   "flutter_app/lib/main.dart": {
-    "mtime": 1786345380.0935977,
-    "ast_hash": "62bd100c8bf974bd1939b218578d622b",
+    "mtime": 1786345840.7657464,
+    "ast_hash": "061432ffaeed9dcea16a317130112841",
     "semantic_hash": ""
   },
   "flutter_app/lib/notification_service.dart": {
@@ -1640,12 +1640,12 @@
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786345393.6707115,
+    "mtime": 1786345981.3030567,
     "ast_hash": "c74f5e1a5f32575a4b26f639876ee827",
     "semantic_hash": ""
   },
   "flutter_app/linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786345393.6707115,
+    "mtime": 1786345981.3030567,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": ""
   },
@@ -1665,8 +1665,8 @@
     "semantic_hash": ""
   },
   "flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1786345393.6707115,
-    "ast_hash": "ef6d46c46887632256e21aec216ab062",
+    "mtime": 1786345981.3030567,
+    "ast_hash": "4e276be5c9e5338d1faa7e2fe5cf0cf0",
     "semantic_hash": ""
   },
   "flutter_app/macos/RunnerTests/RunnerTests.swift": {
@@ -1700,12 +1700,12 @@
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1786345393.6707115,
+    "mtime": 1786345981.3030567,
     "ast_hash": "a1c31402d3843df8a401e4d5e17c62f5",
     "semantic_hash": ""
   },
   "flutter_app/windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1786345393.6707115,
+    "mtime": 1786345981.3030567,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": ""
   },
@@ -2775,8 +2775,8 @@
     "semantic_hash": ""
   },
   "flutter_app/pubspec.yaml": {
-    "mtime": 1786343285.104465,
-    "ast_hash": "11f409531ae8514e777307acb937a5bd",
+    "mtime": 1786345807.6195498,
+    "ast_hash": "9e560ddfa3b77bf55f89ee7436e0a83b",
     "semantic_hash": ""
   },
   "flutter_app/submit_screen_dump.txt": {

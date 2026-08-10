@@ -234,8 +234,9 @@ Route::get('/ticket/download/{transaction_number}', function ($transaction_numbe
             mkdir($receiptDir, 0755, true);
         }
         try {
-            \Barryvdh\Snappy\Facades\SnappyPdf::loadView('pdf.receipt', ['booking' => $booking])
-                ->setPaper('A4')
+            \Spatie\LaravelPdf\Facades\Pdf::driver('dompdf')
+                ->format('a4')
+                ->view('pdf.receipt', ['booking' => $booking])
                 ->save($path);
         } catch (\Throwable $e) {
             // Fallback: stream as inline HTML if PDF generation fails

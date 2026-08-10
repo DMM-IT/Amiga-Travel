@@ -341,10 +341,13 @@
 
                             <div class="space-y-4">
                                 <div class="flex flex-wrap gap-3">
-                                    @if($booking->transaction && in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true) && $booking->status === 'pending')
-                                        <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
-                                            Done
-                                        </a>
+                                    @if(!in_array($booking->status, ['cancelled', 'operator_cancelled']))
+                                        {{-- Done button only for unpaid pending bookings --}}
+                                        @if($booking->transaction && in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true) && $booking->status === 'pending')
+                                            <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-3xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition" style="background:#ee018d;" onmouseover="this.style.background='#c30172'" onmouseout="this.style.background='#ee018d'">
+                                                Done
+                                            </a>
+                                        @endif
 
                                         @if($booking->canCancelOrRebook())
                                             @if(! $cancellationRequested && ! $rebookingRequested)

@@ -5069,9 +5069,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           : 'unpaid')
       .toString();
   bool get _canManage =>
-      _booking['status'] == 'pending' &&
-      _paymentStatus != 'paid' &&
-      _paymentStatus != 'cancelled';
+      _booking['status'] != 'cancelled' &&
+      _booking['status'] != 'operator_cancelled';
   bool get _isRoundTrip => _booking['return_date'] != null;
 
   DateTime? get _freeCancellationExpiresAt {
@@ -5669,7 +5668,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             'New dates will appear after approval.'
           ]),
         if (_booking['status'] != 'cancelled' && _booking['status'] != 'operator_cancelled') ...[
-          if (_booking['ticket_url'] != null)
+          if (_booking['ticket_url'] != null && _paymentStatus == 'paid')
             OutlinedButton.icon(
               onPressed: () =>
                   launchUrl(Uri.parse(_booking['ticket_url'].toString())),
@@ -5690,39 +5689,41 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         ],
         const SizedBox(height: 12),
         if (_canManage && !_cancellationStarted) ...[
-          OutlinedButton.icon(
+          if (_booking['can_rebook'] == true)
+            OutlinedButton.icon(
+                onPressed: _busy
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RebookScreen(booking: _booking),
+                          ),
+                        );
+                      },
+                icon: const Icon(Icons.calendar_month),
+                label: const Text('Request rebooking')),
+          if (_booking['can_cancel'] == true || _booking['can_rebook'] == true)
+            OutlinedButton.icon(
               onPressed: _busy
                   ? null
                   : () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => RebookScreen(booking: _booking),
+                          builder: (_) => RefundScreen(booking: _booking),
                         ),
                       );
                     },
-              icon: const Icon(Icons.calendar_month),
-              label: const Text('Request rebooking')),
-          OutlinedButton.icon(
-            onPressed: _busy
-                ? null
-                : () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => RefundScreen(booking: _booking),
-                      ),
-                    );
-                  },
-            icon: Icon(isWithin5Mins
-                ? Icons.cancel_outlined
-                : Icons.monetization_on_outlined),
-            label: Text(isWithin5Mins
-                ? 'Cancel Booking (Free) - ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}'
-                : 'Request Refund'),
-            style: OutlinedButton.styleFrom(
-                foregroundColor: isWithin5Mins ? Colors.red : Colors.orange),
-          ),
+              icon: Icon(isWithin5Mins
+                  ? Icons.cancel_outlined
+                  : Icons.monetization_on_outlined),
+              label: Text(isWithin5Mins
+                  ? 'Cancel Booking (Free) - ${secondsLeft ~/ 60}:${(secondsLeft % 60).toString().padLeft(2, '0')}'
+                  : 'Request Refund'),
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: isWithin5Mins ? Colors.red : Colors.orange),
+            ),
         ],
         if (_cancellationStarted) ...[
           Card(

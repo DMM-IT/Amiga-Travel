@@ -144,6 +144,8 @@ class BookingController extends Controller
             $data['mode'] = $booking->getMode();
             $data['price_breakdown'] = $booking->getPriceBreakdown();
             $data['calculated_rebooking_fee'] = $booking->getRebookingFeeAmount();
+            $data['can_cancel'] = $booking->canCancel();
+            $data['can_rebook'] = $booking->canRebook();
 
             // Add schedule times for full datetime display in the app
             if ($booking->schedule) {
