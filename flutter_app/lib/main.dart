@@ -83,7 +83,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.53+60';
+  static const String appVersion = '1.0.54+61';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -2059,8 +2059,125 @@ class _HomeScreenState extends State<HomeScreen>
               ],
             ),
           ),
-
           const SizedBox(height: 32),
+          _buildWhyTravelSection(),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWhyTravelSection() {
+    final features = [
+      {
+        'title': 'Simplify Your Booking',
+        'desc': 'Feel the flexibility and simplicity with instant online e-ticketing.',
+        'icon': Icons.touch_app,
+        'color': Colors.red,
+      },
+      {
+        'title': 'Wide Selection',
+        'desc': 'Enjoy memorable journeys with our ferry, airline, and tour partners.',
+        'icon': Icons.explore,
+        'color': Colors.pink,
+      },
+      {
+        'title': 'Exclusive Deals',
+        'desc': 'Access daily promotions, special group packages, and competitive fares.',
+        'icon': Icons.local_offer,
+        'color': Colors.redAccent,
+      },
+      {
+        'title': 'Trusted Expert',
+        'desc': 'Fulfilling countless travelers\' needs since 2017 with credible partners.',
+        'icon': Icons.verified,
+        'color': Colors.green,
+      },
+      {
+        'title': 'Affectionate Support',
+        'desc': 'Our dedicated customer support is ready to help you with every journey.',
+        'icon': Icons.support_agent,
+        'color': Colors.blue,
+      },
+      {
+        'title': 'Seamless Payment',
+        'desc': 'Stress-free booking with convenient local payment options.',
+        'icon': Icons.payment,
+        'color': Colors.orange,
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text('Why travel with Amiga Gracia?',
+              style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: kSlate800)),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 180,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              itemCount: features.length,
+              itemBuilder: (context, i) {
+                final f = features[i];
+                final color = f['color'] as Color;
+                return Container(
+                  width: 150,
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                    border: Border.all(color: color.withOpacity(0.1)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(f['icon'] as IconData,
+                            color: color, size: 28),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(f['title'] as String,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: kSlate800),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 6),
+                      Text(f['desc'] as String,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 10, color: kSlate500, height: 1.2),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
