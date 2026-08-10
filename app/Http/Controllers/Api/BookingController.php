@@ -485,6 +485,13 @@ class BookingController extends Controller
             $newTotal += $booking->vehicle_price;
         }
 
+        if ($newTotal < $originalFare) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You cannot rebook to a ticket that is cheaper than your original booking.',
+            ], 400);
+        }
+
         $settings = \App\Models\PaymentSetting::current();
         $isAfterDeparture = $booking->isAfterDeparture();
 
