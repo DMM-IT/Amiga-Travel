@@ -64,10 +64,7 @@ class TransactionResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with([
-            'booking.passengers.discount',
-            'booking.accommodations',
-        ]);
+        return parent::getEloquentQuery();
     }
 
     public static function infolist(Infolist $infolist): Infolist
