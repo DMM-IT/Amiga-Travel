@@ -271,7 +271,7 @@
             <tr>
                 <td><strong>OUTBOUND</strong><br><span style="font-size: 8.5px; color: #64748b;">{{ $booking->origin }} &rarr; {{ $booking->destination }}</span></td>
                 <td>
-                    <strong>{{ optional($booking->departure_date)->format('F d, Y') ?? $booking->departure_date }}</strong>
+                    <strong>{{ $booking->departure_date instanceof \Carbon\Carbon ? $booking->departure_date->format('F d, Y') : \Carbon\Carbon::parse($booking->departure_date)->format('F d, Y') }}</strong>
                     @if($booking->schedule_departure_time)
                         <br><span style="color: #475569;">Time: {{ $booking->schedule_departure_time }}</span>
                     @endif
@@ -295,7 +295,7 @@
             <tr>
                 <td><strong>RETURN</strong><br><span style="font-size: 8.5px; color: #64748b;">{{ $booking->destination }} &rarr; {{ $booking->origin }}</span></td>
                 <td>
-                    <strong>{{ optional($booking->return_date)->format('F d, Y') ?? $booking->return_date }}</strong>
+                    <strong>{{ $booking->return_date instanceof \Carbon\Carbon ? $booking->return_date->format('F d, Y') : \Carbon\Carbon::parse($booking->return_date)->format('F d, Y') }}</strong>
                     @if($booking->return_schedule_departure_time)
                         <br><span style="color: #475569;">Time: {{ $booking->return_schedule_departure_time }}</span>
                     @endif

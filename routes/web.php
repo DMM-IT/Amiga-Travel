@@ -263,18 +263,6 @@ Route::get('/ticket/download/{transaction_number}', function ($transaction_numbe
     ]);
 })->name('ticket.download');
 
-Route::get('/test-pdf-generation', function () {
-    try {
-        $booking = \App\Models\Booking::where('status', 'confirmed')->first();
-        if (!$booking) return 'No booking found';
-        
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.receipt', ['booking' => $booking]);
-        return 'success';
-    } catch (\Throwable $e) {
-        return $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine();
-    }
-});
-
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);

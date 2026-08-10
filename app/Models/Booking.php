@@ -115,6 +115,8 @@ class Booking extends Model
         'has_vehicle' => 'boolean',
         'vehicle_price' => 'decimal:2',
         'driver_birthday' => 'date',
+        'departure_date' => 'date',
+        'return_date' => 'date',
         'tour_inclusions' => 'array',
         'cancellation_fee' => 'decimal:2',
         'refund_amount' => 'decimal:2',
