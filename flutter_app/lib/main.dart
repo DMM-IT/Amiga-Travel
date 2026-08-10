@@ -83,7 +83,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.55+62';
+  static const String appVersion = '1.0.56+63';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -11401,8 +11401,53 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         ? FontWeight.normal
                                         : FontWeight.bold)),
                             subtitle: Text(notif['body'] ?? ''),
-                            onTap: () {
+                            onTap: () async {
                               if (!isRead) _markAsRead(notif['id']);
+
+                              // Navigate to booking details if transaction_number is present
+                              if (notif['data'] != null && notif['data'] is Map && notif['data']['transaction_number'] != null) {
+                                final transactionNumber = notif['data']['transaction_number'];
+                                
+                                // Show loading dialog
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => const Center(child: CircularProgressIndicator(color: kGreen)),
+                                );
+
+                                try {
+                                  final response = await http.get(
+                                    Uri.parse('${UserSession.getBaseUrl()}/api/bookings/$transactionNumber'),
+                                    headers: {
+                                      'Authorization': 'Bearer ${UserSession.token}',
+                                      'Accept': 'application/json',
+                                    },
+                                  );
+                                  
+                                  if (!mounted) return;
+                                  Navigator.pop(context); // hide loading
+                                  
+                                  if (response.statusCode == 200) {
+                                    final data = jsonDecode(response.body);
+                                    if (data['status'] == 'success' && data['booking'] != null) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => BookingDetailsScreen(booking: data['booking']),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking details not found.')));
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load booking details.')));
+                                  }
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                }
+                              }
                             },
                           );
                         },

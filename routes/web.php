@@ -230,16 +230,16 @@ Route::get('/ticket/download/{transaction_number}', function ($transaction_numbe
 
     // Generate on-demand if file doesn't exist (e.g. ephemeral Railway storage)
     if (! file_exists($path)) {
-        if (! is_dir($receiptDir)) {
-            mkdir($receiptDir, 0755, true);
-        }
         try {
-            \Spatie\LaravelPdf\Facades\Pdf::driver('dompdf')
+            if (! is_dir($receiptDir)) {
+                mkdir($receiptDir, 0755, true);
+            }
+            \Spatie\LaravelPdf\Facades\Pdf::view('pdf.receipt', ['booking' => $booking])
                 ->format('a4')
-                ->view('pdf.receipt', ['booking' => $booking])
                 ->save($path);
         } catch (\Throwable $e) {
-            // Fallback: stream as inline HTML if PDF generation fails
+            \Illuminate\Support\Facades\Log::error('PDF generation failed: ' . $e->getMessage());
+            // Fallback: stream as inline HTML if PDF generation or directory creation fails
             return response()->view('pdf.receipt', ['booking' => $booking]);
         }
     }

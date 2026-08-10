@@ -166,6 +166,48 @@ class BookingController extends Controller
         ]);
     }
 
+    public function show(Request $request, $transaction_number)
+    {
+        $booking = Booking::where('transaction_number', $transaction_number)
+            ->where('client_email', $request->user()->email)
+            ->with(['passengers.discount', 'schedule.route', 'returnSchedule', 'transaction', 'accommodations', 'transportClasses', 'accommodations.transportClass'])
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['status' => 'error', 'message' => 'Booking not found.'], 404);
+        }
+
+        // Apply same formatting as index
+        $data = $booking->toArray();
+        $transaction = $booking->transaction;
+        if ($transaction?->confirmation_pdf) {
+            $data['confirmation_pdf_url'] = storage_asset_path($transaction->confirmation_pdf);
+        }
+        $data['confirmation_url'] = $transaction?->confirmation_url;
+        $data['ticket_url'] = in_array($booking->status, ['confirmed', 'pending'])
+            ? route('ticket.download', ['transaction_number' => $booking->transaction_number])
+            : null;
+        $data['mode'] = $booking->getMode();
+        $data['price_breakdown'] = $booking->getPriceBreakdown();
+        $data['calculated_rebooking_fee'] = $booking->getRebookingFeeAmount();
+        $data['can_cancel'] = $booking->canCancel();
+        $data['can_rebook'] = $booking->canRebook();
+
+        if ($booking->schedule) {
+            $depTime = \Carbon\Carbon::parse($booking->schedule->departure_time)->timezone('Asia/Manila');
+            $data['departure_time'] = $depTime->format('h:i A');
+        }
+        if ($booking->returnSchedule) {
+            $retTime = \Carbon\Carbon::parse($booking->returnSchedule->departure_time)->timezone('Asia/Manila');
+            $data['return_time'] = $retTime->format('h:i A');
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'booking' => $data
+        ]);
+    }
+
     public function uploadProof(Request $request, $id)
     {
         $request->validate([
@@ -236,7 +278,7 @@ class BookingController extends Controller
             ->with('transaction')
             ->firstOrFail();
 
-        if (! $booking->canCancel() || $booking->status !== Booking::STATUS_PENDING || ! $booking->transaction || ! in_array($booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
+        if (! $booking->canCancel() || ! in_array($booking->status, ['pending', 'confirmed'], true)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'This booking can no longer be cancelled.'

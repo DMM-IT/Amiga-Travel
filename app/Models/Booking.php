@@ -270,6 +270,10 @@ class Booking extends Model
      */
     public function canCancel(): bool
     {
+        if (! $this->transaction || $this->transaction->payment_status !== 'paid') {
+            return false;
+        }
+
         $departureDateTime = $this->getDepartureDateTime();
         if (! $departureDateTime) {
             return false;
@@ -281,6 +285,10 @@ class Booking extends Model
 
     public function canRebook(): bool
     {
+        if (! $this->transaction || $this->transaction->payment_status !== 'paid') {
+            return false;
+        }
+
         $departureDateTime = $this->getDepartureDateTime();
         if (! $departureDateTime) {
             return false;

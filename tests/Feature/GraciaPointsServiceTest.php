@@ -25,6 +25,12 @@ class GraciaPointsServiceTest extends TestCase
             'is_active' => true,
         ]);
 
+        \App\Models\PaymentSetting::firstOrCreate(['id' => 1], [
+            'web_admin_fee' => 0,
+            'transaction_fee' => 0,
+        ]);
+        \App\Models\PaymentSetting::bust();
+
         $booking = Booking::create([
             'user_id' => $user->id,
             'transaction_number' => 'TEST-123',
@@ -59,6 +65,12 @@ class GraciaPointsServiceTest extends TestCase
             'points_awarded' => 5,
             'is_active' => true,
         ]);
+
+        \App\Models\PaymentSetting::firstOrCreate(['id' => 1], [
+            'web_admin_fee' => 0,
+            'transaction_fee' => 0,
+        ]);
+        \App\Models\PaymentSetting::bust();
 
         $booking = Booking::create([
             'user_id' => $user->id,

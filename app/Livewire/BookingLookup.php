@@ -187,12 +187,12 @@ class BookingLookup extends Component
         }
 
         if (! $this->booking->canCancel()) {
-            $this->feedback = 'You cannot cancel this booking as the departure date has passed.';
+            $this->feedback = 'You cannot cancel this booking as the departure date has passed or the payment is not fully verified.';
             return;
         }
 
-        if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
-            $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
+        if (! in_array($this->booking->status, ['pending', 'confirmed'], true) || ! $this->booking->transaction || $this->booking->transaction->payment_status !== 'paid') {
+            $this->feedback = 'This booking cannot be cancelled because it is not fully paid and verified.';
             return;
         }
 
@@ -218,8 +218,8 @@ class BookingLookup extends Component
             return;
         }
 
-        if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
-            $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
+        if (! in_array($this->booking->status, ['pending', 'confirmed'], true) || ! $this->booking->transaction || $this->booking->transaction->payment_status !== 'paid') {
+            $this->feedback = 'This booking cannot be cancelled because it is not fully paid and verified.';
             return;
         }
 
@@ -315,8 +315,8 @@ class BookingLookup extends Component
             return;
         }
 
-        if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
-            $this->feedback = 'This booking cannot be cancelled because it has already been verified or completed.';
+        if (! in_array($this->booking->status, ['pending', 'confirmed'], true) || ! $this->booking->transaction || $this->booking->transaction->payment_status !== 'paid') {
+            $this->feedback = 'This booking cannot be cancelled because it is not fully paid and verified.';
             return;
         }
 
@@ -404,8 +404,8 @@ class BookingLookup extends Component
             return;
         }
 
-        if ($this->booking->status !== 'pending' || ! $this->booking->transaction || ! in_array($this->booking->transaction->payment_status, ['pending', 'unpaid'], true)) {
-            $this->feedback = 'This booking cannot be rebooked because it has already been verified or completed.';
+        if (! in_array($this->booking->status, ['pending', 'confirmed'], true) || ! $this->booking->transaction || $this->booking->transaction->payment_status !== 'paid') {
+            $this->feedback = 'This booking cannot be rebooked because it is not fully paid and verified.';
             return;
         }
 
