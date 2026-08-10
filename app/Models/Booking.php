@@ -621,34 +621,19 @@ class Booking extends Model
             }
         }
         
-        if ($depTicketTotal > 0) {
+        // Combine ticket + accommodation/transport class into one line
+        if ($depTicketTotal + $depAccTotal > 0) {
             $breakdown[] = [
-                'label' => 'Departure Tickets & Class (' . $passengers->count() . 'x)',
-                'amount' => $depTicketTotal,
+                'label' => 'Departure Ticket & Transport Class (' . $passengers->count() . 'x)',
+                'amount' => $depTicketTotal + $depAccTotal,
                 'class' => ''
             ];
         }
         
-        if ($depAccTotal > 0) {
+        if ($retTicketTotal + $retAccTotal > 0) {
             $breakdown[] = [
-                'label' => 'Departure Accommodation (' . $passengers->count() . 'x)',
-                'amount' => $depAccTotal,
-                'class' => ''
-            ];
-        }
-        
-        if ($retTicketTotal > 0) {
-            $breakdown[] = [
-                'label' => 'Return Tickets & Class (' . $passengers->count() . 'x)',
-                'amount' => $retTicketTotal,
-                'class' => ''
-            ];
-        }
-        
-        if ($retAccTotal > 0) {
-            $breakdown[] = [
-                'label' => 'Return Accommodation (' . $passengers->count() . 'x)',
-                'amount' => $retAccTotal,
+                'label' => 'Return Ticket & Transport Class (' . $passengers->count() . 'x)',
+                'amount' => $retTicketTotal + $retAccTotal,
                 'class' => ''
             ];
         }

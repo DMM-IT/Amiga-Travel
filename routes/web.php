@@ -221,17 +221,31 @@ Route::get('/payment/{transaction}', function (Transaction $transaction) {
 })->name('payment.show');
 
 Route::get('/ticket/download/{transaction_number}', function ($transaction_number) {
-    $booking = \App\Models\Booking::where('transaction_number', $transaction_number)->firstOrFail();
+    $booking = \App\Models\Booking::where('transaction_number', $transaction_number)
+        ->with(['passengers.discount', 'schedule.route', 'returnSchedule', 'transaction', 'accommodations', 'transportClasses'])
+        ->firstOrFail();
 
-    $path = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
+    $receiptDir = storage_path('app/receipts');
+    $path = $receiptDir . '/receipt-' . $booking->transaction_number . '.pdf';
 
+    // Generate on-demand if file doesn't exist (e.g. ephemeral Railway storage)
     if (! file_exists($path)) {
-        abort(404);
+        if (! is_dir($receiptDir)) {
+            mkdir($receiptDir, 0755, true);
+        }
+        try {
+            \Barryvdh\Snappy\Facades\SnappyPdf::loadView('pdf.receipt', ['booking' => $booking])
+                ->setPaper('A4')
+                ->save($path);
+        } catch (\Throwable $e) {
+            // Fallback: stream as inline HTML if PDF generation fails
+            return response()->view('pdf.receipt', ['booking' => $booking]);
+        }
     }
 
     return response()->file($path, [
         'Content-Type' => 'application/pdf',
-        'Content-Disposition' => 'attachment; filename="Payment_Acknowledgement.pdf"',
+        'Content-Disposition' => 'inline; filename="Payment_Acknowledgement.pdf"',
     ]);
 })->name('ticket.download');
 

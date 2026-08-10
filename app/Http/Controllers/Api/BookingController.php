@@ -125,7 +125,7 @@ class BookingController extends Controller
         }
 
         $bookings = \App\Models\Booking::where('client_email', '=', $request->input('email'), 'and')
-            ->with(['passengers.discount', 'accommodations', 'transaction', 'schedule', 'transportClasses'])
+            ->with(['passengers.discount', 'accommodations', 'transaction', 'schedule', 'returnSchedule', 'transportClasses'])
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get();
@@ -137,14 +137,23 @@ class BookingController extends Controller
                 $data['confirmation_pdf_url'] = storage_asset_path($transaction->confirmation_pdf);
             }
             $data['confirmation_url'] = $transaction?->confirmation_url;
-            $receiptPath = storage_path('app/receipts/receipt-' . $booking->transaction_number . '.pdf');
-            $data['ticket_url'] = file_exists($receiptPath) ? route(
-                'ticket.download',
-                ['transaction_number' => $booking->transaction_number]
-            ) : null;
+            // Always allow download for confirmed/paid bookings — PDF is generated on-demand
+            $data['ticket_url'] = in_array($booking->status, ['confirmed', 'pending'])
+                ? route('ticket.download', ['transaction_number' => $booking->transaction_number])
+                : null;
             $data['mode'] = $booking->getMode();
             $data['price_breakdown'] = $booking->getPriceBreakdown();
             $data['calculated_rebooking_fee'] = $booking->getRebookingFeeAmount();
+
+            // Add schedule times for full datetime display in the app
+            if ($booking->schedule) {
+                $depTime = \Carbon\Carbon::parse($booking->schedule->departure_time)->timezone('Asia/Manila');
+                $data['departure_time'] = $depTime->format('h:i A');
+            }
+            if ($booking->returnSchedule) {
+                $retTime = \Carbon\Carbon::parse($booking->returnSchedule->departure_time)->timezone('Asia/Manila');
+                $data['return_time'] = $retTime->format('h:i A');
+            }
 
             return $data;
         });
