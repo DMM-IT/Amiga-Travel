@@ -1115,19 +1115,19 @@ class _MainScreenState extends State<MainScreen> {
                         color: Colors.white, size: 24),
                     if (UserSession.unreadNotificationsCount > 0)
                       Positioned(
-                        right: 0,
-                        top: 10,
+                        right: -2,
+                        top: -2,
                         child: Container(
                           padding: const EdgeInsets.all(2),
                           decoration: const BoxDecoration(
                               color: Colors.red, shape: BoxShape.circle),
                           constraints:
-                              const BoxConstraints(minWidth: 12, minHeight: 12),
+                              const BoxConstraints(minWidth: 14, minHeight: 14),
                           child: Text(
                             '${UserSession.unreadNotificationsCount}',
                             style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 8,
+                                fontSize: 9,
                                 fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
@@ -5952,7 +5952,34 @@ class AppDrawer extends StatelessWidget {
               style: const TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ),
-          if (UserSession.isLoggedIn)
+          if (UserSession.isLoggedIn) ...[
+            ListTile(
+              leading: const Icon(Icons.notifications_outlined, color: kGreen),
+              title: const Text('Notifications'),
+              trailing: UserSession.unreadNotificationsCount > 0
+                  ? Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                          color: Colors.red, shape: BoxShape.circle),
+                      child: Text(
+                        '${UserSession.unreadNotificationsCount}',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  : null,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen())).then((_) {
+                  onProfileUpdated();
+                });
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.person_outline, color: kGreen),
               title: const Text('My Profile'),
@@ -5970,6 +5997,7 @@ class AppDrawer extends StatelessWidget {
                 });
               },
             ),
+          ],
           ListTile(
             leading: const Icon(Icons.info_outline, color: kGreen),
             title: const Text('About'),
