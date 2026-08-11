@@ -9,6 +9,57 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TourController;
 
+// ─── Diagnostic Health Check (no middleware, no session) ──────────────────────
+// Remove this route once production is stable.
+Route::withoutMiddleware([])->get('/health-check', function () {
+    $checks = [];
+
+    // 1. PHP / Framework boot
+    $checks['php_version'] = PHP_VERSION;
+    $checks['laravel_version'] = app()->version();
+    $checks['app_env'] = config('app.env');
+    $checks['app_key_set'] = !empty(config('app.key'));
+    $checks['app_key_length'] = strlen(config('app.key') ?? '');
+
+    // 2. Database
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $checks['database'] = 'connected';
+        $checks['db_name'] = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
+        $checks['sessions_table'] = \Illuminate\Support\Facades\DB::connection()->getSchemaBuilder()->hasTable('sessions') ? 'exists' : 'MISSING';
+        $checks['cache_table'] = \Illuminate\Support\Facades\DB::connection()->getSchemaBuilder()->hasTable('cache') ? 'exists' : 'MISSING';
+    } catch (\Throwable $e) {
+        $checks['database'] = 'ERROR: ' . $e->getMessage();
+    }
+
+    // 3. Storage / symlink
+    $checks['storage_link'] = is_link(public_path('storage')) ? 'ok' : 'missing';
+
+    // 4. Cache driver
+    $checks['cache_driver'] = config('cache.default');
+    try {
+        \Illuminate\Support\Facades\Cache::put('_health_test', 1, 5);
+        $checks['cache_write'] = \Illuminate\Support\Facades\Cache::get('_health_test') === 1 ? 'ok' : 'read_failed';
+    } catch (\Throwable $e) {
+        $checks['cache_write'] = 'ERROR: ' . $e->getMessage();
+    }
+
+    // 5. Mail config
+    $checks['mail_mailer'] = config('mail.default');
+    $checks['sendgrid_key_set'] = !empty(config('mail.mailers.sendgrid.api_key'));
+
+    // 6. Firebase credentials path
+    $checks['firebase_credentials_path'] = config('firebase.credentials');
+    $checks['firebase_file_exists'] = file_exists(config('firebase.credentials') ?? '') ? 'yes' : 'no/path-missing';
+
+    return response()->json([
+        'status' => collect($checks)->filter(fn ($v) => str_starts_with((string) $v, 'ERROR') || $v === 'MISSING')->isEmpty() ? 'healthy' : 'degraded',
+        'checks' => $checks,
+        'timestamp' => now()->toISOString(),
+    ]);
+})->name('health.check');
+// ─────────────────────────────────────────────────────────────────────────────
+
 $renderWebsitePage = function (string $page, string $view) {
     class_exists(\App\Models\WebsiteSetting::class);
 
