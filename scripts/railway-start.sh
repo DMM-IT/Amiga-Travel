@@ -36,9 +36,13 @@ export MAIL_SCHEME="${MAIL_SCHEME}"
 
 # Handle Firebase Credentials safely to avoid .env parsing errors
 if [ -n "$FIREBASE_CREDENTIALS" ]; then
-    echo "$FIREBASE_CREDENTIALS" > /var/www/html/storage/firebase-auth.json
+    # Strip any surrounding double-quotes Railway may wrap around the value
+    FIREBASE_CREDS_CLEAN=$(echo "$FIREBASE_CREDENTIALS" | sed 's/^["'"'"']//;s/["'"'"']$//')
+    echo "$FIREBASE_CREDS_CLEAN" > /var/www/html/storage/firebase-auth.json
+    echo "=== Firebase credentials written (first 40 chars): $(echo "$FIREBASE_CREDS_CLEAN" | cut -c1-40) ==="
     export FIREBASE_CREDENTIALS_PATH="/var/www/html/storage/firebase-auth.json"
 else
+    echo "=== WARNING: FIREBASE_CREDENTIALS env var is empty! Push notifications will not work. ==="
     export FIREBASE_CREDENTIALS_PATH=""
 fi
 

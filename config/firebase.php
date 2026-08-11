@@ -50,9 +50,30 @@ return [
              *
              */
 
-            'credentials' => is_string(env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS'))) && str_starts_with(trim(env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS'))), '{')
-                ? (json_decode(env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')), true) ?? json_decode(str_replace('\\n', "\n", env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS'))), true) ?? env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')))
-                : env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')),
+            'credentials' => (function () {
+                $raw = env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS', ''));
+                if (empty($raw)) {
+                    return null; // will use ADC auto-discovery
+                }
+                // Strip any surrounding quotes Railway may add
+                $trimmed = trim($raw, " \t\n\r\0\x0B\"\'" );
+                // If it looks like a JSON object, try to decode it
+                if (str_starts_with($trimmed, '{')) {
+                    // Replace literal \n sequences in the private key with real newlines
+                    $fixed = str_replace('\\n', "\n", $trimmed);
+                    $decoded = json_decode($fixed, true);
+                    if (is_array($decoded)) {
+                        return $decoded;
+                    }
+                    // Try without replacement
+                    $decoded = json_decode($trimmed, true);
+                    if (is_array($decoded)) {
+                        return $decoded;
+                    }
+                }
+                // Otherwise treat as a file path
+                return $raw;
+            })(),
 
             /*
              * ------------------------------------------------------------------------
