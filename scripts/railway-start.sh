@@ -44,61 +44,72 @@ fi
 
 # Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
-  php artisan key:generate --force 2>&1 || true
-  # After generation, read it from the generated .env
+  echo "=== APP_KEY not found in environment, generating one... ==="
+  # Write a temporary .env so key:generate has something to modify
+  echo "APP_KEY=" > /var/www/html/.env
+  php artisan key:generate --force --no-ansi 2>&1 || true
+  # Read the freshly generated key back
   if [ -f /var/www/html/.env ]; then
-    APP_KEY=$(grep "^APP_KEY=" /var/www/html/.env | cut -d= -f2)
+    APP_KEY=$(grep "^APP_KEY=" /var/www/html/.env | sed 's/^APP_KEY=//')
   fi
+  echo "=== Generated APP_KEY: ${APP_KEY:0:20}... ==="
+fi
+
+# Validate APP_KEY is not empty before proceeding
+if [ -z "$APP_KEY" ]; then
+  echo "ERROR: APP_KEY is still empty after generation attempt. Set APP_KEY in Railway Variables!" >&2
 fi
 
 # Create .env file in container from Railway environment variables
-# This overrides the local .env that was copied into the image
+# This overrides any local .env that was copied into the image.
+# IMPORTANT: APP_KEY must be set as a Railway Variable to persist across deploys.
 cat > /var/www/html/.env <<EOF
 APP_NAME="Amiga Travel"
-APP_ENV="$APP_ENV"
-APP_DEBUG="$APP_DEBUG"
-APP_KEY="$APP_KEY"
-APP_URL="$APP_URL"
-APP_LOCALE="en"
-APP_FALLBACK_LOCALE="en"
-APP_FAKER_LOCALE="en_US"
-APP_MAINTENANCE_DRIVER="file"
+APP_ENV=$APP_ENV
+APP_DEBUG=$APP_DEBUG
+APP_KEY=$APP_KEY
+APP_URL=$APP_URL
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+APP_MAINTENANCE_DRIVER=file
 
-BCRYPT_ROUNDS="12"
-LOG_CHANNEL="stack"
-LOG_LEVEL="debug"
+BCRYPT_ROUNDS=12
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
 
-DB_CONNECTION="$DB_CONNECTION"
-DB_HOST="$DB_HOST"
-DB_PORT="$DB_PORT"
-DB_DATABASE="$DB_DATABASE"
-DB_USERNAME="$DB_USERNAME"
-DB_PASSWORD="$DB_PASSWORD"
+DB_CONNECTION=$DB_CONNECTION
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_DATABASE=$DB_DATABASE
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
 
-SESSION_DRIVER="$SESSION_DRIVER"
-CACHE_STORE="$CACHE_STORE"
-QUEUE_CONNECTION="$QUEUE_CONNECTION"
+SESSION_DRIVER=$SESSION_DRIVER
+CACHE_STORE=$CACHE_STORE
+QUEUE_CONNECTION=$QUEUE_CONNECTION
 
-MAIL_MAILER="$MAIL_MAILER"
-MAIL_HOST="$MAIL_HOST"
-MAIL_PORT="$MAIL_PORT"
-MAIL_USERNAME="$MAIL_USERNAME"
-MAIL_PASSWORD="$MAIL_PASSWORD"
-MAIL_ENCRYPTION="$MAIL_ENCRYPTION"
-MAIL_FROM_ADDRESS="$MAIL_FROM_ADDRESS"
-RESEND_API_KEY="$RESEND_API_KEY"
+MAIL_MAILER=$MAIL_MAILER
+MAIL_HOST=$MAIL_HOST
+MAIL_PORT=$MAIL_PORT
+MAIL_USERNAME=$MAIL_USERNAME
+MAIL_PASSWORD=$MAIL_PASSWORD
+MAIL_ENCRYPTION=$MAIL_ENCRYPTION
+MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS
+RESEND_API_KEY=$RESEND_API_KEY
 
-NOCAPTCHA_SITEKEY="$NOCAPTCHA_SITEKEY"
-NOCAPTCHA_SECRET="$NOCAPTCHA_SECRET"
-FIREBASE_CREDENTIALS="$FIREBASE_CREDENTIALS_PATH"
-MAIL_FROM_ADDRESS="$MAIL_FROM_ADDRESS"
-MAIL_FROM_NAME="$MAIL_FROM_NAME"
-MAIL_SCHEME="$MAIL_SCHEME"
-SENDGRID_API_KEY="$SENDGRID_API_KEY"
+NOCAPTCHA_SITEKEY=$NOCAPTCHA_SITEKEY
+NOCAPTCHA_SECRET=$NOCAPTCHA_SECRET
+FIREBASE_CREDENTIALS=$FIREBASE_CREDENTIALS_PATH
+MAIL_FROM_NAME=$MAIL_FROM_NAME
+MAIL_SCHEME=$MAIL_SCHEME
+SENDGRID_API_KEY=$SENDGRID_API_KEY
 
-FILESYSTEM_DISK="local"
-BROADCAST_CONNECTION="log"
+FILESYSTEM_DISK=local
+BROADCAST_CONNECTION=log
 EOF
+
+echo "=== .env written. APP_KEY length: $(echo -n "$APP_KEY" | wc -c) chars ==="
 
 # Dynamically configure Nginx to listen on Railway's assigned $PORT
 PORT="${PORT:-10000}"
