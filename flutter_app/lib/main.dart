@@ -24,7 +24,7 @@ void main() async {
   final isFirstLaunch = prefs.getBool('first_launch') ?? true;
   await UserSession.init();
   try {
-    await NotificationService.initialize();
+    await NotificationService.initialize(onNotificationTap: handleNotificationTap);
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   } catch (e) {
     debugPrint('Failed to initialize notifications: $e');
@@ -83,7 +83,7 @@ class UserSession {
   static String? autoApplyVoucherCode;
 
   // Match this with pubspec.yaml version
-  static const String appVersion = '1.0.57+64';
+  static const String appVersion = '1.0.58+65';
   static String installedAppVersion = appVersion;
 
   static Future<void> init() async {
@@ -502,6 +502,59 @@ List<dynamic> parseAndFilterSchedules(dynamic raw, [String? selectedDate]) {
       return true;
     }
   }).toList();
+}
+
+Map<String, dynamic>? pendingNotificationData;
+
+Future<void> handleNotificationTap(Map<String, dynamic> data) async {
+  if (data['transaction_number'] != null) {
+    final transactionNumber = data['transaction_number'];
+    
+    // Check if we have a context
+    final context = navigatorKey.currentContext;
+    if (context == null) {
+      pendingNotificationData = data;
+      return;
+    }
+    
+    // We have context, proceed to load and navigate
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(color: kGreen)),
+    );
+
+    try {
+      final response = await http.get(
+        Uri.parse('${UserSession.getBaseUrl()}/api/bookings/$transactionNumber'),
+        headers: {
+          'Authorization': 'Bearer ${UserSession.token}',
+          'Accept': 'application/json',
+        },
+      );
+      
+      Navigator.pop(context); // hide loading
+      
+      if (response.statusCode == 200) {
+        final resData = jsonDecode(response.body);
+        if (resData['status'] == 'success' && resData['booking'] != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BookingDetailsScreen(booking: resData['booking']),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking details not found.')));
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load booking details.')));
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -992,6 +1045,14 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _fetchGlobalData();
     NotificationService.requestPermission();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (pendingNotificationData != null) {
+        final data = pendingNotificationData!;
+        pendingNotificationData = null;
+        handleNotificationTap(data);
+      }
+    });
   }
 
   Future<void> _fetchGlobalData() async {
@@ -5608,7 +5669,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             'New dates will appear after approval.'
           ]),
         if (_booking['status'] != 'cancelled' && _booking['status'] != 'operator_cancelled') ...[
-          if (_booking['ticket_url'] != null && _paymentStatus == 'paid')
+          if (_booking['ticket_url'] != null)
             OutlinedButton.icon(
               onPressed: () =>
                   launchUrl(Uri.parse(_booking['ticket_url'].toString())),
@@ -5629,7 +5690,10 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         ],
         const SizedBox(height: 12),
         if (_canManage && !_cancellationStarted) ...[
-          if (_booking['can_rebook'] == true)
+          // Show rebook/refund/cancel when payment is uploaded (pending) OR verified (paid).
+          // Pre-84ab183 behavior: not restricted to admin-verified bookings only.
+          if (_booking['can_rebook'] == true ||
+              (_paymentStatus == 'pending' && _booking['status'] != 'cancelled' && _booking['status'] != 'operator_cancelled'))
             OutlinedButton.icon(
                 onPressed: _busy
                     ? null
@@ -5643,7 +5707,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                       },
                 icon: const Icon(Icons.calendar_month),
                 label: const Text('Request rebooking')),
-          if (_booking['can_cancel'] == true || _booking['can_rebook'] == true)
+          if (_booking['can_cancel'] == true || _booking['can_rebook'] == true ||
+              (_paymentStatus == 'pending' && _booking['status'] != 'cancelled' && _booking['status'] != 'operator_cancelled'))
             OutlinedButton.icon(
               onPressed: _busy
                   ? null

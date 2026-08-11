@@ -105,7 +105,12 @@ class BookingController extends Controller
             'lookup_token' => 'nullable|string',
         ]);
 
-        $isAuthenticated = auth('sanctum')->check() && auth('sanctum')->user()->email === $request->input('email');
+        $isAuthenticated = false;
+        if (auth('sanctum')->check() && auth('sanctum')->user()->email === $request->input('email')) {
+            $isAuthenticated = true;
+        } elseif (auth('api')->check() && auth('api')->user()->email === $request->input('email')) {
+            $isAuthenticated = true;
+        }
 
         if (!$isAuthenticated) {
             if (!$request->input('lookup_token')) {
@@ -168,8 +173,15 @@ class BookingController extends Controller
 
     public function show(Request $request, $transaction_number)
     {
-        $isAuthenticated = auth('sanctum')->check();
-        $email = $isAuthenticated ? auth('sanctum')->user()->email : $request->input('email');
+        $isAuthenticated = auth('sanctum')->check() || auth('api')->check();
+        if (auth('sanctum')->check()) {
+            $userEmail = auth('sanctum')->user()->email;
+        } elseif (auth('api')->check()) {
+            $userEmail = auth('api')->user()->email;
+        } else {
+            $userEmail = null;
+        }
+        $email = $isAuthenticated ? $userEmail : $request->input('email');
 
         if (!$email && $request->input('lookup_token')) {
             $email = Cache::get('booking_lookup_token:' . hash('sha256', $request->input('lookup_token')));

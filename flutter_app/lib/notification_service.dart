@@ -28,7 +28,7 @@ class NotificationService {
     debugPrint('Notification permission status: $permissionStatus');
   }
 
-  static Future<void> initialize() async {
+  static Future<void> initialize({Function(Map<String, dynamic>)? onNotificationTap}) async {
     if (kIsWeb) return;
 
     await Firebase.initializeApp();
@@ -36,7 +36,19 @@ class NotificationService {
     // Initialize local notifications for foreground
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidInit);
-    await _localNotifications.initialize(initSettings);
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        if (response.payload != null && onNotificationTap != null) {
+          try {
+            final data = jsonDecode(response.payload!) as Map<String, dynamic>;
+            onNotificationTap(data);
+          } catch (e) {
+            debugPrint('Failed to parse notification payload: $e');
+          }
+        }
+      },
+    );
 
     // Create a high importance channel
 
@@ -62,9 +74,17 @@ class NotificationService {
     final fcmToken = await FirebaseMessaging.instance.getToken();
     debugPrint('FCM token: $fcmToken');
 
+    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null && onNotificationTap != null) {
+        onNotificationTap(message.data);
+      }
+    });
+
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       debugPrint('FCM notification opened: ${message.messageId}');
-      // Optionally handle deep links or navigation here.
+      if (onNotificationTap != null) {
+        onNotificationTap(message.data);
+      }
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
@@ -101,6 +121,7 @@ class NotificationService {
               number: 1, // Fallback for launcher badges
             ),
           ),
+          payload: jsonEncode(message.data),
         );
       }
     });
