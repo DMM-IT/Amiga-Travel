@@ -50,28 +50,31 @@ return [
              *
              */
 
-            'credentials' => (function () {
-                $raw = env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS', ''));
-                if (empty($raw)) {
-                    return null; // will use ADC auto-discovery
+            'credentials' => (static function () {
+                $raw = (string) env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS', ''));
+                if ($raw === '') {
+                    return null;
                 }
-                // Strip any surrounding quotes Railway may add
-                $trimmed = trim($raw, " \t\n\r\0\x0B\"\'" );
-                // If it looks like a JSON object, try to decode it
-                if (str_starts_with($trimmed, '{')) {
-                    // Replace literal \n sequences in the private key with real newlines
-                    $fixed = str_replace('\\n', "\n", $trimmed);
-                    $decoded = json_decode($fixed, true);
+                // Remove any surrounding single or double quotes Railway may add
+                $clean = trim($raw);
+                if (($clean[0] ?? '') === '"' || ($clean[0] ?? '') === "'") {
+                    $clean = substr($clean, 1);
+                }
+                if (strlen($clean) > 0 && (substr($clean, -1) === '"' || substr($clean, -1) === "'")) {
+                    $clean = substr($clean, 0, -1);
+                }
+                // If it looks like JSON, decode it
+                if (strlen($clean) > 0 && $clean[0] === '{') {
+                    $decoded = json_decode(str_replace('\\n', "\n", $clean), true);
                     if (is_array($decoded)) {
                         return $decoded;
                     }
-                    // Try without replacement
-                    $decoded = json_decode($trimmed, true);
+                    $decoded = json_decode($clean, true);
                     if (is_array($decoded)) {
                         return $decoded;
                     }
                 }
-                // Otherwise treat as a file path
+                // Treat as file path
                 return $raw;
             })(),
 
