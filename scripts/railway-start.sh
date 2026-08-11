@@ -104,53 +104,79 @@ fi
 # Create .env file in container from Railway environment variables
 # This overrides any local .env that was copied into the image.
 # IMPORTANT: APP_KEY must be set as a Railway Variable to persist across deploys.
-cat > /var/www/html/.env <<EOF
-APP_NAME="Amiga Travel"
-APP_ENV=$APP_ENV
-APP_DEBUG=$APP_DEBUG
-APP_KEY=$APP_KEY
-APP_URL=$APP_URL
-APP_LOCALE=en
-APP_FALLBACK_LOCALE=en
-APP_FAKER_LOCALE=en_US
-APP_MAINTENANCE_DRIVER=file
+#
+# NOTE: We write the .env through PHP to guarantee valid Dotenv syntax.
+# A plain heredoc in POSIX sh cannot safely escape arbitrary values that
+# may contain whitespace, double-quotes, backslashes or dollar signs
+# (e.g. MAIL_FROM_NAME, DB_PASSWORD, long API keys), and Dotenv's parser
+# will reject the whole file with "Encountered unexpected whitespace ...".
+# PHP's var_export() with PREG escaping for the key produces correct output
+# for every possible value type.
+php -r '
+function envv($k, $default = "") {
+    $v = getenv($k);
+    if ($v === false || $v === "") {
+        $v = $default;
+    }
+    return (string) $v;
+}
+$env = [
+    "APP_NAME"            => envv("APP_NAME", "Amiga Travel"),
+    "APP_ENV"             => envv("APP_ENV", "production"),
+    "APP_DEBUG"           => envv("APP_DEBUG", "true"),
+    "APP_KEY"             => envv("APP_KEY"),
+    "APP_URL"             => envv("APP_URL", "https://amiga-travel-production.up.railway.app"),
+    "APP_LOCALE"          => envv("APP_LOCALE", "en"),
+    "APP_FALLBACK_LOCALE" => envv("APP_FALLBACK_LOCALE", "en"),
+    "APP_FAKER_LOCALE"    => envv("APP_FAKER_LOCALE", "en_US"),
+    "APP_MAINTENANCE_DRIVER" => envv("APP_MAINTENANCE_DRIVER", "file"),
 
-BCRYPT_ROUNDS=12
-LOG_CHANNEL=stack
-LOG_LEVEL=debug
+    "BCRYPT_ROUNDS" => "12",
+    "LOG_CHANNEL"   => envv("LOG_CHANNEL", "stack"),
+    "LOG_LEVEL"     => envv("LOG_LEVEL", "debug"),
 
-DB_CONNECTION=$DB_CONNECTION
-DB_HOST=$DB_HOST
-DB_PORT=$DB_PORT
-DB_DATABASE=$DB_DATABASE
-DB_USERNAME=$DB_USERNAME
-DB_PASSWORD=$DB_PASSWORD
+    "DB_CONNECTION" => envv("DB_CONNECTION", "mysql"),
+    "DB_HOST"       => envv("DB_HOST"),
+    "DB_PORT"       => envv("DB_PORT"),
+    "DB_DATABASE"   => envv("DB_DATABASE"),
+    "DB_USERNAME"   => envv("DB_USERNAME"),
+    "DB_PASSWORD"   => envv("DB_PASSWORD"),
 
-SESSION_DRIVER=$SESSION_DRIVER
-CACHE_STORE=$CACHE_STORE
-QUEUE_CONNECTION=$QUEUE_CONNECTION
+    "SESSION_DRIVER"  => envv("SESSION_DRIVER", "database"),
+    "CACHE_STORE"     => envv("CACHE_STORE", "database"),
+    "QUEUE_CONNECTION" => envv("QUEUE_CONNECTION", "database"),
 
-MAIL_MAILER=$MAIL_MAILER
-MAIL_HOST=$MAIL_HOST
-MAIL_PORT=$MAIL_PORT
-MAIL_USERNAME=$MAIL_USERNAME
-MAIL_PASSWORD=$MAIL_PASSWORD
-MAIL_ENCRYPTION=$MAIL_ENCRYPTION
-MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS
-RESEND_API_KEY=$RESEND_API_KEY
+    "MAIL_MAILER"      => envv("MAIL_MAILER", "smtp"),
+    "MAIL_HOST"        => envv("MAIL_HOST", "smtp.gmail.com"),
+    "MAIL_PORT"        => envv("MAIL_PORT", "587"),
+    "MAIL_USERNAME"    => envv("MAIL_USERNAME"),
+    "MAIL_PASSWORD"    => envv("MAIL_PASSWORD"),
+    "MAIL_ENCRYPTION"  => envv("MAIL_ENCRYPTION", "tls"),
+    "MAIL_FROM_ADDRESS"=> envv("MAIL_FROM_ADDRESS"),
+    "RESEND_API_KEY"   => envv("RESEND_API_KEY"),
 
-NOCAPTCHA_SITEKEY=$NOCAPTCHA_SITEKEY
-NOCAPTCHA_SECRET=$NOCAPTCHA_SECRET
-FIREBASE_CREDENTIALS=$FIREBASE_CREDENTIALS_PATH
-MAIL_FROM_NAME=$MAIL_FROM_NAME
-MAIL_SCHEME=$MAIL_SCHEME
-SENDGRID_API_KEY=$SENDGRID_API_KEY
+    "NOCAPTCHA_SITEKEY"    => envv("NOCAPTCHA_SITEKEY"),
+    "NOCAPTCHA_SECRET"     => envv("NOCAPTCHA_SECRET"),
+    "FIREBASE_CREDENTIALS" => envv("FIREBASE_CREDENTIALS_PATH"),
+    "MAIL_FROM_NAME"       => envv("MAIL_FROM_NAME"),
+    "MAIL_SCHEME"          => envv("MAIL_SCHEME"),
+    "SENDGRID_API_KEY"     => envv("SENDGRID_API_KEY"),
 
-FILESYSTEM_DISK=local
-BROADCAST_CONNECTION=log
-EOF
+    "FILESYSTEM_DISK"     => envv("FILESYSTEM_DISK", "local"),
+    "BROADCAST_CONNECTION"=> envv("BROADCAST_CONNECTION", "log"),
+];
+$out = "";
+foreach ($env as $k => $v) {
+    // Dotenv double-quoted value: escape \ and ", then wrap in "..."
+    $escaped = str_replace(["\\", "\""], ["\\\\", "\\\""], (string) $v);
+    $out .= $k . "=\"" . $escaped . "\"\n";
+}
+file_put_contents("/var/www/html/.env", $out);
+echo ".env written via PHP writer. APP_KEY length: " . strlen($env["APP_KEY"]) . " chars\n";
+'
 
-echo "=== .env written. APP_KEY length: $(echo -n "$APP_KEY" | wc -c) chars ==="
+unset -v APP_NAME_TMP 2>/dev/null || true
+echo "=== .env regeneration complete ==="
 
 # Dynamically configure Nginx to listen on Railway's assigned $PORT
 PORT="${PORT:-10000}"
