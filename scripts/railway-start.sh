@@ -36,11 +36,48 @@ export MAIL_SCHEME="${MAIL_SCHEME}"
 
 # Handle Firebase Credentials safely to avoid .env parsing errors
 if [ -n "$FIREBASE_CREDENTIALS" ]; then
-    # Strip any surrounding double-quotes Railway may wrap around the value
-    FIREBASE_CREDS_CLEAN=$(echo "$FIREBASE_CREDENTIALS" | sed 's/^["'"'"']//;s/["'"'"']$//')
-    echo "$FIREBASE_CREDS_CLEAN" > /var/www/html/storage/firebase-auth.json
-    echo "=== Firebase credentials written (first 40 chars): $(echo "$FIREBASE_CREDS_CLEAN" | cut -c1-40) ==="
+    echo "=== Writing Firebase credentials via PHP parser ==="
+    # Use PHP to properly parse the JSON blob (handles actual newlines in private_key)
+    # and write a clean, valid JSON file.
+    php -r "
+\$raw = getenv('FIREBASE_CREDENTIALS');
+// Strip surrounding double-quotes Railway may add
+\$raw = trim(\$raw);
+if (isset(\$raw[0]) && \$raw[0] === '\"') { \$raw = substr(\$raw, 1); }
+if (strlen(\$raw) > 0 && substr(\$raw, -1) === '\"') { \$raw = substr(\$raw, 0, -1); }
+
+// First try: parse as-is
+\$decoded = json_decode(\$raw, true);
+
+// Second try: replace actual newlines with \\n escape sequences
+if (!\$decoded) {
+    \$fixed = str_replace(\"\\n\", \"\\\\n\", \$raw);
+    \$decoded = json_decode(\$fixed, true);
+}
+
+// Third try: replace \\\\n with \\n (double-escaped)
+if (!\$decoded) {
+    \$fixed2 = str_replace('\\\\n', \"\\n\", \$raw);
+    \$decoded = json_decode(\$fixed2, true);
+}
+
+if (is_array(\$decoded)) {
+    file_put_contents('/var/www/html/storage/firebase-auth.json', json_encode(\$decoded));
+    echo 'Firebase: credentials written as valid JSON (' . strlen(json_encode(\$decoded)) . ' bytes)' . PHP_EOL;
+} else {
+    // Fallback: write raw content (Firebase SDK will report the parse error)
+    file_put_contents('/var/www/html/storage/firebase-auth.json', \$raw);
+    echo 'Firebase WARNING: could not parse as JSON (' . json_last_error_msg() . '), wrote raw content' . PHP_EOL;
+}
+"
     export FIREBASE_CREDENTIALS_PATH="/var/www/html/storage/firebase-auth.json"
+    # CRITICAL: unset the raw JSON blob from the process environment.
+    # phpdotenv does NOT override existing env vars, so if FIREBASE_CREDENTIALS
+    # is still set as the blob, env('FIREBASE_CREDENTIALS') would return the blob
+    # instead of the file path we set in .env. Unsetting forces phpdotenv to use
+    # the file path value from .env at runtime.
+    unset FIREBASE_CREDENTIALS
+    echo "=== FIREBASE_CREDENTIALS unset from process env (PHP-FPM will use .env value) ==="
 else
     echo "=== WARNING: FIREBASE_CREDENTIALS env var is empty! Push notifications will not work. ==="
     export FIREBASE_CREDENTIALS_PATH=""

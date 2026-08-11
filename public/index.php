@@ -5,25 +5,39 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// ── TEMPORARY DEBUG WRAPPER (remove after production is stable) ───────────────
-// Captures any fatal/uncaught Throwable that occurs before Laravel's own
-// exception handler is ready, outputting the raw error instead of a blank 500.
-set_exception_handler(function (\Throwable $e) {
-    $debug = (bool) (getenv('APP_DEBUG') ?: false);
-    if ($debug) {
-        http_response_code(500);
-        header('Content-Type: text/plain; charset=utf-8');
+// ── TEMPORARY DEBUG WRAPPER ───────────────────────────────────────────────────
+// register_shutdown_function fires even on fatal PHP errors (OOM, E_ERROR, etc.)
+// that cannot be caught by set_exception_handler.
+// Remove once production is stable.
+if ((bool) (getenv('APP_DEBUG') === 'true' || getenv('APP_DEBUG') === '1')) {
+    ini_set('display_errors', '0'); // Don't auto-output — we handle it manually
+
+    register_shutdown_function(function () {
+        $error = error_get_last();
+        if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_RECOVERABLE_ERROR])) {
+            if (!headers_sent()) {
+                http_response_code(500);
+                header('Content-Type: text/plain; charset=utf-8');
+            }
+            echo "\n\n=== PHP FATAL ERROR (shutdown_function) ===\n";
+            echo "Type:    " . $error['type'] . "\n";
+            echo "Message: " . $error['message'] . "\n";
+            echo "File:    " . $error['file'] . "\n";
+            echo "Line:    " . $error['line'] . "\n";
+        }
+    });
+
+    set_exception_handler(function (\Throwable $e) {
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=utf-8');
+        }
         echo "=== LARAVEL FATAL BOOT ERROR ===\n\n";
         echo get_class($e) . ": " . $e->getMessage() . "\n";
         echo "File: " . $e->getFile() . " (line " . $e->getLine() . ")\n\n";
         echo "Stack Trace:\n" . $e->getTraceAsString() . "\n";
-    } else {
-        http_response_code(500);
-        header('Content-Type: text/html; charset=utf-8');
-        echo '<h1>500 Internal Server Error</h1>';
-    }
-});
-
+    });
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Determine if the application is in maintenance mode...
