@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__.'/../app/Support/helpers.php';
-
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

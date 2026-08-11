@@ -45,12 +45,13 @@ WORKDIR /var/www/html
 COPY . .
 
 # --- Install PHP & Node dependencies, build frontend assets ---
-RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts --optimize-autoloader \
+RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader \
     && npm install --legacy-peer-deps \
     && npm run build
 
-# --- Laravel bootstrap ---
-RUN php artisan package:discover --ansi
+# --- Laravel bootstrap (clear stale caches, then discover packages) ---
+RUN php artisan clear-compiled \
+    && php artisan package:discover --ansi
 
 # --- Permissions ---
 RUN chmod +x /var/www/html/scripts/railway-start.sh \

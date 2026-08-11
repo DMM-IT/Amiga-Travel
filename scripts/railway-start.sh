@@ -162,10 +162,13 @@ timeout 60 php artisan migrate --force --no-interaction || echo "Migrations skip
 php artisan storage:link || true
 
 echo "=== Reached config cache step ==="
+php artisan clear-compiled || true
 php artisan config:clear || true
 php artisan config:cache || true
 php artisan route:clear || true
 php artisan view:cache || true
+php artisan event:clear || true
+php artisan package:discover --ansi || true
 
 echo "=== Starting Supervisor (Nginx + PHP-FPM + Queue Worker) ==="
 exec supervisord -c /var/www/html/supervisord.conf
