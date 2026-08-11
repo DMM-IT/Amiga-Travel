@@ -2445,8 +2445,8 @@
     "semantic_hash": ""
   },
   "scripts/railway-start.sh": {
-    "mtime": 1786450779.203817,
-    "ast_hash": "625e1f483ca30e6a4ebd213b7a817691",
+    "mtime": 1786451407.160904,
+    "ast_hash": "6b7f28f0165de5e191b2d1740141d202",
     "semantic_hash": ""
   },
   "scripts/test-mail.php": {

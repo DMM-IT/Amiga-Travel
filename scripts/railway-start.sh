@@ -105,128 +105,18 @@ fi
 # This overrides any local .env that was copied into the image.
 # IMPORTANT: APP_KEY must be set as a Railway Variable to persist across deploys.
 #
-# NOTE: We write the .env through PHP to guarantee valid Dotenv syntax.
-# A plain heredoc in POSIX sh cannot safely escape arbitrary values that
-# may contain whitespace, double-quotes, backslashes or dollar signs
-# (e.g. MAIL_FROM_NAME, DB_PASSWORD, long API keys), and Dotenv's parser
-# will reject the whole file with "Encountered unexpected whitespace ...".
-# We also aggressively SANITIZE common fields that Railway users paste
-# with markdown backticks or stray whitespace (APP_URL, APP_NAME, hosts).
-php -r '
-function envv($k, $default = "", $sanitize = "raw") {
-    $v = getenv($k);
-    if ($v === false || $v === "") {
-        $v = $default;
-    }
-    $v = (string) $v;
-    switch ($sanitize) {
-        case "url":
-            // Strip markdown backticks, ASCII control chars, surrounding whitespace.
-            $v = preg_replace("/[`\x00-\x1F\x7F]/u", "", $v);
-            $v = trim($v);
-            // If someone wrapped in stray quotes (single or double), unwrap once.
-            if (strlen($v) >= 2) {
-                if (($v[0] === "\"" && $v[strlen($v)-1] === "\"") || ($v[0] === "\'" && $v[strlen($v)-1] === "\'")) {
-                    $v = substr($v, 1, -1);
-                }
-            }
-            $v = trim($v);
-            break;
-        case "host":
-        case "name":
-            $v = preg_replace("/[`\x00-\x1F\x7F]/u", "", $v);
-            if ($sanitize === "name") {
-                // Keep printable; trim only, preserve internal spaces like "Amiga Gracia Travel Service".
-                $v = trim($v);
-                if (strlen($v) >= 2) {
-                    if (($v[0] === "\"" && $v[strlen($v)-1] === "\"") || ($v[0] === "\'" && $v[strlen($v)-1] === "\'")) {
-                        $v = substr($v, 1, -1);
-                    }
-                }
-                $v = trim($v);
-            } else {
-                // host: no spaces or quotes allowed at all.
-                $v = preg_replace("/\s+/", "", $v);
-                $v = trim($v, "\"\'");
-            }
-            break;
-        case "key":
-            // APP_KEY / API keys / passwords: keep exact bytes; only strip
-            // accidental surrounding backticks + whitespace that Railway
-            // sometimes wraps around pasted values.
-            if (preg_match('/^\s*`(.*)`\s*$/s', $v, $m)) {
-                $v = $m[1];
-            } else {
-                $v = trim($v);
-                if (strlen($v) >= 2) {
-                    if (($v[0] === "\"" && $v[strlen($v)-1] === "\"") || ($v[0] === "\'" && $v[strlen($v)-1] === "\'")) {
-                        $v = substr($v, 1, -1);
-                    }
-                }
-            }
-            break;
-        case "raw":
-        default:
-            break;
-    }
-    return (string) $v;
-}
-$env = [
-    "APP_NAME"            => envv("APP_NAME", "Amiga Travel", "name"),
-    "APP_ENV"             => envv("APP_ENV", "production"),
-    "APP_DEBUG"           => envv("APP_DEBUG", "true"),
-    "APP_KEY"             => envv("APP_KEY", "", "key"),
-    "APP_URL"             => envv("APP_URL", "https://amiga-travel-production.up.railway.app", "url"),
-    "APP_LOCALE"          => envv("APP_LOCALE", "en"),
-    "APP_FALLBACK_LOCALE" => envv("APP_FALLBACK_LOCALE", "en"),
-    "APP_FAKER_LOCALE"    => envv("APP_FAKER_LOCALE", "en_US"),
-    "APP_MAINTENANCE_DRIVER" => envv("APP_MAINTENANCE_DRIVER", "file"),
+# The writer lives in a standalone PHP file (scripts/write_env.php) so we NEVER
+# have to embed PHP inside a shell heredoc. Heredocs with embedded PHP that
+# contain escaped single/double quotes, regex backslashes, or inline comments
+# with quote characters are prone to POSIX sh parse errors ("unterminated quoted
+# string") depending on the shell flavour / SSH layer. Keeping the writer in a
+# real .php file eliminates the entire quoting class of bugs.
+#
+# The writer also aggressively sanitizes fields that Railway users commonly
+# paste with markdown backticks or stray whitespace: APP_URL, APP_NAME, hosts,
+# credentials.
+php /var/www/html/scripts/write_env.php
 
-    "BCRYPT_ROUNDS" => "12",
-    "LOG_CHANNEL"   => envv("LOG_CHANNEL", "stack"),
-    "LOG_LEVEL"     => envv("LOG_LEVEL", "debug"),
-
-    "DB_CONNECTION" => envv("DB_CONNECTION", "mysql"),
-    "DB_HOST"       => envv("DB_HOST", "", "host"),
-    "DB_PORT"       => envv("DB_PORT", "", "host"),
-    "DB_DATABASE"   => envv("DB_DATABASE", "", "host"),
-    "DB_USERNAME"   => envv("DB_USERNAME", "", "key"),
-    "DB_PASSWORD"   => envv("DB_PASSWORD", "", "key"),
-
-    "SESSION_DRIVER"  => envv("SESSION_DRIVER", "database"),
-    "CACHE_STORE"     => envv("CACHE_STORE", "database"),
-    "QUEUE_CONNECTION" => envv("QUEUE_CONNECTION", "database"),
-
-    "MAIL_MAILER"      => envv("MAIL_MAILER", "smtp"),
-    "MAIL_HOST"        => envv("MAIL_HOST", "smtp.gmail.com", "host"),
-    "MAIL_PORT"        => envv("MAIL_PORT", "587", "host"),
-    "MAIL_USERNAME"    => envv("MAIL_USERNAME", "", "key"),
-    "MAIL_PASSWORD"    => envv("MAIL_PASSWORD", "", "key"),
-    "MAIL_ENCRYPTION"  => envv("MAIL_ENCRYPTION", "tls"),
-    "MAIL_FROM_ADDRESS"=> envv("MAIL_FROM_ADDRESS", "", "key"),
-    "RESEND_API_KEY"   => envv("RESEND_API_KEY", "", "key"),
-
-    "NOCAPTCHA_SITEKEY"    => envv("NOCAPTCHA_SITEKEY", "", "key"),
-    "NOCAPTCHA_SECRET"     => envv("NOCAPTCHA_SECRET", "", "key"),
-    "FIREBASE_CREDENTIALS" => envv("FIREBASE_CREDENTIALS_PATH", "", "raw"),
-    "MAIL_FROM_NAME"       => envv("MAIL_FROM_NAME", "", "name"),
-    "MAIL_SCHEME"          => envv("MAIL_SCHEME", "", "raw"),
-    "SENDGRID_API_KEY"     => envv("SENDGRID_API_KEY", "", "key"),
-
-    "FILESYSTEM_DISK"     => envv("FILESYSTEM_DISK", "local"),
-    "BROADCAST_CONNECTION"=> envv("BROADCAST_CONNECTION", "log"),
-];
-$out = "";
-foreach ($env as $k => $v) {
-    // Dotenv double-quoted value: escape \ and ", then wrap in "..."
-    $escaped = str_replace(["\\", "\""], ["\\\\", "\\\""], (string) $v);
-    $out .= $k . "=\"" . $escaped . "\"\n";
-}
-file_put_contents("/var/www/html/.env", $out);
-echo ".env written via PHP writer. APP_KEY length: " . strlen($env["APP_KEY"]) . " chars. APP_URL: [" . $env["APP_URL"] . "]\n";
-'
-
-unset -v APP_NAME_TMP 2>/dev/null || true
 echo "=== .env regeneration complete ==="
 
 # Dynamically configure Nginx to listen on Railway's assigned $PORT
