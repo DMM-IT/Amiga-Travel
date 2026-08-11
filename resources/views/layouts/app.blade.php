@@ -8,7 +8,106 @@
 
         <title>{{ config('app.name', 'Amiga Gracia Travel Service') }}</title>
 
-        <link rel="icon" href="{{ asset('images/amiga-logo-transparent.png') }}" type="image/png">
+        {{-- ═══════════════════════════════════════════════════════
+             FAVICON SUITE
+             Google uses these to show the site logo next to search
+             listings. Requirements: square PNG, multiples of 48px.
+             app-icon-original.png is already 512×512 and square.
+        ═══════════════════════════════════════════════════════ --}}
+        <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('images/app-icon-original.png') }}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/app-icon-original.png') }}">
+        <link rel="icon" type="image/png" sizes="96x96"  href="{{ asset('images/app-icon-original.png') }}">
+        <link rel="icon" type="image/png" sizes="48x48"  href="{{ asset('images/app-icon-original.png') }}">
+        <link rel="icon" type="image/x-icon"             href="/favicon.ico">
+        <link rel="apple-touch-icon" sizes="180x180"     href="{{ asset('images/app-icon-original.png') }}">
+        <link rel="shortcut icon"                        href="{{ asset('images/app-icon-original.png') }}">
+
+        {{-- ═══════════════════════════════════════════════════════
+             JSON-LD STRUCTURED DATA
+             Implements:
+               • Organization  – logo, name, contact, sameAs (social)
+               • LocalBusiness – address, geo, opening hours, GBP link
+               • WebSite       – sitelinks search box eligibility
+             These are the primary signals Google reads to display
+             the logo thumbnail beside the website search listing.
+        ═══════════════════════════════════════════════════════ --}}
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": ["Organization", "LocalBusiness", "TravelAgency"],
+              "@id": "https://www.amigagracia.com/#organization",
+              "name": "Amiga Gracia Travel Services",
+              "alternateName": "Amiga Gracia",
+              "url": "https://www.amigagracia.com",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.amigagracia.com/images/app-icon-original.png",
+                "width": 512,
+                "height": 512,
+                "caption": "Amiga Gracia Travel Services Logo"
+              },
+              "image": "https://www.amigagracia.com/images/app-icon-original.png",
+              "description": "Kay Amiga, Hassle Free Ka! Book ferry tickets (2GO, Starlite), airline tickets (Cebu Pacific, PAL, AirAsia), hotel reservations, and tour packages in Calapan City, Oriental Mindoro.",
+              "telephone": "+63-930-928-4278",
+              "email": "agtsreservation@amigagracia.com",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Roxas Drive, Libis",
+                "addressLocality": "Calapan City",
+                "addressRegion": "Oriental Mindoro",
+                "postalCode": "5200",
+                "addressCountry": "PH"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 13.4116,
+                "longitude": 121.1803
+              },
+              "openingHoursSpecification": [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+                  "opens": "08:00",
+                  "closes": "18:00"
+                }
+              ],
+              "priceRange": "₱₱",
+              "currenciesAccepted": "PHP",
+              "paymentAccepted": "Cash, GCash, Bank Transfer",
+              "areaServed": {
+                "@type": "City",
+                "name": "Calapan City"
+              },
+              "sameAs": [
+                "https://www.facebook.com/profile.php?id=100072122019511",
+                "https://www.tiktok.com/@amigagracia",
+                "https://www.amigagracia.com"
+              ],
+              "hasMap": "https://www.google.com/maps/search/Amiga+Gracia+Travel+Services+Calapan"
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://www.amigagracia.com/#website",
+              "url": "https://www.amigagracia.com",
+              "name": "Amiga Gracia Travel Services",
+              "description": "Book ferry, airline tickets, tours and hotel reservations in Calapan, Oriental Mindoro.",
+              "publisher": {
+                "@id": "https://www.amigagracia.com/#organization"
+              },
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                  "@type": "EntryPoint",
+                  "urlTemplate": "https://www.amigagracia.com/schedules?q={search_term_string}"
+                },
+                "query-input": "required name=search_term_string"
+              }
+            }
+          ]
+        }
+        </script>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles

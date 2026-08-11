@@ -1,2 +1,12 @@
 User-agent: *
 Disallow:
+
+# Allow Googlebot to crawl all image assets used for favicon / logo schema
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /images/app-icon-original.png
+Allow: /images/amiga-logo-transparent.png
+Allow: /images/amiga_logo_white_outline.png
+Allow: /images/amiga-logo.jpg
+
+Sitemap: https://www.amigagracia.com/sitemap.xml
